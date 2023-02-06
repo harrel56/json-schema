@@ -41,6 +41,6 @@ public class SchemaParsingContext {
 
     public boolean validateSchema(String uri, JsonNode node) {
         ValidationContext ctx = new ValidationContext(URI.create(uri), schemaCache);
-        return ctx.resolveRequiredSchema(uri).validate(ctx, node).isValid();
+        return ctx.resolveRequiredSchema(uri).validate(ctx, node);
     }
 }

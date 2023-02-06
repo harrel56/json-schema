@@ -3,7 +3,7 @@ package org.harrel.jsonschema;
 import java.util.List;
 import java.util.Objects;
 
-public class Schema implements Validator {
+public class Schema {
 
     private static final Schema TRUE_SCHEMA = new Schema(List.of((ctx, node) -> Result.success()));
     private static final Schema FALSE_SCHEMA = new Schema(List.of((ctx, node) -> Result.failure("False schema always fails")));
@@ -18,11 +18,9 @@ public class Schema implements Validator {
         return val ? TRUE_SCHEMA : FALSE_SCHEMA;
     }
 
-    @Override
-    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
-        boolean valid = validators.stream()
+    public boolean validate(ValidationContext ctx, JsonNode node) {
+        return validators.stream()
                 .map(validator -> validator.validate(ctx, node))
                 .allMatch(ValidationResult::isValid);
-        return valid ? Result.success() : Result.failure("Schema validation failed.");
     }
 }

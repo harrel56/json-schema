@@ -11,7 +11,8 @@ public class SchemaValidator {
     private final ValidatorFactory validatorFactory = new ValidatorFactory();
 
     public boolean validate(String rawSchema, String rawJson) throws JsonProcessingException {
-        JsonParser parser = new JsonParser(validatorFactory);
+        BasicValidationCollector collector = new BasicValidationCollector();
+        JsonParser parser = new JsonParser(validatorFactory, collector);
         URI uri = URI.create("tmp");
         JacksonNode schema = new JacksonNode(objectMapper.readTree(rawSchema));
         JacksonNode json = new JacksonNode(objectMapper.readTree(rawJson));

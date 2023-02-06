@@ -8,9 +8,11 @@ import java.util.Map;
 public class JsonParser {
 
     private final ValidatorFactory validatorFactory;
+    private final ValidationCollector<?> collector;
 
-    public JsonParser(ValidatorFactory validatorFactory) {
+    public JsonParser(ValidatorFactory validatorFactory, ValidationCollector<?> collector) {
         this.validatorFactory = validatorFactory;
+        this.collector = collector;
     }
 
     public SchemaParsingContext parse(URI baseUri, JsonNode node) {
@@ -47,7 +49,7 @@ public class JsonParser {
         List<Validator> validators = new ArrayList<>();
         for (Map.Entry<String, JsonNode> entry : node.asObject()) {
             validatorFactory.fromField(ctx, entry.getKey(), entry.getValue())
-                    .map(validator -> new ReportingValidator(ctx, entry.getValue(), validator))
+                    .map(validator -> new ReportingValidator(collector, entry.getValue(), validator))
                     .ifPresent(validators::add);
             parseNode(ctx, entry.getValue());
         }

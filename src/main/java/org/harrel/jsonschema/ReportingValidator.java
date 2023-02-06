@@ -1,22 +1,22 @@
 package org.harrel.jsonschema;
 
 class ReportingValidator implements Validator {
-    private final SchemaParsingContext ctx;
-    private final JsonNode node;
+    private final ValidationCollector<?> collector;
+    private final JsonNode schemaNode;
     private final Validator validator;
 
-    public ReportingValidator(SchemaParsingContext ctx, JsonNode node, Validator validator) {
-        this.ctx = ctx;
-        this.node = node;
+    public ReportingValidator(ValidationCollector<?> collector, JsonNode schemaNode, Validator validator) {
+        this.collector = collector;
+        this.schemaNode = schemaNode;
         this.validator = validator;
     }
 
-    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
-        ValidationResult result = validator.validate(ctx, node);
+    public ValidationResult validate(ValidationContext ctx, JsonNode instanceNode) {
+        ValidationResult result = validator.validate(ctx, instanceNode);
         if (result.isValid()) {
-            System.out.println(node.getJsonPointer() + ", " + this.node.getJsonPointer() + " - VALID");
+            collector.onSuccess(ctx, schemaNode, instanceNode);
         } else {
-            System.out.println(node.getJsonPointer() + ", " + this.node.getJsonPointer() + " - " + result.getErrorMessage());
+            collector.onFailure(ctx, schemaNode, instanceNode, result.getErrorMessage());
         }
         return result;
     }

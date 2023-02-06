@@ -35,7 +35,7 @@ public class ValidatorFactory {
             if (schema.isEmpty()) {
                 return Result.failure("Resolution of $ref (%s) failed".formatted(ref));
             } else {
-                return schema.get().validate(ctx, node);
+                return schema.get().validate(ctx, node) ? Result.success() : Result.failure("Referenced schema validation failed.");
             }
         }
     }
@@ -54,8 +54,7 @@ public class ValidatorFactory {
         @Override
         public ValidationResult validate(ValidationContext ctx, JsonNode node) {
             boolean invalid = jsonPointers.stream()
-                    .map(uri -> ctx.resolveRequiredSchema(uri).validate(ctx, node))
-                    .noneMatch(ValidationResult::isValid);
+                    .noneMatch(uri -> ctx.resolveRequiredSchema(uri).validate(ctx, node));
             return invalid ? Result.failure("None of the schemas matched.") : Result.success();
         }
     }
@@ -77,15 +76,13 @@ public class ValidatorFactory {
                 return Result.success();
             }
 
-            List<ValidationResult> results = new ArrayList<>();
+            boolean valid = true;
             for (Map.Entry<String, JsonNode> entry : node.asObject()) {
                 String schemaUri = jsonPointerMap.get(entry.getKey());
                 if (schemaUri != null) {
-                    ValidationResult result = ctx.resolveRequiredSchema(schemaUri).validate(ctx, entry.getValue());
-                    results.add(result);
+                    valid = valid && ctx.resolveRequiredSchema(schemaUri).validate(ctx, entry.getValue());
                 }
             }
-            boolean valid = results.stream().allMatch(ValidationResult::isValid);
             return valid ? Result.success() : Result.failure("Properties validation failed.");
         }
     }
