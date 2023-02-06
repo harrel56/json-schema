@@ -1,0 +1,9 @@
+{
+  "type": "object",
+  "properties": {
+    "field1": { "$ref": "tmp" }
+  },
+  "custom": {
+    "type": "string"
+  }
+}
