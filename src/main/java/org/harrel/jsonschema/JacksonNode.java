@@ -41,7 +41,7 @@ public class JacksonNode implements JsonNode {
 
     @Override
     public boolean isInteger() {
-        return node.isBigInteger();
+        return node.canConvertToExactIntegral();
     }
 
     @Override
