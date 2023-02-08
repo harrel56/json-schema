@@ -2,7 +2,9 @@ package org.harrel.jsonschema;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 public class JacksonNode implements JsonNode {
@@ -80,22 +82,12 @@ public class JacksonNode implements JsonNode {
     }
 
     @Override
-    public Iterable<JsonNode> asArray() {
-        Iterator<com.fasterxml.jackson.databind.JsonNode> nodeIterator = node.elements();
-        Iterator<JsonNode> iterator = new Iterator<>() {
-            private int idx;
-
-            @Override
-            public boolean hasNext() {
-                return nodeIterator.hasNext();
-            }
-
-            @Override
-            public JsonNode next() {
-                return new JacksonNode(nodeIterator.next(), jsonPointer + "/" + idx++);
-            }
-        };
-        return () -> iterator;
+    public List<JsonNode> asArray() {
+        List<JsonNode> elements = new ArrayList<>();
+        for(var iterator = node.elements(); iterator.hasNext();) {
+            elements.add(new JacksonNode(iterator.next()));
+        }
+        return elements;
     }
 
     @Override

@@ -8,13 +8,9 @@ import java.util.*;
 class RequiredValidator extends BasicValidator {
     private final List<String> requiredProperties;
 
-    RequiredValidator(JsonNode constNode) {
+    RequiredValidator(JsonNode node) {
         super("Required properties validation failed.");
-        List<String> temp = new ArrayList<>();
-        for (JsonNode element : constNode.asArray()) {
-            temp.add(element.asString());
-        }
-        this.requiredProperties = Collections.unmodifiableList(temp);
+        this.requiredProperties = node.asArray().stream().map(JsonNode::asString).toList();
     }
 
     @Override

@@ -2,6 +2,7 @@ package org.harrel.jsonschema;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.List;
 import java.util.Map;
 
 public interface JsonNode {
@@ -19,7 +20,7 @@ public interface JsonNode {
     String asString();
     BigInteger asInteger();
     BigDecimal asNumber();
-    Iterable<JsonNode> asArray();
+    List<JsonNode> asArray();
     Iterable<Map.Entry<String, JsonNode>> asObject();
 
     boolean isEqualTo(JsonNode other);

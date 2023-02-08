@@ -5,6 +5,7 @@ import org.harrel.jsonschema.Result;
 import org.harrel.jsonschema.ValidationContext;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -29,10 +30,10 @@ class TypeValidators {
             return TYPE_CHECKS.get(SimpleType.fromName(node.asString()));
         }
 
-        List<SimpleType> types = new ArrayList<>();
-        for (JsonNode element : node.asArray()) {
-            types.add(SimpleType.fromName(element.asString()));
-        }
+        List<SimpleType> types = node.asArray().stream()
+                .map(JsonNode::asString)
+                .map(SimpleType::fromName)
+                .toList();
         return new TypeArrayValidator(types);
     }
 
@@ -40,7 +41,7 @@ class TypeValidators {
         private final List<SimpleType> types;
 
         public TypeArrayValidator(List<SimpleType> types) {
-            this.types = types;
+            this.types = Collections.unmodifiableList(types);
         }
 
         @Override
