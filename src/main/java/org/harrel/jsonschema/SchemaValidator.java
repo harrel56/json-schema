@@ -2,6 +2,7 @@ package org.harrel.jsonschema;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.harrel.jsonschema.validator.ValidatorFactory;
 
 import java.net.URI;
 

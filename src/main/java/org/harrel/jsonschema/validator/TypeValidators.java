@@ -1,12 +1,18 @@
-package org.harrel.jsonschema;
+package org.harrel.jsonschema.validator;
+
+import org.harrel.jsonschema.JsonNode;
+import org.harrel.jsonschema.Result;
+import org.harrel.jsonschema.ValidationContext;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-class TypeChecks {
+class TypeValidators {
 
-    private static String ERROR_MESSAGE = "Invalid type. Expected %s.";
+    private TypeValidators() {}
+
+    private static final String ERROR_MESSAGE = "Invalid type. Expected %s.";
 
     private static final Map<SimpleType, Validator> TYPE_CHECKS = Map.of(
             SimpleType.NULL, (ctx, node) -> node.isNull() ? Result.success() : Result.failure(ERROR_MESSAGE.formatted(SimpleType.NULL)),

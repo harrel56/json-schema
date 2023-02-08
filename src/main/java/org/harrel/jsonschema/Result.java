@@ -1,5 +1,7 @@
 package org.harrel.jsonschema;
 
+import org.harrel.jsonschema.validator.ValidationResult;
+
 import java.util.Objects;
 
 public class Result implements ValidationResult {

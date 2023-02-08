@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Map;
 
-interface JsonNode {
+public interface JsonNode {
     String getJsonPointer();
 
     boolean isNull();

@@ -1,5 +1,8 @@
 package org.harrel.jsonschema;
 
+import org.harrel.jsonschema.validator.ValidationResult;
+import org.harrel.jsonschema.validator.Validator;
+
 class ReportingValidator implements Validator {
     private final ValidationCollector<?> collector;
     private final JsonNode schemaNode;

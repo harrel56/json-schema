@@ -1,4 +1,4 @@
-package org.harrel.jsonschema;
+package org.harrel.jsonschema.validator;
 
 import java.util.Collections;
 import java.util.HashMap;

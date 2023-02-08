@@ -1,6 +1,7 @@
 package org.harrel.jsonschema;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.harrel.jsonschema.validator.ValidatorFactory;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

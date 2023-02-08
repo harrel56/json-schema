@@ -1,5 +1,8 @@
 package org.harrel.jsonschema;
 
+import org.harrel.jsonschema.validator.ValidationResult;
+import org.harrel.jsonschema.validator.Validator;
+
 import java.util.List;
 import java.util.Objects;
 
