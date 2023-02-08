@@ -3,7 +3,7 @@ package org.harrel.jsonschema;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -84,28 +84,20 @@ public class JacksonNode implements JsonNode {
     @Override
     public List<JsonNode> asArray() {
         List<JsonNode> elements = new ArrayList<>();
-        for(var iterator = node.elements(); iterator.hasNext();) {
+        for (var iterator = node.elements(); iterator.hasNext(); ) {
             elements.add(new JacksonNode(iterator.next()));
         }
         return elements;
     }
 
     @Override
-    public Iterable<Map.Entry<String, JsonNode>> asObject() {
-        Iterator<Map.Entry<String, com.fasterxml.jackson.databind.JsonNode>> nodeIterator = node.fields();
-        Iterator<Map.Entry<String, JsonNode>> iterator = new Iterator<>() {
-            @Override
-            public boolean hasNext() {
-                return nodeIterator.hasNext();
-            }
-
-            @Override
-            public Map.Entry<String, JsonNode> next() {
-                Map.Entry<String, com.fasterxml.jackson.databind.JsonNode> next = nodeIterator.next();
-                return Map.entry(next.getKey(), new JacksonNode(next.getValue(), jsonPointer + "/" + next.getKey()));
-            }
-        };
-        return () -> iterator;
+    public Map<String, JsonNode> asObject() {
+        Map<String, JsonNode> map = new HashMap<>();
+        for (var iterator = node.fields(); iterator.hasNext(); ) {
+            var entry = iterator.next();
+            map.put(entry.getKey(), new JacksonNode(entry.getValue()));
+        }
+        return map;
     }
 
     @Override

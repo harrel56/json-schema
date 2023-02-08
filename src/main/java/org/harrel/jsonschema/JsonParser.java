@@ -50,7 +50,7 @@ public class JsonParser {
 
     private void parseObject(SchemaParsingContext ctx, JsonNode node) {
         List<Validator> validators = new ArrayList<>();
-        for (Map.Entry<String, JsonNode> entry : node.asObject()) {
+        for (Map.Entry<String, JsonNode> entry : node.asObject().entrySet()) {
             validatorFactory.fromField(ctx, entry.getKey(), entry.getValue())
                     .map(validator -> new ReportingValidator(collector, entry.getValue(), validator))
                     .ifPresent(validators::add);

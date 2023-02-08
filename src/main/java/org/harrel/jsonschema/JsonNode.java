@@ -21,7 +21,7 @@ public interface JsonNode {
     BigInteger asInteger();
     BigDecimal asNumber();
     List<JsonNode> asArray();
-    Iterable<Map.Entry<String, JsonNode>> asObject();
+    Map<String, JsonNode> asObject();
 
     boolean isEqualTo(JsonNode other);
 }

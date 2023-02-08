@@ -3,7 +3,7 @@ package org.harrel.jsonschema.validator;
 import org.harrel.jsonschema.JsonNode;
 import org.harrel.jsonschema.ValidationContext;
 
-import java.util.*;
+import java.util.List;
 
 class RequiredValidator extends BasicValidator {
     private final List<String> requiredProperties;
@@ -18,10 +18,7 @@ class RequiredValidator extends BasicValidator {
         if (!node.isObject()) {
             return true;
         }
-        Set<String> properties = new HashSet<>();
-        for (Map.Entry<String, JsonNode> entry : node.asObject()) {
-            properties.add(entry.getKey());
-        }
-        return properties.containsAll(requiredProperties);
+
+        return node.asObject().keySet().containsAll(requiredProperties);
     }
 }

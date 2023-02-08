@@ -14,7 +14,7 @@ class PropertiesValidator extends BasicValidator {
     PropertiesValidator(SchemaParsingContext ctx, JsonNode node) {
         super("Properties validation failed.");
         Map<String, String> uris = new HashMap<>();
-        for (Map.Entry<String, JsonNode> entry : node.asObject()) {
+        for (Map.Entry<String, JsonNode> entry : node.asObject().entrySet()) {
             uris.put(entry.getKey(), ctx.getAbsoluteUri(entry.getValue()));
         }
         this.jsonPointerMap = Collections.unmodifiableMap(uris);
@@ -27,7 +27,7 @@ class PropertiesValidator extends BasicValidator {
         }
 
         boolean valid = true;
-        for (Map.Entry<String, JsonNode> entry : node.asObject()) {
+        for (Map.Entry<String, JsonNode> entry : node.asObject().entrySet()) {
             String schemaUri = jsonPointerMap.get(entry.getKey());
             if (schemaUri != null) {
                 valid = valid && ctx.resolveRequiredSchema(schemaUri).validate(ctx, entry.getValue());
