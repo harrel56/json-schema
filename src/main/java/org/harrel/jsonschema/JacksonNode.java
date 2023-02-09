@@ -99,9 +99,4 @@ public class JacksonNode implements JsonNode {
         }
         return map;
     }
-
-    @Override
-    public boolean isEqualTo(JsonNode other) {
-        return node.equals(((JacksonNode) other).node);
-    }
 }
