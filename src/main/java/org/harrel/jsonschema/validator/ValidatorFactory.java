@@ -14,6 +14,8 @@ public class ValidatorFactory {
         map.put("$ref", (ctx, node) -> new RefValidator(node));
         map.put("anyOf", AnyOfValidator::new);
         map.put("properties", PropertiesValidator::new);
+        map.put("maxProperties", (ctx, node) -> new MaxPropertiesValidator(node));
+        map.put("minProperties", (ctx, node) -> new MinPropertiesValidator(node));
         map.put("required", (ctx, node) -> new RequiredValidator(node));
         map.put("type", (ctx, node) -> TypeValidators.getTypeCheck(node));
         map.put("const", (ctx, node) -> new ConstValidator(node));
