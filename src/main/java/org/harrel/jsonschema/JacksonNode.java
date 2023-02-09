@@ -85,7 +85,7 @@ public class JacksonNode implements JsonNode {
     public List<JsonNode> asArray() {
         List<JsonNode> elements = new ArrayList<>();
         for (var iterator = node.elements(); iterator.hasNext(); ) {
-            elements.add(new JacksonNode(iterator.next()));
+            elements.add(new JacksonNode(iterator.next(), jsonPointer + "/" + elements.size()));
         }
         return elements;
     }
@@ -95,7 +95,7 @@ public class JacksonNode implements JsonNode {
         Map<String, JsonNode> map = new HashMap<>();
         for (var iterator = node.fields(); iterator.hasNext(); ) {
             var entry = iterator.next();
-            map.put(entry.getKey(), new JacksonNode(entry.getValue()));
+            map.put(entry.getKey(), new JacksonNode(entry.getValue(), jsonPointer + "/" + entry.getKey()));
         }
         return map;
     }
