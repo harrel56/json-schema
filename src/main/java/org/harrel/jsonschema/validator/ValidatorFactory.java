@@ -13,6 +13,8 @@ public class ValidatorFactory {
         Map<String, BiFunction<SchemaParsingContext, JsonNode, Validator>> map = new HashMap<>();
         map.put("$ref", (ctx, node) -> new RefValidator(node));
         map.put("anyOf", AnyOfValidator::new);
+        map.put("items", ItemsValidator::new);
+        map.put("prefixItems", PrefixItemsValidator::new);
         map.put("properties", PropertiesValidator::new);
         map.put("maxProperties", (ctx, node) -> new MaxPropertiesValidator(node));
         map.put("minProperties", (ctx, node) -> new MinPropertiesValidator(node));

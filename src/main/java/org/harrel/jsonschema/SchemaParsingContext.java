@@ -3,7 +3,6 @@ package org.harrel.jsonschema;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 public class SchemaParsingContext {
     private final URI baseUri;

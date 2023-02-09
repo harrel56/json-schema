@@ -24,6 +24,16 @@ class SpecificationTest {
         testValidation(bundle, name, schema, json, valid);
     }
 
+    @SuiteTest("/draft2020-12/items.json")
+    void itemsTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
+    @SuiteTest("/draft2020-12/prefixItems.json")
+    void prefixItemsTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
     @SuiteTest("/draft2020-12/maxProperties.json")
     void maxPropertiesTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
         testValidation(bundle, name, schema, json, valid);
