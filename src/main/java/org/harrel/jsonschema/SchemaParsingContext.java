@@ -39,7 +39,12 @@ public class SchemaParsingContext {
     }
 
     public boolean validateSchema(String uri, JsonNode node) {
-        ValidationContext ctx = new ValidationContext(URI.create(uri), schemaCache);
-        return ctx.resolveRequiredSchema(uri).validate(ctx, node);
+        Schema schema = schemaCache.get(uri);
+        if (!(schema instanceof IdentifiableSchema idSchema)) {
+            throw new IllegalArgumentException(
+                    "Couldn't find schema with uri=%s or it resolves to non-identifiable schema".formatted(uri));
+        }
+        ValidationContext ctx = new ValidationContext(idSchema, schemaCache);
+        return idSchema.validate(ctx, node);
     }
 }
