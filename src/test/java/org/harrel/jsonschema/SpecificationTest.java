@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Assertions;
 
 import java.util.logging.Logger;
 
+@SuppressWarnings("unused")
 class SpecificationTest {
 
     private final Logger logger = Logger.getLogger("SpecificationTest");
