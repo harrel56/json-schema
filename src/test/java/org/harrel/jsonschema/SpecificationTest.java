@@ -49,6 +49,16 @@ class SpecificationTest {
         testValidation(bundle, name, schema, json, valid);
     }
 
+    @SuiteTest("/draft2020-12/maximum.json")
+    void maximumTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
+    @SuiteTest("/draft2020-12/minimum.json")
+    void minimumTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
     private void testValidation(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
         SchemaValidator validator = new SchemaValidator();
         logger.info(schema.toPrettyString());
