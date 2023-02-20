@@ -17,14 +17,22 @@ public class ValidationContext {
     }
 
     public Optional<Schema> resolveSchema(String ref) {
-        if (UriUtil.isRelativeJsonPoint(ref)) {
-            ref = parentSchema.getId() + ref;
-        }
-        return Optional.ofNullable(schemaCache.get(ref));
+        String resolvedUri = resolveUri(ref);
+        return Optional.ofNullable(schemaCache.get(resolvedUri));
     }
 
     public Schema resolveRequiredSchema(String ref) {
         return resolveSchema(ref)
                 .orElseThrow(() -> new IllegalStateException("Resolution of schema (%s) failed and was required".formatted(ref)));
+    }
+
+    private String resolveUri(String ref) {
+        if (ref.equals("#")) {
+            return parentSchema.getId();
+        } else if (UriUtil.isRelativeJsonPoint(ref)) {
+            return parentSchema.getId() + ref;
+        } else {
+            return ref;
+        }
     }
 }
