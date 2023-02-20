@@ -9,7 +9,7 @@ class PatternValidator extends BasicValidator {
     private final Pattern pattern;
 
     PatternValidator(JsonNode node) {
-        super("Maximum validation failed.");
+        super("Pattern validation failed.");
         this.pattern = Pattern.compile(node.asString());
     }
 
