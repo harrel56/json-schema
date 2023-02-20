@@ -1,16 +1,31 @@
 package org.harrel.jsonschema;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 public class SchemaParsingContext {
     private final URI baseUri;
-    private final Map<String, Schema> schemaCache = new HashMap<>();
-    private final Map<URI, URI> anchors = new HashMap<>();
+    private final Map<String, Schema> schemaCache;
+    private final Map<String, JsonNode> currentSchemaObject;
+
+    private SchemaParsingContext(URI baseUri, Map<String, Schema> schemaCache, Map<String, JsonNode> currentSchemaObject) {
+        this.baseUri = baseUri;
+        this.schemaCache = schemaCache;
+        this.currentSchemaObject = currentSchemaObject;
+    }
 
     public SchemaParsingContext(URI baseUri) {
-        this.baseUri = baseUri;
+        this(baseUri, new HashMap<>(), Map.of());
+    }
+
+    public SchemaParsingContext withCurrentSchemaContext(Map<String, JsonNode> currentSchemaObject) {
+        return new SchemaParsingContext(baseUri, schemaCache, Collections.unmodifiableMap(currentSchemaObject));
+    }
+
+    public Map<String, JsonNode> getCurrentSchemaObject() {
+        return currentSchemaObject;
     }
 
     public String getAbsoluteUri(JsonNode node) {
@@ -31,10 +46,6 @@ public class SchemaParsingContext {
         if (schemaCache.containsKey(uri)) {
             throw new IllegalArgumentException("Duplicate schema registration, uri=" + uri);
         }
-        schemaCache.put(uri, schema);
-    }
-
-    public void registerAnchor(String uri, Schema schema) {
         schemaCache.put(uri, schema);
     }
 

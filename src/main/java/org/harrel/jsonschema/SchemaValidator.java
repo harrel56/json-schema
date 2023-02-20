@@ -21,7 +21,7 @@ public class SchemaValidator {
         BasicValidationCollector collector = new BasicValidationCollector();
         JsonParser parser = new JsonParser(validatorFactory, collector);
         URI uri = URI.create("tmp");
-        SchemaParsingContext ctx = parser.parse(uri, schema);
+        SchemaParsingContext ctx = parser.parseRootSchema(uri, schema);
         return ctx.validateSchema(uri.toString(), json);
     }
 }

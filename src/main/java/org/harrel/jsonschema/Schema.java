@@ -21,14 +21,13 @@ public class Schema {
         return val ? TRUE_SCHEMA : FALSE_SCHEMA;
     }
 
-    public final boolean validate(ValidationContext ctx, JsonNode node) {
-        ValidationContext adjustedCtx = adjustValidationContext(ctx);
+    public boolean validate(ValidationContext ctx, JsonNode node) {
         return validators.stream()
-                .map(validator -> validator.validate(adjustedCtx, node))
+                .map(validator -> validator.validate(ctx, node))
                 .allMatch(ValidationResult::isValid);
     }
 
-    ValidationContext adjustValidationContext(ValidationContext ctx) {
-        return ctx;
+    IdentifiableSchema asIdentifiableSchema(String id) {
+        return new IdentifiableSchema(id, validators);
     }
 }

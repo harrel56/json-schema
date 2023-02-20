@@ -7,10 +7,13 @@ import org.harrel.jsonschema.ValidationContext;
 
 class ItemsValidator extends BasicValidator {
     private final String itemSchemaRef;
+    private final int prefixItemsSize;
 
     ItemsValidator(SchemaParsingContext ctx, JsonNode node) {
         super("Items validation failed.");
         this.itemSchemaRef = ctx.getAbsoluteUri(node);
+        JsonNode prefixItems = ctx.getCurrentSchemaObject().get("prefixItems");
+        this.prefixItemsSize = prefixItems == null ? 0 : prefixItems.asArray().size();
     }
 
     @Override
@@ -20,6 +23,7 @@ class ItemsValidator extends BasicValidator {
         }
         Schema schema = ctx.resolveRequiredSchema(itemSchemaRef);
         return node.asArray().stream()
+                .skip(prefixItemsSize)
                 .allMatch(element -> schema.validate(ctx, element));
     }
 }

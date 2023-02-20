@@ -13,7 +13,11 @@ public class IdentifiableSchema extends Schema {
     }
 
     @Override
-    ValidationContext adjustValidationContext(ValidationContext ctx) {
-        return ctx.withParentSchema(this);
+    public boolean validate(ValidationContext ctx, JsonNode node) {
+        return super.validate(ctx.withParentSchema(this), node);
+    }
+
+    public String getId() {
+        return id;
     }
 }

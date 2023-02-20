@@ -7,6 +7,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class JsonParser {
 
@@ -18,12 +19,17 @@ public class JsonParser {
         this.collector = collector;
     }
 
-    public SchemaParsingContext parse(URI baseUri, JsonNode node) {
+    public SchemaParsingContext parseRootSchema(URI baseUri, JsonNode node) {
         SchemaParsingContext ctx = new SchemaParsingContext(baseUri);
         if (node.isBoolean()) {
-            parseBoolean(ctx, node);
+            ctx.registerSchema(baseUri.toString(), Schema.getBooleanSchema(node.asBoolean()).asIdentifiableSchema(baseUri.toString()));
         } else {
-            parseObject(ctx, node);
+            Map<String, JsonNode> objectMap = node.asObject();
+            List<Validator> validators = parseValidators(ctx, objectMap);
+            String id = Optional.ofNullable(objectMap.get("$id"))
+                    .map(JsonNode::asString)
+                    .orElse(baseUri.toString());
+            ctx.registerSchema(id, new IdentifiableSchema(id, validators));
         }
         return ctx;
     }
@@ -49,14 +55,30 @@ public class JsonParser {
     }
 
     private void parseObject(SchemaParsingContext ctx, JsonNode node) {
+        parseObject(ctx, node, ctx.getAbsoluteUri(node));
+    }
+
+    private void parseObject(SchemaParsingContext ctx, JsonNode node, String id) {
+        Map<String, JsonNode> objectMap = node.asObject();
+        List<Validator> validators = parseValidators(ctx, objectMap);
+        if (objectMap.containsKey("$id")) {
+            id = objectMap.get("$id").asString();
+            ctx.registerSchema(id, new IdentifiableSchema(id, validators));
+        } else {
+            ctx.registerSchema(id, new Schema(validators));
+        }
+    }
+
+    private List<Validator> parseValidators(SchemaParsingContext ctx, Map<String, JsonNode> object) {
+        SchemaParsingContext newCtx = ctx.withCurrentSchemaContext(object);
         List<Validator> validators = new ArrayList<>();
-        for (Map.Entry<String, JsonNode> entry : node.asObject().entrySet()) {
-            validatorFactory.fromField(ctx, entry.getKey(), entry.getValue())
+        for (Map.Entry<String, JsonNode> entry : object.entrySet()) {
+            validatorFactory.fromField(newCtx, entry.getKey(), entry.getValue())
                     .map(validator -> new ReportingValidator(collector, entry.getValue(), validator))
                     .ifPresent(validators::add);
-            parseNode(ctx, entry.getValue());
+            parseNode(newCtx, entry.getValue());
         }
-        ctx.registerSchema(ctx.getAbsoluteUri(node), new Schema(validators));
+        return validators;
     }
 }
 

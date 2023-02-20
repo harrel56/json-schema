@@ -17,6 +17,9 @@ public class ValidationContext {
     }
 
     public Optional<Schema> resolveSchema(String ref) {
+        if (UriUtil.isRelativeJsonPoint(ref)) {
+            ref = parentSchema.getId() + ref;
+        }
         return Optional.ofNullable(schemaCache.get(ref));
     }
 
