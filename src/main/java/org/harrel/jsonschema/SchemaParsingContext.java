@@ -1,23 +1,27 @@
 package org.harrel.jsonschema;
 
-import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class SchemaParsingContext {
-    private final URI baseUri;
+    private final String baseUri;
     private final Map<String, Schema> schemaCache;
     private final Map<String, JsonNode> currentSchemaObject;
 
-    private SchemaParsingContext(URI baseUri, Map<String, Schema> schemaCache, Map<String, JsonNode> currentSchemaObject) {
+    private SchemaParsingContext(String baseUri, Map<String, Schema> schemaCache, Map<String, JsonNode> currentSchemaObject) {
         this.baseUri = baseUri;
         this.schemaCache = schemaCache;
         this.currentSchemaObject = currentSchemaObject;
     }
 
-    public SchemaParsingContext(URI baseUri) {
-        this(baseUri, new HashMap<>(), Map.of());
+    public SchemaParsingContext(String baseUri) {
+        this(Objects.requireNonNull(baseUri), new HashMap<>(), Map.of());
+    }
+
+    public String getBaseUri() {
+        return baseUri;
     }
 
     public SchemaParsingContext withCurrentSchemaContext(Map<String, JsonNode> currentSchemaObject) {
@@ -34,7 +38,7 @@ public class SchemaParsingContext {
 
     public String getAbsoluteUri(String jsonPointer) {
         if (jsonPointer.isEmpty()) {
-            return baseUri.toString();
+            return baseUri;
         } else if (jsonPointer.startsWith("#")) {
             return baseUri + jsonPointer;
         } else {

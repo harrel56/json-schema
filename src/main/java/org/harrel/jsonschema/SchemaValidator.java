@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.harrel.jsonschema.validator.ValidatorFactory;
 
-import java.net.URI;
+import java.util.UUID;
 
 public class SchemaValidator {
 
@@ -17,11 +17,11 @@ public class SchemaValidator {
         return validate(schema, json);
     }
 
-    public boolean validate(JacksonNode schema, JacksonNode json) {
+    public boolean validate(JsonNode schema, JsonNode json) {
         BasicValidationCollector collector = new BasicValidationCollector();
         JsonParser parser = new JsonParser(validatorFactory, collector);
-        URI uri = URI.create("tmp");
-        SchemaParsingContext ctx = parser.parseRootSchema(uri, schema);
-        return ctx.validateSchema(uri.toString(), json);
+        String generatedUri = UUID.randomUUID().toString();
+        SchemaParsingContext ctx = parser.parseRootSchema(generatedUri, schema);
+        return ctx.validateSchema(ctx.getBaseUri(), json);
     }
 }

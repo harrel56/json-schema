@@ -3,7 +3,6 @@ package org.harrel.jsonschema;
 import org.harrel.jsonschema.validator.Validator;
 import org.harrel.jsonschema.validator.ValidatorFactory;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -19,19 +18,21 @@ public class JsonParser {
         this.collector = collector;
     }
 
-    public SchemaParsingContext parseRootSchema(URI baseUri, JsonNode node) {
-        SchemaParsingContext ctx = new SchemaParsingContext(baseUri);
+    public SchemaParsingContext parseRootSchema(String baseUri, JsonNode node) {
         if (node.isBoolean()) {
-            ctx.registerSchema(baseUri.toString(), Schema.getBooleanSchema(node.asBoolean()).asIdentifiableSchema(baseUri.toString()));
+            SchemaParsingContext ctx = new SchemaParsingContext(baseUri);
+            ctx.registerSchema(baseUri, Schema.getBooleanSchema(node.asBoolean()).asIdentifiableSchema(baseUri));
+            return ctx;
         } else {
             Map<String, JsonNode> objectMap = node.asObject();
-            List<Validator> validators = parseValidators(ctx, objectMap);
             String id = Optional.ofNullable(objectMap.get("$id"))
                     .map(JsonNode::asString)
-                    .orElse(baseUri.toString());
+                    .orElse(baseUri);
+            SchemaParsingContext ctx = new SchemaParsingContext(id);
+            List<Validator> validators = parseValidators(ctx, objectMap);
             ctx.registerSchema(id, new IdentifiableSchema(id, validators));
+            return ctx;
         }
-        return ctx;
     }
 
     private void parseNode(SchemaParsingContext ctx, JsonNode node) {

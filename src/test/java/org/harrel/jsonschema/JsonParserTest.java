@@ -14,7 +14,7 @@ class JsonParserTest {
         String rawSchema = new String(getClass().getResourceAsStream("/schema.json").readAllBytes());
         JacksonNode jacksonNode = new JacksonNode(new ObjectMapper().readTree(rawSchema));
         JsonParser parser = new JsonParser(new ValidatorFactory(), new BasicValidationCollector());
-        SchemaParsingContext ctx = parser.parseRootSchema(URI.create("tmp"), jacksonNode);
+        SchemaParsingContext ctx = parser.parseRootSchema("tmp", jacksonNode);
         System.out.println(ctx);
     }
 }
