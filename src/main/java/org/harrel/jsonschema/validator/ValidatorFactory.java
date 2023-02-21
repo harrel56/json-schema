@@ -15,6 +15,8 @@ public class ValidatorFactory {
         map.put("anyOf", AnyOfValidator::new);
         map.put("items", ItemsValidator::new);
         map.put("prefixItems", PrefixItemsValidator::new);
+        map.put("maxItems", (ctx, node) -> new MaxItemsValidator(node));
+        map.put("minItems", (ctx, node) -> new MinItemsValidator(node));
         map.put("properties", PropertiesValidator::new);
         map.put("additionalProperties", AdditionalPropertiesValidator::new);
         map.put("patternProperties", PatternPropertiesValidator::new);
