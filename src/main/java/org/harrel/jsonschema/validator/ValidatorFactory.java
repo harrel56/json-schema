@@ -26,6 +26,8 @@ public class ValidatorFactory {
         map.put("type", (ctx, node) -> TypeValidators.getTypeCheck(node));
         map.put("const", (ctx, node) -> new ConstValidator(node));
         map.put("enum", (ctx, node) -> new EnumValidator(node));
+        map.put("maxLength", (ctx, node) -> new MaxLengthValidator(node));
+        map.put("minLength", (ctx, node) -> new MinLengthValidator(node));
         map.put("pattern", (ctx, node) -> new PatternValidator(node));
         map.put("maximum", (ctx, node) -> new MaximumValidator(node));
         map.put("minimum", (ctx, node) -> new MinimumValidator(node));
