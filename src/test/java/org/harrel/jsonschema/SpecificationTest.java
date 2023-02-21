@@ -45,6 +45,11 @@ class SpecificationTest {
         testValidation(bundle, name, schema, json, valid);
     }
 
+    @SuiteTest("/draft2020-12/patternProperties.json")
+    void patternPropertiesTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
     @SuiteTest("/draft2020-12/minProperties.json")
     void minPropertiesTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
         testValidation(bundle, name, schema, json, valid);
