@@ -2,14 +2,15 @@ package org.harrel.jsonschema;
 
 import org.harrel.jsonschema.validator.Validator;
 
+import java.net.URI;
 import java.util.List;
 
 public class IdentifiableSchema extends Schema {
-    private final String id;
+    private final URI uri;
 
-    public IdentifiableSchema(String id, List<Validator> validators) {
+    public IdentifiableSchema(URI uri, List<Validator> validators) {
         super(validators);
-        this.id = id;
+        this.uri = uri;
     }
 
     @Override
@@ -17,7 +18,7 @@ public class IdentifiableSchema extends Schema {
         return super.validate(ctx.withParentSchema(this), node);
     }
 
-    public String getId() {
-        return id;
+    public URI getUri() {
+        return uri;
     }
 }

@@ -3,6 +3,7 @@ package org.harrel.jsonschema;
 import org.harrel.jsonschema.validator.ValidationResult;
 import org.harrel.jsonschema.validator.Validator;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 
@@ -27,7 +28,7 @@ public class Schema {
                 .allMatch(ValidationResult::isValid);
     }
 
-    IdentifiableSchema asIdentifiableSchema(String id) {
-        return new IdentifiableSchema(id, validators);
+    IdentifiableSchema asIdentifiableSchema(URI uri) {
+        return new IdentifiableSchema(uri, validators);
     }
 }

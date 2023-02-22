@@ -1,5 +1,6 @@
 package org.harrel.jsonschema;
 
+import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
 
@@ -22,17 +23,22 @@ public class ValidationContext {
     }
 
     public Schema resolveRequiredSchema(String ref) {
-        return resolveSchema(ref)
+        return Optional.ofNullable(schemaCache.get(ref))
                 .orElseThrow(() -> new IllegalStateException("Resolution of schema (%s) failed and was required".formatted(ref)));
     }
 
     private String resolveUri(String ref) {
+        URI baseUri = parentSchema.getUri();
+        ref = UriUtil.decodeUrl(ref);
+        if (baseUri.getAuthority() == null && UriUtil.isJsonPointer(ref)) {
+            return baseUri + ref;
+        }
         if (ref.equals("#")) {
-            return parentSchema.getId();
-        } else if (UriUtil.isRelativeJsonPoint(ref)) {
-            return parentSchema.getId() + ref;
+            return baseUri.toString();
+        } else if (UriUtil.isJsonPointer(ref)) {
+            return baseUri + ref;
         } else {
-            return ref;
+            return baseUri.resolve(ref).toString();
         }
     }
 }

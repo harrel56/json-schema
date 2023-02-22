@@ -8,7 +8,7 @@ class RefValidator implements Validator {
     private final String ref;
 
     RefValidator(JsonNode node) {
-        this.ref = UriUtil.decodeUrl(node.asString());
+        this.ref = node.asString();
     }
 
     @Override

@@ -3,6 +3,7 @@ package org.harrel.jsonschema;
 import org.harrel.jsonschema.validator.Validator;
 import org.harrel.jsonschema.validator.ValidatorFactory;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +22,7 @@ public class JsonParser {
     public SchemaParsingContext parseRootSchema(String baseUri, JsonNode node) {
         if (node.isBoolean()) {
             SchemaParsingContext ctx = new SchemaParsingContext(baseUri);
-            ctx.registerSchema(baseUri, Schema.getBooleanSchema(node.asBoolean()).asIdentifiableSchema(baseUri));
+            ctx.registerSchema(baseUri, Schema.getBooleanSchema(node.asBoolean()).asIdentifiableSchema(URI.create(baseUri)));
             return ctx;
         } else {
             Map<String, JsonNode> objectMap = node.asObject();
@@ -30,7 +31,7 @@ public class JsonParser {
                     .orElse(baseUri);
             SchemaParsingContext ctx = new SchemaParsingContext(id);
             List<Validator> validators = parseValidators(ctx, objectMap);
-            ctx.registerSchema(id, new IdentifiableSchema(id, validators));
+            ctx.registerSchema(id, new IdentifiableSchema(URI.create(id), validators));
             return ctx;
         }
     }
@@ -63,8 +64,8 @@ public class JsonParser {
         Map<String, JsonNode> objectMap = node.asObject();
         List<Validator> validators = parseValidators(ctx, objectMap);
         if (objectMap.containsKey("$id")) {
-            id = objectMap.get("$id").asString();
-            ctx.registerSchema(id, new IdentifiableSchema(id, validators));
+            URI baseUri = URI.create(ctx.getBaseUri()).resolve(objectMap.get("$id").asString());
+            ctx.registerSchema(baseUri.toString(), new IdentifiableSchema(baseUri, validators));
         } else {
             ctx.registerSchema(id, new Schema(validators));
         }
