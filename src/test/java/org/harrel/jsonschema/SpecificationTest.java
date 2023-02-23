@@ -10,6 +10,21 @@ class SpecificationTest {
 
     private final Logger logger = Logger.getLogger("SpecificationTest");
 
+    @SuiteTest("/draft2020-12/anyOf.json")
+    void anyOfTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
+    @SuiteTest("/draft2020-12/allOf.json")
+    void allOfTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
+    @SuiteTest("/draft2020-12/oneOf.json")
+    void oneOfTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
     @SuiteTest("/draft2020-12/type.json")
     void typeTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
         testValidation(bundle, name, schema, json, valid);
@@ -97,6 +112,11 @@ class SpecificationTest {
 
     @SuiteTest("/draft2020-12/minimum.json")
     void minimumTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
+    @SuiteTest("/draft2020-12/multipleOf.json")
+    void multipleOfTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
         testValidation(bundle, name, schema, json, valid);
     }
 

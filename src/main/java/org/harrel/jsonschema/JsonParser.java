@@ -61,9 +61,10 @@ public class JsonParser {
     private void parseObject(SchemaParsingContext ctx, JsonNode node) {
         Map<String, JsonNode> objectMap = node.asObject();
         if (objectMap.containsKey("$id")) {
-            URI baseUri = URI.create(ctx.getBaseUri()).resolve(objectMap.get("$id").asString());
-            List<Validator> validators = parseValidators(ctx, objectMap);
-            ctx.registerIdentifiableSchema(baseUri, node, validators);
+            URI uri = ctx.getParentUri().resolve(objectMap.get("$id").asString());
+            SchemaParsingContext newCtx = ctx.withParentUri(uri);
+            List<Validator> validators = parseValidators(newCtx, objectMap);
+            newCtx.registerIdentifiableSchema(uri, node, validators);
         } else {
             ctx.registerSchema(node, parseValidators(ctx, objectMap));
         }

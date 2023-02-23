@@ -10,25 +10,35 @@ import java.util.Objects;
 
 public class SchemaParsingContext {
     private final String baseUri;
+    private final URI parentUri;
     private final SchemaRegistry schemaRegistry;
     private final Map<String, JsonNode> currentSchemaObject;
 
-    private SchemaParsingContext(String baseUri, SchemaRegistry schemaRegistry, Map<String, JsonNode> currentSchemaObject) {
+    private SchemaParsingContext(String baseUri, URI parentUri, SchemaRegistry schemaRegistry, Map<String, JsonNode> currentSchemaObject) {
         this.baseUri = baseUri;
+        this.parentUri = parentUri;
         this.schemaRegistry = schemaRegistry;
         this.currentSchemaObject = currentSchemaObject;
     }
 
     public SchemaParsingContext(String baseUri) {
-        this(Objects.requireNonNull(baseUri), new SchemaRegistry(), Map.of());
+        this(Objects.requireNonNull(baseUri), URI.create(baseUri), new SchemaRegistry(), Map.of());
     }
 
     public String getBaseUri() {
         return baseUri;
     }
 
+    public URI getParentUri() {
+        return parentUri;
+    }
+
+    public SchemaParsingContext withParentUri(URI parentUri) {
+        return new SchemaParsingContext(baseUri, parentUri, schemaRegistry, currentSchemaObject);
+    }
+
     public SchemaParsingContext withCurrentSchemaContext(Map<String, JsonNode> currentSchemaObject) {
-        return new SchemaParsingContext(baseUri, schemaRegistry, Collections.unmodifiableMap(currentSchemaObject));
+        return new SchemaParsingContext(baseUri, parentUri, schemaRegistry, Collections.unmodifiableMap(currentSchemaObject));
     }
 
     public Map<String, JsonNode> getCurrentSchemaObject() {

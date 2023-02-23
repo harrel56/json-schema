@@ -13,6 +13,8 @@ public class ValidatorFactory {
         Map<String, BiFunction<SchemaParsingContext, JsonNode, Validator>> map = new HashMap<>();
         map.put("$ref", (ctx, node) -> new RefValidator(node));
         map.put("anyOf", AnyOfValidator::new);
+        map.put("allOf", AllOfValidator::new);
+        map.put("oneOf", OneOfValidator::new);
         map.put("items", ItemsValidator::new);
         map.put("prefixItems", PrefixItemsValidator::new);
         map.put("maxItems", (ctx, node) -> new MaxItemsValidator(node));
@@ -31,6 +33,7 @@ public class ValidatorFactory {
         map.put("pattern", (ctx, node) -> new PatternValidator(node));
         map.put("maximum", (ctx, node) -> new MaximumValidator(node));
         map.put("minimum", (ctx, node) -> new MinimumValidator(node));
+        map.put("multipleOf", (ctx, node) -> new MultipleOfValidator(node));
         this.validatorsMap = Collections.unmodifiableMap(map);
     }
 
