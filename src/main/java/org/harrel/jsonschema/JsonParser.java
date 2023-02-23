@@ -4,12 +4,11 @@ import org.harrel.jsonschema.validator.Validator;
 import org.harrel.jsonschema.validator.ValidatorFactory;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class JsonParser {
+
+    private static final Set<String> NOT_PARSABLE_KEYWORDS = Set.of("const", "enum");
 
     private final ValidatorFactory validatorFactory;
     private final ValidationCollector<?> collector;
@@ -77,7 +76,9 @@ public class JsonParser {
             validatorFactory.fromField(newCtx, entry.getKey(), entry.getValue())
                     .map(validator -> new ReportingValidator(collector, entry.getValue(), validator))
                     .ifPresent(validators::add);
-            parseNode(newCtx, entry.getValue());
+            if (!NOT_PARSABLE_KEYWORDS.contains(entry.getKey())) {
+                parseNode(newCtx, entry.getValue());
+            }
         }
         return validators;
     }

@@ -16,7 +16,6 @@ class EnumValidator extends BasicValidator {
 
     @Override
     protected boolean doValidate(ValidationContext ctx, JsonNode node) {
-        return enumNodes.stream()
-                .anyMatch(node::isEqualTo);
+        return enumNodes.stream().anyMatch(node::isEqualTo);
     }
 }

@@ -1,5 +1,6 @@
 package org.harrel.jsonschema;
 
+import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
@@ -7,8 +8,22 @@ public class UriUtil {
 
     private UriUtil() {}
 
-    public static boolean isJsonPointer(String uri) {
-        return uri.startsWith("#/");
+    public static boolean isJsonPointerOrAnchor(String uri) {
+        return uri.startsWith("#") && uri.length() > 1;
+    }
+
+    public static String resolveUri(URI baseUri, String ref) {
+        ref = UriUtil.decodeUrl(ref);
+        if (baseUri.getAuthority() == null && UriUtil.isJsonPointerOrAnchor(ref)) {
+            return baseUri + ref;
+        }
+        if (ref.equals("#")) {
+            return baseUri.toString();
+        } else if (UriUtil.isJsonPointerOrAnchor(ref)) {
+            return baseUri + ref;
+        } else {
+            return baseUri.resolve(ref).toString();
+        }
     }
 
     public static String decodeUrl(String url) {

@@ -20,7 +20,9 @@ public class SchemaRegistry {
     }
 
     public void registerSchema(SchemaParsingContext ctx, JsonNode schemaNode, List<Validator> validators) {
-        put(schemas, ctx.getAbsoluteUri(schemaNode), new Schema(validators));
+        Schema schema = new Schema(validators);
+        put(schemas, ctx.getAbsoluteUri(schemaNode), schema);
+        registerAnchorIfPresent(ctx, schemaNode, schema);
     }
 
     public void registerIdentifiableSchema(SchemaParsingContext ctx, URI id, JsonNode schemaNode, List<Validator> validators) {
@@ -36,7 +38,18 @@ public class SchemaRegistry {
         IdentifiableSchema identifiableSchema = new IdentifiableSchema(id, validators);
         put(schemas, id.toString(), identifiableSchema);
         put(schemas, absoluteUri, identifiableSchema);
+        registerAnchorIfPresent(ctx, schemaNode, identifiableSchema);
     }
+
+    private void registerAnchorIfPresent(SchemaParsingContext ctx, JsonNode node, Schema schema) {
+        Map<String, JsonNode> objectMap = node.asObject();
+        if (objectMap.containsKey("$anchor")) {
+            String anchorFragment = "#" + objectMap.get("$anchor").asString();
+            String anchoredUri = UriUtil.resolveUri(ctx.getParentUri(), anchorFragment);
+            put(additionalSchemas, anchoredUri, schema);
+        }
+    }
+
 
     private void put(Map<String, Schema> map, String key, Schema value) {
         if (map.containsKey(key)) {

@@ -90,6 +90,11 @@ class SpecificationTest {
         testValidation(bundle, name, schema, json, valid);
     }
 
+    @SuiteTest("/draft2020-12/anchor.json")
+    void anchorTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
     @SuiteTest("/draft2020-12/pattern.json")
     void patternTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
         testValidation(bundle, name, schema, json, valid);
@@ -121,7 +126,9 @@ class SpecificationTest {
     }
 
     private void testValidation(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+//        Assumptions.assumeTrue(name.equals("a string is valid"));
         SchemaValidator validator = new SchemaValidator();
+        logger.info("%s: %s".formatted(bundle, name));
         logger.info(schema.toPrettyString());
         logger.info(json.toPrettyString());
         logger.info(String.valueOf(valid));
