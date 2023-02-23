@@ -44,6 +44,9 @@ public interface JsonNode {
     }
 
     private static boolean compareArrays(List<JsonNode> arr1, List<JsonNode> arr2) {
+        if (arr1.size() != arr2.size()) {
+            return false;
+        }
         for (int i = 0; i < arr1.size(); i++) {
             if (!arr1.get(i).isEqualTo(arr2.get(i))) {
                 return false;
@@ -53,6 +56,9 @@ public interface JsonNode {
     }
 
     private static boolean compareObjects(Map<String, JsonNode> object1, Map<String, JsonNode> object2) {
+        if (object1.size() != object2.size()) {
+            return false;
+        }
         for (Map.Entry<String, JsonNode> entry : object1.entrySet()) {
             JsonNode otherField = object2.get(entry.getKey());
             if (otherField == null || !entry.getValue().isEqualTo(otherField)) {
