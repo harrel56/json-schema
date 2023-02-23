@@ -4,11 +4,11 @@ import org.harrel.jsonschema.validator.ValidationResult;
 import org.harrel.jsonschema.validator.Validator;
 
 class ReportingValidator implements Validator {
-    private final ValidationCollector<?> collector;
+    private final AnnotationCollector<?> collector;
     private final JsonNode schemaNode;
     private final Validator validator;
 
-    public ReportingValidator(ValidationCollector<?> collector, JsonNode schemaNode, Validator validator) {
+    public ReportingValidator(AnnotationCollector<?> collector, JsonNode schemaNode, Validator validator) {
         this.collector = collector;
         this.schemaNode = schemaNode;
         this.validator = validator;

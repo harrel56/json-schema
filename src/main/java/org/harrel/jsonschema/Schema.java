@@ -3,6 +3,8 @@ package org.harrel.jsonschema;
 import org.harrel.jsonschema.validator.ValidationResult;
 import org.harrel.jsonschema.validator.Validator;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -14,7 +16,8 @@ public class Schema {
     private final List<Validator> validators;
 
     public Schema(List<Validator> validators) {
-        this.validators = Objects.requireNonNull(validators);
+        this.validators = new ArrayList<>(Objects.requireNonNull(validators));
+        Collections.sort(this.validators);
     }
 
     public static Validator getBooleanValidator(boolean val) {

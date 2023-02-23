@@ -25,10 +25,6 @@ public class SchemaParsingContext {
         this(Objects.requireNonNull(baseUri), URI.create(baseUri), new SchemaRegistry(), Map.of());
     }
 
-    public String getBaseUri() {
-        return baseUri;
-    }
-
     public URI getParentUri() {
         return parentUri;
     }
@@ -67,14 +63,14 @@ public class SchemaParsingContext {
         schemaRegistry.registerIdentifiableSchema(this, uri, schemaNode, validators);
     }
 
-    public boolean validateSchema(String uri, JsonNode node) {
+    public boolean validateSchema(AnnotationCollector<?> collector, JsonNode node) {
         Map<String, Schema> schemaCache = schemaRegistry.asSchemaCache();
-        Schema schema = schemaCache.get(uri);
+        Schema schema = schemaCache.get(baseUri);
         if (!(schema instanceof IdentifiableSchema idSchema)) {
             throw new IllegalArgumentException(
-                    "Couldn't find schema with uri=%s or it resolves to non-identifiable schema".formatted(uri));
+                    "Couldn't find schema with uri=%s or it resolves to non-identifiable schema".formatted(baseUri));
         }
-        ValidationContext ctx = new ValidationContext(idSchema, schemaCache);
+        ValidationContext ctx = new ValidationContext(collector, idSchema, schemaCache);
         return idSchema.validate(ctx, node);
     }
 }

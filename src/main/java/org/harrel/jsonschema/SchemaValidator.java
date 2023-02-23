@@ -18,10 +18,10 @@ public class SchemaValidator {
     }
 
     public boolean validate(JsonNode schema, JsonNode json) {
-        BasicValidationCollector collector = new BasicValidationCollector();
+        BasicAnnotationCollector collector = new BasicAnnotationCollector();
         JsonParser parser = new JsonParser(validatorFactory, collector);
         String generatedUri = UUID.randomUUID().toString();
         SchemaParsingContext ctx = parser.parseRootSchema(generatedUri, schema);
-        return ctx.validateSchema(ctx.getBaseUri(), json);
+        return ctx.validateSchema(collector, json);
     }
 }

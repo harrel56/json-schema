@@ -23,7 +23,7 @@ public class JacksonNode implements JsonNode {
 
     @Override
     public String getJsonPointer() {
-        return jsonPointer;
+        return jsonPointer.isEmpty() ? "/" : jsonPointer;
     }
 
     @Override

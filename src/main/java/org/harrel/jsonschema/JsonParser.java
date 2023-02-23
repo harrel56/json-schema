@@ -11,9 +11,9 @@ public class JsonParser {
     private static final Set<String> NOT_PARSABLE_KEYWORDS = Set.of("const", "enum");
 
     private final ValidatorFactory validatorFactory;
-    private final ValidationCollector<?> collector;
+    private final AnnotationCollector<?> collector;
 
-    public JsonParser(ValidatorFactory validatorFactory, ValidationCollector<?> collector) {
+    public JsonParser(ValidatorFactory validatorFactory, AnnotationCollector<?> collector) {
         this.validatorFactory = validatorFactory;
         this.collector = collector;
     }
@@ -48,7 +48,8 @@ public class JsonParser {
     }
 
     private void parseBoolean(SchemaParsingContext ctx, JsonNode node) {
-        ctx.registerSchema(node, List.of(Schema.getBooleanValidator(node.asBoolean())));
+        Validator booleanValidator = Schema.getBooleanValidator(node.asBoolean());
+        ctx.registerSchema(node, List.of(new ReportingValidator(collector, node, booleanValidator)));
     }
 
     private void parseArray(SchemaParsingContext ctx, JsonNode node) {
