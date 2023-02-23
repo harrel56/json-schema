@@ -22,7 +22,8 @@ public class JsonParser {
     public SchemaParsingContext parseRootSchema(String baseUri, JsonNode node) {
         if (node.isBoolean()) {
             SchemaParsingContext ctx = new SchemaParsingContext(baseUri);
-            ctx.registerSchema(baseUri, Schema.getBooleanSchema(node.asBoolean()).asIdentifiableSchema(URI.create(baseUri)));
+            URI uri = URI.create(baseUri);
+            ctx.registerIdentifiableSchema(uri, node, List.of(Schema.getBooleanValidator(node.asBoolean())));
             return ctx;
         } else {
             Map<String, JsonNode> objectMap = node.asObject();
@@ -30,8 +31,9 @@ public class JsonParser {
                     .map(JsonNode::asString)
                     .orElse(baseUri);
             SchemaParsingContext ctx = new SchemaParsingContext(id);
+            URI uri = URI.create(id);
             List<Validator> validators = parseValidators(ctx, objectMap);
-            ctx.registerSchema(id, new IdentifiableSchema(URI.create(id), validators));
+            ctx.registerIdentifiableSchema(uri, node, validators);
             return ctx;
         }
     }
@@ -47,7 +49,7 @@ public class JsonParser {
     }
 
     private void parseBoolean(SchemaParsingContext ctx, JsonNode node) {
-        ctx.registerSchema(ctx.getAbsoluteUri(node), Schema.getBooleanSchema(node.asBoolean()));
+        ctx.registerSchema(node, List.of(Schema.getBooleanValidator(node.asBoolean())));
     }
 
     private void parseArray(SchemaParsingContext ctx, JsonNode node) {
@@ -57,17 +59,13 @@ public class JsonParser {
     }
 
     private void parseObject(SchemaParsingContext ctx, JsonNode node) {
-        parseObject(ctx, node, ctx.getAbsoluteUri(node));
-    }
-
-    private void parseObject(SchemaParsingContext ctx, JsonNode node, String id) {
         Map<String, JsonNode> objectMap = node.asObject();
-        List<Validator> validators = parseValidators(ctx, objectMap);
         if (objectMap.containsKey("$id")) {
             URI baseUri = URI.create(ctx.getBaseUri()).resolve(objectMap.get("$id").asString());
-            ctx.registerSchema(baseUri.toString(), new IdentifiableSchema(baseUri, validators));
+            List<Validator> validators = parseValidators(ctx, objectMap);
+            ctx.registerIdentifiableSchema(baseUri, node, validators);
         } else {
-            ctx.registerSchema(id, new Schema(validators));
+            ctx.registerSchema(node, parseValidators(ctx, objectMap));
         }
     }
 

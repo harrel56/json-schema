@@ -1,23 +1,26 @@
 package org.harrel.jsonschema;
 
+import org.harrel.jsonschema.validator.Validator;
+
+import java.net.URI;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 public class SchemaParsingContext {
     private final String baseUri;
-    private final Map<String, Schema> schemaCache;
+    private final SchemaRegistry schemaRegistry;
     private final Map<String, JsonNode> currentSchemaObject;
 
-    private SchemaParsingContext(String baseUri, Map<String, Schema> schemaCache, Map<String, JsonNode> currentSchemaObject) {
+    private SchemaParsingContext(String baseUri, SchemaRegistry schemaRegistry, Map<String, JsonNode> currentSchemaObject) {
         this.baseUri = baseUri;
-        this.schemaCache = schemaCache;
+        this.schemaRegistry = schemaRegistry;
         this.currentSchemaObject = currentSchemaObject;
     }
 
     public SchemaParsingContext(String baseUri) {
-        this(Objects.requireNonNull(baseUri), new HashMap<>(), Map.of());
+        this(Objects.requireNonNull(baseUri), new SchemaRegistry(), Map.of());
     }
 
     public String getBaseUri() {
@@ -25,7 +28,7 @@ public class SchemaParsingContext {
     }
 
     public SchemaParsingContext withCurrentSchemaContext(Map<String, JsonNode> currentSchemaObject) {
-        return new SchemaParsingContext(baseUri, schemaCache, Collections.unmodifiableMap(currentSchemaObject));
+        return new SchemaParsingContext(baseUri, schemaRegistry, Collections.unmodifiableMap(currentSchemaObject));
     }
 
     public Map<String, JsonNode> getCurrentSchemaObject() {
@@ -38,7 +41,7 @@ public class SchemaParsingContext {
 
     public String getAbsoluteUri(String jsonPointer) {
         if (jsonPointer.isEmpty()) {
-            return baseUri;
+            return baseUri + "#";
         } else if (jsonPointer.startsWith("#")) {
             return baseUri + jsonPointer;
         } else {
@@ -46,14 +49,16 @@ public class SchemaParsingContext {
         }
     }
 
-    public void registerSchema(String uri, Schema schema) {
-        if (schemaCache.containsKey(uri)) {
-            throw new IllegalArgumentException("Duplicate schema registration, uri=" + uri);
-        }
-        schemaCache.put(uri, schema);
+    public void registerSchema(JsonNode schemaNode, List<Validator> validators) {
+        schemaRegistry.registerSchema(this, schemaNode, validators);
+    }
+
+    public void registerIdentifiableSchema(URI uri, JsonNode schemaNode, List<Validator> validators) {
+        schemaRegistry.registerIdentifiableSchema(this, uri, schemaNode, validators);
     }
 
     public boolean validateSchema(String uri, JsonNode node) {
+        Map<String, Schema> schemaCache = schemaRegistry.asSchemaCache();
         Schema schema = schemaCache.get(uri);
         if (!(schema instanceof IdentifiableSchema idSchema)) {
             throw new IllegalArgumentException(
