@@ -10,6 +10,11 @@ class SpecificationTest {
 
     private final Logger logger = Logger.getLogger("SpecificationTest");
 
+    @SuiteTest("/draft2020-12/if-then-else.json")
+    void ifThenElseTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
     @SuiteTest("/draft2020-12/anyOf.json")
     void anyOfTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
         testValidation(bundle, name, schema, json, valid);
@@ -126,7 +131,7 @@ class SpecificationTest {
     }
 
     private void testValidation(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-//        Assumptions.assumeTrue(name.equals("a string is valid"));
+//        Assumptions.assumeTrue(name.equals("invalid through else"));
         SchemaValidator validator = new SchemaValidator();
         logger.info("%s: %s".formatted(bundle, name));
         logger.info(schema.toPrettyString());
