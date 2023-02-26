@@ -18,7 +18,7 @@ class AnyOfValidator extends BasicValidator {
     protected boolean doValidate(ValidationContext ctx, JsonNode node) {
         boolean valid = false;
         for (String jsonPointer : jsonPointers) {
-            valid = valid || ctx.resolveRequiredSchema(jsonPointer).validate(ctx, node);
+            valid = ctx.resolveRequiredSchema(jsonPointer).validate(ctx, node) || valid;
         }
         return valid;
     }

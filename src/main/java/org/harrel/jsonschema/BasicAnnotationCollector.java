@@ -4,6 +4,7 @@ import java.util.*;
 
 public class BasicAnnotationCollector implements AnnotationCollector<List<String>> {
 
+    // todo split to evaluated with success/failure, another class?
     private final List<String> collected = new ArrayList<>();
     private final Set<String> evaluatedPaths = new HashSet<>();
 
@@ -15,7 +16,7 @@ public class BasicAnnotationCollector implements AnnotationCollector<List<String
 
     @Override
     public void onFailure(ValidationContext ctx, JsonNode schemaNode, JsonNode instanceNode, String errorMessage) {
-        evaluatedPaths.add(instanceNode.getJsonPointer());
+//        evaluatedPaths.add(instanceNode.getJsonPointer());
         collected.add(schemaNode.getJsonPointer() + ", " + instanceNode.getJsonPointer() + " - " + errorMessage);
     }
 
