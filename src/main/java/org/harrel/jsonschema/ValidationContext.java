@@ -1,8 +1,8 @@
 package org.harrel.jsonschema;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 public class ValidationContext {
     private final AnnotationCollector<?> annotationCollector;
@@ -19,8 +19,8 @@ public class ValidationContext {
         return new ValidationContext(annotationCollector, parentSchema, schemaCache);
     }
 
-    public Set<String> getEvaluatedPaths() {
-        return annotationCollector.getEvaluatedPaths();
+    public List<Annotation> getAnnotations() {
+        return annotationCollector.getAnnotations();
     }
 
     public Optional<Schema> resolveSchema(String ref) {

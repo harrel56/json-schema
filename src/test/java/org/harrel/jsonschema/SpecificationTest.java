@@ -136,7 +136,7 @@ class SpecificationTest {
     }
 
     private void testValidation(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-//        Assumptions.assumeTrue(name.equals("when two match and has no unevaluated properties"));
+//        Assumptions.assumeTrue(bundle.equals("property is evaluated in an uncle schema to unevaluatedProperties"));
         SchemaValidator validator = new SchemaValidator();
         logger.info("%s: %s".formatted(bundle, name));
         logger.info(schema.toPrettyString());

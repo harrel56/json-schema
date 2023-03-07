@@ -1,18 +1,21 @@
 package org.harrel.jsonschema.validator;
 
+import org.harrel.jsonschema.Annotation;
 import org.harrel.jsonschema.JsonNode;
 import org.harrel.jsonschema.SchemaParsingContext;
 import org.harrel.jsonschema.ValidationContext;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.List;
 
 class UnevaluatedPropertiesValidator extends BasicValidator {
-    private final String schemaPointer;
+    private final String schemaUri;
+    private final String parentPath;
 
     UnevaluatedPropertiesValidator(SchemaParsingContext ctx, JsonNode node) {
         super("UnevaluatedProperties validation failed.");
-        this.schemaPointer = ctx.getAbsoluteUri(node);
+        String schemaPointer = node.getJsonPointer();
+        this.schemaUri = ctx.getAbsoluteUri(schemaPointer);
+        this.parentPath = schemaPointer.substring(0, schemaPointer.lastIndexOf('/'));
     }
 
     @Override
@@ -21,12 +24,14 @@ class UnevaluatedPropertiesValidator extends BasicValidator {
             return true;
         }
 
-        String jsonPointer = node.getJsonPointer();
-        Set<String> evaluatedPaths = ctx.getEvaluatedPaths();
+        List<Annotation> annotations = ctx.getAnnotations().stream()
+                .filter(Annotation::successful)
+                .filter(a -> a.schemaPath().startsWith(parentPath))
+                .toList();
         boolean valid = true;
-        for (Map.Entry<String, JsonNode> entry : node.asObject().entrySet()) {
-            if (evaluatedPaths.stream().noneMatch(path -> path.startsWith(jsonPointer + entry.getKey()))) {
-                valid = valid && ctx.resolveRequiredSchema(schemaPointer).validate(ctx, entry.getValue());
+        for (JsonNode propertyNode : node.asObject().values()) {
+            if (annotations.stream().noneMatch(a -> a.instancePath().startsWith(propertyNode.getJsonPointer()))) {
+                valid = valid && ctx.resolveRequiredSchema(schemaUri).validate(ctx, propertyNode);
             }
         }
         return valid;
