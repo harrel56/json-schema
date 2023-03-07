@@ -1,9 +1,10 @@
 plugins {
     id 'java'
+    id 'maven-publish'
 }
 
-group 'org.harrel'
-version '0.1'
+group 'dev.harrel'
+version '0.1.3'
 
 repositories {
     mavenCentral()
@@ -19,4 +20,21 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            url = "$reposiliteSnapshots"
+            credentials {
+                username = "$reposiliteUsername"
+                password = "$reposilitePassword"
+            }
+        }
+    }
 }
