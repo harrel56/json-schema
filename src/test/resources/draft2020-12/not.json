@@ -53,7 +53,7 @@
                         "type": "string"
                     }
                 }
-             }
+            }
         },
         "tests": [
             {
@@ -78,7 +78,7 @@
         "schema": {
             "$schema": "https://json-schema.org/draft/2020-12/schema",
             "properties": {
-                "foo": { 
+                "foo": {
                     "not": {}
                 }
             }
@@ -139,8 +139,8 @@
         },
         "tests": [
             {
-                "description": "no properties to evaluate",
-                "data": {},
+                "description": "unevaluated property",
+                "data": { "bar": 1 },
                 "valid": true
             },
             {
@@ -149,5 +149,5 @@
                 "valid": false
             }
         ]
-     }
+    }
 ]
