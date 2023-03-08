@@ -7,12 +7,12 @@ import org.harrel.jsonschema.ValidationContext;
 
 import java.util.List;
 
-class UnevaluatedPropertiesValidator extends BasicValidator {
+class UnevaluatedItemsValidator extends BasicValidator {
     private final String schemaUri;
     private final String parentPath;
 
-    UnevaluatedPropertiesValidator(SchemaParsingContext ctx, JsonNode node) {
-        super("UnevaluatedProperties validation failed.");
+    UnevaluatedItemsValidator(SchemaParsingContext ctx, JsonNode node) {
+        super("UnevaluatedItems validation failed.");
         String schemaPointer = node.getJsonPointer();
         this.schemaUri = ctx.getAbsoluteUri(schemaPointer);
         this.parentPath = schemaPointer.substring(0, schemaPointer.lastIndexOf('/'));
@@ -20,7 +20,7 @@ class UnevaluatedPropertiesValidator extends BasicValidator {
 
     @Override
     protected boolean doValidate(ValidationContext ctx, JsonNode node) {
-        if (!node.isObject()) {
+        if (!node.isArray()) {
             return true;
         }
 
@@ -28,10 +28,11 @@ class UnevaluatedPropertiesValidator extends BasicValidator {
                 .filter(Annotation::successful)
                 .filter(a -> a.schemaPath().startsWith(parentPath))
                 .toList();
+
         boolean valid = true;
-        for (JsonNode propertyNode : node.asObject().values()) {
-            if (annotations.stream().noneMatch(a -> a.instancePath().startsWith(propertyNode.getJsonPointer()))) {
-                valid = ctx.resolveRequiredSchema(schemaUri).validate(ctx, propertyNode) && valid ;
+        for (JsonNode arrayNode : node.asArray()) {
+            if (annotations.stream().noneMatch(a -> a.instancePath().startsWith(arrayNode.getJsonPointer()))) {
+                valid = ctx.resolveRequiredSchema(schemaUri).validate(ctx, arrayNode) && valid;
             }
         }
         return valid;

@@ -23,4 +23,9 @@ class ReportingValidator implements Validator {
         }
         return result;
     }
+
+    @Override
+    public int getOrder() {
+        return validator.getOrder();
+    }
 }

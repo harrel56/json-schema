@@ -70,6 +70,11 @@ class SpecificationTest {
         testValidation(bundle, name, schema, json, valid);
     }
 
+//    @SuiteTest("/draft2020-12/unevaluatedItems.json")
+//    void unevaluatedItemsTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+//        testValidation(bundle, name, schema, json, valid);
+//    }
+
     @SuiteTest("/draft2020-12/maxProperties.json")
     void maxPropertiesTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
         testValidation(bundle, name, schema, json, valid);
@@ -141,7 +146,8 @@ class SpecificationTest {
     }
 
     private void testValidation(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-//        Assumptions.assumeTrue(bundle.equals("property is evaluated in an uncle schema to unevaluatedProperties"));
+//        Assumptions.assumeTrue(bundle.equals("unevaluatedItems with nested items"));
+//        Assumptions.assumeTrue(name.equals("with invalid additional item"));
         SchemaValidator validator = new SchemaValidator();
         logger.info("%s: %s".formatted(bundle, name));
         logger.info(schema.toPrettyString());
