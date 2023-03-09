@@ -2,6 +2,7 @@ package org.harrel.jsonschema.validator;
 
 import org.harrel.jsonschema.JsonNode;
 import org.harrel.jsonschema.SchemaParsingContext;
+import org.harrel.jsonschema.StreamUtil;
 import org.harrel.jsonschema.ValidationContext;
 
 import java.util.Collections;
@@ -26,13 +27,13 @@ class PropertiesValidator extends BasicValidator {
             return true;
         }
 
-        boolean valid = true;
-        for (Map.Entry<String, JsonNode> entry : node.asObject().entrySet()) {
-            String schemaUri = jsonPointerMap.get(entry.getKey());
-            if (schemaUri != null) {
-                valid = valid && ctx.resolveRequiredSchema(schemaUri).validate(ctx, entry.getValue());
-            }
-        }
-        return valid;
+        return StreamUtil.exhaustiveAllMatch(
+                node.asObject()
+                        .entrySet()
+                        .stream()
+                        .filter(e -> jsonPointerMap.containsKey(e.getKey()))
+                        .map(e -> Map.entry(jsonPointerMap.get(e.getKey()), e.getValue())),
+                e -> ctx.resolveRequiredSchema(e.getKey()).validate(ctx, e.getValue())
+        );
     }
 }

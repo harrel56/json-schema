@@ -1,9 +1,6 @@
 package org.harrel.jsonschema.validator;
 
-import org.harrel.jsonschema.JsonNode;
-import org.harrel.jsonschema.Schema;
-import org.harrel.jsonschema.SchemaParsingContext;
-import org.harrel.jsonschema.ValidationContext;
+import org.harrel.jsonschema.*;
 
 import java.util.List;
 import java.util.Map;
@@ -24,6 +21,7 @@ class PatternPropertiesValidator extends BasicValidator {
         if (!node.isObject()) {
             return true;
         }
+
         boolean valid = true;
         for (Map.Entry<String, JsonNode> entry : node.asObject().entrySet()) {
             List<Schema> schemas = schemasByPatterns.entrySet().stream()
@@ -31,9 +29,7 @@ class PatternPropertiesValidator extends BasicValidator {
                     .map(Map.Entry::getValue)
                     .map(ctx::resolveRequiredSchema)
                     .toList();
-            for (Schema schema : schemas) {
-                valid = valid && schema.validate(ctx, entry.getValue());
-            }
+            valid = StreamUtil.exhaustiveAllMatch(schemas.stream(), schema -> schema.validate(ctx, entry.getValue())) && valid;
         }
         return valid;
     }

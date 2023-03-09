@@ -1,9 +1,6 @@
 package org.harrel.jsonschema.validator;
 
-import org.harrel.jsonschema.Annotation;
-import org.harrel.jsonschema.JsonNode;
-import org.harrel.jsonschema.SchemaParsingContext;
-import org.harrel.jsonschema.ValidationContext;
+import org.harrel.jsonschema.*;
 
 import java.util.List;
 
@@ -24,17 +21,16 @@ class UnevaluatedItemsValidator extends BasicValidator {
             return true;
         }
 
+        Schema schema = ctx.resolveRequiredSchema(schemaUri);
         List<Annotation> annotations = ctx.getAnnotations().stream()
                 .filter(a -> a.schemaPath().startsWith(parentPath))
                 .toList();
-
-        boolean valid = true;
-        for (JsonNode arrayNode : node.asArray()) {
-            if (annotations.stream().noneMatch(a -> a.instancePath().startsWith(arrayNode.getJsonPointer()))) {
-                valid = ctx.resolveRequiredSchema(schemaUri).validate(ctx, arrayNode) && valid;
-            }
-        }
-        return valid;
+        return StreamUtil.exhaustiveAllMatch(
+                node.asArray()
+                        .stream()
+                        .filter(arrayNode -> annotations.stream().noneMatch(a -> a.instancePath().startsWith(arrayNode.getJsonPointer()))),
+                arrayNode -> schema.validate(ctx, arrayNode)
+        );
     }
 
     @Override

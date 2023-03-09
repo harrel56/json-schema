@@ -2,9 +2,11 @@ package org.harrel.jsonschema.validator;
 
 import org.harrel.jsonschema.JsonNode;
 import org.harrel.jsonschema.SchemaParsingContext;
+import org.harrel.jsonschema.StreamUtil;
 import org.harrel.jsonschema.ValidationContext;
 
 import java.util.List;
+import java.util.stream.IntStream;
 
 class PrefixItemsValidator extends BasicValidator {
     private final List<String> prefixRefs;
@@ -22,11 +24,10 @@ class PrefixItemsValidator extends BasicValidator {
             return true;
         }
 
-        boolean valid = true;
         List<JsonNode> elements = node.asArray();
-        for (int i = 0; i < elements.size() && i < prefixRefs.size(); i++) {
-            valid = valid && ctx.resolveRequiredSchema(prefixRefs.get(i)).validate(ctx, elements.get(i));
-        }
-        return valid;
+        return StreamUtil.exhaustiveAllMatch(
+                IntStream.range(0, elements.size()).limit(prefixRefs.size()).boxed(),
+                idx -> ctx.resolveRequiredSchema(prefixRefs.get(idx)).validate(ctx, elements.get(idx))
+        );
     }
 }

@@ -2,6 +2,7 @@ package org.harrel.jsonschema.validator;
 
 import org.harrel.jsonschema.JsonNode;
 import org.harrel.jsonschema.SchemaParsingContext;
+import org.harrel.jsonschema.StreamUtil;
 import org.harrel.jsonschema.ValidationContext;
 
 import java.util.List;
@@ -16,10 +17,6 @@ class AnyOfValidator extends BasicValidator {
 
     @Override
     protected boolean doValidate(ValidationContext ctx, JsonNode node) {
-        boolean valid = false;
-        for (String jsonPointer : jsonPointers) {
-            valid = ctx.resolveRequiredSchema(jsonPointer).validate(ctx, node) || valid;
-        }
-        return valid;
+        return StreamUtil.exhaustiveAnyMatch(jsonPointers.stream(), pointer -> ctx.resolveRequiredSchema(pointer).validate(ctx, node));
     }
 }
