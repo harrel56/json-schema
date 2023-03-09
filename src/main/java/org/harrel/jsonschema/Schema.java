@@ -11,11 +11,11 @@ import java.util.Objects;
 public class Schema {
 
     private static final Validator TRUE_VALIDATOR = (ctx, node) -> Result.success();
-    private static final Validator FALSE_VALIDATOR = (ctx, node) -> Result.failure("False schema always fails");
+    private static final Validator FALSE_VALIDATOR = (ctx, node) -> Result.failure("False schema always fails.");
 
-    private final List<Validator> validators;
+    private final List<ValidatorDelegate> validators;
 
-    public Schema(List<Validator> validators) {
+    public Schema(List<ValidatorDelegate> validators) {
         this.validators = new ArrayList<>(Objects.requireNonNull(validators));
         Collections.sort(this.validators);
     }
@@ -25,8 +25,17 @@ public class Schema {
     }
 
     public boolean validate(ValidationContext ctx, JsonNode node) {
-        return validators.stream()
-                .map(validator -> validator.validate(ctx, node))
-                .allMatch(ValidationResult::isValid);
+        List<Annotation> annotations = new ArrayList<>(validators.size());
+        ValidationContext newCtx = ctx.withEmptyAnnotations();
+        for (ValidatorDelegate validator : validators) {
+            ValidationResult result = validator.validate(newCtx, node);
+            if (!result.isValid()) {
+                return false;
+            }
+            annotations.add(new Annotation(validator.getKeywordPath(), node.getJsonPointer(), result.getErrorMessage(), result.isValid()));
+        }
+        ctx.addAnnotations(annotations);
+        ctx.addAnnotations(newCtx.getAnnotations());
+        return true;
     }
 }

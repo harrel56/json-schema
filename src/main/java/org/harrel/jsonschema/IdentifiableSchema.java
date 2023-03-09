@@ -1,14 +1,12 @@
 package org.harrel.jsonschema;
 
-import org.harrel.jsonschema.validator.Validator;
-
 import java.net.URI;
 import java.util.List;
 
 public class IdentifiableSchema extends Schema {
     private final URI uri;
 
-    public IdentifiableSchema(URI uri, List<Validator> validators) {
+    public IdentifiableSchema(URI uri, List<ValidatorDelegate> validators) {
         super(validators);
         this.uri = uri;
     }

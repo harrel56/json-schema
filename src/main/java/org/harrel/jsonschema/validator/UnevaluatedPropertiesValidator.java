@@ -25,7 +25,6 @@ class UnevaluatedPropertiesValidator extends BasicValidator {
         }
 
         List<Annotation> annotations = ctx.getAnnotations().stream()
-                .filter(Annotation::successful)
                 .filter(a -> a.schemaPath().startsWith(parentPath))
                 .toList();
         boolean valid = true;

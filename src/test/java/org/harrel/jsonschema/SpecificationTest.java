@@ -70,10 +70,10 @@ class SpecificationTest {
         testValidation(bundle, name, schema, json, valid);
     }
 
-//    @SuiteTest("/draft2020-12/unevaluatedItems.json")
-//    void unevaluatedItemsTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-//        testValidation(bundle, name, schema, json, valid);
-//    }
+    @SuiteTest("/draft2020-12/unevaluatedItems.json")
+    void unevaluatedItemsTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
 
     @SuiteTest("/draft2020-12/maxProperties.json")
     void maxPropertiesTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
@@ -146,8 +146,8 @@ class SpecificationTest {
     }
 
     private void testValidation(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-//        Assumptions.assumeTrue(bundle.equals("unevaluatedItems with nested items"));
-//        Assumptions.assumeTrue(name.equals("with invalid additional item"));
+//        Assumptions.assumeTrue(bundle.equals("unevaluatedProperties with not"));
+//        Assumptions.assumeTrue(name.equals("with unevaluated properties"));
         SchemaValidator validator = new SchemaValidator();
         logger.info("%s: %s".formatted(bundle, name));
         logger.info(schema.toPrettyString());

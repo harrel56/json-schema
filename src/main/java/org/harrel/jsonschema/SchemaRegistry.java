@@ -1,7 +1,5 @@
 package org.harrel.jsonschema;
 
-import org.harrel.jsonschema.validator.Validator;
-
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,13 +17,13 @@ public class SchemaRegistry {
         return Collections.unmodifiableMap(cache);
     }
 
-    public void registerSchema(SchemaParsingContext ctx, JsonNode schemaNode, List<Validator> validators) {
+    public void registerSchema(SchemaParsingContext ctx, JsonNode schemaNode, List<ValidatorDelegate> validators) {
         Schema schema = new Schema(validators);
         put(schemas, ctx.getAbsoluteUri(schemaNode), schema);
         registerAnchorIfPresent(ctx, schemaNode, schema);
     }
 
-    public void registerIdentifiableSchema(SchemaParsingContext ctx, URI id, JsonNode schemaNode, List<Validator> validators) {
+    public void registerIdentifiableSchema(SchemaParsingContext ctx, URI id, JsonNode schemaNode, List<ValidatorDelegate> validators) {
         String absoluteUri = ctx.getAbsoluteUri(schemaNode);
         schemas.entrySet().stream()
                 .filter(e -> e.getKey().startsWith(absoluteUri))

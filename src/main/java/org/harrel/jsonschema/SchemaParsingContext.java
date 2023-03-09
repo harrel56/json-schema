@@ -1,12 +1,7 @@
 package org.harrel.jsonschema;
 
-import org.harrel.jsonschema.validator.Validator;
-
 import java.net.URI;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class SchemaParsingContext {
     private final String baseUri;
@@ -55,22 +50,22 @@ public class SchemaParsingContext {
         }
     }
 
-    public void registerSchema(JsonNode schemaNode, List<Validator> validators) {
+    public void registerSchema(JsonNode schemaNode, List<ValidatorDelegate> validators) {
         schemaRegistry.registerSchema(this, schemaNode, validators);
     }
 
-    public void registerIdentifiableSchema(URI uri, JsonNode schemaNode, List<Validator> validators) {
+    public void registerIdentifiableSchema(URI uri, JsonNode schemaNode, List<ValidatorDelegate> validators) {
         schemaRegistry.registerIdentifiableSchema(this, uri, schemaNode, validators);
     }
 
-    public boolean validateSchema(AnnotationCollector<?> collector, JsonNode node) {
+    public boolean validateSchema(JsonNode node) {
         Map<String, Schema> schemaCache = schemaRegistry.asSchemaCache();
         Schema schema = schemaCache.get(baseUri);
         if (!(schema instanceof IdentifiableSchema idSchema)) {
             throw new IllegalArgumentException(
                     "Couldn't find schema with uri=%s or it resolves to non-identifiable schema".formatted(baseUri));
         }
-        ValidationContext ctx = new ValidationContext(collector, idSchema, schemaCache);
+        ValidationContext ctx = new ValidationContext(idSchema, schemaCache, new ArrayList<>());
         return idSchema.validate(ctx, node);
     }
 }
