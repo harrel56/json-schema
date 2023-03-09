@@ -75,6 +75,16 @@ class SpecificationTest {
         testValidation(bundle, name, schema, json, valid);
     }
 
+    @SuiteTest("/draft2020-12/maxContains.json")
+    void maxContainsTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
+    @SuiteTest("/draft2020-12/minContains.json")
+    void minContainsTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
     @SuiteTest("/draft2020-12/unevaluatedItems.json")
     void unevaluatedItemsTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
         testValidation(bundle, name, schema, json, valid);
@@ -151,8 +161,8 @@ class SpecificationTest {
     }
 
     private void testValidation(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-//        Assumptions.assumeTrue(bundle.equals("unevaluatedProperties with not"));
-//        Assumptions.assumeTrue(name.equals("with unevaluated properties"));
+//        Assumptions.assumeTrue(bundle.equals("minContains = 0"));
+//        Assumptions.assumeTrue(name.equals("empty data"));
         SchemaValidator validator = new SchemaValidator();
         logger.info("%s: %s".formatted(bundle, name));
         logger.info(schema.toPrettyString());

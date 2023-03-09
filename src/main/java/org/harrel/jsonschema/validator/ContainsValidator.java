@@ -2,6 +2,8 @@ package org.harrel.jsonschema.validator;
 
 import org.harrel.jsonschema.*;
 
+import java.util.List;
+
 class ContainsValidator extends BasicValidator {
     private final String schemaUri;
 
@@ -16,8 +18,12 @@ class ContainsValidator extends BasicValidator {
         if (!node.isArray()) {
             return true;
         }
+        List<JsonNode> nodes = node.asArray();
+        if (nodes.isEmpty()) {
+            return true;
+        }
 
         Schema schema = ctx.resolveRequiredSchema(schemaUri);
-        return StreamUtil.exhaustiveAnyMatch(node.asArray().stream(), element -> schema.validate(ctx, element));
+        return StreamUtil.exhaustiveAnyMatch(nodes.stream(), element -> schema.validate(ctx, element));
     }
 }

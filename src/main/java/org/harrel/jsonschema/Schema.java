@@ -25,16 +25,14 @@ public class Schema {
     }
 
     public boolean validate(ValidationContext ctx, JsonNode node) {
-        List<Annotation> annotations = new ArrayList<>(validators.size());
         ValidationContext newCtx = ctx.withEmptyAnnotations();
         for (ValidatorDelegate validator : validators) {
             ValidationResult result = validator.validate(newCtx, node);
             if (!result.isValid()) {
                 return false;
             }
-            annotations.add(new Annotation(validator.getKeywordPath(), node.getJsonPointer(), result.getErrorMessage(), result.isValid()));
+            newCtx.addAnnotation(new Annotation(validator.getKeywordPath(), node.getJsonPointer(), result.getErrorMessage(), result.isValid()));
         }
-        ctx.addAnnotations(annotations);
         ctx.addAnnotations(newCtx.getAnnotations());
         return true;
     }

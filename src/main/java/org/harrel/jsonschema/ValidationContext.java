@@ -25,6 +25,10 @@ public class ValidationContext {
         return Collections.unmodifiableList(annotations);
     }
 
+    public void addAnnotation(Annotation annotation) {
+        this.annotations.add(annotation);
+    }
+
     public void addAnnotations(Collection<Annotation> annotations) {
         this.annotations.addAll(annotations);
     }
