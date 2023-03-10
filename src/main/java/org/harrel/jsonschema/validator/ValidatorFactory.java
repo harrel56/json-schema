@@ -21,6 +21,7 @@ public class ValidatorFactory {
         map.put("prefixItems", PrefixItemsValidator::new);
         map.put("maxItems", (ctx, node) -> new MaxItemsValidator(node));
         map.put("minItems", (ctx, node) -> new MinItemsValidator(node));
+        map.put("uniqueItems", (ctx, node) -> new UniqueItemsValidator(node));
         map.put("contains", ContainsValidator::new);
         map.put("unevaluatedItems", UnevaluatedItemsValidator::new);
         map.put("properties", PropertiesValidator::new);
@@ -31,6 +32,7 @@ public class ValidatorFactory {
         map.put("minProperties", (ctx, node) -> new MinPropertiesValidator(node));
         map.put("required", (ctx, node) -> new RequiredValidator(node));
         map.put("dependentRequired", (ctx, node) -> new DependentRequiredValidator(node));
+        map.put("dependentSchemas", DependentSchemasValidator::new);
         map.put("type", (ctx, node) -> TypeValidators.getTypeCheck(node));
         map.put("const", (ctx, node) -> new ConstValidator(node));
         map.put("enum", (ctx, node) -> new EnumValidator(node));

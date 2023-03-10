@@ -10,6 +10,36 @@ class SpecificationTest {
 
     private final Logger logger = Logger.getLogger("SpecificationTest");
 
+    @SuiteTest("/draft2020-12/boolean_schema.json")
+    void booleanSchemaTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
+    @SuiteTest("/draft2020-12/default.json")
+    void defaultTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
+    @SuiteTest("/draft2020-12/format.json")
+    void formatTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
+    @SuiteTest("/draft2020-12/content.json")
+    void contentTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
+//    @SuiteTest("/draft2020-12/unknownKeyword.json")
+//    void unknownKeywordTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+//        testValidation(bundle, name, schema, json, valid);
+//    }
+
+//    @SuiteTest("/draft2020-12/id.json")
+//    void idTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+//        testValidation(bundle, name, schema, json, valid);
+//    }
+
     @SuiteTest("/draft2020-12/if-then-else.json")
     void ifThenElseTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
         testValidation(bundle, name, schema, json, valid);
@@ -70,6 +100,11 @@ class SpecificationTest {
         testValidation(bundle, name, schema, json, valid);
     }
 
+    @SuiteTest("/draft2020-12/uniqueItems.json")
+    void uniqueItemsTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
     @SuiteTest("/draft2020-12/contains.json")
     void containsTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
         testValidation(bundle, name, schema, json, valid);
@@ -122,6 +157,11 @@ class SpecificationTest {
 
     @SuiteTest("/draft2020-12/dependentRequired.json")
     void dependentRequiredTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
+    @SuiteTest("/draft2020-12/dependentSchemas.json")
+    void dependentSchemasTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
         testValidation(bundle, name, schema, json, valid);
     }
 
