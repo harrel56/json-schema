@@ -30,6 +30,7 @@ public class ValidatorFactory {
         map.put("maxProperties", (ctx, node) -> new MaxPropertiesValidator(node));
         map.put("minProperties", (ctx, node) -> new MinPropertiesValidator(node));
         map.put("required", (ctx, node) -> new RequiredValidator(node));
+        map.put("dependentRequired", (ctx, node) -> new DependentRequiredValidator(node));
         map.put("type", (ctx, node) -> TypeValidators.getTypeCheck(node));
         map.put("const", (ctx, node) -> new ConstValidator(node));
         map.put("enum", (ctx, node) -> new EnumValidator(node));
