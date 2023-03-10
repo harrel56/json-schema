@@ -5,6 +5,9 @@ import org.harrel.jsonschema.Schema;
 import org.harrel.jsonschema.SchemaParsingContext;
 import org.harrel.jsonschema.ValidationContext;
 
+import java.util.List;
+import java.util.Optional;
+
 class ItemsValidator extends BasicValidator {
     private final String itemSchemaPointer;
     private final int prefixItemsSize;
@@ -12,8 +15,10 @@ class ItemsValidator extends BasicValidator {
     ItemsValidator(SchemaParsingContext ctx, JsonNode node) {
         super("Items validation failed.");
         this.itemSchemaPointer = ctx.getAbsoluteUri(node);
-        JsonNode prefixItems = ctx.getCurrentSchemaObject().get("prefixItems");
-        this.prefixItemsSize = prefixItems == null ? 0 : prefixItems.asArray().size();
+        this.prefixItemsSize = Optional.ofNullable(ctx.getCurrentSchemaObject().get("prefixItems"))
+                .map(JsonNode::asArray)
+                .map(List::size)
+                .orElse(0);
     }
 
     @Override
