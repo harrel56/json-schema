@@ -211,8 +211,8 @@ class SpecificationTest {
     }
 
     private void testValidation(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-//        Assumptions.assumeTrue(bundle.equals("A $dynamicRef resolves to the first $dynamicAnchor still in scope that is encountered when the schema is evaluated"));
-//        Assumptions.assumeTrue(name.equals("An array containing non-strings is invalid"));
+//        Assumptions.assumeTrue(bundle.equals("multiple dynamic paths to the $dynamicRef keyword"));
+//        Assumptions.assumeTrue(name.equals("recurse to integerNode - floats are not allowed"));
         SchemaValidator validator = new SchemaValidator();
         logger.info("%s: %s".formatted(bundle, name));
         logger.info(schema.toPrettyString());

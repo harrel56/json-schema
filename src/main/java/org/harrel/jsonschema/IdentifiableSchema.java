@@ -13,7 +13,11 @@ public class IdentifiableSchema extends Schema {
 
     @Override
     public boolean validate(ValidationContext ctx, JsonNode node) {
-        return super.validate(ctx.withParentSchema(this), node);
+        ValidationContext newCtx = ctx.withParentSchema(this);
+        newCtx.ctxes.push(ctx);
+        boolean result = super.validate(newCtx, node);
+        newCtx.ctxes.pop();
+        return result;
     }
 
     public URI getUri() {

@@ -8,6 +8,7 @@ public class SchemaRegistry {
     private final Map<String, Schema> schemas = new HashMap<>();
     private final Map<String, Schema> additionalSchemas = new HashMap<>();
     private final Map<String, Schema> dynamicAnchors = new HashMap<>();
+    public final Map<String, Schema> temp = new HashMap<>();
 
     public Schema get(String uri) {
         Schema schema = schemas.getOrDefault(uri, additionalSchemas.get(uri));
@@ -63,7 +64,8 @@ public class SchemaRegistry {
         if (objectMap.containsKey("$dynamicAnchor")) {
             String anchorFragment = "#" + objectMap.get("$dynamicAnchor").asString();
             String anchoredUri = UriUtil.resolveUri(ctx.getParentUri(), anchorFragment);
-            put(additionalSchemas, anchoredUri, schema);
+//            put(additionalSchemas, anchoredUri, schema);
+            temp.put(ctx.getParentUri().toString(), schema);
         }
     }
 

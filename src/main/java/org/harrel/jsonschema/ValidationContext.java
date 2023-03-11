@@ -7,20 +7,22 @@ public class ValidationContext extends AbstractContext {
     private final IdentifiableSchema parentSchema;
     private final SchemaRegistry schemaRegistry;
     private final List<Annotation> annotations;
+    public final LinkedList<ValidationContext> ctxes;
 
-    ValidationContext(URI baseUri, IdentifiableSchema parentSchema, SchemaRegistry schemaRegistry, List<Annotation> annotations) {
+    ValidationContext(URI baseUri, LinkedList<ValidationContext> ctxes, IdentifiableSchema parentSchema, SchemaRegistry schemaRegistry, List<Annotation> annotations) {
         super(baseUri);
+        this.ctxes = ctxes;
         this.parentSchema = parentSchema;
         this.schemaRegistry = schemaRegistry;
         this.annotations = annotations;
     }
 
     public ValidationContext withParentSchema(IdentifiableSchema parentSchema) {
-        return new ValidationContext(baseUri, parentSchema, schemaRegistry, annotations);
+        return new ValidationContext(baseUri, ctxes, parentSchema, schemaRegistry, annotations);
     }
 
     public ValidationContext withEmptyAnnotations() {
-        return new ValidationContext(baseUri, parentSchema, schemaRegistry, new ArrayList<>());
+        return new ValidationContext(baseUri, ctxes, parentSchema, schemaRegistry, new ArrayList<>());
     }
 
     public List<Annotation> getAnnotations() {
@@ -37,17 +39,26 @@ public class ValidationContext extends AbstractContext {
 
     public Optional<Schema> resolveSchema(String ref) {
         String resolvedUri = UriUtil.resolveUri(parentSchema.getUri(), ref);
-        return Optional.ofNullable(schemaRegistry.get(resolvedUri));
+        return Optional.ofNullable(schemaRegistry.get(resolvedUri))
+                .or(() -> Optional.ofNullable(schemaRegistry.temp.get(resolvedUri)));
     }
 
     public Optional<Schema> resolveDynamicSchema(String ref) {
-        Optional<Schema> dynamicSchema = UriUtil.getAnchor(ref)
-                .map(schemaRegistry::getByDynamicAnchor);
-        if (dynamicSchema.isPresent()) {
-            return dynamicSchema;
-        }
         String resolvedUri = UriUtil.resolveUri(parentSchema.getUri(), ref);
-        return Optional.ofNullable(schemaRegistry.get(resolvedUri));
+        if (schemaRegistry.get(resolvedUri) != null) {
+            return Optional.of(schemaRegistry.get(resolvedUri));
+        }
+        Schema schema = null;
+        Optional<String> anchor = UriUtil.getAnchor(ref);
+        if (anchor.isPresent()) {
+            for (ValidationContext ctx : ctxes) {
+                Schema newSchema = schemaRegistry.temp.get(ctx.parentSchema.getUri().toString());
+                if (newSchema != null) {
+                    schema = newSchema;
+                }
+            }
+        }
+        return Optional.ofNullable(schema);
     }
 
     public Schema resolveRequiredSchema(String ref) {
