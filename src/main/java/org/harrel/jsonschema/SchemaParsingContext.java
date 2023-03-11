@@ -3,21 +3,20 @@ package org.harrel.jsonschema;
 import java.net.URI;
 import java.util.*;
 
-public class SchemaParsingContext {
-    private final String baseUri;
+public class SchemaParsingContext extends AbstractContext {
     private final URI parentUri;
     private final SchemaRegistry schemaRegistry;
     private final Map<String, JsonNode> currentSchemaObject;
 
-    private SchemaParsingContext(String baseUri, URI parentUri, SchemaRegistry schemaRegistry, Map<String, JsonNode> currentSchemaObject) {
-        this.baseUri = baseUri;
+    private SchemaParsingContext(URI baseUri, URI parentUri, SchemaRegistry schemaRegistry, Map<String, JsonNode> currentSchemaObject) {
+        super(baseUri);
         this.parentUri = parentUri;
         this.schemaRegistry = schemaRegistry;
         this.currentSchemaObject = currentSchemaObject;
     }
 
-    public SchemaParsingContext(String baseUri) {
-        this(Objects.requireNonNull(baseUri), URI.create(baseUri), new SchemaRegistry(), Map.of());
+    SchemaParsingContext(String baseUri) {
+        this(URI.create(baseUri), URI.create(baseUri), new SchemaRegistry(), Map.of());
     }
 
     public URI getParentUri() {
@@ -36,20 +35,6 @@ public class SchemaParsingContext {
         return currentSchemaObject;
     }
 
-    public String getAbsoluteUri(JsonNode node) {
-        return getAbsoluteUri(node.getJsonPointer());
-    }
-
-    public String getAbsoluteUri(String jsonPointer) {
-        if (jsonPointer.isEmpty()) {
-            return baseUri + "#";
-        } else if (jsonPointer.startsWith("#")) {
-            return baseUri + jsonPointer;
-        } else {
-            return baseUri + "#" + jsonPointer;
-        }
-    }
-
     public void registerSchema(JsonNode schemaNode, List<ValidatorDelegate> validators) {
         schemaRegistry.registerSchema(this, schemaNode, validators);
     }
@@ -59,13 +44,12 @@ public class SchemaParsingContext {
     }
 
     public boolean validateSchema(JsonNode node) {
-        Map<String, Schema> schemaCache = schemaRegistry.asSchemaCache();
-        Schema schema = schemaCache.get(baseUri);
+        Schema schema = schemaRegistry.get(baseUri.toString());
         if (!(schema instanceof IdentifiableSchema idSchema)) {
             throw new IllegalArgumentException(
                     "Couldn't find schema with uri=%s or it resolves to non-identifiable schema".formatted(baseUri));
         }
-        ValidationContext ctx = new ValidationContext(idSchema, schemaCache, new ArrayList<>());
+        ValidationContext ctx = new ValidationContext(baseUri, idSchema, schemaRegistry, new ArrayList<>());
         return idSchema.validate(ctx, node);
     }
 }

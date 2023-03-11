@@ -175,6 +175,11 @@ class SpecificationTest {
         testValidation(bundle, name, schema, json, valid);
     }
 
+    @SuiteTest("/draft2020-12/dynamicRef.json")
+    void dynamicRefTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
     @SuiteTest("/draft2020-12/pattern.json")
     void patternTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
         testValidation(bundle, name, schema, json, valid);
@@ -206,8 +211,8 @@ class SpecificationTest {
     }
 
     private void testValidation(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-//        Assumptions.assumeTrue(bundle.equals("minContains = 0"));
-//        Assumptions.assumeTrue(name.equals("empty data"));
+//        Assumptions.assumeTrue(bundle.equals("A $dynamicRef resolves to the first $dynamicAnchor still in scope that is encountered when the schema is evaluated"));
+//        Assumptions.assumeTrue(name.equals("An array containing non-strings is invalid"));
         SchemaValidator validator = new SchemaValidator();
         logger.info("%s: %s".formatted(bundle, name));
         logger.info(schema.toPrettyString());

@@ -12,6 +12,7 @@ public class ValidatorFactory {
     public ValidatorFactory() {
         Map<String, BiFunction<SchemaParsingContext, JsonNode, Validator>> map = new HashMap<>();
         map.put("$ref", (ctx, node) -> new RefValidator(node));
+        map.put("$dynamicRef", (ctx, node) -> new DynamicRefValidator(node));
         map.put("if", IfThenElseValidator::new);
         map.put("anyOf", AnyOfValidator::new);
         map.put("allOf", AllOfValidator::new);

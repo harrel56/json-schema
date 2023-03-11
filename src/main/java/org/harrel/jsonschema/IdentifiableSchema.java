@@ -6,8 +6,8 @@ import java.util.List;
 public class IdentifiableSchema extends Schema {
     private final URI uri;
 
-    public IdentifiableSchema(URI uri, List<ValidatorDelegate> validators) {
-        super(validators);
+    public IdentifiableSchema(URI uri, List<ValidatorDelegate> validators, String dynamicAnchor) {
+        super(validators, dynamicAnchor);
         this.uri = uri;
     }
 

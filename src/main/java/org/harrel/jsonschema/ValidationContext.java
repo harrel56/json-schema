@@ -1,24 +1,26 @@
 package org.harrel.jsonschema;
 
+import java.net.URI;
 import java.util.*;
 
-public class ValidationContext {
+public class ValidationContext extends AbstractContext {
     private final IdentifiableSchema parentSchema;
-    private final Map<String, Schema> schemaCache;
+    private final SchemaRegistry schemaRegistry;
     private final List<Annotation> annotations;
 
-    ValidationContext(IdentifiableSchema parentSchema, Map<String, Schema> schemaCache, List<Annotation> annotations) {
+    ValidationContext(URI baseUri, IdentifiableSchema parentSchema, SchemaRegistry schemaRegistry, List<Annotation> annotations) {
+        super(baseUri);
         this.parentSchema = parentSchema;
-        this.schemaCache = schemaCache;
+        this.schemaRegistry = schemaRegistry;
         this.annotations = annotations;
     }
 
     public ValidationContext withParentSchema(IdentifiableSchema parentSchema) {
-        return new ValidationContext(parentSchema, schemaCache, annotations);
+        return new ValidationContext(baseUri, parentSchema, schemaRegistry, annotations);
     }
 
     public ValidationContext withEmptyAnnotations() {
-        return new ValidationContext(parentSchema, schemaCache, new ArrayList<>());
+        return new ValidationContext(baseUri, parentSchema, schemaRegistry, new ArrayList<>());
     }
 
     public List<Annotation> getAnnotations() {
@@ -35,11 +37,21 @@ public class ValidationContext {
 
     public Optional<Schema> resolveSchema(String ref) {
         String resolvedUri = UriUtil.resolveUri(parentSchema.getUri(), ref);
-        return Optional.ofNullable(schemaCache.get(resolvedUri));
+        return Optional.ofNullable(schemaRegistry.get(resolvedUri));
+    }
+
+    public Optional<Schema> resolveDynamicSchema(String ref) {
+        Optional<Schema> dynamicSchema = UriUtil.getAnchor(ref)
+                .map(schemaRegistry::getByDynamicAnchor);
+        if (dynamicSchema.isPresent()) {
+            return dynamicSchema;
+        }
+        String resolvedUri = UriUtil.resolveUri(parentSchema.getUri(), ref);
+        return Optional.ofNullable(schemaRegistry.get(resolvedUri));
     }
 
     public Schema resolveRequiredSchema(String ref) {
-        return Optional.ofNullable(schemaCache.get(ref))
+        return Optional.ofNullable(schemaRegistry.get(ref))
                 .orElseThrow(() -> new IllegalStateException("Resolution of schema (%s) failed and was required".formatted(ref)));
     }
 }

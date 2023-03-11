@@ -3,21 +3,24 @@ package org.harrel.jsonschema;
 import org.harrel.jsonschema.validator.ValidationResult;
 import org.harrel.jsonschema.validator.Validator;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class Schema {
 
     private static final Validator TRUE_VALIDATOR = (ctx, node) -> Result.success();
     private static final Validator FALSE_VALIDATOR = (ctx, node) -> Result.failure("False schema always fails.");
 
+    private final String dynamicAnchor;
     private final List<ValidatorDelegate> validators;
 
-    public Schema(List<ValidatorDelegate> validators) {
+    public Schema(List<ValidatorDelegate> validators, String dynamicAnchor) {
+        this.dynamicAnchor = dynamicAnchor;
         this.validators = new ArrayList<>(Objects.requireNonNull(validators));
         Collections.sort(this.validators);
+    }
+
+    Optional<String> getDynamicAnchor() {
+        return Optional.ofNullable(dynamicAnchor);
     }
 
     public static Validator getBooleanValidator(boolean val) {

@@ -22,6 +22,10 @@ test {
     useJUnitPlatform()
 }
 
+ext.reposiliteSnapshots = findProperty('reposiliteSnapshots') ?: 'not found'
+ext.reposiliteUsername = findProperty('reposiliteUsername') ?: 'not found'
+ext.reposilitePassword = findProperty('reposilitePassword') ?: 'not found'
+
 publishing {
     publications {
         maven(MavenPublication) {

@@ -3,10 +3,16 @@ package org.harrel.jsonschema;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 public class UriUtil {
 
     private UriUtil() {}
+
+    public static Optional<String> getAnchor(String uri) {
+        return Optional.ofNullable(URI.create(uri).getFragment())
+                .filter(fragment -> !fragment.startsWith("/"));
+    }
 
     public static boolean isJsonPointerOrAnchor(String uri) {
         return uri.startsWith("#") && uri.length() > 1;
