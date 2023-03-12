@@ -96,10 +96,10 @@
                     "type": "array",
                     "items": { "$dynamicRef": "#items" },
                     "$defs": {
-                      "items": {
-                          "$comment": "This is only needed to satisfy the bookending requirement",
-                          "$dynamicAnchor": "items"
-                      }
+                        "items": {
+                            "$comment": "This is only needed to satisfy the bookending requirement",
+                            "$dynamicAnchor": "items"
+                        }
                     }
                 }
             }
@@ -114,6 +114,44 @@
                 "description": "An array containing non-strings is invalid",
                 "data": ["foo", 42],
                 "valid": false
+            }
+        ]
+    },
+    {
+        "description": "A $dynamicRef without anchor in fragment behaves identical to $ref",
+        "schema": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "https://test.json-schema.org/dynamicRef-without-anchor/root",
+            "$ref": "list",
+            "$defs": {
+                "foo": {
+                    "$dynamicAnchor": "items",
+                    "type": "string"
+                },
+                "list": {
+                    "$id": "list",
+                    "type": "array",
+                    "items": { "$dynamicRef": "#/$defs/items" },
+                    "$defs": {
+                        "items": {
+                            "$comment": "This is only needed to satisfy the bookending requirement",
+                            "$dynamicAnchor": "items",
+                            "type": "number"
+                        }
+                    }
+                }
+            }
+        },
+        "tests": [
+            {
+                "description": "An array of strings is invalid",
+                "data": ["foo", "bar"],
+                "valid": false
+            },
+            {
+                "description": "An array of numbers is valid",
+                "data": [24, 42],
+                "valid": true
             }
         ]
     },
@@ -137,10 +175,10 @@
                     "type": "array",
                     "items": { "$dynamicRef": "#items" },
                     "$defs": {
-                      "items": {
-                          "$comment": "This is only needed to satisfy the bookending requirement",
-                          "$dynamicAnchor": "items"
-                      }
+                        "items": {
+                            "$comment": "This is only needed to satisfy the bookending requirement",
+                            "$dynamicAnchor": "items"
+                        }
                     }
                 }
             }
@@ -174,10 +212,10 @@
                     "type": "array",
                     "items": { "$dynamicRef": "#items" },
                     "$defs": {
-                      "items": {
-                          "$comment": "This is only needed to satisfy the bookending requirement",
-                          "$dynamicAnchor": "items"
-                      }
+                        "items": {
+                            "$comment": "This is only needed to satisfy the bookending requirement",
+                            "$dynamicAnchor": "items"
+                        }
                     }
                 }
             }
@@ -469,8 +507,8 @@
                 "description": "instance with misspelled field",
                 "data": {
                     "children": [{
-                            "daat": 1
-                        }]
+                        "daat": 1
+                    }]
                 },
                 "valid": false
             },
@@ -478,8 +516,8 @@
                 "description": "instance with correct field",
                 "data": {
                     "children": [{
-                            "data": 1
-                        }]
+                        "data": 1
+                    }]
                 },
                 "valid": true
             }
