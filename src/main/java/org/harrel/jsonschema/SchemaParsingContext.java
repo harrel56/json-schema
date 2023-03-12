@@ -15,8 +15,8 @@ public class SchemaParsingContext extends AbstractContext {
         this.currentSchemaObject = currentSchemaObject;
     }
 
-    SchemaParsingContext(String baseUri) {
-        this(URI.create(baseUri), URI.create(baseUri), new SchemaRegistry(), Map.of());
+    SchemaParsingContext(SchemaRegistry schemaRegistry, String baseUri) {
+        this(URI.create(baseUri), URI.create(baseUri), schemaRegistry, Map.of());
     }
 
     public URI getParentUri() {
@@ -43,13 +43,13 @@ public class SchemaParsingContext extends AbstractContext {
         schemaRegistry.registerIdentifiableSchema(this, uri, schemaNode, validators);
     }
 
-    public boolean validateSchema(JsonNode node) {
+    public boolean validateSchema(JsonParser jsonParser, SchemaResolver schemaResolver, JsonNode node) {
         Schema schema = schemaRegistry.get(baseUri.toString());
         if (!(schema instanceof IdentifiableSchema idSchema)) {
             throw new IllegalArgumentException(
                     "Couldn't find schema with uri=%s or it resolves to non-identifiable schema".formatted(baseUri));
         }
-        ValidationContext ctx = new ValidationContext(baseUri, new LinkedList<>(), schemaRegistry, new ArrayList<>());
+        ValidationContext ctx = new ValidationContext(baseUri, jsonParser, schemaRegistry, schemaResolver);
         return idSchema.validate(ctx, node);
     }
 }

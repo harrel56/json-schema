@@ -2,7 +2,11 @@ package org.harrel.jsonschema;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 @SuppressWarnings("unused")
@@ -215,12 +219,28 @@ class SpecificationTest {
         testValidation(bundle, name, schema, json, valid);
     }
 
+    private static SchemaResolver resolver;
+
+    @BeforeAll
+    static void beforeAll() {
+        resolver = uri -> {
+            if (uri.equals("https://json-schema.org/draft/2020-12/schema")) {
+                try {
+                    return Optional.of(new String(SpecificationTest.class.getResourceAsStream("/draft2020-12.json").readAllBytes()));
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            }
+            return Optional.empty();
+        };
+    }
+
     private void testValidation(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
 //        Assumptions.assumeTrue(bundle.equals("A $dynamicRef that initially resolves to a schema with a matching $dynamicAnchor resolves to the first $dynamicAnchor in the dynamic scope"));
 //        Assumptions.assumeTrue(name.equals("The recursive part is not valid against the root"));
 //        Assumptions.assumeTrue(bundle.equals("A $dynamicRef that initially resolves to a schema with a matching $dynamicAnchor resolves to the first $dynamicAnchor in the dynamic scope"));
 //        Assumptions.assumeTrue(name.equals("The recursive part is not valid against the root"));
-        SchemaValidator validator = new SchemaValidator();
+        SchemaValidator validator = new SchemaValidator(new JacksonNodeFactory(), resolver);
         logger.info("%s: %s".formatted(bundle, name));
         logger.info(schema.toPrettyString());
         logger.info(json.toPrettyString());

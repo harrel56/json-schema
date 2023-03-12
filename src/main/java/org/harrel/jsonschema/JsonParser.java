@@ -3,6 +3,7 @@ package org.harrel.jsonschema;
 import org.harrel.jsonschema.validator.Validator;
 import org.harrel.jsonschema.validator.ValidatorFactory;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 
@@ -10,15 +11,23 @@ public class JsonParser {
 
     private static final Set<String> NOT_PARSABLE_KEYWORDS = Set.of("const", "enum");
 
+    private final JsonNodeFactory jsonNodeFactory;
     private final ValidatorFactory validatorFactory;
+    private final SchemaRegistry schemaRegistry;
 
-    public JsonParser(ValidatorFactory validatorFactory) {
+    public JsonParser(JsonNodeFactory jsonNodeFactory, ValidatorFactory validatorFactory, SchemaRegistry schemaRegistry) {
+        this.jsonNodeFactory = jsonNodeFactory;
         this.validatorFactory = validatorFactory;
+        this.schemaRegistry = schemaRegistry;
+    }
+
+    public SchemaParsingContext parseRootSchema(String baseUri, String rawJson) throws IOException {
+        return parseRootSchema(baseUri, jsonNodeFactory.create(rawJson));
     }
 
     public SchemaParsingContext parseRootSchema(String baseUri, JsonNode node) {
         if (node.isBoolean()) {
-            SchemaParsingContext ctx = new SchemaParsingContext(baseUri);
+            SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, baseUri);
             URI uri = URI.create(baseUri);
             ctx.registerIdentifiableSchema(uri, node, List.of(new ValidatorDelegate(node, Schema.getBooleanValidator(node.asBoolean()))));
             return ctx;
@@ -27,7 +36,7 @@ public class JsonParser {
             String id = Optional.ofNullable(objectMap.get("$id"))
                     .map(JsonNode::asString)
                     .orElse(baseUri);
-            SchemaParsingContext ctx = new SchemaParsingContext(id);
+            SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, id);
             URI uri = URI.create(id);
             List<ValidatorDelegate> validators = parseValidators(ctx, objectMap);
             ctx.registerIdentifiableSchema(uri, node, validators);
