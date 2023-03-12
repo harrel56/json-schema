@@ -140,6 +140,11 @@ class SpecificationTest {
         testValidation(bundle, name, schema, json, valid);
     }
 
+    @SuiteTest("/draft2020-12/propertyNames.json")
+    void propertyNamesTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
     @SuiteTest("/draft2020-12/unevaluatedProperties.json")
     void unevaluatedPropertiesTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
         testValidation(bundle, name, schema, json, valid);

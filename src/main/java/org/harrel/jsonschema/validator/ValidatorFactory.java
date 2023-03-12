@@ -28,6 +28,7 @@ public class ValidatorFactory {
         map.put("properties", PropertiesValidator::new);
         map.put("additionalProperties", AdditionalPropertiesValidator::new);
         map.put("patternProperties", PatternPropertiesValidator::new);
+        map.put("propertyNames", PropertyNamesValidator::new);
         map.put("unevaluatedProperties", UnevaluatedPropertiesValidator::new);
         map.put("maxProperties", (ctx, node) -> new MaxPropertiesValidator(node));
         map.put("minProperties", (ctx, node) -> new MinPropertiesValidator(node));
