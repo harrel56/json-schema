@@ -7,7 +7,7 @@ public class ValidationContext {
     private final JsonParser jsonParser;
     private final SchemaRegistry schemaRegistry;
     private final SchemaResolver schemaResolver;
-    final LinkedList<IdentifiableSchema> dynamicScope;
+    private final LinkedList<IdentifiableSchema> dynamicScope;
     private final List<Annotation> annotations;
 
     private ValidationContext(JsonParser jsonParser,
@@ -70,6 +70,14 @@ public class ValidationContext {
     public Schema resolveRequiredSchema(String ref) {
         return Optional.ofNullable(schemaRegistry.get(ref))
                 .orElseThrow(() -> new IllegalStateException("Resolution of schema (%s) failed and was required".formatted(ref)));
+    }
+
+    void pushDynamicScope(IdentifiableSchema identifiableSchema) {
+        dynamicScope.push(identifiableSchema);
+    }
+
+    void popDynamicContext() {
+        dynamicScope.pop();
     }
 
     private Optional<Schema> resolveExternalSchema(String uri) {

@@ -13,9 +13,9 @@ public class IdentifiableSchema extends Schema {
 
     @Override
     public boolean validate(ValidationContext ctx, JsonNode node) {
-        ctx.dynamicScope.push(this);
+        ctx.pushDynamicScope(this);
         boolean result = super.validate(ctx, node);
-        ctx.dynamicScope.pop();
+        ctx.popDynamicContext();
         return result;
     }
 
