@@ -35,15 +35,25 @@ class SpecificationTest {
         testValidation(bundle, name, schema, json, valid);
     }
 
+    @SuiteTest("/draft2020-12/defs.json")
+    void defsTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
 //    @SuiteTest("/draft2020-12/unknownKeyword.json")
 //    void unknownKeywordTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
 //        testValidation(bundle, name, schema, json, valid);
 //    }
 
-//    @SuiteTest("/draft2020-12/id.json")
-//    void idTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-//        testValidation(bundle, name, schema, json, valid);
-//    }
+    @SuiteTest("/draft2020-12/id.json")
+    void idTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
+    @SuiteTest("/draft2020-12/infinite-loop-detection.json")
+    void infiniteLoopDetectionTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
 
     @SuiteTest("/draft2020-12/if-then-else.json")
     void ifThenElseTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {

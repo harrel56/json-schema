@@ -1,23 +1,20 @@
 package org.harrel.jsonschema;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.*;
 
-public class ValidationContext extends AbstractContext {
+public class ValidationContext {
     private final JsonParser jsonParser;
     private final SchemaRegistry schemaRegistry;
     private final SchemaResolver schemaResolver;
     final LinkedList<IdentifiableSchema> dynamicScope;
     private final List<Annotation> annotations;
 
-    private ValidationContext(URI baseUri,
-                              JsonParser jsonParser,
+    private ValidationContext(JsonParser jsonParser,
                               SchemaRegistry schemaRegistry,
                               SchemaResolver schemaResolver,
                               LinkedList<IdentifiableSchema> dynamicScope,
                               List<Annotation> annotations) {
-        super(baseUri);
         this.jsonParser = jsonParser;
         this.schemaRegistry = schemaRegistry;
         this.schemaResolver = schemaResolver;
@@ -25,12 +22,12 @@ public class ValidationContext extends AbstractContext {
         this.annotations = annotations;
     }
 
-    ValidationContext(URI baseUri, JsonParser jsonParser, SchemaRegistry schemaRegistry, SchemaResolver schemaResolver) {
-        this(baseUri, jsonParser, schemaRegistry, schemaResolver, new LinkedList<>(), new ArrayList<>());
+    ValidationContext(JsonParser jsonParser, SchemaRegistry schemaRegistry, SchemaResolver schemaResolver) {
+        this(jsonParser, schemaRegistry, schemaResolver, new LinkedList<>(), new ArrayList<>());
     }
 
     public ValidationContext withEmptyAnnotations() {
-        return new ValidationContext(baseUri, jsonParser, schemaRegistry, schemaResolver, dynamicScope, new ArrayList<>());
+        return new ValidationContext(jsonParser, schemaRegistry, schemaResolver, dynamicScope, new ArrayList<>());
     }
 
     public List<Annotation> getAnnotations() {
