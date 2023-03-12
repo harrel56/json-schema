@@ -211,8 +211,10 @@ class SpecificationTest {
     }
 
     private void testValidation(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-//        Assumptions.assumeTrue(bundle.equals("multiple dynamic paths to the $dynamicRef keyword"));
-//        Assumptions.assumeTrue(name.equals("recurse to integerNode - floats are not allowed"));
+//        Assumptions.assumeTrue(bundle.equals("A $dynamicRef that initially resolves to a schema with a matching $dynamicAnchor resolves to the first $dynamicAnchor in the dynamic scope"));
+//        Assumptions.assumeTrue(name.equals("The recursive part is not valid against the root"));
+//        Assumptions.assumeTrue(bundle.equals("A $dynamicRef that initially resolves to a schema with a matching $dynamicAnchor resolves to the first $dynamicAnchor in the dynamic scope"));
+//        Assumptions.assumeTrue(name.equals("The recursive part is not valid against the root"));
         SchemaValidator validator = new SchemaValidator();
         logger.info("%s: %s".formatted(bundle, name));
         logger.info(schema.toPrettyString());

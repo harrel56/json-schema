@@ -6,17 +6,16 @@ import java.util.List;
 public class IdentifiableSchema extends Schema {
     private final URI uri;
 
-    public IdentifiableSchema(URI uri, List<ValidatorDelegate> validators, String dynamicAnchor) {
-        super(validators, dynamicAnchor);
+    public IdentifiableSchema(URI uri, List<ValidatorDelegate> validators) {
+        super(validators);
         this.uri = uri;
     }
 
     @Override
     public boolean validate(ValidationContext ctx, JsonNode node) {
-        ValidationContext newCtx = ctx.withParentSchema(this);
-        newCtx.ctxes.push(ctx);
-        boolean result = super.validate(newCtx, node);
-        newCtx.ctxes.pop();
+        ctx.dynamicScope.push(this);
+        boolean result = super.validate(ctx, node);
+        ctx.dynamicScope.pop();
         return result;
     }
 

@@ -4,25 +4,19 @@ import java.net.URI;
 import java.util.*;
 
 public class ValidationContext extends AbstractContext {
-    private final IdentifiableSchema parentSchema;
+    final LinkedList<IdentifiableSchema> dynamicScope;
     private final SchemaRegistry schemaRegistry;
     private final List<Annotation> annotations;
-    public final LinkedList<ValidationContext> ctxes;
 
-    ValidationContext(URI baseUri, LinkedList<ValidationContext> ctxes, IdentifiableSchema parentSchema, SchemaRegistry schemaRegistry, List<Annotation> annotations) {
+    ValidationContext(URI baseUri, LinkedList<IdentifiableSchema> dynamicScope, SchemaRegistry schemaRegistry, List<Annotation> annotations) {
         super(baseUri);
-        this.ctxes = ctxes;
-        this.parentSchema = parentSchema;
+        this.dynamicScope = dynamicScope;
         this.schemaRegistry = schemaRegistry;
         this.annotations = annotations;
     }
 
-    public ValidationContext withParentSchema(IdentifiableSchema parentSchema) {
-        return new ValidationContext(baseUri, ctxes, parentSchema, schemaRegistry, annotations);
-    }
-
     public ValidationContext withEmptyAnnotations() {
-        return new ValidationContext(baseUri, ctxes, parentSchema, schemaRegistry, new ArrayList<>());
+        return new ValidationContext(baseUri, dynamicScope, schemaRegistry, new ArrayList<>());
     }
 
     public List<Annotation> getAnnotations() {
@@ -38,27 +32,27 @@ public class ValidationContext extends AbstractContext {
     }
 
     public Optional<Schema> resolveSchema(String ref) {
-        String resolvedUri = UriUtil.resolveUri(parentSchema.getUri(), ref);
+        String resolvedUri = UriUtil.resolveUri(dynamicScope.peek().getUri(), ref);
         return Optional.ofNullable(schemaRegistry.get(resolvedUri))
-                .or(() -> Optional.ofNullable(schemaRegistry.temp.get(resolvedUri)));
+                .or(() -> Optional.ofNullable(schemaRegistry.getDynamic(resolvedUri)));
     }
 
     public Optional<Schema> resolveDynamicSchema(String ref) {
-        String resolvedUri = UriUtil.resolveUri(parentSchema.getUri(), ref);
+        String resolvedUri = UriUtil.resolveUri(dynamicScope.peek().getUri(), ref);
         if (schemaRegistry.get(resolvedUri) != null) {
             return Optional.of(schemaRegistry.get(resolvedUri));
         }
-        Schema schema = null;
         Optional<String> anchor = UriUtil.getAnchor(ref);
         if (anchor.isPresent()) {
-            for (ValidationContext ctx : ctxes) {
-                Schema newSchema = schemaRegistry.temp.get(ctx.parentSchema.getUri().toString());
-                if (newSchema != null) {
-                    schema = newSchema;
+            Iterator<IdentifiableSchema> it = dynamicScope.descendingIterator();
+            while (it.hasNext()) {
+                Schema schema = schemaRegistry.getDynamic(it.next().getUri().toString() + "#" + anchor.get());
+                if (schema != null) {
+                    return Optional.of(schema);
                 }
             }
         }
-        return Optional.ofNullable(schema);
+        return Optional.empty();
     }
 
     public Schema resolveRequiredSchema(String ref) {

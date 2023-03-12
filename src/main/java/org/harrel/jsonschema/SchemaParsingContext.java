@@ -49,7 +49,7 @@ public class SchemaParsingContext extends AbstractContext {
             throw new IllegalArgumentException(
                     "Couldn't find schema with uri=%s or it resolves to non-identifiable schema".formatted(baseUri));
         }
-        ValidationContext ctx = new ValidationContext(baseUri, new LinkedList<>(), idSchema, schemaRegistry, new ArrayList<>());
+        ValidationContext ctx = new ValidationContext(baseUri, new LinkedList<>(), schemaRegistry, new ArrayList<>());
         return idSchema.validate(ctx, node);
     }
 }

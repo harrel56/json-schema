@@ -4,7 +4,6 @@ import org.harrel.jsonschema.JsonNode;
 import org.harrel.jsonschema.Result;
 import org.harrel.jsonschema.ValidationContext;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;

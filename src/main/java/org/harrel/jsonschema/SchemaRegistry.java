@@ -7,26 +7,19 @@ public class SchemaRegistry {
 
     private final Map<String, Schema> schemas = new HashMap<>();
     private final Map<String, Schema> additionalSchemas = new HashMap<>();
-    private final Map<String, Schema> dynamicAnchors = new HashMap<>();
-    public final Map<String, Schema> temp = new HashMap<>();
+    private final Map<String, Schema> dynamicSchemas = new HashMap<>();
 
     public Schema get(String uri) {
-        Schema schema = schemas.getOrDefault(uri, additionalSchemas.get(uri));
-        if (schema != null) {
-            schema.getDynamicAnchor()
-                    .filter(dynamicAnchor -> !dynamicAnchors.containsKey(dynamicAnchor))
-                    .ifPresent(dynamicAnchor -> dynamicAnchors.put(dynamicAnchor, schema));
-        }
-        return schema;
+        return schemas.getOrDefault(uri, additionalSchemas.get(uri));
     }
 
-    public Schema getByDynamicAnchor(String anchor) {
-        return dynamicAnchors.get(anchor);
+    public Schema getDynamic(String anchor) {
+        return dynamicSchemas.get(anchor);
     }
 
     public void registerSchema(SchemaParsingContext ctx, JsonNode schemaNode, List<ValidatorDelegate> validators) {
         Map<String, JsonNode> objectMap = schemaNode.asObject();
-        Schema schema = new Schema(validators, getDynamicAnchor(objectMap));
+        Schema schema = new Schema(validators);
         put(schemas, ctx.getAbsoluteUri(schemaNode), schema);
         registerAnchorsIfPresent(ctx, objectMap, schema);
     }
@@ -43,16 +36,10 @@ public class SchemaRegistry {
                     put(additionalSchemas, newUri, e.getValue());
                 });
         Map<String, JsonNode> objectMap = schemaNode.asObject();
-        IdentifiableSchema identifiableSchema = new IdentifiableSchema(id, validators, getDynamicAnchor(objectMap));
+        IdentifiableSchema identifiableSchema = new IdentifiableSchema(id, validators);
         put(schemas, id.toString(), identifiableSchema);
         put(schemas, absoluteUri, identifiableSchema);
         registerAnchorsIfPresent(ctx, objectMap, identifiableSchema);
-    }
-
-    private String getDynamicAnchor(Map<String, JsonNode> objectMap) {
-        return Optional.ofNullable(objectMap.get("$dynamicAnchor"))
-                .map(JsonNode::asString)
-                .orElse(null);
     }
 
     private void registerAnchorsIfPresent(SchemaParsingContext ctx, Map<String, JsonNode> objectMap, Schema schema) {
@@ -63,9 +50,7 @@ public class SchemaRegistry {
         }
         if (objectMap.containsKey("$dynamicAnchor")) {
             String anchorFragment = "#" + objectMap.get("$dynamicAnchor").asString();
-            String anchoredUri = UriUtil.resolveUri(ctx.getParentUri(), anchorFragment);
-//            put(additionalSchemas, anchoredUri, schema);
-            temp.put(ctx.getParentUri().toString(), schema);
+            put(dynamicSchemas, ctx.getParentUri().toString() + anchorFragment, schema);
         }
     }
 
