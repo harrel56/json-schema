@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeAll;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Logger;
 
@@ -223,16 +224,20 @@ class SpecificationTest {
 
     @BeforeAll
     static void beforeAll() {
-        resolver = uri -> {
-            if (uri.equals("https://json-schema.org/draft/2020-12/schema")) {
-                try {
-                    return Optional.of(new String(SpecificationTest.class.getResourceAsStream("/draft2020-12.json").readAllBytes()));
-                } catch (IOException e) {
-                    throw new UncheckedIOException(e);
-                }
-            }
-            return Optional.empty();
-        };
+        Map<String, String> schemaMap = Map.of(
+                "https://json-schema.org/draft/2020-12/schema", readResource("/schemas/draft2020-12.json"),
+                "http://localhost:1234/draft2020-12/tree.json", readResource("/schemas/tree.json"),
+                "http://localhost:1234/draft2020-12/extendible-dynamic-ref.json", readResource("/schemas/extendible-dynamic-ref.json")
+        );
+        resolver = uri -> Optional.ofNullable(schemaMap.get(uri));
+    }
+
+    static String readResource(String resource) {
+        try {
+            return new String(SpecificationTest.class.getResourceAsStream(resource).readAllBytes());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     private void testValidation(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
