@@ -1,9 +1,16 @@
 {
-  "type": "object",
   "properties": {
-    "field1": { "$ref": "tmp" }
+    "x": {
+      "type": "string",
+      "maxLength": 2
+    }
   },
-  "custom": {
-    "type": "string"
+  "additionalProperties": {
+    "properties": {
+      "x": {
+        "type": "string",
+        "maxLength": 2
+      }
+    }
   }
 }

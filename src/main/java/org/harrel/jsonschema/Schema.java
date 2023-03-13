@@ -3,7 +3,10 @@ package org.harrel.jsonschema;
 import org.harrel.jsonschema.validator.ValidationResult;
 import org.harrel.jsonschema.validator.Validator;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 public class Schema {
 
@@ -23,14 +26,17 @@ public class Schema {
 
     public boolean validate(ValidationContext ctx, JsonNode node) {
         ValidationContext newCtx = ctx.withEmptyAnnotations();
+        boolean valid = true;
         for (ValidatorDelegate validator : validators) {
             ValidationResult result = validator.validate(newCtx, node);
-            if (!result.isValid()) {
-                return false;
-            }
-            newCtx.addAnnotation(new Annotation(validator.getKeywordPath(), node.getJsonPointer(), result.getErrorMessage(), result.isValid()));
+            Annotation annotation = new Annotation(validator.getKeywordPath(), node.getJsonPointer(), result.getErrorMessage(), result.isValid());
+            ctx.addValidationAnnotation(annotation);
+            valid = valid && result.isValid();
+            newCtx.addAnnotation(annotation);
         }
-        ctx.addAnnotations(newCtx.getAnnotations());
-        return true;
+        if (valid) {
+            ctx.addAnnotations(newCtx.getAnnotations());
+        }
+        return valid;
     }
 }

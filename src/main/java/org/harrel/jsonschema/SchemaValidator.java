@@ -32,7 +32,7 @@ public class SchemaValidator {
     public boolean validate(JsonNode schema, JsonNode json) {
         String generatedUri = UUID.randomUUID().toString();
         SchemaParsingContext ctx = jsonParser.parseRootSchema(generatedUri, schema);
-        return ctx.validateSchema(jsonParser, schemaResolver, json);
+        return ctx.validate(jsonParser, schemaResolver, json);
     }
 
     public void registerSchema(URI uri, JsonNode schema) {

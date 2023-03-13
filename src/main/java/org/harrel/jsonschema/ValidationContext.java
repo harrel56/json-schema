@@ -9,33 +9,44 @@ public class ValidationContext {
     private final SchemaResolver schemaResolver;
     private final LinkedList<IdentifiableSchema> dynamicScope;
     private final List<Annotation> annotations;
+    private final List<Annotation> validationAnnotations;
 
     private ValidationContext(JsonParser jsonParser,
                               SchemaRegistry schemaRegistry,
                               SchemaResolver schemaResolver,
                               LinkedList<IdentifiableSchema> dynamicScope,
-                              List<Annotation> annotations) {
+                              List<Annotation> annotations,
+                              List<Annotation> validationAnnotations) {
         this.jsonParser = jsonParser;
         this.schemaRegistry = schemaRegistry;
         this.schemaResolver = schemaResolver;
         this.dynamicScope = dynamicScope;
         this.annotations = annotations;
+        this.validationAnnotations = validationAnnotations;
     }
 
     ValidationContext(JsonParser jsonParser, SchemaRegistry schemaRegistry, SchemaResolver schemaResolver) {
-        this(jsonParser, schemaRegistry, schemaResolver, new LinkedList<>(), new ArrayList<>());
+        this(jsonParser, schemaRegistry, schemaResolver, new LinkedList<>(), new ArrayList<>(), new ArrayList<>());
     }
 
     public ValidationContext withEmptyAnnotations() {
-        return new ValidationContext(jsonParser, schemaRegistry, schemaResolver, dynamicScope, new ArrayList<>());
+        return new ValidationContext(jsonParser, schemaRegistry, schemaResolver, dynamicScope, new ArrayList<>(), validationAnnotations);
     }
 
     public List<Annotation> getAnnotations() {
         return Collections.unmodifiableList(annotations);
     }
 
+    public List<Annotation> getValidationAnnotations() {
+        return Collections.unmodifiableList(validationAnnotations);
+    }
+
     public void addAnnotation(Annotation annotation) {
         this.annotations.add(annotation);
+    }
+
+    public void addValidationAnnotation(Annotation annotation) {
+        this.validationAnnotations.add(annotation);
     }
 
     public void addAnnotations(Collection<Annotation> annotations) {
