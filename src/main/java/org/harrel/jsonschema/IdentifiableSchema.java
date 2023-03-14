@@ -7,7 +7,7 @@ public class IdentifiableSchema extends Schema {
     private final URI uri;
 
     public IdentifiableSchema(URI uri, List<ValidatorDelegate> validators) {
-        super(validators);
+        super(uri.toString(), validators);
         this.uri = uri;
     }
 

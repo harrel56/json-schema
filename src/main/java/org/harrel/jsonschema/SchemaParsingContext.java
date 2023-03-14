@@ -66,7 +66,7 @@ public class SchemaParsingContext {
         }
         ValidationContext ctx = new ValidationContext(jsonParser, schemaRegistry, schemaResolver);
         boolean valid = idSchema.validate(ctx, node);
-        System.out.println(ctx.getValidationAnnotations());
+        ctx.getValidationAnnotations().stream().forEach(System.out::println);
         return valid;
     }
 }

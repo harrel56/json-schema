@@ -19,7 +19,7 @@ public class SchemaRegistry {
 
     public void registerSchema(SchemaParsingContext ctx, JsonNode schemaNode, List<ValidatorDelegate> validators) {
         Map<String, JsonNode> objectMap = schemaNode.asObject();
-        Schema schema = new Schema(validators);
+        Schema schema = new Schema(ctx.getAbsoluteUri(schemaNode), validators);
         put(schemas, ctx.getAbsoluteUri(schemaNode), schema);
         registerAnchorsIfPresent(ctx, objectMap, schema);
     }

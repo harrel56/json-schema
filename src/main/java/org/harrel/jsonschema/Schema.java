@@ -13,9 +13,11 @@ public class Schema {
     private static final Validator TRUE_VALIDATOR = (ctx, node) -> Result.success();
     private static final Validator FALSE_VALIDATOR = (ctx, node) -> Result.failure("False schema always fails.");
 
+    private final String schemaLocation;
     private final List<ValidatorDelegate> validators;
 
-    public Schema(List<ValidatorDelegate> validators) {
+    public Schema(String schemaLocation, List<ValidatorDelegate> validators) {
+        this.schemaLocation = Objects.requireNonNull(schemaLocation);
         this.validators = new ArrayList<>(Objects.requireNonNull(validators));
         Collections.sort(this.validators);
     }
@@ -30,7 +32,7 @@ public class Schema {
         for (ValidatorDelegate validator : validators) {
             ValidationResult result = validator.validate(newCtx, node);
             Annotation annotation = new Annotation(validator.getKeywordPath(), node.getJsonPointer(), result.getErrorMessage(), result.isValid());
-            ctx.addValidationAnnotation(annotation);
+            ctx.addValidationAnnotation(new Annotation(schemaLocation, node.getJsonPointer(), result.getErrorMessage(), result.isValid()));
             valid = valid && result.isValid();
             newCtx.addAnnotation(annotation);
         }

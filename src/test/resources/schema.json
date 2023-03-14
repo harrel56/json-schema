@@ -6,11 +6,6 @@
     }
   },
   "additionalProperties": {
-    "properties": {
-      "x": {
-        "type": "string",
-        "maxLength": 2
-      }
-    }
+    "$ref": "#"
   }
 }
