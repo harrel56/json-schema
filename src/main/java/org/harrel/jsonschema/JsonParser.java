@@ -29,7 +29,8 @@ public class JsonParser {
         if (node.isBoolean()) {
             SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, baseUri);
             URI uri = URI.create(baseUri);
-            ctx.registerIdentifiableSchema(uri, node, List.of(new ValidatorDelegate(node, Schema.getBooleanValidator(node.asBoolean()))));
+            boolean schemaValue = node.asBoolean();
+            ctx.registerIdentifiableSchema(uri, node, List.of(new ValidatorWrapper(String.valueOf(schemaValue), node, Schema.getBooleanValidator(schemaValue))));
             return ctx;
         } else {
             Map<String, JsonNode> objectMap = node.asObject();
@@ -38,7 +39,7 @@ public class JsonParser {
                     .orElse(baseUri);
             SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, id);
             URI uri = URI.create(id);
-            List<ValidatorDelegate> validators = parseValidators(ctx, objectMap);
+            List<ValidatorWrapper> validators = parseValidators(ctx, objectMap);
             ctx.registerIdentifiableSchema(uri, node, validators);
             return ctx;
         }
@@ -55,8 +56,9 @@ public class JsonParser {
     }
 
     private void parseBoolean(SchemaParsingContext ctx, JsonNode node) {
-        Validator booleanValidator = Schema.getBooleanValidator(node.asBoolean());
-        ctx.registerSchema(node, List.of(new ValidatorDelegate(node, booleanValidator)));
+        boolean schemaValue = node.asBoolean();
+        Validator booleanValidator = Schema.getBooleanValidator(schemaValue);
+        ctx.registerSchema(node, List.of(new ValidatorWrapper(String.valueOf(schemaValue), node, booleanValidator)));
     }
 
     private void parseArray(SchemaParsingContext ctx, JsonNode node) {
@@ -70,19 +72,19 @@ public class JsonParser {
         if (objectMap.containsKey("$id")) {
             URI uri = ctx.getParentUri().resolve(objectMap.get("$id").asString());
             SchemaParsingContext newCtx = ctx.withParentUri(uri);
-            List<ValidatorDelegate> validators = parseValidators(newCtx, objectMap);
+            List<ValidatorWrapper> validators = parseValidators(newCtx, objectMap);
             newCtx.registerIdentifiableSchema(uri, node, validators);
         } else {
             ctx.registerSchema(node, parseValidators(ctx, objectMap));
         }
     }
 
-    private List<ValidatorDelegate> parseValidators(SchemaParsingContext ctx, Map<String, JsonNode> object) {
+    private List<ValidatorWrapper> parseValidators(SchemaParsingContext ctx, Map<String, JsonNode> object) {
         SchemaParsingContext newCtx = ctx.withCurrentSchemaContext(object);
-        List<ValidatorDelegate> validators = new ArrayList<>();
+        List<ValidatorWrapper> validators = new ArrayList<>();
         for (Map.Entry<String, JsonNode> entry : object.entrySet()) {
             validatorFactory.fromField(newCtx, entry.getKey(), entry.getValue())
-                    .map(validator -> new ValidatorDelegate(entry.getValue(), validator))
+                    .map(validator -> new ValidatorWrapper(entry.getKey(), entry.getValue(), validator))
                     .ifPresent(validators::add);
             if (!NOT_PARSABLE_KEYWORDS.contains(entry.getKey())) {
                 parseNode(newCtx, entry.getValue());

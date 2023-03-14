@@ -3,12 +3,14 @@ package org.harrel.jsonschema;
 import org.harrel.jsonschema.validator.ValidationResult;
 import org.harrel.jsonschema.validator.Validator;
 
-class ValidatorDelegate implements Validator {
-    private final JsonNode schemaNode;
+class ValidatorWrapper implements Validator {
+    private final String keyword;
+    private final String keywordPath;
     private final Validator validator;
 
-    public ValidatorDelegate(JsonNode schemaNode, Validator validator) {
-        this.schemaNode = schemaNode;
+    public ValidatorWrapper(String keyword, JsonNode keywordNode, Validator validator) {
+        this.keyword = keyword;
+        this.keywordPath = keywordNode.getJsonPointer();
         this.validator = validator;
     }
 
@@ -22,7 +24,11 @@ class ValidatorDelegate implements Validator {
         return validator.getOrder();
     }
 
+    public String getKeyword() {
+        return keyword;
+    }
+
     public String getKeywordPath() {
-        return schemaNode.getJsonPointer();
+        return keywordPath;
     }
 }

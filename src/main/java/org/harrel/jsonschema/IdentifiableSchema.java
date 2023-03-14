@@ -6,7 +6,7 @@ import java.util.List;
 public class IdentifiableSchema extends Schema {
     private final URI uri;
 
-    public IdentifiableSchema(URI uri, List<ValidatorDelegate> validators) {
+    public IdentifiableSchema(URI uri, List<ValidatorWrapper> validators) {
         super(uri.toString(), validators);
         this.uri = uri;
     }

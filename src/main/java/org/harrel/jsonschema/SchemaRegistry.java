@@ -17,14 +17,14 @@ public class SchemaRegistry {
         return dynamicSchemas.get(anchor);
     }
 
-    public void registerSchema(SchemaParsingContext ctx, JsonNode schemaNode, List<ValidatorDelegate> validators) {
+    public void registerSchema(SchemaParsingContext ctx, JsonNode schemaNode, List<ValidatorWrapper> validators) {
         Map<String, JsonNode> objectMap = schemaNode.asObject();
         Schema schema = new Schema(ctx.getAbsoluteUri(schemaNode), validators);
         put(schemas, ctx.getAbsoluteUri(schemaNode), schema);
         registerAnchorsIfPresent(ctx, objectMap, schema);
     }
 
-    public void registerIdentifiableSchema(SchemaParsingContext ctx, URI id, JsonNode schemaNode, List<ValidatorDelegate> validators) {
+    public void registerIdentifiableSchema(SchemaParsingContext ctx, URI id, JsonNode schemaNode, List<ValidatorWrapper> validators) {
         String absoluteUri = ctx.getAbsoluteUri(schemaNode);
         schemas.entrySet().stream()
                 .filter(e -> e.getKey().startsWith(absoluteUri))

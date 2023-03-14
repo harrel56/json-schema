@@ -50,11 +50,11 @@ public class SchemaParsingContext {
         return currentSchemaObject;
     }
 
-    public void registerSchema(JsonNode schemaNode, List<ValidatorDelegate> validators) {
+    public void registerSchema(JsonNode schemaNode, List<ValidatorWrapper> validators) {
         schemaRegistry.registerSchema(this, schemaNode, validators);
     }
 
-    public void registerIdentifiableSchema(URI uri, JsonNode schemaNode, List<ValidatorDelegate> validators) {
+    public void registerIdentifiableSchema(URI uri, JsonNode schemaNode, List<ValidatorWrapper> validators) {
         schemaRegistry.registerIdentifiableSchema(this, uri, schemaNode, validators);
     }
 

@@ -29,28 +29,24 @@ public class ValidationContext {
         this(jsonParser, schemaRegistry, schemaResolver, new LinkedList<>(), new ArrayList<>(), new ArrayList<>());
     }
 
-    public ValidationContext withEmptyAnnotations() {
-        return new ValidationContext(jsonParser, schemaRegistry, schemaResolver, dynamicScope, new ArrayList<>(), validationAnnotations);
-    }
-
     public List<Annotation> getAnnotations() {
         return Collections.unmodifiableList(annotations);
-    }
-
-    public List<Annotation> getValidationAnnotations() {
-        return Collections.unmodifiableList(validationAnnotations);
     }
 
     public void addAnnotation(Annotation annotation) {
         this.annotations.add(annotation);
     }
 
-    public void addValidationAnnotation(Annotation annotation) {
+    List<Annotation> getValidationAnnotations() {
+        return Collections.unmodifiableList(validationAnnotations);
+    }
+
+    void addValidationAnnotation(Annotation annotation) {
         this.validationAnnotations.add(annotation);
     }
 
-    public void addAnnotations(Collection<Annotation> annotations) {
-        this.annotations.addAll(annotations);
+    void truncateAnnotationsToSize(int size) {
+        annotations.subList(size, annotations.size()).clear();
     }
 
     public Optional<Schema> resolveSchema(String ref) {
