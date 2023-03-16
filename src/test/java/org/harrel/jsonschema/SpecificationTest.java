@@ -252,10 +252,8 @@ class SpecificationTest {
     }
 
     private void testValidation(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-//        Assumptions.assumeTrue(bundle.equals("A $dynamicRef that initially resolves to a schema with a matching $dynamicAnchor resolves to the first $dynamicAnchor in the dynamic scope"));
-//        Assumptions.assumeTrue(name.equals("The recursive part is not valid against the root"));
-//        Assumptions.assumeTrue(bundle.equals("A $dynamicRef that initially resolves to a schema with a matching $dynamicAnchor resolves to the first $dynamicAnchor in the dynamic scope"));
-//        Assumptions.assumeTrue(name.equals("The recursive part is not valid against the root"));
+//        Assumptions.assumeTrue(bundle.equals("strict-tree schema, guards against misspelled properties"));
+//        Assumptions.assumeTrue(name.equals("instance with correct field"));
         SchemaValidator validator = new SchemaValidator(new JacksonNodeFactory(), resolver);
         logger.info("%s: %s".formatted(bundle, name));
         logger.info(schema.toPrettyString());

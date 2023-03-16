@@ -23,7 +23,7 @@ class UnevaluatedPropertiesValidator extends BasicValidator {
 
         Schema schema = ctx.resolveRequiredSchema(schemaUri);
         List<Annotation> annotations = ctx.getAnnotations().stream()
-                .filter(a -> a.header().schemaLocation().startsWith(parentPath))
+                .filter(a -> a.header().evaluationPath().startsWith(parentPath))
                 .toList();
 
         return StreamUtil.exhaustiveAllMatch(
