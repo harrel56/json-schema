@@ -31,14 +31,18 @@ class ContainsValidator extends BasicValidator {
                 .filter(element -> schema.validate(ctx, element))
                 .count();
         if (max != null && max.value() < count) {
-            ctx.addAnnotation(new Annotation(max.path(), node.getJsonPointer(), "MaxContains validation failed.", false));
+            // TODO as separate validator
+            ctx.addAnnotation(new Annotation(
+                    new AnnotationHeader(max.path(), null, node.getJsonPointer()), "maxContains", "MaxContains validation failed.", false));
             return false;
         }
         if (min != null) {
             if (min.value() == 0) {
                 return true;
             } else if (min.value() > count) {
-                ctx.addAnnotation(new Annotation(min.path(), node.getJsonPointer(), "MinContains validation failed.", false));
+                // TODO as separate validator
+                ctx.addAnnotation(new Annotation(
+                        new AnnotationHeader(min.path(), null, node.getJsonPointer()), "minContains", "MinContains validation failed.", false));
                 return false;
             }
         }

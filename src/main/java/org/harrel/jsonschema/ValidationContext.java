@@ -1,6 +1,5 @@
 package org.harrel.jsonschema;
 
-import java.io.IOException;
 import java.util.*;
 
 public class ValidationContext {
@@ -11,22 +10,13 @@ public class ValidationContext {
     private final List<Annotation> annotations;
     private final List<Annotation> validationAnnotations;
 
-    private ValidationContext(JsonParser jsonParser,
-                              SchemaRegistry schemaRegistry,
-                              SchemaResolver schemaResolver,
-                              LinkedList<IdentifiableSchema> dynamicScope,
-                              List<Annotation> annotations,
-                              List<Annotation> validationAnnotations) {
+    ValidationContext(JsonParser jsonParser, SchemaRegistry schemaRegistry, SchemaResolver schemaResolver) {
         this.jsonParser = jsonParser;
         this.schemaRegistry = schemaRegistry;
         this.schemaResolver = schemaResolver;
-        this.dynamicScope = dynamicScope;
-        this.annotations = annotations;
-        this.validationAnnotations = validationAnnotations;
-    }
-
-    ValidationContext(JsonParser jsonParser, SchemaRegistry schemaRegistry, SchemaResolver schemaResolver) {
-        this(jsonParser, schemaRegistry, schemaResolver, new LinkedList<>(), new ArrayList<>(), new ArrayList<>());
+        this.dynamicScope = new LinkedList<>();
+        this.annotations = new ArrayList<>();
+        this.validationAnnotations = new ArrayList<>();
     }
 
     public List<Annotation> getAnnotations() {
@@ -35,18 +25,6 @@ public class ValidationContext {
 
     public void addAnnotation(Annotation annotation) {
         this.annotations.add(annotation);
-    }
-
-    List<Annotation> getValidationAnnotations() {
-        return Collections.unmodifiableList(validationAnnotations);
-    }
-
-    void addValidationAnnotation(Annotation annotation) {
-        this.validationAnnotations.add(annotation);
-    }
-
-    void truncateAnnotationsToSize(int size) {
-        annotations.subList(size, annotations.size()).clear();
     }
 
     public Optional<Schema> resolveSchema(String ref) {
@@ -87,13 +65,25 @@ public class ValidationContext {
         dynamicScope.pop();
     }
 
+    List<Annotation> getValidationAnnotations() {
+        return Collections.unmodifiableList(validationAnnotations);
+    }
+
+    void addValidationAnnotation(Annotation annotation) {
+        this.validationAnnotations.add(annotation);
+    }
+
+    void truncateAnnotationsToSize(int size) {
+        annotations.subList(size, annotations.size()).clear();
+    }
+
     private Optional<Schema> resolveExternalSchema(String uri) {
         Optional<String> rawJson = schemaResolver.resolve(uri);
         if (rawJson.isPresent()) {
             try {
                 jsonParser.parseRootSchema(uri, rawJson.get());
                 return resolveSchema(uri);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 return Optional.empty();
             }
         }

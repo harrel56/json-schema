@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeAll;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -260,6 +261,7 @@ class SpecificationTest {
         logger.info(schema.toPrettyString());
         logger.info(json.toPrettyString());
         logger.info(String.valueOf(valid));
-        Assertions.assertEquals(valid, validator.validate(new JacksonNode(schema), new JacksonNode(json)));
+        URI uri = validator.registerSchema(schema);
+        Assertions.assertEquals(valid, validator.validate(uri, json));
     }
 }

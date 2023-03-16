@@ -49,24 +49,4 @@ public class SchemaParsingContext {
     public Map<String, JsonNode> getCurrentSchemaObject() {
         return currentSchemaObject;
     }
-
-    public void registerSchema(JsonNode schemaNode, List<ValidatorWrapper> validators) {
-        schemaRegistry.registerSchema(this, schemaNode, validators);
-    }
-
-    public void registerIdentifiableSchema(URI uri, JsonNode schemaNode, List<ValidatorWrapper> validators) {
-        schemaRegistry.registerIdentifiableSchema(this, uri, schemaNode, validators);
-    }
-
-    public boolean validate(JsonParser jsonParser, SchemaResolver schemaResolver, JsonNode node) {
-        Schema schema = schemaRegistry.get(baseUri.toString());
-        if (!(schema instanceof IdentifiableSchema idSchema)) {
-            throw new IllegalArgumentException(
-                    "Couldn't find schema with uri=%s or it resolves to non-identifiable schema".formatted(baseUri));
-        }
-        ValidationContext ctx = new ValidationContext(jsonParser, schemaRegistry, schemaResolver);
-        boolean valid = idSchema.validate(ctx, node);
-        ctx.getValidationAnnotations().stream().forEach(System.out::println);
-        return valid;
-    }
 }

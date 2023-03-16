@@ -31,10 +31,12 @@ public class Schema {
         boolean valid = true;
         for (ValidatorWrapper validator : validators) {
             ValidationResult result = validator.validate(ctx, node);
-            Annotation annotation = new Annotation(validator.getKeywordPath(), node.getJsonPointer(), result.getErrorMessage(), result.isValid());
-            ctx.addValidationAnnotation(new Annotation(schemaLocation, node.getJsonPointer(), result.getErrorMessage(), result.isValid()));
-            valid = valid && result.isValid();
+            Annotation annotation = new Annotation(
+                    new AnnotationHeader(validator.getKeywordPath(), schemaLocation, node.getJsonPointer()),
+                    validator.getKeyword(), result.getErrorMessage(), result.isValid());
+            ctx.addValidationAnnotation(annotation);
             ctx.addAnnotation(annotation);
+            valid = valid && result.isValid();
         }
         if (!valid) {
             ctx.truncateAnnotationsToSize(annotationsBefore);

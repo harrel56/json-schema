@@ -3,7 +3,6 @@ package org.harrel.jsonschema;
 import org.harrel.jsonschema.validator.Validator;
 import org.harrel.jsonschema.validator.ValidatorFactory;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 
@@ -21,27 +20,26 @@ public class JsonParser {
         this.schemaRegistry = schemaRegistry;
     }
 
-    public SchemaParsingContext parseRootSchema(String baseUri, String rawJson) throws IOException {
-        return parseRootSchema(baseUri, jsonNodeFactory.create(rawJson));
+    public void parseRootSchema(String baseUri, String rawJson) {
+        parseRootSchema(URI.create(baseUri), jsonNodeFactory.create(rawJson));
     }
 
-    public SchemaParsingContext parseRootSchema(String baseUri, JsonNode node) {
+    public URI parseRootSchema(URI baseUri, JsonNode node) {
         if (node.isBoolean()) {
-            SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, baseUri);
-            URI uri = URI.create(baseUri);
+            SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, baseUri.toString());
             boolean schemaValue = node.asBoolean();
-            ctx.registerIdentifiableSchema(uri, node, List.of(new ValidatorWrapper(String.valueOf(schemaValue), node, Schema.getBooleanValidator(schemaValue))));
-            return ctx;
+            schemaRegistry.registerIdentifiableSchema(ctx, baseUri, node, List.of(new ValidatorWrapper(String.valueOf(schemaValue), node, Schema.getBooleanValidator(schemaValue))));
+            return baseUri;
         } else {
             Map<String, JsonNode> objectMap = node.asObject();
             String id = Optional.ofNullable(objectMap.get("$id"))
                     .map(JsonNode::asString)
-                    .orElse(baseUri);
+                    .orElse(baseUri.toString());
             SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, id);
             URI uri = URI.create(id);
             List<ValidatorWrapper> validators = parseValidators(ctx, objectMap);
-            ctx.registerIdentifiableSchema(uri, node, validators);
-            return ctx;
+            schemaRegistry.registerIdentifiableSchema(ctx, uri, node, validators);
+            return uri;
         }
     }
 
@@ -58,7 +56,7 @@ public class JsonParser {
     private void parseBoolean(SchemaParsingContext ctx, JsonNode node) {
         boolean schemaValue = node.asBoolean();
         Validator booleanValidator = Schema.getBooleanValidator(schemaValue);
-        ctx.registerSchema(node, List.of(new ValidatorWrapper(String.valueOf(schemaValue), node, booleanValidator)));
+        schemaRegistry.registerSchema(ctx, node, List.of(new ValidatorWrapper(String.valueOf(schemaValue), node, booleanValidator)));
     }
 
     private void parseArray(SchemaParsingContext ctx, JsonNode node) {
@@ -73,9 +71,9 @@ public class JsonParser {
             URI uri = ctx.getParentUri().resolve(objectMap.get("$id").asString());
             SchemaParsingContext newCtx = ctx.withParentUri(uri);
             List<ValidatorWrapper> validators = parseValidators(newCtx, objectMap);
-            newCtx.registerIdentifiableSchema(uri, node, validators);
+            schemaRegistry.registerIdentifiableSchema(newCtx, uri, node, validators);
         } else {
-            ctx.registerSchema(node, parseValidators(ctx, objectMap));
+            schemaRegistry.registerSchema(ctx, node, parseValidators(ctx, objectMap));
         }
     }
 

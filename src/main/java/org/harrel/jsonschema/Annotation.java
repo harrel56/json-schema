@@ -1,3 +1,6 @@
 package org.harrel.jsonschema;
 
-public record Annotation(String schemaPath, String instancePath, String message, boolean successful) {}
+public record Annotation(AnnotationHeader header,
+                         String keyword,
+                         String message,
+                         boolean successful) {}
