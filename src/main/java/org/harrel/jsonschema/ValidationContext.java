@@ -78,10 +78,14 @@ public class ValidationContext {
     }
 
     private Optional<Schema> resolveExternalSchema(String uri) {
-        Optional<String> rawJson = schemaResolver.resolve(uri);
+        String baseUri = UriUtil.getUriWithoutFragment(uri);
+        if (schemaRegistry.get(baseUri) != null) {
+            return Optional.empty();
+        }
+        Optional<String> rawJson = schemaResolver.resolve(baseUri);
         if (rawJson.isPresent()) {
             try {
-                jsonParser.parseRootSchema(uri, rawJson.get());
+                jsonParser.parseRootSchema(baseUri, rawJson.get());
                 return resolveSchema(uri);
             } catch (Exception e) {
                 return Optional.empty();

@@ -46,6 +46,11 @@ class SpecificationTest {
 //        testValidation(bundle, name, schema, json, valid);
 //    }
 
+//    @SuiteTest("/draft2020-12/vocabulary.json")
+//    void vocabularyTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+//        testValidation(bundle, name, schema, json, valid);
+//    }
+
     @SuiteTest("/draft2020-12/id.json")
     void idTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
         testValidation(bundle, name, schema, json, valid);
@@ -141,6 +146,11 @@ class SpecificationTest {
         testValidation(bundle, name, schema, json, valid);
     }
 
+    @SuiteTest("/draft2020-12/properties.json")
+    void propertiesTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
     @SuiteTest("/draft2020-12/maxProperties.json")
     void maxPropertiesTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
         testValidation(bundle, name, schema, json, valid);
@@ -191,6 +201,11 @@ class SpecificationTest {
         testValidation(bundle, name, schema, json, valid);
     }
 
+    @SuiteTest("/draft2020-12/refRemote.json")
+    void refRemoteTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
     @SuiteTest("/draft2020-12/anchor.json")
     void anchorTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
         testValidation(bundle, name, schema, json, valid);
@@ -226,6 +241,16 @@ class SpecificationTest {
         testValidation(bundle, name, schema, json, valid);
     }
 
+    @SuiteTest("/draft2020-12/exclusiveMaximum.json")
+    void exclusiveMaximumTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
+    @SuiteTest("/draft2020-12/exclusiveMinimum.json")
+    void exclusiveMinimumTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
     @SuiteTest("/draft2020-12/multipleOf.json")
     void multipleOfTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
         testValidation(bundle, name, schema, json, valid);
@@ -237,8 +262,14 @@ class SpecificationTest {
     static void beforeAll() {
         Map<String, String> schemaMap = Map.of(
                 "https://json-schema.org/draft/2020-12/schema", readResource("/schemas/draft2020-12.json"),
+                "http://localhost:1234/draft2020-12/extendible-dynamic-ref.json", readResource("/schemas/extendible-dynamic-ref.json"),
+                "http://localhost:1234/draft2020-12/integer.json", readResource("/schemas/integer.json"),
+                "http://localhost:1234/draft2020-12/name-defs.json", readResource("/schemas/name-defs.json"),
+                "http://localhost:1234/draft2020-12/subSchemas-defs.json", readResource("/schemas/subSchemas-defs.json"),
                 "http://localhost:1234/draft2020-12/tree.json", readResource("/schemas/tree.json"),
-                "http://localhost:1234/draft2020-12/extendible-dynamic-ref.json", readResource("/schemas/extendible-dynamic-ref.json")
+                "http://localhost:1234/draft2020-12/baseUriChange/folderInteger.json", readResource("/schemas/baseUriChange/folderInteger.json"),
+                "http://localhost:1234/draft2020-12/baseUriChangeFolder/folderInteger.json", readResource("/schemas/baseUriChangeFolder/folderInteger.json"),
+                "http://localhost:1234/draft2020-12/baseUriChangeFolderInSubschema/folderInteger.json", readResource("/schemas/baseUriChangeFolderInSubschema/folderInteger.json")
         );
         resolver = uri -> Optional.ofNullable(schemaMap.get(uri));
     }
@@ -252,8 +283,8 @@ class SpecificationTest {
     }
 
     private void testValidation(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-//        Assumptions.assumeTrue(bundle.equals("maxContains with contains"));
-//        Assumptions.assumeTrue(name.equals("all elements match, invalid maxContains"));
+//        Assumptions.assumeTrue(bundle.equals("ref within remote ref"));
+//        Assumptions.assumeTrue(name.equals("ref within ref valid"));
         SchemaValidator validator = new SchemaValidator(new JacksonNodeFactory(), resolver);
         logger.info("%s: %s".formatted(bundle, name));
         logger.info(schema.toPrettyString());

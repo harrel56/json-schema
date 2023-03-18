@@ -14,6 +14,15 @@ public class UriUtil {
                 .filter(fragment -> !fragment.startsWith("/"));
     }
 
+    public static String getUriWithoutFragment(String uri) {
+        int fragmentIdx = uri.indexOf('#');
+        if (fragmentIdx < 0) {
+            return uri;
+        } else {
+            return uri.substring(0, fragmentIdx);
+        }
+    }
+
     public static boolean isJsonPointerOrAnchor(String uri) {
         return uri.startsWith("#") && uri.length() > 1;
     }
