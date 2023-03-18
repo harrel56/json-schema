@@ -20,7 +20,7 @@ public class SchemaRegistry {
     public void registerSchema(SchemaParsingContext ctx, JsonNode schemaNode, List<ValidatorWrapper> validators) {
         Map<String, JsonNode> objectMap = schemaNode.asObject();
         Schema schema = new Schema(ctx.getParentUri(), ctx.getAbsoluteUri(schemaNode), validators);
-        put(schemas, ctx.getAbsoluteUri(schemaNode), schema);
+        schemas.put(ctx.getAbsoluteUri(schemaNode), schema);
         registerAnchorsIfPresent(ctx, objectMap, schema);
     }
 
@@ -33,12 +33,12 @@ public class SchemaRegistry {
                     int normalizedUriSize = absoluteUri.endsWith("/") ? absoluteUri.length() - 1 : absoluteUri.length();
                     String newJsonPointer = e.getKey().substring(normalizedUriSize);
                     String newUri = id.toString() + "#" + newJsonPointer;
-                    put(additionalSchemas, newUri, e.getValue());
+                    additionalSchemas.put(newUri, e.getValue());
                 });
         Map<String, JsonNode> objectMap = schemaNode.asObject();
         Schema identifiableSchema = new Schema(ctx.getParentUri(), id.toString(), validators);
-        put(schemas, id.toString(), identifiableSchema);
-        put(schemas, absoluteUri, identifiableSchema);
+        schemas.put(id.toString(), identifiableSchema);
+        schemas.put(absoluteUri, identifiableSchema);
         registerAnchorsIfPresent(ctx, objectMap, identifiableSchema);
     }
 
@@ -46,18 +46,11 @@ public class SchemaRegistry {
         if (objectMap.containsKey("$anchor")) {
             String anchorFragment = "#" + objectMap.get("$anchor").asString();
             String anchoredUri = UriUtil.resolveUri(ctx.getParentUri(), anchorFragment);
-            put(additionalSchemas, anchoredUri, schema);
+            additionalSchemas.put(anchoredUri, schema);
         }
         if (objectMap.containsKey("$dynamicAnchor")) {
             String anchorFragment = "#" + objectMap.get("$dynamicAnchor").asString();
-            put(dynamicSchemas, ctx.getParentUri().toString() + anchorFragment, schema);
+            dynamicSchemas.put(ctx.getParentUri().toString() + anchorFragment, schema);
         }
-    }
-
-    private void put(Map<String, Schema> map, String key, Schema value) {
-        if (map.containsKey(key)) {
-            throw new IllegalArgumentException("Duplicate schema registration, uri=" + key);
-        }
-        map.put(key, value);
     }
 }

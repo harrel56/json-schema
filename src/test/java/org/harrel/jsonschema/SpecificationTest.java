@@ -260,16 +260,23 @@ class SpecificationTest {
 
     @BeforeAll
     static void beforeAll() {
-        Map<String, String> schemaMap = Map.of(
-                "https://json-schema.org/draft/2020-12/schema", readResource("/schemas/draft2020-12.json"),
-                "http://localhost:1234/draft2020-12/extendible-dynamic-ref.json", readResource("/schemas/extendible-dynamic-ref.json"),
-                "http://localhost:1234/draft2020-12/integer.json", readResource("/schemas/integer.json"),
-                "http://localhost:1234/draft2020-12/name-defs.json", readResource("/schemas/name-defs.json"),
-                "http://localhost:1234/draft2020-12/subSchemas-defs.json", readResource("/schemas/subSchemas-defs.json"),
-                "http://localhost:1234/draft2020-12/tree.json", readResource("/schemas/tree.json"),
-                "http://localhost:1234/draft2020-12/baseUriChange/folderInteger.json", readResource("/schemas/baseUriChange/folderInteger.json"),
-                "http://localhost:1234/draft2020-12/baseUriChangeFolder/folderInteger.json", readResource("/schemas/baseUriChangeFolder/folderInteger.json"),
-                "http://localhost:1234/draft2020-12/baseUriChangeFolderInSubschema/folderInteger.json", readResource("/schemas/baseUriChangeFolderInSubschema/folderInteger.json")
+        Map<String, String> schemaMap = Map.ofEntries(
+                Map.entry("https://json-schema.org/draft/2020-12/schema", readResource("/schemas/draft2020-12.json")),
+                Map.entry("http://localhost:1234/different-id-ref-string.json", readResource("/schemas/different-id-ref-string.json")),
+                Map.entry("http://localhost:1234/nested-absolute-ref-to-string.json", readResource("/schemas/nested-absolute-ref-to-string.json")),
+                Map.entry("http://localhost:1234/urn-ref-string.json", readResource("/schemas/urn-ref-string.json")),
+                Map.entry("http://localhost:1234/draft2020-12/extendible-dynamic-ref.json", readResource("/schemas/extendible-dynamic-ref.json")),
+                Map.entry("http://localhost:1234/draft2020-12/integer.json", readResource("/schemas/integer.json")),
+                Map.entry("http://localhost:1234/draft2020-12/locationIndependentIdentifier.json", readResource("/schemas/locationIndependentIdentifier.json")),
+                Map.entry("http://localhost:1234/draft2020-12/name-defs.json", readResource("/schemas/name-defs.json")),
+                Map.entry("http://localhost:1234/draft2020-12/ref-and-defs.json", readResource("/schemas/ref-and-defs.json")),
+                Map.entry("http://localhost:1234/draft2020-12/subSchemas-defs.json", readResource("/schemas/subSchemas-defs.json")),
+                Map.entry("http://localhost:1234/draft2020-12/tree.json", readResource("/schemas/tree.json")),
+                Map.entry("http://localhost:1234/draft2020-12/baseUriChange/folderInteger.json", readResource("/schemas/baseUriChange/folderInteger.json")),
+                Map.entry("http://localhost:1234/draft2020-12/baseUriChangeFolder/folderInteger.json", readResource("/schemas/baseUriChangeFolder/folderInteger.json")),
+                Map.entry("http://localhost:1234/draft2020-12/baseUriChangeFolderInSubschema/folderInteger.json", readResource("/schemas/baseUriChangeFolderInSubschema/folderInteger.json")),
+                Map.entry("http://localhost:1234/draft2020-12/nested/foo-ref-string.json", readResource("/schemas/nested/foo-ref-string.json")),
+                Map.entry("http://localhost:1234/draft2020-12/nested/string.json", readResource("/schemas/nested/string.json"))
         );
         resolver = uri -> Optional.ofNullable(schemaMap.get(uri));
     }
@@ -283,8 +290,8 @@ class SpecificationTest {
     }
 
     private void testValidation(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-//        Assumptions.assumeTrue(bundle.equals("Valid use of empty fragments in location-independent $id"));
-//        Assumptions.assumeTrue(name.equals("Identifier name with absolute URI"));
+//        Assumptions.assumeTrue(bundle.equals("remote HTTP ref with different $id"));
+//        Assumptions.assumeTrue(name.equals("string is valid"));
         SchemaValidator validator = new SchemaValidator(new JacksonNodeFactory(), resolver);
         logger.info("%s: %s".formatted(bundle, name));
         logger.info(schema.toPrettyString());

@@ -32,14 +32,21 @@ public class JsonParser {
             return baseUri;
         } else {
             Map<String, JsonNode> objectMap = node.asObject();
-            String id = Optional.ofNullable(objectMap.get("$id"))
-                    .map(JsonNode::asString)
-                    .orElse(baseUri.toString());
-            SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, id);
-            URI uri = URI.create(id);
+            JsonNode idNode = objectMap.get("$id");
+            if (idNode != null) {
+                String idString = idNode.asString();
+                SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, idString);
+                List<ValidatorWrapper> validators = parseValidators(ctx, objectMap);
+                schemaRegistry.registerIdentifiableSchema(ctx, URI.create(idString), node, validators);
+            }
+            SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, baseUri.toString());
             List<ValidatorWrapper> validators = parseValidators(ctx, objectMap);
-            schemaRegistry.registerIdentifiableSchema(ctx, uri, node, validators);
-            return uri;
+            schemaRegistry.registerIdentifiableSchema(ctx, baseUri, node, validators);
+
+            return Optional.ofNullable(objectMap.get("$id"))
+                    .map(JsonNode::asString)
+                    .map(URI::create)
+                    .orElse(baseUri);
         }
     }
 
