@@ -252,8 +252,8 @@ class SpecificationTest {
     }
 
     private void testValidation(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-//        Assumptions.assumeTrue(bundle.equals("strict-tree schema, guards against misspelled properties"));
-//        Assumptions.assumeTrue(name.equals("instance with correct field"));
+//        Assumptions.assumeTrue(bundle.equals("maxContains with contains"));
+//        Assumptions.assumeTrue(name.equals("all elements match, invalid maxContains"));
         SchemaValidator validator = new SchemaValidator(new JacksonNodeFactory(), resolver);
         logger.info("%s: %s".formatted(bundle, name));
         logger.info(schema.toPrettyString());

@@ -47,6 +47,6 @@ public class SchemaParsingContext {
     }
 
     public Map<String, JsonNode> getCurrentSchemaObject() {
-        return currentSchemaObject;
+        return Collections.unmodifiableMap(currentSchemaObject);
     }
 }

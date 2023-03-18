@@ -24,6 +24,8 @@ public class ValidatorFactory {
         map.put("minItems", (ctx, node) -> new MinItemsValidator(node));
         map.put("uniqueItems", (ctx, node) -> new UniqueItemsValidator(node));
         map.put("contains", ContainsValidator::new);
+        map.put("maxContains", MaxContainsValidator::new);
+        map.put("minContains", MinContainsValidator::new);
         map.put("unevaluatedItems", UnevaluatedItemsValidator::new);
         map.put("properties", PropertiesValidator::new);
         map.put("additionalProperties", AdditionalPropertiesValidator::new);
