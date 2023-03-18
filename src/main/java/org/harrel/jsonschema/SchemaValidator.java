@@ -56,10 +56,10 @@ public class SchemaValidator {
 
     private Schema getRootSchema(String uri) {
         Schema schema = schemaRegistry.get(uri);
-        if (schema instanceof IdentifiableSchema identifiableSchema) {
-            return identifiableSchema;
+        if (schema == null) {
+            throw new IllegalStateException("Couldn't find schema with uri=%s or it resolves to non-identifiable schema".formatted(uri));
         }
-        throw new IllegalStateException("Couldn't find schema with uri=%s or it resolves to non-identifiable schema".formatted(uri));
+        return schema;
     }
 
     private ValidationContext createNewValidationContext() {

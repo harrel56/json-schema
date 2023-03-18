@@ -283,8 +283,8 @@ class SpecificationTest {
     }
 
     private void testValidation(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-//        Assumptions.assumeTrue(bundle.equals("ref within remote ref"));
-//        Assumptions.assumeTrue(name.equals("ref within ref valid"));
+//        Assumptions.assumeTrue(bundle.equals("Valid use of empty fragments in location-independent $id"));
+//        Assumptions.assumeTrue(name.equals("Identifier name with absolute URI"));
         SchemaValidator validator = new SchemaValidator(new JacksonNodeFactory(), resolver);
         logger.info("%s: %s".formatted(bundle, name));
         logger.info(schema.toPrettyString());

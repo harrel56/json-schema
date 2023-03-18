@@ -19,7 +19,7 @@ public class SchemaRegistry {
 
     public void registerSchema(SchemaParsingContext ctx, JsonNode schemaNode, List<ValidatorWrapper> validators) {
         Map<String, JsonNode> objectMap = schemaNode.asObject();
-        Schema schema = new Schema(ctx.getAbsoluteUri(schemaNode), validators);
+        Schema schema = new Schema(ctx.getParentUri(), ctx.getAbsoluteUri(schemaNode), validators);
         put(schemas, ctx.getAbsoluteUri(schemaNode), schema);
         registerAnchorsIfPresent(ctx, objectMap, schema);
     }
@@ -36,7 +36,7 @@ public class SchemaRegistry {
                     put(additionalSchemas, newUri, e.getValue());
                 });
         Map<String, JsonNode> objectMap = schemaNode.asObject();
-        IdentifiableSchema identifiableSchema = new IdentifiableSchema(id, validators);
+        Schema identifiableSchema = new Schema(ctx.getParentUri(), id.toString(), validators);
         put(schemas, id.toString(), identifiableSchema);
         put(schemas, absoluteUri, identifiableSchema);
         registerAnchorsIfPresent(ctx, objectMap, identifiableSchema);

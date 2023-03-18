@@ -1,12 +1,13 @@
 package org.harrel.jsonschema;
 
+import java.net.URI;
 import java.util.*;
 
 public class ValidationContext {
     private final JsonParser jsonParser;
     private final SchemaRegistry schemaRegistry;
     private final SchemaResolver schemaResolver;
-    private final LinkedList<IdentifiableSchema> dynamicScope;
+    private final LinkedList<URI> dynamicScope;
     private final List<Annotation> annotations;
     private final List<Annotation> validationAnnotations;
 
@@ -28,22 +29,22 @@ public class ValidationContext {
     }
 
     public Optional<Schema> resolveSchema(String ref) {
-        String resolvedUri = UriUtil.resolveUri(dynamicScope.peek().getUri(), ref);
+        String resolvedUri = UriUtil.resolveUri(dynamicScope.peek(), ref);
         return Optional.ofNullable(schemaRegistry.get(resolvedUri))
                 .or(() -> Optional.ofNullable(schemaRegistry.getDynamic(resolvedUri)))
                 .or(() -> resolveExternalSchema(resolvedUri));
     }
 
     public Optional<Schema> resolveDynamicSchema(String ref) {
-        String resolvedUri = UriUtil.resolveUri(dynamicScope.peek().getUri(), ref);
+        String resolvedUri = UriUtil.resolveUri(dynamicScope.peek(), ref);
         if (schemaRegistry.get(resolvedUri) != null) {
             return Optional.of(schemaRegistry.get(resolvedUri));
         }
         Optional<String> anchor = UriUtil.getAnchor(ref);
         if (anchor.isPresent()) {
-            Iterator<IdentifiableSchema> it = dynamicScope.descendingIterator();
+            Iterator<URI> it = dynamicScope.descendingIterator();
             while (it.hasNext()) {
-                Schema schema = schemaRegistry.getDynamic(it.next().getUri().toString() + "#" + anchor.get());
+                Schema schema = schemaRegistry.getDynamic(it.next().toString() + "#" + anchor.get());
                 if (schema != null) {
                     return Optional.of(schema);
                 }
@@ -57,8 +58,12 @@ public class ValidationContext {
                 .orElseThrow(() -> new IllegalStateException("Resolution of schema (%s) failed and was required".formatted(ref)));
     }
 
-    void pushDynamicScope(IdentifiableSchema identifiableSchema) {
-        dynamicScope.push(identifiableSchema);
+    boolean isOutOfDynamicScope(URI uri) {
+        return dynamicScope.isEmpty() || !uri.equals(dynamicScope.peek());
+    }
+
+    void pushDynamicScope(URI uri) {
+        dynamicScope.push(uri);
     }
 
     void popDynamicContext() {
