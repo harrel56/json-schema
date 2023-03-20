@@ -103,7 +103,70 @@ class MaximumValidator implements Validator {
         if (node.asNumber().compareTo(max) <= 0) {
             return Result.success();
         } else {
-            return Result.failure("%s is greater than than %s".formatted(node.asNumber(), max));
+            return Result.failure("%s is greater than %s".formatted(node.asNumber(), max));
+        }
+    }
+}
+
+class ExclusiveMaximumValidator implements Validator {
+    private final BigDecimal max;
+
+    ExclusiveMaximumValidator(JsonNode node) {
+        this.max = node.asNumber();
+    }
+
+    @Override
+    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+        if (!node.isNumber()) {
+            return Result.success();
+        }
+
+        if (node.asNumber().compareTo(max) < 0) {
+            return Result.success();
+        } else {
+            return Result.failure("%s is greater or equal to %s".formatted(node.asNumber(), max));
+        }
+    }
+}
+
+class MinimumValidator implements Validator {
+    private final BigDecimal min;
+
+    MinimumValidator(JsonNode node) {
+        this.min = node.asNumber();
+    }
+
+    @Override
+    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+        if (!node.isNumber()) {
+            return Result.success();
+        }
+
+        if (node.asNumber().compareTo(min) >= 0) {
+            return Result.success();
+        } else {
+            return Result.failure("%s is lesser than %s".formatted(node.asNumber(), min));
+        }
+    }
+}
+
+class ExclusiveMinimumValidator implements Validator {
+    private final BigDecimal min;
+
+    ExclusiveMinimumValidator(JsonNode node) {
+        this.min = node.asNumber();
+    }
+
+    @Override
+    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+        if (!node.isNumber()) {
+            return Result.success();
+        }
+
+        if (node.asNumber().compareTo(min) > 0) {
+            return Result.success();
+        } else {
+            return Result.failure("%s is lesser or equal to %s".formatted(node.asNumber(), min));
         }
     }
 }
