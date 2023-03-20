@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 class TypeValidator implements Validator {
@@ -167,6 +168,113 @@ class ExclusiveMinimumValidator implements Validator {
             return Result.success();
         } else {
             return Result.failure("%s is lesser or equal to %s".formatted(node.asNumber(), min));
+        }
+    }
+}
+
+class MaxLengthValidator implements Validator {
+    private final int maxLength;
+
+    MaxLengthValidator(JsonNode node) {
+        this.maxLength = node.asInteger().intValueExact();
+    }
+
+    @Override
+    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+        if (!node.isString()) {
+            return Result.success();
+        }
+
+        String string = node.asString();
+        if (string.codePointCount(0, string.length()) <= maxLength) {
+            return Result.success();
+        } else {
+            return Result.failure("\"%s\" is longer than %d characters".formatted(string, maxLength));
+        }
+    }
+}
+
+class MinLengthValidator implements Validator {
+    private final int minLength;
+
+    MinLengthValidator(JsonNode node) {
+        this.minLength = node.asInteger().intValueExact();
+    }
+
+    @Override
+    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+        if (!node.isString()) {
+            return Result.success();
+        }
+
+        String string = node.asString();
+        if (string.codePointCount(0, string.length()) >= minLength) {
+            return Result.success();
+        } else {
+            return Result.failure("\"%s\" is shorter than %d characters".formatted(string, minLength));
+        }
+    }
+}
+
+class PatternValidator implements Validator {
+    private final Pattern pattern;
+
+    PatternValidator(JsonNode node) {
+        this.pattern = Pattern.compile(node.asString());
+    }
+
+    @Override
+    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+        if (!node.isString()) {
+            return Result.success();
+        }
+
+        if (pattern.matcher(node.asString()).find()) {
+            return Result.success();
+        } else {
+            return Result.failure("\"%s\" does not match regular expression [%s]".formatted(node.asString(), pattern.toString()));
+        }
+    }
+}
+
+class MaxItemsValidator implements Validator {
+    private final int maxItems;
+
+    MaxItemsValidator(JsonNode node) {
+        this.maxItems = node.asInteger().intValueExact();
+    }
+
+    @Override
+    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+        if (!node.isArray()) {
+            return Result.success();
+        }
+
+        if (node.asArray().size() <= maxItems) {
+            return Result.success();
+        } else {
+            return Result.failure("Array has more than %d items".formatted(maxItems));
+        }
+    }
+}
+
+class MinItemsValidator implements Validator {
+    private final int minItems;
+
+    MinItemsValidator(JsonNode node) {
+        this.minItems = node.asInteger().intValueExact();
+    }
+
+    @Override
+    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+        if (!node.isArray()) {
+            return Result.success();
+        }
+
+        if (node.asArray().size() >= minItems) {
+            return Result.success();
+        } else {
+            return Result.failure("Array has less than %d items".formatted(minItems));
         }
     }
 }
