@@ -1,5 +1,7 @@
 package org.harrel.jsonschema;
 
+import com.fasterxml.jackson.databind.node.JsonNodeType;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -8,6 +10,15 @@ import java.util.List;
 import java.util.Map;
 
 public class JacksonNode implements JsonNode {
+
+    private static final Map<JsonNodeType, SimpleType> TYPE_MAP = Map.of(
+            JsonNodeType.NULL, SimpleType.NULL,
+            JsonNodeType.BOOLEAN, SimpleType.BOOLEAN,
+            JsonNodeType.STRING, SimpleType.STRING,
+            JsonNodeType.NUMBER, SimpleType.NUMBER,
+            JsonNodeType.ARRAY, SimpleType.ARRAY,
+            JsonNodeType.OBJECT, SimpleType.OBJECT
+    );
 
     private final com.fasterxml.jackson.databind.JsonNode node;
     private final String jsonPointer;
@@ -27,18 +38,13 @@ public class JacksonNode implements JsonNode {
     }
 
     @Override
-    public boolean isNull() {
-        return node.isNull();
-    }
-
-    @Override
-    public boolean isBoolean() {
-        return node.isBoolean();
-    }
-
-    @Override
-    public boolean isString() {
-        return node.isTextual();
+    public SimpleType getNodeType() {
+        SimpleType type = TYPE_MAP.get(node.getNodeType());
+        if (type == SimpleType.NUMBER) {
+            return isInteger() ? SimpleType.INTEGER : SimpleType.NUMBER;
+        } else {
+            return type;
+        }
     }
 
     @Override
@@ -49,16 +55,6 @@ public class JacksonNode implements JsonNode {
     @Override
     public boolean isNumber() {
         return node.isNumber();
-    }
-
-    @Override
-    public boolean isArray() {
-        return node.isArray();
-    }
-
-    @Override
-    public boolean isObject() {
-        return node.isObject();
     }
 
     @Override

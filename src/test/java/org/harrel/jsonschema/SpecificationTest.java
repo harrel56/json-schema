@@ -290,8 +290,8 @@ class SpecificationTest {
     }
 
     private void testValidation(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-//        Assumptions.assumeTrue(bundle.equals("remote HTTP ref with different $id"));
-//        Assumptions.assumeTrue(name.equals("string is valid"));
+//        Assumptions.assumeTrue(bundle.equals("oneOf with empty schema"));
+//        Assumptions.assumeTrue(name.equals("both valid - invalid"));
         SchemaValidator validator = new SchemaValidator(new JacksonNodeFactory(), resolver);
         logger.info("%s: %s".formatted(bundle, name));
         logger.info(schema.toPrettyString());

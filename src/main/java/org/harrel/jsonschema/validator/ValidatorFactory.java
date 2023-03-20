@@ -37,7 +37,7 @@ public class ValidatorFactory {
         map.put("required", (ctx, node) -> new RequiredValidator(node));
         map.put("dependentRequired", (ctx, node) -> new DependentRequiredValidator(node));
         map.put("dependentSchemas", DependentSchemasValidator::new);
-        map.put("type", (ctx, node) -> TypeValidators.getTypeCheck(node));
+        map.put("type", (ctx, node) -> new TypeValidator(node));
         map.put("const", (ctx, node) -> new ConstValidator(node));
         map.put("enum", (ctx, node) -> new EnumValidator(node));
         map.put("maxLength", (ctx, node) -> new MaxLengthValidator(node));

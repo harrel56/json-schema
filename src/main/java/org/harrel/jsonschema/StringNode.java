@@ -15,43 +15,13 @@ public class StringNode implements JsonNode {
     }
 
     @Override
+    public SimpleType getNodeType() {
+        return SimpleType.STRING;
+    }
+
+    @Override
     public String getJsonPointer() {
         return jsonPointer;
-    }
-
-    @Override
-    public boolean isNull() {
-        return false;
-    }
-
-    @Override
-    public boolean isBoolean() {
-        return false;
-    }
-
-    @Override
-    public boolean isString() {
-        return true;
-    }
-
-    @Override
-    public boolean isInteger() {
-        return false;
-    }
-
-    @Override
-    public boolean isNumber() {
-        return false;
-    }
-
-    @Override
-    public boolean isArray() {
-        return false;
-    }
-
-    @Override
-    public boolean isObject() {
-        return false;
     }
 
     @Override

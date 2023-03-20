@@ -7,14 +7,29 @@ import java.util.Map;
 
 public interface JsonNode {
     String getJsonPointer();
+    SimpleType getNodeType();
 
-    boolean isNull();
-    boolean isBoolean();
-    boolean isString();
-    boolean isInteger();
-    boolean isNumber();
-    boolean isArray();
-    boolean isObject();
+    default boolean isNull() {
+        return getNodeType() == SimpleType.NULL;
+    }
+    default boolean isBoolean() {
+        return getNodeType() == SimpleType.BOOLEAN;
+    }
+    default boolean isString() {
+        return getNodeType() == SimpleType.STRING;
+    }
+    default boolean isInteger() {
+        return getNodeType() == SimpleType.INTEGER;
+    }
+    default boolean isNumber() {
+        return getNodeType() == SimpleType.NUMBER;
+    }
+    default boolean isArray() {
+        return getNodeType() == SimpleType.ARRAY;
+    }
+    default boolean isObject() {
+        return getNodeType() == SimpleType.OBJECT;
+    }
 
     boolean asBoolean();
     String asString();
