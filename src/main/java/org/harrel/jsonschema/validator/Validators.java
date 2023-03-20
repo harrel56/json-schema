@@ -1,14 +1,9 @@
 package org.harrel.jsonschema.validator;
 
-import org.harrel.jsonschema.JsonNode;
-import org.harrel.jsonschema.Result;
-import org.harrel.jsonschema.SimpleType;
-import org.harrel.jsonschema.ValidationContext;
+import org.harrel.jsonschema.*;
 
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -275,6 +270,88 @@ class MinItemsValidator implements Validator {
             return Result.success();
         } else {
             return Result.failure("Array has less than %d items".formatted(minItems));
+        }
+    }
+}
+
+class UniqueItemsValidator implements Validator {
+    private final boolean unique;
+
+    UniqueItemsValidator(JsonNode node) {
+        this.unique = node.asBoolean();
+    }
+
+    @Override
+    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+        if (!node.isArray() || !unique) {
+            return Result.success();
+        }
+
+        List<JsonNode> parsed = new ArrayList<>();
+        List<JsonNode> jsonNodes = node.asArray();
+        for (int i = 0; i < jsonNodes.size(); i++) {
+            JsonNode element = jsonNodes.get(i);
+            if (parsed.stream().anyMatch(element::isEqualTo)) {
+                return Result.failure("Array contains non-unique item at index [%d]".formatted(i));
+            }
+            parsed.add(element);
+        }
+        return Result.success();
+    }
+}
+
+class MaxContainsValidator implements Validator {
+    private final String containsPath;
+    private final int max;
+
+    MaxContainsValidator(SchemaParsingContext ctx, JsonNode node) {
+        this.containsPath = Optional.ofNullable(ctx.getCurrentSchemaObject().get("contains"))
+                .map(ctx::getAbsoluteUri)
+                .orElse(null);
+        this.max = node.asInteger().intValueExact();
+    }
+
+    @Override
+    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+        if (!node.isArray() || containsPath == null) {
+            return Result.success();
+        }
+
+        long count = ctx.getAnnotations().stream()
+                .filter(a -> a.header().schemaLocation().equals(containsPath))
+                .count();
+        if (count <= max) {
+            return Result.success();
+        } else {
+            return Result.failure("Array contains more than %d matching items".formatted(max));
+        }
+    }
+}
+
+class MinContainsValidator implements Validator {
+    private final String containsPath;
+    private final int min;
+
+    MinContainsValidator(SchemaParsingContext ctx, JsonNode node) {
+        this.containsPath = Optional.ofNullable(ctx.getCurrentSchemaObject().get("contains"))
+                .map(ctx::getAbsoluteUri)
+                .orElse(null);
+        this.min = node.asInteger().intValueExact();
+    }
+
+    @Override
+    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+        if (!node.isArray() || containsPath == null) {
+            return Result.success();
+        }
+
+        long count = ctx.getAnnotations().stream()
+                .filter(a -> a.header().schemaLocation().equals(containsPath))
+                .count();
+        if (count >= min) {
+            return Result.success();
+        } else {
+            return Result.failure("Array contains less than %d matching items".formatted(min));
         }
     }
 }
