@@ -5,6 +5,8 @@ import org.harrel.jsonschema.Result;
 import org.harrel.jsonschema.SimpleType;
 import org.harrel.jsonschema.ValidationContext;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -28,7 +30,7 @@ class TypeValidator implements Validator {
         if (types.contains(nodeType) || nodeType == SimpleType.INTEGER && types.contains(SimpleType.NUMBER)) {
             return Result.success();
         } else {
-            return Result.failure("Value is \"%s\" but should be \"%s\"".formatted(nodeType.getName(), types));
+            return Result.failure("Value is [%s] but should be [%s]".formatted(nodeType.getName(), types));
         }
     }
 }
@@ -43,5 +45,22 @@ class ConstValidator implements Validator {
     @Override
     public ValidationResult validate(ValidationContext ctx, JsonNode node) {
         return constNode.isEqualTo(node) ? Result.success() : Result.failure("Expected " + constNode.toPrintableString());
+    }
+}
+
+class EnumValidator implements Validator {
+    private final List<JsonNode> enumNodes;
+
+    EnumValidator(JsonNode node) {
+        this.enumNodes = Collections.unmodifiableList(node.asArray());
+    }
+
+    @Override
+    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+        if (enumNodes.stream().anyMatch(node::isEqualTo)) {
+            return Result.success();
+        } else {
+            return Result.failure("Expected any of [%s]".formatted(enumNodes.stream().map(JsonNode::toPrintableString).toList()));
+        }
     }
 }
