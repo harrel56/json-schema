@@ -5,6 +5,7 @@ import org.harrel.jsonschema.Result;
 import org.harrel.jsonschema.SimpleType;
 import org.harrel.jsonschema.ValidationContext;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -61,6 +62,48 @@ class EnumValidator implements Validator {
             return Result.success();
         } else {
             return Result.failure("Expected any of [%s]".formatted(enumNodes.stream().map(JsonNode::toPrintableString).toList()));
+        }
+    }
+}
+
+class MultipleOfValidator implements Validator {
+    private final BigDecimal factor;
+
+    MultipleOfValidator(JsonNode node) {
+        this.factor = node.asNumber();
+    }
+
+    @Override
+    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+        if (!node.isNumber()) {
+            return Result.success();
+        }
+
+        if (node.asNumber().remainder(factor).doubleValue() == 0.0) {
+            return Result.success();
+        } else {
+            return Result.failure("%s is not multiple of %s".formatted(node.asNumber(), factor));
+        }
+    }
+}
+
+class MaximumValidator implements Validator {
+    private final BigDecimal max;
+
+    MaximumValidator(JsonNode node) {
+        this.max = node.asNumber();
+    }
+
+    @Override
+    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+        if (!node.isNumber()) {
+            return Result.success();
+        }
+
+        if (node.asNumber().compareTo(max) <= 0) {
+            return Result.success();
+        } else {
+            return Result.failure("%s is greater than than %s".formatted(node.asNumber(), max));
         }
     }
 }
