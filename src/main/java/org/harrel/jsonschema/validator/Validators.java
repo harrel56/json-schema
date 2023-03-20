@@ -355,3 +355,104 @@ class MinContainsValidator implements Validator {
         }
     }
 }
+
+class MaxPropertiesValidator implements Validator {
+    private final int max;
+
+    MaxPropertiesValidator(JsonNode node) {
+        this.max = node.asInteger().intValueExact();
+    }
+
+    @Override
+    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+        if (!node.isObject()) {
+            return Result.success();
+        }
+
+        if (node.asObject().size() <= max) {
+            return Result.success();
+        } else {
+            return Result.failure("Object has more than %d properties".formatted(max));
+        }
+    }
+}
+
+class MinPropertiesValidator implements Validator {
+    private final int min;
+
+    MinPropertiesValidator(JsonNode node) {
+        this.min = node.asInteger().intValueExact();
+    }
+
+    @Override
+    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+        if (!node.isObject()) {
+            return Result.success();
+        }
+
+        if (node.asObject().size() >= min) {
+            return Result.success();
+        } else {
+            return Result.failure("Object has less than %d properties".formatted(min));
+        }
+    }
+}
+
+class RequiredValidator implements Validator {
+    private final List<String> requiredProperties;
+
+    RequiredValidator(JsonNode node) {
+        this.requiredProperties = node.asArray().stream().map(JsonNode::asString).toList();
+    }
+
+    @Override
+    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+        if (!node.isObject()) {
+            return Result.success();
+        }
+
+        Set<String> keys = node.asObject().keySet();
+        if (keys.containsAll(requiredProperties)) {
+            return Result.success();
+        } else {
+            HashSet<String> unsatisfied = new HashSet<>(requiredProperties);
+            unsatisfied.removeAll(keys);
+            return Result.failure("Object does not have some of the required properties [%s]".formatted(unsatisfied));
+        }
+    }
+}
+
+class DependentRequiredValidator implements Validator {
+    private final Map<String, List<String>> requiredProperties;
+
+    DependentRequiredValidator(JsonNode node) {
+        this.requiredProperties = node.asObject().entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> toStringList(e.getValue())));
+    }
+
+    @Override
+    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+        if (!node.isObject()) {
+            return Result.success();
+        }
+
+        Set<String> objectKeys = node.asObject().keySet();
+        Set<String> requiredSet = objectKeys
+                .stream()
+                .filter(requiredProperties::containsKey)
+                .map(requiredProperties::get)
+                .flatMap(List::stream)
+                .collect(Collectors.toSet());
+        if (objectKeys.containsAll(requiredSet)) {
+            return Result.success();
+        } else {
+            requiredSet.removeAll(objectKeys);
+            return Result.failure("Object does not have some of the required properties [%s]".formatted(requiredSet));
+        }
+    }
+
+    private List<String> toStringList(JsonNode node) {
+        return node.asArray().stream().map(JsonNode::asString).toList();
+    }
+}
