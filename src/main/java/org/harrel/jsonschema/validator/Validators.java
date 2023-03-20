@@ -33,4 +33,15 @@ class TypeValidator implements Validator {
     }
 }
 
+class ConstValidator implements Validator {
+    private final JsonNode constNode;
 
+    ConstValidator(JsonNode node) {
+        this.constNode = node;
+    }
+
+    @Override
+    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+        return constNode.isEqualTo(node) ? Result.success() : Result.failure("Expected " + constNode.toPrintableString());
+    }
+}

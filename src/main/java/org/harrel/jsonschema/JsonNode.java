@@ -38,6 +38,16 @@ public interface JsonNode {
     List<JsonNode> asArray();
     Map<String, JsonNode> asObject();
 
+    default String toPrintableString() {
+        if (isObject()) {
+            return "specific object";
+        } else if (isArray()) {
+            return "specific array";
+        } else {
+            return asString();
+        }
+    }
+
     default boolean isEqualTo(JsonNode other) {
         if (isNull() && other.isNull()) {
             return true;
