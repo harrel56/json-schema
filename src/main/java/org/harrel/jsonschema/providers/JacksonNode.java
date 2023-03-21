@@ -25,13 +25,13 @@ public class JacksonNode implements JsonNode {
     private final com.fasterxml.jackson.databind.JsonNode node;
     private final String jsonPointer;
 
-    public JacksonNode(com.fasterxml.jackson.databind.JsonNode node) {
-        this(node, "");
-    }
-
     private JacksonNode(com.fasterxml.jackson.databind.JsonNode node, String jsonPointer) {
         this.node = node;
         this.jsonPointer = jsonPointer;
+    }
+
+    public JacksonNode(com.fasterxml.jackson.databind.JsonNode node) {
+        this(node, "");
     }
 
     @Override
