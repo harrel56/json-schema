@@ -1,15 +1,12 @@
 package org.harrel.jsonschema;
 
-import org.harrel.jsonschema.validator.ValidationResult;
-import org.harrel.jsonschema.validator.Validator;
-
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public class Schema {
+class Schema {
 
     private static final Validator TRUE_VALIDATOR = (ctx, node) -> Result.success();
     private static final Validator FALSE_VALIDATOR = (ctx, node) -> Result.failure("False schema always fails.");
@@ -18,18 +15,18 @@ public class Schema {
     private final String schemaLocation;
     private final List<ValidatorWrapper> validators;
 
-    public Schema(URI parentUri, String schemaLocation, List<ValidatorWrapper> validators) {
+    Schema(URI parentUri, String schemaLocation, List<ValidatorWrapper> validators) {
         this.parentUri = parentUri;
         this.schemaLocation = Objects.requireNonNull(schemaLocation);
         this.validators = new ArrayList<>(Objects.requireNonNull(validators));
         Collections.sort(this.validators);
     }
 
-    public static Validator getBooleanValidator(boolean val) {
+    static Validator getBooleanValidator(boolean val) {
         return val ? TRUE_VALIDATOR : FALSE_VALIDATOR;
     }
 
-    public boolean validate(ValidationContext ctx, JsonNode node) {
+    boolean validate(ValidationContext ctx, JsonNode node) {
         boolean outOfDynamicScope = ctx.isOutOfDynamicScope(parentUri);
         if (outOfDynamicScope) {
             ctx.pushDynamicScope(parentUri);

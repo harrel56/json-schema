@@ -1,6 +1,8 @@
-package org.harrel.jsonschema;
+package org.harrel.jsonschema.providers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.harrel.jsonschema.JsonNode;
+import org.harrel.jsonschema.JsonNodeFactory;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;

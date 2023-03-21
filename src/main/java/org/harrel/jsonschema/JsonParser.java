@@ -1,12 +1,9 @@
 package org.harrel.jsonschema;
 
-import org.harrel.jsonschema.validator.Validator;
-import org.harrel.jsonschema.validator.ValidatorFactory;
-
 import java.net.URI;
 import java.util.*;
 
-public class JsonParser {
+class JsonParser {
 
     private static final Set<String> NOT_PARSABLE_KEYWORDS = Set.of("const", "enum");
 
@@ -14,17 +11,17 @@ public class JsonParser {
     private final ValidatorFactory validatorFactory;
     private final SchemaRegistry schemaRegistry;
 
-    public JsonParser(JsonNodeFactory jsonNodeFactory, ValidatorFactory validatorFactory, SchemaRegistry schemaRegistry) {
+    JsonParser(JsonNodeFactory jsonNodeFactory, ValidatorFactory validatorFactory, SchemaRegistry schemaRegistry) {
         this.jsonNodeFactory = jsonNodeFactory;
         this.validatorFactory = validatorFactory;
         this.schemaRegistry = schemaRegistry;
     }
 
-    public void parseRootSchema(String baseUri, String rawJson) {
+    void parseRootSchema(String baseUri, String rawJson) {
         parseRootSchema(URI.create(baseUri), jsonNodeFactory.create(rawJson));
     }
 
-    public URI parseRootSchema(URI baseUri, JsonNode node) {
+    URI parseRootSchema(URI baseUri, JsonNode node) {
         if (node.isBoolean()) {
             SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, baseUri.toString());
             boolean schemaValue = node.asBoolean();

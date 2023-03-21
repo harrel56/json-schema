@@ -1,4 +1,4 @@
-package org.harrel.jsonschema.validator;
+package org.harrel.jsonschema;
 
 public interface ValidationResult {
     boolean isValid();

@@ -1,6 +1,8 @@
-package org.harrel.jsonschema;
+package org.harrel.jsonschema.providers;
 
 import com.fasterxml.jackson.databind.node.JsonNodeType;
+import org.harrel.jsonschema.JsonNode;
+import org.harrel.jsonschema.SimpleType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;

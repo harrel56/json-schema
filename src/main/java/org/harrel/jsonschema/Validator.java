@@ -1,7 +1,4 @@
-package org.harrel.jsonschema.validator;
-
-import org.harrel.jsonschema.JsonNode;
-import org.harrel.jsonschema.ValidationContext;
+package org.harrel.jsonschema;
 
 public interface Validator extends Comparable<Validator> {
     ValidationResult validate(ValidationContext ctx, JsonNode node);

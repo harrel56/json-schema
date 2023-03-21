@@ -1,7 +1,5 @@
 package org.harrel.jsonschema;
 
-import org.harrel.jsonschema.validator.ValidationResult;
-
 public class Result implements ValidationResult {
     private static final Result SUCCESSFUL_RESULT = new Result(true, null);
     private static final Result FAILED_RESULT = new Result(false, null);
@@ -17,6 +15,7 @@ public class Result implements ValidationResult {
     public static Result success() {
         return SUCCESSFUL_RESULT;
     }
+
     public static Result failure() {
         return FAILED_RESULT;
     }

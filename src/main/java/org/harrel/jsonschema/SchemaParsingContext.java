@@ -20,16 +20,16 @@ public class SchemaParsingContext {
         this(URI.create(baseUri), URI.create(baseUri), schemaRegistry, Map.of());
     }
 
-    public URI getParentUri() {
-        return parentUri;
-    }
-
-    public SchemaParsingContext withParentUri(URI parentUri) {
+    SchemaParsingContext withParentUri(URI parentUri) {
         return new SchemaParsingContext(baseUri, parentUri, schemaRegistry, currentSchemaObject);
     }
 
-    public SchemaParsingContext withCurrentSchemaContext(Map<String, JsonNode> currentSchemaObject) {
+    SchemaParsingContext withCurrentSchemaContext(Map<String, JsonNode> currentSchemaObject) {
         return new SchemaParsingContext(baseUri, parentUri, schemaRegistry, Collections.unmodifiableMap(currentSchemaObject));
+    }
+
+    public URI getParentUri() {
+        return parentUri;
     }
 
     public String getAbsoluteUri(JsonNode node) {

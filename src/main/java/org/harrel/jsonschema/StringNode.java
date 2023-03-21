@@ -5,7 +5,7 @@ import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 
-public class StringNode implements JsonNode {
+public final class StringNode implements JsonNode {
     private final String value;
     private final String jsonPointer;
 

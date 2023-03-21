@@ -1,6 +1,7 @@
 package org.harrel.jsonschema;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.harrel.jsonschema.providers.JacksonNodeFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 

@@ -1,6 +1,6 @@
 package org.harrel.jsonschema;
 
-import org.harrel.jsonschema.validator.ValidatorFactory;
+import org.harrel.jsonschema.providers.JacksonNodeFactory;
 
 import java.net.URI;
 import java.util.Optional;

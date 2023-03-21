@@ -3,28 +3,28 @@ package org.harrel.jsonschema;
 import java.net.URI;
 import java.util.*;
 
-public class SchemaRegistry {
+class SchemaRegistry {
 
     private final Map<String, Schema> schemas = new HashMap<>();
     private final Map<String, Schema> additionalSchemas = new HashMap<>();
     private final Map<String, Schema> dynamicSchemas = new HashMap<>();
 
-    public Schema get(String uri) {
+    Schema get(String uri) {
         return schemas.getOrDefault(uri, additionalSchemas.get(uri));
     }
 
-    public Schema getDynamic(String anchor) {
+    Schema getDynamic(String anchor) {
         return dynamicSchemas.get(anchor);
     }
 
-    public void registerSchema(SchemaParsingContext ctx, JsonNode schemaNode, List<ValidatorWrapper> validators) {
+    void registerSchema(SchemaParsingContext ctx, JsonNode schemaNode, List<ValidatorWrapper> validators) {
         Map<String, JsonNode> objectMap = schemaNode.asObject();
         Schema schema = new Schema(ctx.getParentUri(), ctx.getAbsoluteUri(schemaNode), validators);
         schemas.put(ctx.getAbsoluteUri(schemaNode), schema);
         registerAnchorsIfPresent(ctx, objectMap, schema);
     }
 
-    public void registerIdentifiableSchema(SchemaParsingContext ctx, URI id, JsonNode schemaNode, List<ValidatorWrapper> validators) {
+    void registerIdentifiableSchema(SchemaParsingContext ctx, URI id, JsonNode schemaNode, List<ValidatorWrapper> validators) {
         String absoluteUri = ctx.getAbsoluteUri(schemaNode);
         schemas.entrySet().stream()
                 .filter(e -> e.getKey().startsWith(absoluteUri))

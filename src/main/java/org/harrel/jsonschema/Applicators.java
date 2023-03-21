@@ -1,6 +1,4 @@
-package org.harrel.jsonschema.validator;
-
-import org.harrel.jsonschema.*;
+package org.harrel.jsonschema;
 
 import java.math.BigInteger;
 import java.util.*;
@@ -359,5 +357,41 @@ class UnevaluatedPropertiesValidator implements Applicator {
     @Override
     public int getOrder() {
         return 10;
+    }
+}
+
+class RefValidator implements Validator {
+    private final String ref;
+
+    RefValidator(JsonNode node) {
+        this.ref = node.asString();
+    }
+
+    @Override
+    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+        Optional<Schema> schema = ctx.resolveSchema(ref);
+        if (schema.isEmpty()) {
+            return Result.failure("Resolution of $ref [%s] failed".formatted(ref));
+        } else {
+            return schema.get().validate(ctx, node) ? Result.success() : Result.failure();
+        }
+    }
+}
+
+class DynamicRefValidator implements Validator {
+    private final String ref;
+
+    DynamicRefValidator(JsonNode node) {
+        this.ref = node.asString();
+    }
+
+    @Override
+    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+        Optional<Schema> schema = ctx.resolveDynamicSchema(ref);
+        if (schema.isEmpty()) {
+            return Result.failure("Resolution of $ref [%s] failed".formatted(ref));
+        } else {
+            return schema.get().validate(ctx, node) ? Result.success() : Result.failure();
+        }
     }
 }

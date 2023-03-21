@@ -1,6 +1,4 @@
-package org.harrel.jsonschema.validator;
-
-import org.harrel.jsonschema.*;
+package org.harrel.jsonschema;
 
 import java.util.*;
 import java.util.function.BiFunction;
