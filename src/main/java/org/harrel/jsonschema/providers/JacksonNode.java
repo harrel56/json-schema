@@ -1,9 +1,13 @@
 package org.harrel.jsonschema.providers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import org.harrel.jsonschema.JsonNode;
+import org.harrel.jsonschema.JsonNodeFactory;
 import org.harrel.jsonschema.SimpleType;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -36,7 +40,7 @@ public class JacksonNode implements JsonNode {
 
     @Override
     public String getJsonPointer() {
-        return jsonPointer.isEmpty() ? "/" : jsonPointer;
+        return jsonPointer;
     }
 
     @Override
@@ -96,5 +100,35 @@ public class JacksonNode implements JsonNode {
             map.put(entry.getKey(), new JacksonNode(entry.getValue(), jsonPointer + "/" + entry.getKey()));
         }
         return map;
+    }
+
+    public static class Factory implements JsonNodeFactory {
+        private final ObjectMapper mapper;
+
+        public Factory() {
+            this(new ObjectMapper());
+        }
+
+        public Factory(ObjectMapper mapper) {
+            this.mapper = mapper;
+        }
+
+        @Override
+        public JsonNode wrap(Object node) {
+            if (node instanceof com.fasterxml.jackson.databind.JsonNode vendorNode) {
+                return new JacksonNode(vendorNode);
+            } else {
+                throw new IllegalArgumentException("Cannot wrap object which is not an instance of com.fasterxml.jackson.databind.JsonNode");
+            }
+        }
+
+        @Override
+        public JsonNode create(String rawJson) {
+            try {
+                return new JacksonNode(mapper.readTree(rawJson));
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }
     }
 }

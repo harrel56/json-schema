@@ -1,9 +1,10 @@
 package org.harrel.jsonschema;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.harrel.jsonschema.providers.JacksonNodeFactory;
+import org.harrel.jsonschema.providers.JacksonNode;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -42,15 +43,17 @@ class SpecificationTest {
         testValidation(bundle, name, schema, json, valid);
     }
 
-//    @SuiteTest("/draft2020-12/unknownKeyword.json")
-//    void unknownKeywordTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-//        testValidation(bundle, name, schema, json, valid);
-//    }
+    @Disabled("$id in all places are supported")
+    @SuiteTest("/draft2020-12/unknownKeyword.json")
+    void unknownKeywordTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
 
-//    @SuiteTest("/draft2020-12/vocabulary.json")
-//    void vocabularyTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-//        testValidation(bundle, name, schema, json, valid);
-//    }
+    @Disabled("Vocabularies are not supported yet")
+    @SuiteTest("/draft2020-12/vocabulary.json")
+    void vocabularyTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
 
     @SuiteTest("/draft2020-12/id.json")
     void idTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
@@ -293,7 +296,7 @@ class SpecificationTest {
     private void testValidation(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
 //        Assumptions.assumeTrue(bundle.equals("oneOf with empty schema"));
 //        Assumptions.assumeTrue(name.equals("both valid - invalid"));
-        SchemaValidator validator = new SchemaValidator(new JacksonNodeFactory(), resolver);
+        SchemaValidator validator = new SchemaValidator(new JacksonNode.Factory(), resolver);
         logger.info("%s: %s".formatted(bundle, name));
         logger.info(schema.toPrettyString());
         logger.info(json.toPrettyString());

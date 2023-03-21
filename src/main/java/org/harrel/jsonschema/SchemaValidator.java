@@ -1,6 +1,6 @@
 package org.harrel.jsonschema;
 
-import org.harrel.jsonschema.providers.JacksonNodeFactory;
+import org.harrel.jsonschema.providers.JacksonNode;
 
 import java.net.URI;
 import java.util.Optional;
@@ -14,7 +14,7 @@ public class SchemaValidator {
     private final JsonParser jsonParser;
 
     public SchemaValidator() {
-        this(new JacksonNodeFactory(), uri -> Optional.empty());
+        this(new JacksonNode.Factory(), uri -> Optional.empty());
     }
 
     public SchemaValidator(JsonNodeFactory jsonNodeFactory, SchemaResolver schemaResolver) {
