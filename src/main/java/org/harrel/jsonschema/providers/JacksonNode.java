@@ -46,21 +46,11 @@ public class JacksonNode implements JsonNode {
     @Override
     public SimpleType getNodeType() {
         SimpleType type = TYPE_MAP.get(node.getNodeType());
-        if (type == SimpleType.NUMBER) {
-            return isInteger() ? SimpleType.INTEGER : SimpleType.NUMBER;
+        if (node.canConvertToExactIntegral()) {
+            return SimpleType.INTEGER;
         } else {
             return type;
         }
-    }
-
-    @Override
-    public boolean isInteger() {
-        return node.canConvertToExactIntegral();
-    }
-
-    @Override
-    public boolean isNumber() {
-        return node.isNumber();
     }
 
     @Override
@@ -114,7 +104,7 @@ public class JacksonNode implements JsonNode {
         }
 
         @Override
-        public JsonNode wrap(Object node) {
+        public JacksonNode wrap(Object node) {
             if (node instanceof com.fasterxml.jackson.databind.JsonNode vendorNode) {
                 return new JacksonNode(vendorNode);
             } else {
@@ -123,7 +113,7 @@ public class JacksonNode implements JsonNode {
         }
 
         @Override
-        public JsonNode create(String rawJson) {
+        public JacksonNode create(String rawJson) {
             try {
                 return new JacksonNode(mapper.readTree(rawJson));
             } catch (IOException e) {

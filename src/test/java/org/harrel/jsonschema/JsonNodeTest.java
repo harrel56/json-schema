@@ -1,8 +1,8 @@
-package org.harrel.jsonschema.providers;
+package org.harrel.jsonschema;
 
-import org.harrel.jsonschema.JsonNode;
-import org.harrel.jsonschema.JsonNodeFactory;
-import org.harrel.jsonschema.SimpleType;
+import org.harrel.jsonschema.providers.GsonNode;
+import org.harrel.jsonschema.providers.JacksonNode;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -11,6 +11,20 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
+class JacksonNodeTest extends JsonNodeTest {
+    @BeforeAll
+    static void beforeAll() {
+        nodeFactory = new JacksonNode.Factory();
+    }
+}
+
+class GsonNodeTest extends JsonNodeTest {
+    @BeforeAll
+    static void beforeAll() {
+        nodeFactory = new GsonNode.Factory();
+    }
+}
 
 abstract class JsonNodeTest {
 
@@ -175,7 +189,7 @@ abstract class JsonNodeTest {
 
     @Test
     void jsonPointerForObject() {
-        JsonNode node = nodeFactory.create("{\"a\": [1, {\"b\": 2}]}}");
+        JsonNode node = nodeFactory.create("{\"a\": [1, {\"b\": 2}]}");
         assertThat(node.getJsonPointer()).isEmpty();
         Map<String, JsonNode> object = node.asObject();
         assertThat(object.get("a").getJsonPointer()).isEqualTo("/a");

@@ -1,6 +1,7 @@
 package org.harrel.jsonschema;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.harrel.jsonschema.providers.GsonNode;
 import org.harrel.jsonschema.providers.JacksonNode;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -13,10 +14,24 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Logger;
 
-@SuppressWarnings("unused")
-class SpecificationTest {
+class JacksonSpecificationTest extends SpecificationTest {
+    @BeforeAll
+    static void beforeAll() {
+        nodeFactory = new JacksonNode.Factory();
+    }
+}
 
-    private final Logger logger = Logger.getLogger("SpecificationTest");
+class GsonSpecificationTest extends SpecificationTest {
+    @BeforeAll
+    static void beforeAll() {
+        nodeFactory = new GsonNode.Factory();
+    }
+}
+
+@SuppressWarnings("unused")
+abstract class SpecificationTest {
+    static final Logger logger = Logger.getLogger("SpecificationTest");
+    static JsonNodeFactory nodeFactory;
 
     @SuiteTest("/draft2020-12/boolean_schema.json")
     void booleanSchemaTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
@@ -263,7 +278,7 @@ class SpecificationTest {
     private static SchemaResolver resolver;
 
     @BeforeAll
-    static void beforeAll() {
+    static void resolverSetup() {
         Map<String, String> schemaMap = Map.ofEntries(
                 Map.entry("https://json-schema.org/draft/2020-12/schema", readResource("/schemas/draft2020-12.json")),
                 Map.entry("http://localhost:1234/different-id-ref-string.json", readResource("/schemas/different-id-ref-string.json")),
@@ -293,15 +308,17 @@ class SpecificationTest {
         }
     }
 
-    private void testValidation(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+    private void testValidation(String bundle, String name, JsonNode schema, JsonNode instance, boolean valid) {
 //        Assumptions.assumeTrue(bundle.equals("oneOf with empty schema"));
 //        Assumptions.assumeTrue(name.equals("both valid - invalid"));
-        SchemaValidator validator = new SchemaValidator(new JacksonNode.Factory(), resolver);
+        String schemaString = schema.toPrettyString();
+        String instanceString = instance.toPrettyString();
+        SchemaValidator validator = new SchemaValidator(nodeFactory, resolver);
         logger.info("%s: %s".formatted(bundle, name));
-        logger.info(schema.toPrettyString());
-        logger.info(json.toPrettyString());
+        logger.info(schemaString);
+        logger.info(instanceString);
         logger.info(String.valueOf(valid));
-        URI uri = validator.registerSchema(schema);
-        Assertions.assertEquals(valid, validator.validate(uri, json));
+        URI uri = validator.registerSchema(schemaString);
+        Assertions.assertEquals(valid, validator.validate(uri, instanceString));
     }
 }

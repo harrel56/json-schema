@@ -20,7 +20,11 @@ class SuiteArgumentsProvider implements ArgumentsProvider {
             List<SchemaTest> bundles = getObjectMapper().readValue(is, new TypeReference<>() {});
             return bundles.stream()
                     .flatMap(bundle -> bundle.tests().stream().map(test ->
-                            Arguments.arguments(bundle.description(), test.description(), bundle.schema(), test.data(), test.valid())));
+                            Arguments.arguments(bundle.description(),
+                                    test.description(),
+                                    bundle.schema(),
+                                    test.data(),
+                                    test.valid())));
         }
     }
 

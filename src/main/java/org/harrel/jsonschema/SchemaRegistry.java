@@ -18,10 +18,11 @@ class SchemaRegistry {
     }
 
     void registerSchema(SchemaParsingContext ctx, JsonNode schemaNode, List<ValidatorWrapper> validators) {
-        Map<String, JsonNode> objectMap = schemaNode.asObject();
         Schema schema = new Schema(ctx.getParentUri(), ctx.getAbsoluteUri(schemaNode), validators);
         schemas.put(ctx.getAbsoluteUri(schemaNode), schema);
-        registerAnchorsIfPresent(ctx, objectMap, schema);
+        if (schemaNode.isObject()) {
+            registerAnchorsIfPresent(ctx, schemaNode, schema);
+        }
     }
 
     void registerIdentifiableSchema(SchemaParsingContext ctx, URI id, JsonNode schemaNode, List<ValidatorWrapper> validators) {
@@ -35,14 +36,19 @@ class SchemaRegistry {
                     String newUri = id.toString() + "#" + newJsonPointer;
                     additionalSchemas.put(newUri, e.getValue());
                 });
-        Map<String, JsonNode> objectMap = schemaNode.asObject();
         Schema identifiableSchema = new Schema(ctx.getParentUri(), id.toString(), validators);
         schemas.put(id.toString(), identifiableSchema);
         schemas.put(absoluteUri, identifiableSchema);
-        registerAnchorsIfPresent(ctx, objectMap, identifiableSchema);
+        if (schemaNode.isObject()) {
+            registerAnchorsIfPresent(ctx, schemaNode, identifiableSchema);
+        }
     }
 
-    private void registerAnchorsIfPresent(SchemaParsingContext ctx, Map<String, JsonNode> objectMap, Schema schema) {
+    private void registerAnchorsIfPresent(SchemaParsingContext ctx, JsonNode schemaNode, Schema schema) {
+        if (!schemaNode.isObject()) {
+            return;
+        }
+        Map<String, JsonNode> objectMap = schemaNode.asObject();
         if (objectMap.containsKey("$anchor")) {
             String anchorFragment = "#" + objectMap.get("$anchor").asString();
             String anchoredUri = UriUtil.resolveUri(ctx.getParentUri(), anchorFragment);

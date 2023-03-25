@@ -22,7 +22,7 @@ public interface JsonNode {
         return getNodeType() == SimpleType.INTEGER;
     }
     default boolean isNumber() {
-        return getNodeType() == SimpleType.NUMBER;
+        return getNodeType() == SimpleType.NUMBER || getNodeType() == SimpleType.INTEGER;
     }
     default boolean isArray() {
         return getNodeType() == SimpleType.ARRAY;
