@@ -50,7 +50,11 @@ public class ValidatorFactory {
     }
 
     public Optional<Validator> fromField(SchemaParsingContext ctx, String fieldName, JsonNode node) {
-        return Optional.ofNullable(validatorsMap.get(fieldName))
-                .map(fun -> fun.apply(ctx, node));
+        try {
+            return Optional.ofNullable(validatorsMap.get(fieldName))
+                    .map(fun -> fun.apply(ctx, node));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 }

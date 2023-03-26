@@ -324,6 +324,11 @@ class MaxContainsValidator implements Validator {
             return Result.failure("Array contains more than %d matching items".formatted(max));
         }
     }
+
+    @Override
+    public int getOrder() {
+        return 10;
+    }
 }
 
 class MinContainsValidator implements Validator {
@@ -351,6 +356,11 @@ class MinContainsValidator implements Validator {
         } else {
             return Result.failure("Array contains less than %d matching items".formatted(min));
         }
+    }
+
+    @Override
+    public int getOrder() {
+        return 10;
     }
 }
 
