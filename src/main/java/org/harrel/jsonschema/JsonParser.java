@@ -5,10 +5,10 @@ import java.util.*;
 
 class JsonParser {
     private final JsonNodeFactory jsonNodeFactory;
-    private final CoreValidatorFactory validatorFactory;
+    private final ValidatorFactory validatorFactory;
     private final SchemaRegistry schemaRegistry;
 
-    JsonParser(JsonNodeFactory jsonNodeFactory, CoreValidatorFactory validatorFactory, SchemaRegistry schemaRegistry) {
+    JsonParser(JsonNodeFactory jsonNodeFactory, ValidatorFactory validatorFactory, SchemaRegistry schemaRegistry) {
         this.jsonNodeFactory = jsonNodeFactory;
         this.validatorFactory = validatorFactory;
         this.schemaRegistry = schemaRegistry;
