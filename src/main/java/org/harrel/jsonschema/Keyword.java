@@ -4,6 +4,17 @@ public final class Keyword {
 
     private Keyword() {}
 
+    /* Core */
+    public static final String ID = "$id";
+    public static final String SCHEMA = "$schema";
+    public static final String REF = "$ref";
+    public static final String ANCHOR = "$anchor";
+    public static final String DYNAMIC_REF = "$dynamicRef";
+    public static final String DYNAMIC_ANCHOR = "$dynamicAnchor";
+    public static final String VOCABULARY = "$vocabulary";
+    public static final String COMMENT = "$comment";
+    public static final String DEFS = "$defs";
+
     /* Validators */
     public static final String TYPE = "type";
     public static final String CONST = "const";
@@ -44,6 +55,4 @@ public final class Keyword {
     public static final String NOT = "not";
     public static final String UNEVALUATED_ITEMS = "unevaluatedItems";
     public static final String UNEVALUATED_PROPERTIES = "unevaluatedProperties";
-    public static final String REF = "$ref";
-    public static final String DYNAMIC_REF = "$dynamicRef";
 }

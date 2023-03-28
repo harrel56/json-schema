@@ -47,15 +47,15 @@ final class SchemaRegistry {
             return;
         }
         Map<String, JsonNode> objectMap = schemaNode.asObject();
-        JsonNode anchorNode = objectMap.get("$anchor");
+        JsonNode anchorNode = objectMap.get(Keyword.ANCHOR);
         if (anchorNode != null && anchorNode.isString()) {
             String anchorFragment = "#" + anchorNode.asString();
             String anchoredUri = UriUtil.resolveUri(ctx.getParentUri(), anchorFragment);
             additionalSchemas.put(anchoredUri, schema);
         }
-        JsonNode dynamicAnchorNode = objectMap.get("$dynamicAnchor");
+        JsonNode dynamicAnchorNode = objectMap.get(Keyword.DYNAMIC_ANCHOR);
         if (dynamicAnchorNode != null && dynamicAnchorNode.isString()) {
-            String anchorFragment = "#" + objectMap.get("$dynamicAnchor").asString();
+            String anchorFragment = "#" + dynamicAnchorNode.asString();
             dynamicSchemas.put(ctx.getParentUri().toString() + anchorFragment, schema);
         }
     }

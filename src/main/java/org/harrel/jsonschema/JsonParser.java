@@ -26,7 +26,7 @@ final class JsonParser {
             return baseUri;
         } else {
             Map<String, JsonNode> objectMap = node.asObject();
-            JsonNode idNode = objectMap.get("$id");
+            JsonNode idNode = objectMap.get(Keyword.ID);
             if (idNode != null && idNode.isString()) {
                 String idString = idNode.asString();
                 SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, idString);
@@ -37,7 +37,7 @@ final class JsonParser {
             List<ValidatorWrapper> validators = parseValidators(ctx, objectMap);
             schemaRegistry.registerIdentifiableSchema(ctx, baseUri, node, validators);
 
-            return Optional.ofNullable(objectMap.get("$id"))
+            return Optional.ofNullable(objectMap.get(Keyword.ID))
                     .map(JsonNode::asString)
                     .map(URI::create)
                     .orElse(baseUri);
@@ -68,7 +68,7 @@ final class JsonParser {
 
     private void parseObject(SchemaParsingContext ctx, JsonNode node) {
         Map<String, JsonNode> objectMap = node.asObject();
-        JsonNode idNode = objectMap.get("$id");
+        JsonNode idNode = objectMap.get(Keyword.ID);
         if (idNode != null && idNode.isString()) {
             URI uri = ctx.getParentUri().resolve(idNode.asString());
             SchemaParsingContext newCtx = ctx.withParentUri(uri);
