@@ -23,9 +23,9 @@ class TypeValidator implements Validator {
     public ValidationResult validate(ValidationContext ctx, JsonNode node) {
         SimpleType nodeType = node.getNodeType();
         if (types.contains(nodeType) || nodeType == SimpleType.INTEGER && types.contains(SimpleType.NUMBER)) {
-            return Result.success();
+            return ValidationResult.success();
         } else {
-            return Result.failure("Value is [%s] but should be [%s]".formatted(nodeType.getName(), types));
+            return ValidationResult.failure("Value is [%s] but should be [%s]".formatted(nodeType.getName(), types));
         }
     }
 }
@@ -39,7 +39,7 @@ class ConstValidator implements Validator {
 
     @Override
     public ValidationResult validate(ValidationContext ctx, JsonNode node) {
-        return constNode.isEqualTo(node) ? Result.success() : Result.failure("Expected " + constNode.toPrintableString());
+        return constNode.isEqualTo(node) ? ValidationResult.success() : ValidationResult.failure("Expected " + constNode.toPrintableString());
     }
 }
 
@@ -53,9 +53,9 @@ class EnumValidator implements Validator {
     @Override
     public ValidationResult validate(ValidationContext ctx, JsonNode node) {
         if (enumNodes.stream().anyMatch(node::isEqualTo)) {
-            return Result.success();
+            return ValidationResult.success();
         } else {
-            return Result.failure("Expected any of [%s]".formatted(enumNodes.stream().map(JsonNode::toPrintableString).toList()));
+            return ValidationResult.failure("Expected any of [%s]".formatted(enumNodes.stream().map(JsonNode::toPrintableString).toList()));
         }
     }
 }
@@ -70,13 +70,13 @@ class MultipleOfValidator implements Validator {
     @Override
     public ValidationResult validate(ValidationContext ctx, JsonNode node) {
         if (!node.isNumber()) {
-            return Result.success();
+            return ValidationResult.success();
         }
 
         if (node.asNumber().remainder(factor).doubleValue() == 0.0) {
-            return Result.success();
+            return ValidationResult.success();
         } else {
-            return Result.failure("%s is not multiple of %s".formatted(node.asNumber(), factor));
+            return ValidationResult.failure("%s is not multiple of %s".formatted(node.asNumber(), factor));
         }
     }
 }
@@ -91,13 +91,13 @@ class MaximumValidator implements Validator {
     @Override
     public ValidationResult validate(ValidationContext ctx, JsonNode node) {
         if (!node.isNumber()) {
-            return Result.success();
+            return ValidationResult.success();
         }
 
         if (node.asNumber().compareTo(max) <= 0) {
-            return Result.success();
+            return ValidationResult.success();
         } else {
-            return Result.failure("%s is greater than %s".formatted(node.asNumber(), max));
+            return ValidationResult.failure("%s is greater than %s".formatted(node.asNumber(), max));
         }
     }
 }
@@ -112,13 +112,13 @@ class ExclusiveMaximumValidator implements Validator {
     @Override
     public ValidationResult validate(ValidationContext ctx, JsonNode node) {
         if (!node.isNumber()) {
-            return Result.success();
+            return ValidationResult.success();
         }
 
         if (node.asNumber().compareTo(max) < 0) {
-            return Result.success();
+            return ValidationResult.success();
         } else {
-            return Result.failure("%s is greater or equal to %s".formatted(node.asNumber(), max));
+            return ValidationResult.failure("%s is greater or equal to %s".formatted(node.asNumber(), max));
         }
     }
 }
@@ -133,13 +133,13 @@ class MinimumValidator implements Validator {
     @Override
     public ValidationResult validate(ValidationContext ctx, JsonNode node) {
         if (!node.isNumber()) {
-            return Result.success();
+            return ValidationResult.success();
         }
 
         if (node.asNumber().compareTo(min) >= 0) {
-            return Result.success();
+            return ValidationResult.success();
         } else {
-            return Result.failure("%s is lesser than %s".formatted(node.asNumber(), min));
+            return ValidationResult.failure("%s is lesser than %s".formatted(node.asNumber(), min));
         }
     }
 }
@@ -154,13 +154,13 @@ class ExclusiveMinimumValidator implements Validator {
     @Override
     public ValidationResult validate(ValidationContext ctx, JsonNode node) {
         if (!node.isNumber()) {
-            return Result.success();
+            return ValidationResult.success();
         }
 
         if (node.asNumber().compareTo(min) > 0) {
-            return Result.success();
+            return ValidationResult.success();
         } else {
-            return Result.failure("%s is lesser or equal to %s".formatted(node.asNumber(), min));
+            return ValidationResult.failure("%s is lesser or equal to %s".formatted(node.asNumber(), min));
         }
     }
 }
@@ -175,14 +175,14 @@ class MaxLengthValidator implements Validator {
     @Override
     public ValidationResult validate(ValidationContext ctx, JsonNode node) {
         if (!node.isString()) {
-            return Result.success();
+            return ValidationResult.success();
         }
 
         String string = node.asString();
         if (string.codePointCount(0, string.length()) <= maxLength) {
-            return Result.success();
+            return ValidationResult.success();
         } else {
-            return Result.failure("\"%s\" is longer than %d characters".formatted(string, maxLength));
+            return ValidationResult.failure("\"%s\" is longer than %d characters".formatted(string, maxLength));
         }
     }
 }
@@ -197,14 +197,14 @@ class MinLengthValidator implements Validator {
     @Override
     public ValidationResult validate(ValidationContext ctx, JsonNode node) {
         if (!node.isString()) {
-            return Result.success();
+            return ValidationResult.success();
         }
 
         String string = node.asString();
         if (string.codePointCount(0, string.length()) >= minLength) {
-            return Result.success();
+            return ValidationResult.success();
         } else {
-            return Result.failure("\"%s\" is shorter than %d characters".formatted(string, minLength));
+            return ValidationResult.failure("\"%s\" is shorter than %d characters".formatted(string, minLength));
         }
     }
 }
@@ -219,13 +219,13 @@ class PatternValidator implements Validator {
     @Override
     public ValidationResult validate(ValidationContext ctx, JsonNode node) {
         if (!node.isString()) {
-            return Result.success();
+            return ValidationResult.success();
         }
 
         if (pattern.matcher(node.asString()).find()) {
-            return Result.success();
+            return ValidationResult.success();
         } else {
-            return Result.failure("\"%s\" does not match regular expression [%s]".formatted(node.asString(), pattern.toString()));
+            return ValidationResult.failure("\"%s\" does not match regular expression [%s]".formatted(node.asString(), pattern.toString()));
         }
     }
 }
@@ -240,13 +240,13 @@ class MaxItemsValidator implements Validator {
     @Override
     public ValidationResult validate(ValidationContext ctx, JsonNode node) {
         if (!node.isArray()) {
-            return Result.success();
+            return ValidationResult.success();
         }
 
         if (node.asArray().size() <= maxItems) {
-            return Result.success();
+            return ValidationResult.success();
         } else {
-            return Result.failure("Array has more than %d items".formatted(maxItems));
+            return ValidationResult.failure("Array has more than %d items".formatted(maxItems));
         }
     }
 }
@@ -261,13 +261,13 @@ class MinItemsValidator implements Validator {
     @Override
     public ValidationResult validate(ValidationContext ctx, JsonNode node) {
         if (!node.isArray()) {
-            return Result.success();
+            return ValidationResult.success();
         }
 
         if (node.asArray().size() >= minItems) {
-            return Result.success();
+            return ValidationResult.success();
         } else {
-            return Result.failure("Array has less than %d items".formatted(minItems));
+            return ValidationResult.failure("Array has less than %d items".formatted(minItems));
         }
     }
 }
@@ -282,7 +282,7 @@ class UniqueItemsValidator implements Validator {
     @Override
     public ValidationResult validate(ValidationContext ctx, JsonNode node) {
         if (!node.isArray() || !unique) {
-            return Result.success();
+            return ValidationResult.success();
         }
 
         List<JsonNode> parsed = new ArrayList<>();
@@ -290,11 +290,11 @@ class UniqueItemsValidator implements Validator {
         for (int i = 0; i < jsonNodes.size(); i++) {
             JsonNode element = jsonNodes.get(i);
             if (parsed.stream().anyMatch(element::isEqualTo)) {
-                return Result.failure("Array contains non-unique item at index [%d]".formatted(i));
+                return ValidationResult.failure("Array contains non-unique item at index [%d]".formatted(i));
             }
             parsed.add(element);
         }
-        return Result.success();
+        return ValidationResult.success();
     }
 }
 
@@ -312,16 +312,16 @@ class MaxContainsValidator implements Validator {
     @Override
     public ValidationResult validate(ValidationContext ctx, JsonNode node) {
         if (!node.isArray() || containsPath == null) {
-            return Result.success();
+            return ValidationResult.success();
         }
 
         long count = ctx.getAnnotations().stream()
                 .filter(a -> a.header().schemaLocation().equals(containsPath))
                 .count();
         if (count <= max) {
-            return Result.success();
+            return ValidationResult.success();
         } else {
-            return Result.failure("Array contains more than %d matching items".formatted(max));
+            return ValidationResult.failure("Array contains more than %d matching items".formatted(max));
         }
     }
 
@@ -345,16 +345,16 @@ class MinContainsValidator implements Validator {
     @Override
     public ValidationResult validate(ValidationContext ctx, JsonNode node) {
         if (!node.isArray() || containsPath == null) {
-            return Result.success();
+            return ValidationResult.success();
         }
 
         long count = ctx.getAnnotations().stream()
                 .filter(a -> a.header().schemaLocation().equals(containsPath))
                 .count();
         if (count >= min) {
-            return Result.success();
+            return ValidationResult.success();
         } else {
-            return Result.failure("Array contains less than %d matching items".formatted(min));
+            return ValidationResult.failure("Array contains less than %d matching items".formatted(min));
         }
     }
 
@@ -374,13 +374,13 @@ class MaxPropertiesValidator implements Validator {
     @Override
     public ValidationResult validate(ValidationContext ctx, JsonNode node) {
         if (!node.isObject()) {
-            return Result.success();
+            return ValidationResult.success();
         }
 
         if (node.asObject().size() <= max) {
-            return Result.success();
+            return ValidationResult.success();
         } else {
-            return Result.failure("Object has more than %d properties".formatted(max));
+            return ValidationResult.failure("Object has more than %d properties".formatted(max));
         }
     }
 }
@@ -395,13 +395,13 @@ class MinPropertiesValidator implements Validator {
     @Override
     public ValidationResult validate(ValidationContext ctx, JsonNode node) {
         if (!node.isObject()) {
-            return Result.success();
+            return ValidationResult.success();
         }
 
         if (node.asObject().size() >= min) {
-            return Result.success();
+            return ValidationResult.success();
         } else {
-            return Result.failure("Object has less than %d properties".formatted(min));
+            return ValidationResult.failure("Object has less than %d properties".formatted(min));
         }
     }
 }
@@ -416,16 +416,16 @@ class RequiredValidator implements Validator {
     @Override
     public ValidationResult validate(ValidationContext ctx, JsonNode node) {
         if (!node.isObject()) {
-            return Result.success();
+            return ValidationResult.success();
         }
 
         Set<String> keys = node.asObject().keySet();
         if (keys.containsAll(requiredProperties)) {
-            return Result.success();
+            return ValidationResult.success();
         } else {
             HashSet<String> unsatisfied = new HashSet<>(requiredProperties);
             unsatisfied.removeAll(keys);
-            return Result.failure("Object does not have some of the required properties [%s]".formatted(unsatisfied));
+            return ValidationResult.failure("Object does not have some of the required properties [%s]".formatted(unsatisfied));
         }
     }
 }
@@ -442,7 +442,7 @@ class DependentRequiredValidator implements Validator {
     @Override
     public ValidationResult validate(ValidationContext ctx, JsonNode node) {
         if (!node.isObject()) {
-            return Result.success();
+            return ValidationResult.success();
         }
 
         Set<String> objectKeys = node.asObject().keySet();
@@ -453,10 +453,10 @@ class DependentRequiredValidator implements Validator {
                 .flatMap(List::stream)
                 .collect(Collectors.toSet());
         if (objectKeys.containsAll(requiredSet)) {
-            return Result.success();
+            return ValidationResult.success();
         } else {
             requiredSet.removeAll(objectKeys);
-            return Result.failure("Object does not have some of the required properties [%s]".formatted(requiredSet));
+            return ValidationResult.failure("Object does not have some of the required properties [%s]".formatted(requiredSet));
         }
     }
 

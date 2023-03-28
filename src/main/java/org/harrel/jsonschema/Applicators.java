@@ -371,9 +371,9 @@ class RefValidator implements Validator {
     public ValidationResult validate(ValidationContext ctx, JsonNode node) {
         Optional<Schema> schema = ctx.resolveSchema(ref);
         if (schema.isEmpty()) {
-            return Result.failure("Resolution of $ref [%s] failed".formatted(ref));
+            return ValidationResult.failure("Resolution of $ref [%s] failed".formatted(ref));
         } else {
-            return schema.get().validate(ctx, node) ? Result.success() : Result.failure();
+            return schema.get().validate(ctx, node) ? ValidationResult.success() : ValidationResult.failure();
         }
     }
 }
@@ -389,9 +389,9 @@ class DynamicRefValidator implements Validator {
     public ValidationResult validate(ValidationContext ctx, JsonNode node) {
         Optional<Schema> schema = ctx.resolveDynamicSchema(ref);
         if (schema.isEmpty()) {
-            return Result.failure("Resolution of $ref [%s] failed".formatted(ref));
+            return ValidationResult.failure("Resolution of $ref [%s] failed".formatted(ref));
         } else {
-            return schema.get().validate(ctx, node) ? Result.success() : Result.failure();
+            return schema.get().validate(ctx, node) ? ValidationResult.success() : ValidationResult.failure();
         }
     }
 }

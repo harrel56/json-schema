@@ -8,8 +8,8 @@ import java.util.Objects;
 
 class Schema {
 
-    private static final Validator TRUE_VALIDATOR = (ctx, node) -> Result.success();
-    private static final Validator FALSE_VALIDATOR = (ctx, node) -> Result.failure("False schema always fails.");
+    private static final Validator TRUE_VALIDATOR = (ctx, node) -> ValidationResult.success();
+    private static final Validator FALSE_VALIDATOR = (ctx, node) -> ValidationResult.failure("False schema always fails.");
 
     private final URI parentUri;
     private final String schemaLocation;
