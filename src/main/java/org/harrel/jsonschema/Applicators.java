@@ -33,7 +33,7 @@ class ItemsValidator implements Applicator {
 
     ItemsValidator(SchemaParsingContext ctx, JsonNode node) {
         this.schemaRef = ctx.getAbsoluteUri(node);
-        this.prefixItemsSize = Optional.ofNullable(ctx.getCurrentSchemaObject().get("prefixItems"))
+        this.prefixItemsSize = Optional.ofNullable(ctx.getCurrentSchemaObject().get(Keyword.PREFIX_ITEMS))
                 .map(JsonNode::asArray)
                 .map(List::size)
                 .orElse(0);
@@ -57,7 +57,7 @@ class ContainsValidator implements Applicator {
 
     ContainsValidator(SchemaParsingContext ctx, JsonNode node) {
         this.schemaRef = ctx.getAbsoluteUri(node);
-        this.minContainsZero = Optional.ofNullable(ctx.getCurrentSchemaObject().get("minContains"))
+        this.minContainsZero = Optional.ofNullable(ctx.getCurrentSchemaObject().get(Keyword.MIN_CONTAINS))
                 .map(JsonNode::asInteger)
                 .map(BigInteger::intValueExact)
                 .map(min -> min == 0)
@@ -85,11 +85,11 @@ class AdditionalPropertiesValidator implements Applicator {
 
     AdditionalPropertiesValidator(SchemaParsingContext ctx, JsonNode node) {
         this.schemaRef = ctx.getAbsoluteUri(node);
-        this.declaredProperties = Optional.ofNullable(ctx.getCurrentSchemaObject().get("properties"))
+        this.declaredProperties = Optional.ofNullable(ctx.getCurrentSchemaObject().get(Keyword.PROPERTIES))
                 .map(JsonNode::asObject)
                 .map(Map::keySet)
                 .orElse(Set.of());
-        this.declaredPatternProperties = Optional.ofNullable(ctx.getCurrentSchemaObject().get("patternProperties"))
+        this.declaredPatternProperties = Optional.ofNullable(ctx.getCurrentSchemaObject().get(Keyword.PATTERN_PROPERTIES))
                 .map(JsonNode::asObject)
                 .map(Map::keySet)
                 .map(keySet -> keySet.stream().map(Pattern::compile).toList())
@@ -218,9 +218,9 @@ class IfThenElseValidator implements Applicator {
 
     IfThenElseValidator(SchemaParsingContext ctx, JsonNode node) {
         this.ifRef = ctx.getAbsoluteUri(node);
-        this.thenRef = Optional.ofNullable(ctx.getCurrentSchemaObject().get("then"))
+        this.thenRef = Optional.ofNullable(ctx.getCurrentSchemaObject().get(Keyword.THEN))
                 .map(ctx::getAbsoluteUri);
-        this.elseRef = Optional.ofNullable(ctx.getCurrentSchemaObject().get("else"))
+        this.elseRef = Optional.ofNullable(ctx.getCurrentSchemaObject().get(Keyword.ELSE))
                 .map(ctx::getAbsoluteUri);
     }
 

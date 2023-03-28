@@ -64,6 +64,9 @@ class MultipleOfValidator implements Validator {
     private final BigDecimal factor;
 
     MultipleOfValidator(JsonNode node) {
+        if (!node.isNumber()) {
+            throw new IllegalArgumentException();
+        }
         this.factor = node.asNumber();
     }
 
@@ -303,7 +306,7 @@ class MaxContainsValidator implements Validator {
     private final int max;
 
     MaxContainsValidator(SchemaParsingContext ctx, JsonNode node) {
-        this.containsPath = Optional.ofNullable(ctx.getCurrentSchemaObject().get("contains"))
+        this.containsPath = Optional.ofNullable(ctx.getCurrentSchemaObject().get(Keyword.CONTAINS))
                 .map(ctx::getAbsoluteUri)
                 .orElse(null);
         this.max = node.asInteger().intValueExact();
@@ -336,7 +339,7 @@ class MinContainsValidator implements Validator {
     private final int min;
 
     MinContainsValidator(SchemaParsingContext ctx, JsonNode node) {
-        this.containsPath = Optional.ofNullable(ctx.getCurrentSchemaObject().get("contains"))
+        this.containsPath = Optional.ofNullable(ctx.getCurrentSchemaObject().get(Keyword.CONTAINS))
                 .map(ctx::getAbsoluteUri)
                 .orElse(null);
         this.min = node.asInteger().intValueExact();
