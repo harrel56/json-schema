@@ -3,7 +3,7 @@ package org.harrel.jsonschema;
 import java.net.URI;
 import java.util.*;
 
-public class SchemaParsingContext {
+public final class SchemaParsingContext {
     private final URI baseUri;
     private final URI parentUri;
     private final SchemaRegistry schemaRegistry;

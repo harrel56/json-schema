@@ -1,6 +1,6 @@
 package org.harrel.jsonschema;
 
-class ValidatorWrapper implements Validator {
+final class ValidatorWrapper implements Validator {
     private final String keyword;
     private final String keywordPath;
     private final Validator validator;

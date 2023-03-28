@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-public class SchemaValidator {
+public final class SchemaValidator {
     private static final ValidatorFactory DEFAULT_VALIDATOR_FACTORY = new CoreValidatorFactory();
     private static final JsonNodeFactory DEFAULT_JSON_NODE_FACTORY = new JacksonNode.Factory();
     private static final SchemaResolver DEFAULT_SCHEMA_RESOLVER = uri -> Optional.empty();

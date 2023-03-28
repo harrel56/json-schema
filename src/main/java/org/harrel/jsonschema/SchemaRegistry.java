@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-class SchemaRegistry {
+final class SchemaRegistry {
 
     private final Map<String, Schema> schemas = new HashMap<>();
     private final Map<String, Schema> additionalSchemas = new HashMap<>();

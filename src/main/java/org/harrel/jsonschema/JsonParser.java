@@ -3,7 +3,7 @@ package org.harrel.jsonschema;
 import java.net.URI;
 import java.util.*;
 
-class JsonParser {
+final class JsonParser {
     private final JsonNodeFactory jsonNodeFactory;
     private final ValidatorFactory validatorFactory;
     private final SchemaRegistry schemaRegistry;

@@ -3,7 +3,7 @@ package org.harrel.jsonschema;
 import java.net.URI;
 import java.util.*;
 
-public class ValidationContext {
+public final class ValidationContext {
     private final JsonParser jsonParser;
     private final SchemaRegistry schemaRegistry;
     private final SchemaResolver schemaResolver;

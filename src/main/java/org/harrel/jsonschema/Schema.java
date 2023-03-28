@@ -6,7 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-class Schema {
+final class Schema {
 
     private static final Validator TRUE_VALIDATOR = (ctx, node) -> ValidationResult.success();
     private static final Validator FALSE_VALIDATOR = (ctx, node) -> ValidationResult.failure("False schema always fails.");

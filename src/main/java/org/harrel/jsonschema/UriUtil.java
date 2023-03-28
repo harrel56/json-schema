@@ -5,7 +5,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
-public class UriUtil {
+public final class UriUtil {
 
     private UriUtil() {}
 
