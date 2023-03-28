@@ -33,7 +33,8 @@ public abstract class CoreValidatorFactoryTest {
         SchemaParsingContext ctx = new SchemaParsingContext(new SchemaRegistry(), "CoreValidatorFactoryTest");
 
         for (var entry : TYPE_MAP.entrySet()) {
-            Optional<Validator> validator = validatorFactory.create(ctx, keyword, nodeFactory.create(entry.getValue()));
+            JsonNode wrappedNode = nodeFactory.create("{\"%s\": %s}".formatted(keyword, entry.getValue()));
+            Optional<Validator> validator = validatorFactory.create(ctx, keyword, wrappedNode.asObject().get(keyword));
             if (supportedTypes.contains(entry.getKey())) {
                 assertThat(validator)
                         .withFailMessage("Expected type [%s] to pass", entry.getKey())
@@ -67,7 +68,27 @@ public abstract class CoreValidatorFactoryTest {
                 Arguments.of(MAX_PROPERTIES, Set.of(INTEGER)),
                 Arguments.of(MIN_PROPERTIES, Set.of(INTEGER)),
                 Arguments.of(REQUIRED, Set.of(ARRAY)),
-                Arguments.of(DEPENDENT_REQUIRED, Set.of(OBJECT))
+                Arguments.of(DEPENDENT_REQUIRED, Set.of(OBJECT)),
+
+                Arguments.of(PREFIX_ITEMS, Set.of(ARRAY)),
+                Arguments.of(ITEMS, Set.of(BOOLEAN, OBJECT)),
+                Arguments.of(CONTAINS, Set.of(BOOLEAN, OBJECT)),
+                Arguments.of(ADDITIONAL_PROPERTIES, Set.of(BOOLEAN, OBJECT)),
+                Arguments.of(PROPERTIES, Set.of(OBJECT)),
+                Arguments.of(PATTERN_PROPERTIES, Set.of(OBJECT)),
+                Arguments.of(DEPENDENT_SCHEMAS, Set.of(OBJECT)),
+                Arguments.of(PROPERTY_NAMES, Set.of(BOOLEAN, OBJECT)),
+                Arguments.of(IF, Set.of(BOOLEAN, OBJECT)),
+                Arguments.of(THEN, Set.of()),
+                Arguments.of(ELSE, Set.of()),
+                Arguments.of(ALL_OF, Set.of(ARRAY)),
+                Arguments.of(ANY_OF, Set.of(ARRAY)),
+                Arguments.of(ONE_OF, Set.of(ARRAY)),
+                Arguments.of(NOT, Set.of(BOOLEAN, OBJECT)),
+                Arguments.of(UNEVALUATED_ITEMS, Set.of(BOOLEAN, OBJECT)),
+                Arguments.of(UNEVALUATED_PROPERTIES, Set.of(BOOLEAN, OBJECT)),
+                Arguments.of(REF, Set.of(STRING)),
+                Arguments.of(DYNAMIC_REF, Set.of(STRING))
         );
     }
 }

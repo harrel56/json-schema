@@ -10,6 +10,9 @@ class PrefixItemsValidator implements Applicator {
     private final List<String> prefixRefs;
 
     PrefixItemsValidator(SchemaParsingContext ctx, JsonNode node) {
+        if (!node.isArray()) {
+            throw new IllegalArgumentException();
+        }
         this.prefixRefs = node.asArray().stream()
                 .map(ctx::getAbsoluteUri)
                 .toList();
@@ -32,6 +35,9 @@ class ItemsValidator implements Applicator {
     private final int prefixItemsSize;
 
     ItemsValidator(SchemaParsingContext ctx, JsonNode node) {
+        if (!node.isObject() && !node.isBoolean()) {
+            throw new IllegalArgumentException();
+        }
         this.schemaRef = ctx.getAbsoluteUri(node);
         this.prefixItemsSize = Optional.ofNullable(ctx.getCurrentSchemaObject().get(Keyword.PREFIX_ITEMS))
                 .map(JsonNode::asArray)
@@ -56,6 +62,9 @@ class ContainsValidator implements Applicator {
     private final boolean minContainsZero;
 
     ContainsValidator(SchemaParsingContext ctx, JsonNode node) {
+        if (!node.isObject() && !node.isBoolean()) {
+            throw new IllegalArgumentException();
+        }
         this.schemaRef = ctx.getAbsoluteUri(node);
         this.minContainsZero = Optional.ofNullable(ctx.getCurrentSchemaObject().get(Keyword.MIN_CONTAINS))
                 .map(JsonNode::asInteger)
@@ -84,6 +93,9 @@ class AdditionalPropertiesValidator implements Applicator {
     private final List<Pattern> declaredPatternProperties;
 
     AdditionalPropertiesValidator(SchemaParsingContext ctx, JsonNode node) {
+        if (!node.isObject() && !node.isBoolean()) {
+            throw new IllegalArgumentException();
+        }
         this.schemaRef = ctx.getAbsoluteUri(node);
         this.declaredProperties = Optional.ofNullable(ctx.getCurrentSchemaObject().get(Keyword.PROPERTIES))
                 .map(JsonNode::asObject)
@@ -119,6 +131,9 @@ class PropertiesValidator implements Applicator {
     private final Map<String, String> schemaRefs;
 
     PropertiesValidator(SchemaParsingContext ctx, JsonNode node) {
+        if (!node.isObject()) {
+            throw new IllegalArgumentException();
+        }
         Map<String, String> uris = new HashMap<>();
         for (Map.Entry<String, JsonNode> entry : node.asObject().entrySet()) {
             uris.put(entry.getKey(), ctx.getAbsoluteUri(entry.getValue()));
@@ -145,6 +160,9 @@ class PatternPropertiesValidator implements Applicator {
     private final Map<Pattern, String> schemasByPatterns;
 
     PatternPropertiesValidator(SchemaParsingContext ctx, JsonNode node) {
+        if (!node.isObject()) {
+            throw new IllegalArgumentException();
+        }
         this.schemasByPatterns = node.asObject().entrySet().stream()
                 .collect(Collectors.toMap(e -> Pattern.compile(e.getKey()), e -> ctx.getAbsoluteUri(e.getValue())));
     }
@@ -172,6 +190,9 @@ class DependentSchemasValidator implements Applicator {
     private final Map<String, String> dependentSchemas;
 
     DependentSchemasValidator(SchemaParsingContext ctx, JsonNode node) {
+        if (!node.isObject()) {
+            throw new IllegalArgumentException();
+        }
         this.dependentSchemas = node.asObject().entrySet()
                 .stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> ctx.getAbsoluteUri(e.getValue())));
@@ -196,6 +217,9 @@ class PropertyNamesValidator implements Applicator {
     private final String schemaRef;
 
     PropertyNamesValidator(SchemaParsingContext ctx, JsonNode node) {
+        if (!node.isObject() && !node.isBoolean()) {
+            throw new IllegalArgumentException();
+        }
         this.schemaRef = ctx.getAbsoluteUri(node);
     }
 
@@ -217,6 +241,9 @@ class IfThenElseValidator implements Applicator {
     private final Optional<String> elseRef;
 
     IfThenElseValidator(SchemaParsingContext ctx, JsonNode node) {
+        if (!node.isObject() && !node.isBoolean()) {
+            throw new IllegalArgumentException();
+        }
         this.ifRef = ctx.getAbsoluteUri(node);
         this.thenRef = Optional.ofNullable(ctx.getCurrentSchemaObject().get(Keyword.THEN))
                 .map(ctx::getAbsoluteUri);
@@ -242,6 +269,9 @@ class AllOfValidator implements Applicator {
     private final List<String> refs;
 
     AllOfValidator(SchemaParsingContext ctx, JsonNode node) {
+        if (!node.isArray()) {
+            throw new IllegalArgumentException();
+        }
         this.refs = node.asArray().stream().map(ctx::getAbsoluteUri).toList();
     }
 
@@ -255,6 +285,9 @@ class AnyOfValidator implements Applicator {
     private final List<String> refs;
 
     AnyOfValidator(SchemaParsingContext ctx, JsonNode node) {
+        if (!node.isArray()) {
+            throw new IllegalArgumentException();
+        }
         this.refs = node.asArray().stream().map(ctx::getAbsoluteUri).toList();
     }
 
@@ -270,6 +303,9 @@ class OneOfValidator implements Applicator {
     private final List<String> refs;
 
     OneOfValidator(SchemaParsingContext ctx, JsonNode node) {
+        if (!node.isArray()) {
+            throw new IllegalArgumentException();
+        }
         this.refs = node.asArray().stream().map(ctx::getAbsoluteUri).toList();
     }
 
@@ -286,6 +322,9 @@ class NotValidator implements Applicator {
 
 
     NotValidator(SchemaParsingContext ctx, JsonNode node) {
+        if (!node.isObject() && !node.isBoolean()) {
+            throw new IllegalArgumentException();
+        }
         this.schemaUri = ctx.getAbsoluteUri(node);
     }
 
@@ -300,6 +339,9 @@ class UnevaluatedItemsValidator implements Applicator {
     private final String parentPath;
 
     UnevaluatedItemsValidator(SchemaParsingContext ctx, JsonNode node) {
+        if (!node.isObject() && !node.isBoolean()) {
+            throw new IllegalArgumentException();
+        }
         String schemaPointer = node.getJsonPointer();
         this.schemaRef = ctx.getAbsoluteUri(schemaPointer);
         this.parentPath = schemaPointer.substring(0, schemaPointer.lastIndexOf('/'));
@@ -332,6 +374,9 @@ class UnevaluatedPropertiesValidator implements Applicator {
     private final String parentPath;
 
     UnevaluatedPropertiesValidator(SchemaParsingContext ctx, JsonNode node) {
+        if (!node.isObject() && !node.isBoolean()) {
+            throw new IllegalArgumentException();
+        }
         String schemaPointer = node.getJsonPointer();
         this.schemaRef = ctx.getAbsoluteUri(schemaPointer);
         this.parentPath = schemaPointer.substring(0, schemaPointer.lastIndexOf('/'));
@@ -364,6 +409,9 @@ class RefValidator implements Validator {
     private final String ref;
 
     RefValidator(JsonNode node) {
+        if (!node.isString()) {
+            throw new IllegalArgumentException();
+        }
         this.ref = node.asString();
     }
 
@@ -382,6 +430,9 @@ class DynamicRefValidator implements Validator {
     private final String ref;
 
     DynamicRefValidator(JsonNode node) {
+        if (!node.isString()) {
+            throw new IllegalArgumentException();
+        }
         this.ref = node.asString();
     }
 
