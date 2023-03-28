@@ -21,7 +21,7 @@ public class SchemaValidator {
         this.jsonNodeFactory = jsonNodeFactory;
         this.schemaResolver = schemaResolver;
         this.schemaRegistry = new SchemaRegistry();
-        this.jsonParser = new JsonParser(this.jsonNodeFactory, new ValidatorFactory(), this.schemaRegistry);
+        this.jsonParser = new JsonParser(this.jsonNodeFactory, new CoreValidatorFactory(), this.schemaRegistry);
     }
 
     public URI registerSchema(String rawSchema) {

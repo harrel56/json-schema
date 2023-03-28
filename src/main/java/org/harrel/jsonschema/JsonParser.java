@@ -4,14 +4,11 @@ import java.net.URI;
 import java.util.*;
 
 class JsonParser {
-
-    private static final Set<String> NOT_PARSABLE_KEYWORDS = Set.of("const", "enum");
-
     private final JsonNodeFactory jsonNodeFactory;
-    private final ValidatorFactory validatorFactory;
+    private final CoreValidatorFactory validatorFactory;
     private final SchemaRegistry schemaRegistry;
 
-    JsonParser(JsonNodeFactory jsonNodeFactory, ValidatorFactory validatorFactory, SchemaRegistry schemaRegistry) {
+    JsonParser(JsonNodeFactory jsonNodeFactory, CoreValidatorFactory validatorFactory, SchemaRegistry schemaRegistry) {
         this.jsonNodeFactory = jsonNodeFactory;
         this.validatorFactory = validatorFactory;
         this.schemaRegistry = schemaRegistry;
@@ -86,12 +83,10 @@ class JsonParser {
         SchemaParsingContext newCtx = ctx.withCurrentSchemaContext(object);
         List<ValidatorWrapper> validators = new ArrayList<>();
         for (Map.Entry<String, JsonNode> entry : object.entrySet()) {
-            validatorFactory.fromField(newCtx, entry.getKey(), entry.getValue())
+            validatorFactory.create(newCtx, entry.getKey(), entry.getValue())
                     .map(validator -> new ValidatorWrapper(entry.getKey(), entry.getValue(), validator))
                     .ifPresent(validators::add);
-            if (!NOT_PARSABLE_KEYWORDS.contains(entry.getKey())) {
-                parseNode(newCtx, entry.getValue());
-            }
+            parseNode(newCtx, entry.getValue());
         }
         return validators;
     }

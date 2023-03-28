@@ -1,7 +1,9 @@
 package org.harrel.jsonschema;
 
 import java.net.URI;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 class SchemaRegistry {
 
@@ -20,9 +22,7 @@ class SchemaRegistry {
     void registerSchema(SchemaParsingContext ctx, JsonNode schemaNode, List<ValidatorWrapper> validators) {
         Schema schema = new Schema(ctx.getParentUri(), ctx.getAbsoluteUri(schemaNode), validators);
         schemas.put(ctx.getAbsoluteUri(schemaNode), schema);
-        if (schemaNode.isObject()) {
-            registerAnchorsIfPresent(ctx, schemaNode, schema);
-        }
+        registerAnchorsIfPresent(ctx, schemaNode, schema);
     }
 
     void registerIdentifiableSchema(SchemaParsingContext ctx, URI id, JsonNode schemaNode, List<ValidatorWrapper> validators) {
@@ -39,9 +39,7 @@ class SchemaRegistry {
         Schema identifiableSchema = new Schema(ctx.getParentUri(), id.toString(), validators);
         schemas.put(id.toString(), identifiableSchema);
         schemas.put(absoluteUri, identifiableSchema);
-        if (schemaNode.isObject()) {
-            registerAnchorsIfPresent(ctx, schemaNode, identifiableSchema);
-        }
+        registerAnchorsIfPresent(ctx, schemaNode, identifiableSchema);
     }
 
     private void registerAnchorsIfPresent(SchemaParsingContext ctx, JsonNode schemaNode, Schema schema) {
