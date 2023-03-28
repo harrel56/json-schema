@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 
-public class GsonNode implements JsonNode {
+public final class GsonNode implements JsonNode {
     private final JsonElement node;
     private final String jsonPointer;
     private final SimpleType nodeType;
@@ -119,7 +119,7 @@ public class GsonNode implements JsonNode {
         }
     }
 
-    public static class Factory implements JsonNodeFactory {
+    public static final class Factory implements JsonNodeFactory {
         @Override
         public GsonNode wrap(Object node) {
             if (node instanceof JsonElement vendorNode) {

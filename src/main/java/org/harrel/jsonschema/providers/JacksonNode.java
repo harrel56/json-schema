@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class JacksonNode implements JsonNode {
+public final class JacksonNode implements JsonNode {
 
     private static final Map<JsonNodeType, SimpleType> TYPE_MAP = Map.of(
             JsonNodeType.NULL, SimpleType.NULL,
@@ -92,7 +92,7 @@ public class JacksonNode implements JsonNode {
         return map;
     }
 
-    public static class Factory implements JsonNodeFactory {
+    public static final class Factory implements JsonNodeFactory {
         private final ObjectMapper mapper;
 
         public Factory() {
