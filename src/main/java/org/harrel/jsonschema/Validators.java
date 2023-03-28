@@ -9,6 +9,9 @@ class TypeValidator implements Validator {
     private final Set<SimpleType> types;
 
     TypeValidator(JsonNode node) {
+        if (!node.isString() && !node.isArray()) {
+            throw new IllegalArgumentException();
+        }
         if (node.isString()) {
             this.types = Set.of(SimpleType.fromName(node.asString()));
         } else {
@@ -47,6 +50,9 @@ class EnumValidator implements Validator {
     private final List<JsonNode> enumNodes;
 
     EnumValidator(JsonNode node) {
+        if (!node.isArray()) {
+            throw new IllegalArgumentException();
+        }
         this.enumNodes = Collections.unmodifiableList(node.asArray());
     }
 
@@ -88,6 +94,9 @@ class MaximumValidator implements Validator {
     private final BigDecimal max;
 
     MaximumValidator(JsonNode node) {
+        if (!node.isNumber()) {
+            throw new IllegalArgumentException();
+        }
         this.max = node.asNumber();
     }
 
@@ -109,6 +118,9 @@ class ExclusiveMaximumValidator implements Validator {
     private final BigDecimal max;
 
     ExclusiveMaximumValidator(JsonNode node) {
+        if (!node.isNumber()) {
+            throw new IllegalArgumentException();
+        }
         this.max = node.asNumber();
     }
 
@@ -130,6 +142,9 @@ class MinimumValidator implements Validator {
     private final BigDecimal min;
 
     MinimumValidator(JsonNode node) {
+        if (!node.isNumber()) {
+            throw new IllegalArgumentException();
+        }
         this.min = node.asNumber();
     }
 
@@ -151,6 +166,9 @@ class ExclusiveMinimumValidator implements Validator {
     private final BigDecimal min;
 
     ExclusiveMinimumValidator(JsonNode node) {
+        if (!node.isNumber()) {
+            throw new IllegalArgumentException();
+        }
         this.min = node.asNumber();
     }
 
@@ -172,6 +190,9 @@ class MaxLengthValidator implements Validator {
     private final int maxLength;
 
     MaxLengthValidator(JsonNode node) {
+        if (!node.isInteger()) {
+            throw new IllegalArgumentException();
+        }
         this.maxLength = node.asInteger().intValueExact();
     }
 
@@ -194,6 +215,9 @@ class MinLengthValidator implements Validator {
     private final int minLength;
 
     MinLengthValidator(JsonNode node) {
+        if (!node.isInteger()) {
+            throw new IllegalArgumentException();
+        }
         this.minLength = node.asInteger().intValueExact();
     }
 
@@ -216,6 +240,9 @@ class PatternValidator implements Validator {
     private final Pattern pattern;
 
     PatternValidator(JsonNode node) {
+        if (!node.isString()) {
+            throw new IllegalArgumentException();
+        }
         this.pattern = Pattern.compile(node.asString());
     }
 
@@ -237,6 +264,9 @@ class MaxItemsValidator implements Validator {
     private final int maxItems;
 
     MaxItemsValidator(JsonNode node) {
+        if (!node.isInteger()) {
+            throw new IllegalArgumentException();
+        }
         this.maxItems = node.asInteger().intValueExact();
     }
 
@@ -258,6 +288,9 @@ class MinItemsValidator implements Validator {
     private final int minItems;
 
     MinItemsValidator(JsonNode node) {
+        if (!node.isInteger()) {
+            throw new IllegalArgumentException();
+        }
         this.minItems = node.asInteger().intValueExact();
     }
 
@@ -279,6 +312,9 @@ class UniqueItemsValidator implements Validator {
     private final boolean unique;
 
     UniqueItemsValidator(JsonNode node) {
+        if (!node.isBoolean()) {
+            throw new IllegalArgumentException();
+        }
         this.unique = node.asBoolean();
     }
 
@@ -306,6 +342,9 @@ class MaxContainsValidator implements Validator {
     private final int max;
 
     MaxContainsValidator(SchemaParsingContext ctx, JsonNode node) {
+        if (!node.isInteger()) {
+            throw new IllegalArgumentException();
+        }
         this.containsPath = Optional.ofNullable(ctx.getCurrentSchemaObject().get(Keyword.CONTAINS))
                 .map(ctx::getAbsoluteUri)
                 .orElse(null);
@@ -339,6 +378,9 @@ class MinContainsValidator implements Validator {
     private final int min;
 
     MinContainsValidator(SchemaParsingContext ctx, JsonNode node) {
+        if (!node.isInteger()) {
+            throw new IllegalArgumentException();
+        }
         this.containsPath = Optional.ofNullable(ctx.getCurrentSchemaObject().get(Keyword.CONTAINS))
                 .map(ctx::getAbsoluteUri)
                 .orElse(null);
@@ -371,6 +413,9 @@ class MaxPropertiesValidator implements Validator {
     private final int max;
 
     MaxPropertiesValidator(JsonNode node) {
+        if (!node.isInteger()) {
+            throw new IllegalArgumentException();
+        }
         this.max = node.asInteger().intValueExact();
     }
 
@@ -392,6 +437,9 @@ class MinPropertiesValidator implements Validator {
     private final int min;
 
     MinPropertiesValidator(JsonNode node) {
+        if (!node.isInteger()) {
+            throw new IllegalArgumentException();
+        }
         this.min = node.asInteger().intValueExact();
     }
 
@@ -413,6 +461,9 @@ class RequiredValidator implements Validator {
     private final List<String> requiredProperties;
 
     RequiredValidator(JsonNode node) {
+        if (!node.isArray()) {
+            throw new IllegalArgumentException();
+        }
         this.requiredProperties = node.asArray().stream().map(JsonNode::asString).toList();
     }
 
@@ -437,6 +488,9 @@ class DependentRequiredValidator implements Validator {
     private final Map<String, List<String>> requiredProperties;
 
     DependentRequiredValidator(JsonNode node) {
+        if (!node.isObject()) {
+            throw new IllegalArgumentException();
+        }
         this.requiredProperties = node.asObject().entrySet()
                 .stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> toStringList(e.getValue())));

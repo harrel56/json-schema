@@ -1,8 +1,6 @@
 package org.harrel.jsonschema;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.harrel.jsonschema.providers.GsonNode;
-import org.harrel.jsonschema.providers.JacksonNode;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
@@ -15,24 +13,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Logger;
 
-class JacksonSpecificationTest extends SpecificationTest {
-    @BeforeAll
-    static void beforeAll() {
-        nodeFactory = new JacksonNode.Factory();
-    }
-}
-
-class GsonSpecificationTest extends SpecificationTest {
-    @BeforeAll
-    static void beforeAll() {
-        nodeFactory = new GsonNode.Factory();
-    }
-}
-
 @SuppressWarnings("unused")
-abstract class SpecificationTest {
+public abstract class SpecificationTest {
     static final Logger logger = Logger.getLogger("SpecificationTest");
-    static JsonNodeFactory nodeFactory;
+    protected static JsonNodeFactory nodeFactory;
 
     @SuiteTest("/draft2020-12/boolean_schema.json")
     void booleanSchemaTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {

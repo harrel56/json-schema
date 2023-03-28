@@ -1,8 +1,5 @@
 package org.harrel.jsonschema;
 
-import org.harrel.jsonschema.providers.GsonNode;
-import org.harrel.jsonschema.providers.JacksonNode;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -12,23 +9,9 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class JacksonNodeTest extends JsonNodeTest {
-    @BeforeAll
-    static void beforeAll() {
-        nodeFactory = new JacksonNode.Factory();
-    }
-}
+public abstract class JsonNodeTest {
 
-class GsonNodeTest extends JsonNodeTest {
-    @BeforeAll
-    static void beforeAll() {
-        nodeFactory = new GsonNode.Factory();
-    }
-}
-
-abstract class JsonNodeTest {
-
-    static JsonNodeFactory nodeFactory;
+    protected static JsonNodeFactory nodeFactory;
 
     @Test
     void nullNode() {
