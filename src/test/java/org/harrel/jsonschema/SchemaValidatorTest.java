@@ -9,7 +9,7 @@ class SchemaValidatorTest {
 
     @Test
     void name() throws IOException {
-        SchemaValidator schemaValidator = new SchemaValidator();
+        SchemaValidator schemaValidator = SchemaValidator.builder().build();
         String rawSchema = new String(getClass().getResourceAsStream("/schema.json").readAllBytes());
         String rawJson = new String(getClass().getResourceAsStream("/json.json").readAllBytes());
         URI uri = URI.create(getClass().getSimpleName());

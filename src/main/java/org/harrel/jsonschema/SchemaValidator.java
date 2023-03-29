@@ -2,15 +2,17 @@ package org.harrel.jsonschema;
 
 import org.harrel.jsonschema.providers.JacksonNode;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
 public final class SchemaValidator {
-    private static final ValidatorFactory DEFAULT_VALIDATOR_FACTORY = new CoreValidatorFactory();
-    private static final JsonNodeFactory DEFAULT_JSON_NODE_FACTORY = new JacksonNode.Factory();
-    private static final SchemaResolver DEFAULT_SCHEMA_RESOLVER = uri -> Optional.empty();
+    private static final String DEFAULT_META_SCHEMA = "https://json-schema.org/draft/2020-12/schema";
 
     private final JsonNodeFactory jsonNodeFactory;
     private final SchemaResolver schemaResolver;
@@ -21,17 +23,14 @@ public final class SchemaValidator {
         return new Builder();
     }
 
-    private SchemaValidator(ValidatorFactory validatorFactory, JsonNodeFactory jsonNodeFactory, SchemaResolver schemaResolver) {
-        this.jsonNodeFactory = jsonNodeFactory;
-        this.schemaResolver = schemaResolver;
+    private SchemaValidator(ValidatorFactory validatorFactory, JsonNodeFactory jsonNodeFactory, SchemaResolver schemaResolver, String defaultMetaSchemaUri) {
+        validatorFactory = validatorFactory == null ? new CoreValidatorFactory() : validatorFactory;
+        this.jsonNodeFactory = jsonNodeFactory == null ? new JacksonNode.Factory() : jsonNodeFactory;
+        this.schemaResolver = decorateSchemaResolver(schemaResolver == null ? uri -> Optional.empty() : schemaResolver, defaultMetaSchemaUri);
         this.schemaRegistry = new SchemaRegistry();
-        this.jsonParser = new JsonParser(this.jsonNodeFactory, validatorFactory, this.schemaRegistry);
+        MetaSchemaValidator metaSchemaValidator = new MetaSchemaValidator(this.schemaRegistry, this.schemaResolver);
+        this.jsonParser = new JsonParser(defaultMetaSchemaUri, this.jsonNodeFactory, validatorFactory, this.schemaRegistry, metaSchemaValidator);
     }
-
-    public SchemaValidator() {
-        this(DEFAULT_VALIDATOR_FACTORY, DEFAULT_JSON_NODE_FACTORY, DEFAULT_SCHEMA_RESOLVER);
-    }
-
 
     public URI registerSchema(String rawSchema) {
         return jsonParser.parseRootSchema(URI.create(UUID.randomUUID().toString()), jsonNodeFactory.create(rawSchema));
@@ -66,7 +65,7 @@ public final class SchemaValidator {
     private Schema getRootSchema(String uri) {
         Schema schema = schemaRegistry.get(uri);
         if (schema == null) {
-            throw new IllegalStateException("Couldn't find schema with uri=%s or it resolves to non-identifiable schema".formatted(uri));
+            throw new IllegalStateException("Couldn't find schema with uri [%s]".formatted(uri));
         }
         return schema;
     }
@@ -75,10 +74,20 @@ public final class SchemaValidator {
         return new ValidationContext(jsonParser, schemaRegistry, schemaResolver);
     }
 
+    private SchemaResolver decorateSchemaResolver(SchemaResolver schemaResolver, String defaultMetaSchemaUri) {
+        if (DEFAULT_META_SCHEMA.equals(defaultMetaSchemaUri)) {
+            DefaultMetaSchemaResolver defaultMetaSchemaResolver = new DefaultMetaSchemaResolver();
+            return uri -> schemaResolver.resolve(uri).or(() -> defaultMetaSchemaResolver.resolve(uri));
+        } else {
+            return schemaResolver;
+        }
+    }
+
     public static final class Builder {
-        private ValidatorFactory validatorFactory = DEFAULT_VALIDATOR_FACTORY;
-        private JsonNodeFactory jsonNodeFactory = DEFAULT_JSON_NODE_FACTORY;
-        private SchemaResolver schemaResolver = DEFAULT_SCHEMA_RESOLVER;
+        private ValidatorFactory validatorFactory;
+        private JsonNodeFactory jsonNodeFactory;
+        private SchemaResolver schemaResolver;
+        private String defaultMetaSchemaUri = DEFAULT_META_SCHEMA;
 
         public Builder withValidatorFactory(ValidatorFactory validatorFactory) {
             this.validatorFactory = Objects.requireNonNull(validatorFactory);
@@ -95,8 +104,29 @@ public final class SchemaValidator {
             return this;
         }
 
+        public Builder withDefaultMetaSchemaUri(String defaultMetaSchemaUri) {
+            this.defaultMetaSchemaUri = defaultMetaSchemaUri;
+            return this;
+        }
+
         public SchemaValidator build() {
-            return new SchemaValidator(validatorFactory, jsonNodeFactory, schemaResolver);
+            return new SchemaValidator(validatorFactory, jsonNodeFactory, schemaResolver, defaultMetaSchemaUri);
+        }
+    }
+
+    static class DefaultMetaSchemaResolver implements SchemaResolver {
+        @Override
+        public Optional<String> resolve(String uri) {
+            if (DEFAULT_META_SCHEMA.equals(uri)) {
+                try (InputStream is = getClass().getResourceAsStream("/draft2020-12.json")) {
+                    if (is != null) {
+                        return Optional.of(new String(is.readAllBytes(), StandardCharsets.UTF_8));
+                    }
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            }
+            return Optional.empty();
         }
     }
 }

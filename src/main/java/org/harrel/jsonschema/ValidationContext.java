@@ -55,7 +55,7 @@ public final class ValidationContext {
 
     public Schema resolveRequiredSchema(String ref) {
         return Optional.ofNullable(schemaRegistry.get(ref))
-                .orElseThrow(() -> new IllegalStateException("Resolution of schema (%s) failed and was required".formatted(ref)));
+                .orElseThrow(() -> new IllegalStateException("Resolution of schema [%s] failed and was required".formatted(ref)));
     }
 
     boolean isOutOfDynamicScope(URI uri) {
