@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class GsonTest {
     @Test
-    void shouldWrapForValidArgument() throws JsonProcessingException {
+    void shouldWrapForValidArgument() {
         JsonElement object = JsonParser.parseString("{}");
         JsonNode wrap = new GsonNode.Factory().wrap(object);
         assertThat(wrap).isNotNull();
