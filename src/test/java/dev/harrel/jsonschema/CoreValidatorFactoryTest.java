@@ -9,9 +9,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static dev.harrel.jsonschema.SimpleType.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.harrel.jsonschema.Keyword.*;
-import static org.harrel.jsonschema.SimpleType.*;
 
 public abstract class CoreValidatorFactoryTest {
 
