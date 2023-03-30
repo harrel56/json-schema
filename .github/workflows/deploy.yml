@@ -1,8 +1,9 @@
-name: build
+name: deploy
 
 on:
   push:
-    branches: [ master ]
+    tags:
+      - '*'
 
 jobs:
   build-gradle:
@@ -35,3 +36,10 @@ jobs:
           path: |
             build/libs
             build/reports
+
+      - name: Gradle publish
+        env:
+          reposiliteSnapshots: ${{ secrets.REPOSILITE_SNAPSHOTS }}
+          reposiliteUsername: ${{ secrets.REPOSILITE_USERNAME }}
+          reposilitePassword: ${{ secrets.REPOSILITE_PASSWORD }}
+        run: ./gradlew publish
