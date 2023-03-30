@@ -42,4 +42,4 @@ jobs:
           reposiliteSnapshots: ${{ secrets.REPOSILITE_SNAPSHOTS }}
           reposiliteUsername: ${{ secrets.REPOSILITE_USERNAME }}
           reposilitePassword: ${{ secrets.REPOSILITE_PASSWORD }}
-        run: ./gradlew publish
+        run: ./gradlew publish -PreposiliteSnapshots=${{ secrets.REPOSILITE_SNAPSHOTS }} -PreposiliteUsername=${{ secrets.REPOSILITE_USERNAME }} -PreposilitePassword=${{ secrets.REPOSILITE_PASSWORD }}
