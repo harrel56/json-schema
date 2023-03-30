@@ -27,4 +27,12 @@ class JacksonTest {
             nodeFactory = new JacksonNode.Factory();
         }
     }
+
+    @Nested
+    class MetaSchemaTest extends org.harrel.jsonschema.MetaSchemaTest {
+        @BeforeAll
+        static void beforeAll() {
+            nodeFactory = new JacksonNode.Factory();
+        }
+    }
 }

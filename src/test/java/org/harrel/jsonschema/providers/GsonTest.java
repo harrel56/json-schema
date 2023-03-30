@@ -27,4 +27,12 @@ class GsonTest {
             nodeFactory = new GsonNode.Factory();
         }
     }
+    @Nested
+    class MetaSchemaTest extends org.harrel.jsonschema.MetaSchemaTest {
+        @BeforeAll
+        static void beforeAll() {
+            nodeFactory = new GsonNode.Factory();
+        }
+    }
+
 }
