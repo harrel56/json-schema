@@ -43,6 +43,34 @@ publishing {
     publications {
         maven(MavenPublication) {
             from components.java
+            pom {
+                name = 'json-schema'
+                description = 'Library for JSON schema validation'
+                url = 'https://github.com/harrel56/json-schema'
+                licenses {
+                    license {
+                        name = 'MIT'
+                        url = 'https://github.com/harrel56/json-schema/blob/master/LICENSE'
+                        distribution = 'repo'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'harrel56'
+                        name = 'Harrel'
+                        url = 'https://harrel.dev'
+                    }
+                }
+                scm {
+                    url = 'https://github.com/harrel56/json-schema'
+                    connection = 'scm:git:git://github.com/harrel56/json-schema.git'
+                    developerConnection = 'scm:git:git://github.com/harrel56/json-schema.git'
+                }
+                issueManagement {
+                    system = 'GitHub'
+                    url = 'https://github.com/harrel56/json-schema/issues'
+                }
+            }
         }
     }
     repositories {
