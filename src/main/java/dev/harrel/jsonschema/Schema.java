@@ -18,8 +18,10 @@ final class Schema {
     Schema(URI parentUri, String schemaLocation, List<ValidatorWrapper> validators) {
         this.parentUri = parentUri;
         this.schemaLocation = Objects.requireNonNull(schemaLocation);
-        this.validators = new ArrayList<>(Objects.requireNonNull(validators));
-        Collections.sort(this.validators);
+        Objects.requireNonNull(validators);
+        List<ValidatorWrapper> unsortedValidators = new ArrayList<>(validators);
+        Collections.sort(unsortedValidators);
+        this.validators = Collections.unmodifiableList(unsortedValidators);
     }
 
     static Validator getBooleanValidator(boolean val) {

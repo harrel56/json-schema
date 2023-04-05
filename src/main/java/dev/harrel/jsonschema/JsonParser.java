@@ -45,14 +45,14 @@ final class JsonParser {
                 metaSchemaValidator.validateMetaSchema(this, metaSchemaUri, idString, node);
                 if (!baseUri.toString().equals(idString)) {
                     SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, idString);
-                    List<ValidatorWrapper> validators = parseValidators(ctx, objectMap);
+                    List<ValidatorWrapper> validators = parseValidators(ctx, objectMap, node.getJsonPointer());
                     schemaRegistry.registerIdentifiableSchema(ctx, URI.create(idString), node, validators);
                 }
             } else {
                 metaSchemaValidator.validateMetaSchema(this, metaSchemaUri, baseUri.toString(), node);
             }
             SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, baseUri.toString());
-            List<ValidatorWrapper> validators = parseValidators(ctx, objectMap);
+            List<ValidatorWrapper> validators = parseValidators(ctx, objectMap, node.getJsonPointer());
             schemaRegistry.registerIdentifiableSchema(ctx, baseUri, node, validators);
 
             return Optional.ofNullable(objectMap.get(Keyword.ID))
@@ -96,15 +96,15 @@ final class JsonParser {
             metaSchemaUri.ifPresent(uri -> metaSchemaValidator.validateMetaSchema(this, uri, idString, node));
             URI uri = ctx.getParentUri().resolve(idString);
             SchemaParsingContext newCtx = ctx.withParentUri(uri);
-            List<ValidatorWrapper> validators = parseValidators(newCtx, objectMap);
+            List<ValidatorWrapper> validators = parseValidators(newCtx, objectMap, node.getJsonPointer());
             schemaRegistry.registerIdentifiableSchema(newCtx, uri, node, validators);
         } else {
             metaSchemaUri.ifPresent(uri -> metaSchemaValidator.validateMetaSchema(this, uri, ctx.getAbsoluteUri(node), node));
-            schemaRegistry.registerSchema(ctx, node, parseValidators(ctx, objectMap));
+            schemaRegistry.registerSchema(ctx, node, parseValidators(ctx, objectMap, node.getJsonPointer()));
         }
     }
 
-    private List<ValidatorWrapper> parseValidators(SchemaParsingContext ctx, Map<String, JsonNode> object) {
+    private List<ValidatorWrapper> parseValidators(SchemaParsingContext ctx, Map<String, JsonNode> object, String objectPath) {
         SchemaParsingContext newCtx = ctx.withCurrentSchemaContext(object);
         List<ValidatorWrapper> validators = new ArrayList<>();
         for (Map.Entry<String, JsonNode> entry : object.entrySet()) {
@@ -112,6 +112,9 @@ final class JsonParser {
                     .map(validator -> new ValidatorWrapper(entry.getKey(), entry.getValue(), validator))
                     .ifPresent(validators::add);
             parseNode(newCtx, entry.getValue());
+        }
+        if (validators.isEmpty()) {
+            validators.add(new ValidatorWrapper("true", objectPath, Schema.getBooleanValidator(true)));
         }
         return validators;
     }

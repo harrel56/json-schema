@@ -1,14 +1,20 @@
 package dev.harrel.jsonschema;
 
+import java.util.Objects;
+
 final class ValidatorWrapper implements Validator {
     private final String keyword;
     private final String keywordPath;
     private final Validator validator;
 
+    ValidatorWrapper(String keyword, String keywordPath, Validator validator) {
+        this.keyword = Objects.requireNonNull(keyword);
+        this.keywordPath = Objects.requireNonNull(keywordPath);
+        this.validator = Objects.requireNonNull(validator);
+    }
+
     ValidatorWrapper(String keyword, JsonNode keywordNode, Validator validator) {
-        this.keyword = keyword;
-        this.keywordPath = keywordNode.getJsonPointer();
-        this.validator = validator;
+        this(keyword, keywordNode.getJsonPointer(), validator);
     }
 
     @Override

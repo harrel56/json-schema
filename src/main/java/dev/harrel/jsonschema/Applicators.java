@@ -89,23 +89,15 @@ class ContainsValidator implements Applicator {
 
 class AdditionalPropertiesValidator implements Applicator {
     private final String schemaRef;
-    private final Set<String> declaredProperties;
-    private final List<Pattern> declaredPatternProperties;
+    private final String parentPath;
 
     AdditionalPropertiesValidator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isObject() && !node.isBoolean()) {
             throw new IllegalArgumentException();
         }
+        String schemaPointer = node.getJsonPointer();
         this.schemaRef = ctx.getAbsoluteUri(node);
-        this.declaredProperties = Optional.ofNullable(ctx.getCurrentSchemaObject().get(Keyword.PROPERTIES))
-                .map(JsonNode::asObject)
-                .map(Map::keySet)
-                .orElse(Set.of());
-        this.declaredPatternProperties = Optional.ofNullable(ctx.getCurrentSchemaObject().get(Keyword.PATTERN_PROPERTIES))
-                .map(JsonNode::asObject)
-                .map(Map::keySet)
-                .map(keySet -> keySet.stream().map(Pattern::compile).toList())
-                .orElse(List.of());
+        this.parentPath = schemaPointer.substring(0, schemaPointer.lastIndexOf('/'));
     }
 
     @Override
@@ -114,16 +106,25 @@ class AdditionalPropertiesValidator implements Applicator {
             return true;
         }
 
+        String instanceLocation = node.getJsonPointer();
+        String propertiesPath = parentPath + "/" + Keyword.PROPERTIES;
+        String patternPropertiesPath = parentPath + "/" + Keyword.PATTERN_PROPERTIES;
+        Set<String> evaluatedInstances = ctx.getAnnotations().stream()
+                .filter(a -> a.header().instanceLocation().startsWith(instanceLocation))
+                .filter(a -> a.header().evaluationPath().startsWith(propertiesPath) || a.header().evaluationPath().startsWith(patternPropertiesPath))
+                .map(a -> a.header().instanceLocation())
+                .collect(Collectors.toSet());
         Schema schema = ctx.resolveRequiredSchema(schemaRef);
         return node.asObject()
-                .entrySet()
+                .values()
                 .stream()
-                .filter(entry -> !declaredProperties.contains(entry.getKey()) && nonePatternsMatch(entry.getKey()))
-                .allMatch(entry -> schema.validate(ctx, entry.getValue()));
+                .filter(prop -> !evaluatedInstances.contains(prop.getJsonPointer()))
+                .allMatch(prop -> schema.validate(ctx, prop));
     }
 
-    private boolean nonePatternsMatch(String key) {
-        return declaredPatternProperties.stream().noneMatch(p -> p.matcher(key).find());
+    @Override
+    public int getOrder() {
+        return 10;
     }
 }
 
@@ -365,7 +366,7 @@ class UnevaluatedItemsValidator implements Applicator {
 
     @Override
     public int getOrder() {
-        return 10;
+        return 20;
     }
 }
 
@@ -401,7 +402,7 @@ class UnevaluatedPropertiesValidator implements Applicator {
 
     @Override
     public int getOrder() {
-        return 10;
+        return 20;
     }
 }
 
