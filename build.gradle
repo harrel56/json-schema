@@ -36,13 +36,30 @@ test {
     useJUnitPlatform()
 }
 
-ext.reposiliteSnapshots = findProperty('reposiliteSnapshots') ?: 'not found'
-ext.reposiliteUsername = findProperty('reposiliteUsername') ?: 'not found'
-ext.reposilitePassword = findProperty('reposilitePassword') ?: 'not found'
-
 publishing {
+    repositories {
+        maven {
+            name = 'reposilite'
+            url = findProperty('reposiliteSnapshots')
+            credentials {
+                username = findProperty('reposiliteUsername')
+                password = findProperty('reposilitePassword')
+            }
+        }
+        maven {
+            name = 'sonatype'
+            url = findProperty('sonatype.username')
+            credentials {
+                username = findProperty('sonatype.username')
+                password = findProperty('sonatype.password')
+            }
+        }
+    }
     publications {
-        maven(MavenPublication) {
+        local(MavenPublication) {
+            from components.java
+        }
+        sonatype(MavenPublication) {
             from components.java
             pom {
                 name = 'json-schema'
@@ -74,17 +91,8 @@ publishing {
             }
         }
     }
-    repositories {
-        maven {
-            url = "$reposiliteSnapshots"
-            credentials {
-                username = "$reposiliteUsername"
-                password = "$reposilitePassword"
-            }
-        }
-    }
 }
 
 signing {
-    sign publishing.publications.maven
+    sign publishing.publications.sonatype
 }
