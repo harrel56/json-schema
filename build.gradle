@@ -48,7 +48,7 @@ publishing {
         }
         maven {
             name = 'sonatype'
-            url = findProperty('sonatype.username')
+            url = findProperty('sonatype.repo')
             credentials {
                 username = findProperty('sonatype.username')
                 password = findProperty('sonatype.password')
@@ -94,5 +94,8 @@ publishing {
 }
 
 signing {
+    if (findProperty('signing.keyId') == null) {
+        useInMemoryPgpKeys(findProperty('signing.key'), findProperty('signing.password'))
+    }
     sign publishing.publications.sonatype
 }
