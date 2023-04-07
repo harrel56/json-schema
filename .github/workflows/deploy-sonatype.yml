@@ -35,5 +35,7 @@ jobs:
             build/libs
             build/reports
 
+      - name: Setup gradle env variables
+        run: echo "ORG_GRADLE_PROJECT_signing.key=${{ secrets.GPG_KEY }}" >> ${GITHUB_ENV}
       - name: Gradle publish to Sonatype
-        run: ./gradlew publishSonatypePublicationToSonatypeRepository -Psonatype.repo=${{ secrets.SONATYPE_REPO }} -Psonatype.username=${{ secrets.SONATYPE_USERNAME }} -Psonatype.password=${{ secrets.SONATYPE_PASSWORD }} -Psigning.key="${{ secrets.GPG_KEY }}" -Psigning.password=${{ secrets.GPG_PASSWORD }}
+        run: ./gradlew publishSonatypePublicationToSonatypeRepository -Psonatype.repo=${{ secrets.SONATYPE_REPO }} -Psonatype.username=${{ secrets.SONATYPE_USERNAME }} -Psonatype.password=${{ secrets.SONATYPE_PASSWORD }} -Psigning.password=${{ secrets.GPG_PASSWORD }}
