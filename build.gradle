@@ -95,7 +95,7 @@ publishing {
 
 signing {
     if (findProperty('signing.keyId') == null) {
-        println findProperty('signing.key')
+        println findProperty('testProp')
         useInMemoryPgpKeys(findProperty('signing.key'), findProperty('signing.password'))
     }
     sign publishing.publications.sonatype
