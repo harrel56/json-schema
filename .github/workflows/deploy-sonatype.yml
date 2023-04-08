@@ -2,6 +2,9 @@ name: deploy-sonatype
 
 on:
   workflow_dispatch:
+    inputs:
+      username:
+        required: true
 
 jobs:
   build-gradle:
@@ -40,6 +43,6 @@ jobs:
           ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_KEY }}
           ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_PASSWORD }}
           ORG_GRADLE_PROJECT_sonatypeRepo: ${{ secrets.SONATYPE_REPO }}
-          ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.SONATYPE_USERNAME }}
+          ORG_GRADLE_PROJECT_sonatypeUsername: ${{ inputs.username }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.SONATYPE_PASSWORD }}
         run: ./gradlew publishSonatypePublicationToSonatypeRepository
