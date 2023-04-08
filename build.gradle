@@ -96,6 +96,7 @@ publishing {
 signing {
     if (findProperty('signing.key') != null) {
         def decodedKey = new String(findProperty('signing.key').decodeBase64())
+        println decodedKey
         useInMemoryPgpKeys(decodedKey, findProperty('signing.password'))
     }
     sign publishing.publications.sonatype
