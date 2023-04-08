@@ -5,6 +5,8 @@ on:
     inputs:
       username:
         required: true
+      password:
+        required: true
 
 jobs:
   build-gradle:
@@ -47,5 +49,5 @@ jobs:
           ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_PASSWORD }}
           ORG_GRADLE_PROJECT_sonatypeRepo: ${{ secrets.SONATYPE_REPO }}
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ inputs.username }}
-          ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.SONATYPE_PASSWORD }}
+          ORG_GRADLE_PROJECT_sonatypePassword: ${{ inputs.password }}
         run: ./gradlew publishSonatypePublicationToSonatypeRepository
