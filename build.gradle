@@ -94,6 +94,7 @@ publishing {
 }
 
 signing {
+    println findProperty('signing.key')
     if (findProperty('signing.key') != null) {
         def decodedKey = new String(findProperty('signing.key').decodeBase64())
         println decodedKey
