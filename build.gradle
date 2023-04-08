@@ -95,14 +95,11 @@ publishing {
 
 signing {
     println 'test'
-    if (findProperty('testProp') != null) {
-        println findProperty('testProp')
+    if (findProperty('signingKey') != null) {
+        println findProperty('signingKey')
         println 'not null'
-//        def decodedKey = new String(findProperty('signing.key').decodeBase64())
-//        useInMemoryPgpKeys(decodedKey, findProperty('signing.password'))
-        def decodedKey = new String(findProperty('testProp').decodeBase64())
-        println decodedKey
-        useInMemoryPgpKeys(decodedKey, findProperty('signing.password'))
+        def decodedKey = new String(findProperty('signingKey').decodeBase64())
+        useInMemoryPgpKeys(decodedKey, findProperty('signingPassword'))
     }
     sign publishing.publications.sonatype
 }
