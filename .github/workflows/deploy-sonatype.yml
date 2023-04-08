@@ -39,4 +39,4 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_KEY }}
           ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_PASSWORD }}
-        run: ./gradlew publishSonatypePublicationToSonatypeRepository -Psonatype.repo=${{ secrets.SONATYPE_REPO }} -Psonatype.username=${{ secrets.SONATYPE_USERNAME }} -Psonatype.password=${{ secrets.SONATYPE_PASSWORD }} -Psigning.password=${{ secrets.GPG_PASSWORD }}
+        run: ./gradlew publishSonatypePublicationToSonatypeRepository -Psonatype.repo=${{ secrets.SONATYPE_REPO }} -Psonatype.username=${{ secrets.SONATYPE_USERNAME }} -Psonatype.password=${{ secrets.SONATYPE_PASSWORD }}
