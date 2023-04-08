@@ -36,4 +36,4 @@ jobs:
             build/reports
 
       - name: Gradle publish to Sonatype
-        run: ./gradlew publishSonatypePublicationToSonatypeRepository -Ptest.prop=val -Psonatype.repo=${{ secrets.SONATYPE_REPO }} -Psonatype.username=${{ secrets.SONATYPE_USERNAME }} -Psonatype.password=${{ secrets.SONATYPE_PASSWORD }} -Psigning.password=${{ secrets.GPG_PASSWORD }} -Psigning.key=${{ secrets.GPG_KEY }}
+        run: ./gradlew publishSonatypePublicationToSonatypeRepository -Ptest.prop=${{ secrets.GPG_KEY }} -Psonatype.repo=${{ secrets.SONATYPE_REPO }} -Psonatype.username=${{ secrets.SONATYPE_USERNAME }} -Psonatype.password=${{ secrets.SONATYPE_PASSWORD }} -Psigning.password=${{ secrets.GPG_PASSWORD }} -Psigning.key=${{ secrets.GPG_KEY }}
