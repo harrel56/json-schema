@@ -94,10 +94,7 @@ publishing {
 }
 
 signing {
-    println 'test'
     if (findProperty('signingKey') != null) {
-        println findProperty('signingPassword').substring(0, 2)
-        println 'not null'
         def decodedKey = new String(findProperty('signingKey').decodeBase64())
         useInMemoryPgpKeys(decodedKey, findProperty('signingPassword'))
     }
