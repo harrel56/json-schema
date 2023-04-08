@@ -94,9 +94,9 @@ publishing {
 }
 
 signing {
-    if (findProperty('signing.keyId') == null) {
-        def decodedKey = findProperty('signing.key')?.decodeBase64()
-        useInMemoryPgpKeys(new String(decodedKey), findProperty('signing.password'))
+    if (findProperty('signing.key') != null) {
+        def decodedKey = new String(findProperty('signing.key').decodeBase64())
+        useInMemoryPgpKeys(decodedKey, findProperty('signing.password'))
     }
     sign publishing.publications.sonatype
 }
