@@ -5,7 +5,9 @@ plugins {
 }
 
 group 'dev.harrel'
-version '1.0.0-beta.1'
+version '1.0.0-beta.2'
+sourceCompatibility JavaVersion.VERSION_17
+targetCompatibility JavaVersion.VERSION_17
 
 java {
     withSourcesJar()
