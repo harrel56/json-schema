@@ -50,10 +50,10 @@ publishing {
         }
         maven {
             name = 'sonatype'
-            url = findProperty('sonatype.repo')
+            url = findProperty('sonatypeRepo')
             credentials {
-                username = findProperty('sonatype.username')
-                password = findProperty('sonatype.password')
+                username = findProperty('sonatypeUsername')
+                password = findProperty('sonatypePassword')
             }
         }
     }
@@ -96,8 +96,9 @@ publishing {
 }
 
 signing {
-    if (findProperty('signing.keyId') == null) {
-        useInMemoryPgpKeys(findProperty('signing.key'), findProperty('signing.password'))
+    if (findProperty('signingKey') != null) {
+        def decodedKey = new String(findProperty('signingKey').decodeBase64())
+        useInMemoryPgpKeys(decodedKey, findProperty('signingPassword'))
     }
     sign publishing.publications.sonatype
 }
