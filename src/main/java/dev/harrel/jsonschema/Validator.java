@@ -11,7 +11,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-public final class SchemaValidator {
+public final class Validator {
     private static final String DEFAULT_META_SCHEMA = "https://json-schema.org/draft/2020-12/schema";
 
     private final JsonNodeFactory jsonNodeFactory;
@@ -23,7 +23,7 @@ public final class SchemaValidator {
         return new Builder();
     }
 
-    private SchemaValidator(EvaluatorFactory evaluatorFactory, JsonNodeFactory jsonNodeFactory, SchemaResolver schemaResolver, String defaultMetaSchemaUri) {
+    private Validator(EvaluatorFactory evaluatorFactory, JsonNodeFactory jsonNodeFactory, SchemaResolver schemaResolver, String defaultMetaSchemaUri) {
         evaluatorFactory = evaluatorFactory == null ? new CoreEvaluatorFactory() : evaluatorFactory;
         this.jsonNodeFactory = jsonNodeFactory == null ? new JacksonNode.Factory() : jsonNodeFactory;
         this.schemaResolver = decorateSchemaResolver(schemaResolver == null ? uri -> Optional.empty() : schemaResolver, defaultMetaSchemaUri);
@@ -109,8 +109,8 @@ public final class SchemaValidator {
             return this;
         }
 
-        public SchemaValidator build() {
-            return new SchemaValidator(evaluatorFactory, jsonNodeFactory, schemaResolver, defaultMetaSchemaUri);
+        public Validator build() {
+            return new Validator(evaluatorFactory, jsonNodeFactory, schemaResolver, defaultMetaSchemaUri);
         }
     }
 

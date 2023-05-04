@@ -34,7 +34,7 @@ public abstract class MetaSchemaTest {
                 {
                     "type": ["null"]
                 }""";
-        SchemaValidator validator = SchemaValidator.builder()
+        Validator validator = Validator.builder()
                 .withJsonNodeFactory(nodeFactory)
                 .build();
         URI uri = validator.registerSchema(rawSchema);
@@ -47,7 +47,7 @@ public abstract class MetaSchemaTest {
                 {
                     "type": []
                 }""";
-        SchemaValidator validator = SchemaValidator.builder()
+        Validator validator = Validator.builder()
                 .withJsonNodeFactory(nodeFactory)
                 .build();
         assertThatThrownBy(() -> validator.registerSchema(rawSchema))
@@ -60,7 +60,7 @@ public abstract class MetaSchemaTest {
                 {
                     "type": ["null"]
                 }""";
-        SchemaValidator validator = SchemaValidator.builder()
+        Validator validator = Validator.builder()
                 .withJsonNodeFactory(nodeFactory)
                 .withDefaultMetaSchemaUri("custom")
                 .withSchemaResolver(resolver)
@@ -77,7 +77,7 @@ public abstract class MetaSchemaTest {
                     "maxLength": 1,
                     "minLength": 1
                 }""";
-        SchemaValidator validator = SchemaValidator.builder()
+        Validator validator = Validator.builder()
                 .withJsonNodeFactory(nodeFactory)
                 .withDefaultMetaSchemaUri("custom")
                 .withSchemaResolver(resolver)
@@ -92,7 +92,7 @@ public abstract class MetaSchemaTest {
                 {
                     "type": 1
                 }""";
-        SchemaValidator validator = SchemaValidator.builder()
+        Validator validator = Validator.builder()
                 .withJsonNodeFactory(nodeFactory)
                 .withDefaultMetaSchemaUri(null)
                 .build();
@@ -106,7 +106,7 @@ public abstract class MetaSchemaTest {
                 {
                     "type": 1
                 }""";
-        SchemaValidator validator = SchemaValidator.builder()
+        Validator validator = Validator.builder()
                 .withJsonNodeFactory(nodeFactory)
                 .withDefaultMetaSchemaUri("custom")
                 .build();
@@ -120,7 +120,7 @@ public abstract class MetaSchemaTest {
                 {
                     "type": "string"
                 }""";
-        SchemaValidator validator = SchemaValidator.builder()
+        Validator validator = Validator.builder()
                 .withJsonNodeFactory(nodeFactory)
                 .withDefaultMetaSchemaUri("invalid")
                 .build();
@@ -139,7 +139,7 @@ public abstract class MetaSchemaTest {
                         }
                     }
                 }""";
-        SchemaValidator validator = SchemaValidator.builder()
+        Validator validator = Validator.builder()
                 .withJsonNodeFactory(nodeFactory)
                 .withSchemaResolver(resolver)
                 .build();
@@ -160,7 +160,7 @@ public abstract class MetaSchemaTest {
                         }
                     }
                 }""";
-        SchemaValidator validator = SchemaValidator.builder()
+        Validator validator = Validator.builder()
                 .withJsonNodeFactory(nodeFactory)
                 .withSchemaResolver(resolver)
                 .build();
@@ -175,7 +175,7 @@ public abstract class MetaSchemaTest {
                     "$schema": "custom",
                     "type": 1
                 }""";
-        SchemaValidator validator = SchemaValidator.builder()
+        Validator validator = Validator.builder()
                 .withJsonNodeFactory(nodeFactory)
                 .withSchemaResolver(resolver)
                 .build();
@@ -191,7 +191,7 @@ public abstract class MetaSchemaTest {
                     "maxLength": 1,
                     "minLength": 1
                 }""";
-        SchemaValidator validator = SchemaValidator.builder()
+        Validator validator = Validator.builder()
                 .withJsonNodeFactory(nodeFactory)
                 .withSchemaResolver(resolver)
                 .build();
