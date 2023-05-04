@@ -5,10 +5,10 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-class TypeValidator implements Validator {
+class TypeEvaluator implements Evaluator {
     private final Set<SimpleType> types;
 
-    TypeValidator(JsonNode node) {
+    TypeEvaluator(JsonNode node) {
         if (!node.isString() && !node.isArray()) {
             throw new IllegalArgumentException();
         }
@@ -23,33 +23,33 @@ class TypeValidator implements Validator {
     }
 
     @Override
-    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
         SimpleType nodeType = node.getNodeType();
         if (types.contains(nodeType) || nodeType == SimpleType.INTEGER && types.contains(SimpleType.NUMBER)) {
-            return ValidationResult.success();
+            return EvaluationResult.success();
         } else {
-            return ValidationResult.failure("Value is [%s] but should be [%s]".formatted(nodeType.getName(), types));
+            return EvaluationResult.failure("Value is [%s] but should be [%s]".formatted(nodeType.getName(), types));
         }
     }
 }
 
-class ConstValidator implements Validator {
+class ConstEvaluator implements Evaluator {
     private final JsonNode constNode;
 
-    ConstValidator(JsonNode node) {
+    ConstEvaluator(JsonNode node) {
         this.constNode = node;
     }
 
     @Override
-    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
-        return constNode.isEqualTo(node) ? ValidationResult.success() : ValidationResult.failure("Expected " + constNode.toPrintableString());
+    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
+        return constNode.isEqualTo(node) ? EvaluationResult.success() : EvaluationResult.failure("Expected " + constNode.toPrintableString());
     }
 }
 
-class EnumValidator implements Validator {
+class EnumEvaluator implements Evaluator {
     private final List<JsonNode> enumNodes;
 
-    EnumValidator(JsonNode node) {
+    EnumEvaluator(JsonNode node) {
         if (!node.isArray()) {
             throw new IllegalArgumentException();
         }
@@ -57,19 +57,19 @@ class EnumValidator implements Validator {
     }
 
     @Override
-    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
         if (enumNodes.stream().anyMatch(node::isEqualTo)) {
-            return ValidationResult.success();
+            return EvaluationResult.success();
         } else {
-            return ValidationResult.failure("Expected any of [%s]".formatted(enumNodes.stream().map(JsonNode::toPrintableString).toList()));
+            return EvaluationResult.failure("Expected any of [%s]".formatted(enumNodes.stream().map(JsonNode::toPrintableString).toList()));
         }
     }
 }
 
-class MultipleOfValidator implements Validator {
+class MultipleOfEvaluator implements Evaluator {
     private final BigDecimal factor;
 
-    MultipleOfValidator(JsonNode node) {
+    MultipleOfEvaluator(JsonNode node) {
         if (!node.isNumber()) {
             throw new IllegalArgumentException();
         }
@@ -77,23 +77,23 @@ class MultipleOfValidator implements Validator {
     }
 
     @Override
-    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isNumber()) {
-            return ValidationResult.success();
+            return EvaluationResult.success();
         }
 
         if (node.asNumber().remainder(factor).doubleValue() == 0.0) {
-            return ValidationResult.success();
+            return EvaluationResult.success();
         } else {
-            return ValidationResult.failure("%s is not multiple of %s".formatted(node.asNumber(), factor));
+            return EvaluationResult.failure("%s is not multiple of %s".formatted(node.asNumber(), factor));
         }
     }
 }
 
-class MaximumValidator implements Validator {
+class MaximumEvaluator implements Evaluator {
     private final BigDecimal max;
 
-    MaximumValidator(JsonNode node) {
+    MaximumEvaluator(JsonNode node) {
         if (!node.isNumber()) {
             throw new IllegalArgumentException();
         }
@@ -101,23 +101,23 @@ class MaximumValidator implements Validator {
     }
 
     @Override
-    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isNumber()) {
-            return ValidationResult.success();
+            return EvaluationResult.success();
         }
 
         if (node.asNumber().compareTo(max) <= 0) {
-            return ValidationResult.success();
+            return EvaluationResult.success();
         } else {
-            return ValidationResult.failure("%s is greater than %s".formatted(node.asNumber(), max));
+            return EvaluationResult.failure("%s is greater than %s".formatted(node.asNumber(), max));
         }
     }
 }
 
-class ExclusiveMaximumValidator implements Validator {
+class ExclusiveMaximumEvaluator implements Evaluator {
     private final BigDecimal max;
 
-    ExclusiveMaximumValidator(JsonNode node) {
+    ExclusiveMaximumEvaluator(JsonNode node) {
         if (!node.isNumber()) {
             throw new IllegalArgumentException();
         }
@@ -125,23 +125,23 @@ class ExclusiveMaximumValidator implements Validator {
     }
 
     @Override
-    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isNumber()) {
-            return ValidationResult.success();
+            return EvaluationResult.success();
         }
 
         if (node.asNumber().compareTo(max) < 0) {
-            return ValidationResult.success();
+            return EvaluationResult.success();
         } else {
-            return ValidationResult.failure("%s is greater or equal to %s".formatted(node.asNumber(), max));
+            return EvaluationResult.failure("%s is greater or equal to %s".formatted(node.asNumber(), max));
         }
     }
 }
 
-class MinimumValidator implements Validator {
+class MinimumEvaluator implements Evaluator {
     private final BigDecimal min;
 
-    MinimumValidator(JsonNode node) {
+    MinimumEvaluator(JsonNode node) {
         if (!node.isNumber()) {
             throw new IllegalArgumentException();
         }
@@ -149,23 +149,23 @@ class MinimumValidator implements Validator {
     }
 
     @Override
-    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isNumber()) {
-            return ValidationResult.success();
+            return EvaluationResult.success();
         }
 
         if (node.asNumber().compareTo(min) >= 0) {
-            return ValidationResult.success();
+            return EvaluationResult.success();
         } else {
-            return ValidationResult.failure("%s is lesser than %s".formatted(node.asNumber(), min));
+            return EvaluationResult.failure("%s is lesser than %s".formatted(node.asNumber(), min));
         }
     }
 }
 
-class ExclusiveMinimumValidator implements Validator {
+class ExclusiveMinimumEvaluator implements Evaluator {
     private final BigDecimal min;
 
-    ExclusiveMinimumValidator(JsonNode node) {
+    ExclusiveMinimumEvaluator(JsonNode node) {
         if (!node.isNumber()) {
             throw new IllegalArgumentException();
         }
@@ -173,23 +173,23 @@ class ExclusiveMinimumValidator implements Validator {
     }
 
     @Override
-    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isNumber()) {
-            return ValidationResult.success();
+            return EvaluationResult.success();
         }
 
         if (node.asNumber().compareTo(min) > 0) {
-            return ValidationResult.success();
+            return EvaluationResult.success();
         } else {
-            return ValidationResult.failure("%s is lesser or equal to %s".formatted(node.asNumber(), min));
+            return EvaluationResult.failure("%s is lesser or equal to %s".formatted(node.asNumber(), min));
         }
     }
 }
 
-class MaxLengthValidator implements Validator {
+class MaxLengthEvaluator implements Evaluator {
     private final int maxLength;
 
-    MaxLengthValidator(JsonNode node) {
+    MaxLengthEvaluator(JsonNode node) {
         if (!node.isInteger()) {
             throw new IllegalArgumentException();
         }
@@ -197,24 +197,24 @@ class MaxLengthValidator implements Validator {
     }
 
     @Override
-    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isString()) {
-            return ValidationResult.success();
+            return EvaluationResult.success();
         }
 
         String string = node.asString();
         if (string.codePointCount(0, string.length()) <= maxLength) {
-            return ValidationResult.success();
+            return EvaluationResult.success();
         } else {
-            return ValidationResult.failure("\"%s\" is longer than %d characters".formatted(string, maxLength));
+            return EvaluationResult.failure("\"%s\" is longer than %d characters".formatted(string, maxLength));
         }
     }
 }
 
-class MinLengthValidator implements Validator {
+class MinLengthEvaluator implements Evaluator {
     private final int minLength;
 
-    MinLengthValidator(JsonNode node) {
+    MinLengthEvaluator(JsonNode node) {
         if (!node.isInteger()) {
             throw new IllegalArgumentException();
         }
@@ -222,24 +222,24 @@ class MinLengthValidator implements Validator {
     }
 
     @Override
-    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isString()) {
-            return ValidationResult.success();
+            return EvaluationResult.success();
         }
 
         String string = node.asString();
         if (string.codePointCount(0, string.length()) >= minLength) {
-            return ValidationResult.success();
+            return EvaluationResult.success();
         } else {
-            return ValidationResult.failure("\"%s\" is shorter than %d characters".formatted(string, minLength));
+            return EvaluationResult.failure("\"%s\" is shorter than %d characters".formatted(string, minLength));
         }
     }
 }
 
-class PatternValidator implements Validator {
+class PatternEvaluator implements Evaluator {
     private final Pattern pattern;
 
-    PatternValidator(JsonNode node) {
+    PatternEvaluator(JsonNode node) {
         if (!node.isString()) {
             throw new IllegalArgumentException();
         }
@@ -247,23 +247,23 @@ class PatternValidator implements Validator {
     }
 
     @Override
-    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isString()) {
-            return ValidationResult.success();
+            return EvaluationResult.success();
         }
 
         if (pattern.matcher(node.asString()).find()) {
-            return ValidationResult.success();
+            return EvaluationResult.success();
         } else {
-            return ValidationResult.failure("\"%s\" does not match regular expression [%s]".formatted(node.asString(), pattern.toString()));
+            return EvaluationResult.failure("\"%s\" does not match regular expression [%s]".formatted(node.asString(), pattern.toString()));
         }
     }
 }
 
-class MaxItemsValidator implements Validator {
+class MaxItemsEvaluator implements Evaluator {
     private final int maxItems;
 
-    MaxItemsValidator(JsonNode node) {
+    MaxItemsEvaluator(JsonNode node) {
         if (!node.isInteger()) {
             throw new IllegalArgumentException();
         }
@@ -271,23 +271,23 @@ class MaxItemsValidator implements Validator {
     }
 
     @Override
-    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isArray()) {
-            return ValidationResult.success();
+            return EvaluationResult.success();
         }
 
         if (node.asArray().size() <= maxItems) {
-            return ValidationResult.success();
+            return EvaluationResult.success();
         } else {
-            return ValidationResult.failure("Array has more than %d items".formatted(maxItems));
+            return EvaluationResult.failure("Array has more than %d items".formatted(maxItems));
         }
     }
 }
 
-class MinItemsValidator implements Validator {
+class MinItemsEvaluator implements Evaluator {
     private final int minItems;
 
-    MinItemsValidator(JsonNode node) {
+    MinItemsEvaluator(JsonNode node) {
         if (!node.isInteger()) {
             throw new IllegalArgumentException();
         }
@@ -295,23 +295,23 @@ class MinItemsValidator implements Validator {
     }
 
     @Override
-    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isArray()) {
-            return ValidationResult.success();
+            return EvaluationResult.success();
         }
 
         if (node.asArray().size() >= minItems) {
-            return ValidationResult.success();
+            return EvaluationResult.success();
         } else {
-            return ValidationResult.failure("Array has less than %d items".formatted(minItems));
+            return EvaluationResult.failure("Array has less than %d items".formatted(minItems));
         }
     }
 }
 
-class UniqueItemsValidator implements Validator {
+class UniqueItemsEvaluator implements Evaluator {
     private final boolean unique;
 
-    UniqueItemsValidator(JsonNode node) {
+    UniqueItemsEvaluator(JsonNode node) {
         if (!node.isBoolean()) {
             throw new IllegalArgumentException();
         }
@@ -319,9 +319,9 @@ class UniqueItemsValidator implements Validator {
     }
 
     @Override
-    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isArray() || !unique) {
-            return ValidationResult.success();
+            return EvaluationResult.success();
         }
 
         List<JsonNode> parsed = new ArrayList<>();
@@ -329,19 +329,19 @@ class UniqueItemsValidator implements Validator {
         for (int i = 0; i < jsonNodes.size(); i++) {
             JsonNode element = jsonNodes.get(i);
             if (parsed.stream().anyMatch(element::isEqualTo)) {
-                return ValidationResult.failure("Array contains non-unique item at index [%d]".formatted(i));
+                return EvaluationResult.failure("Array contains non-unique item at index [%d]".formatted(i));
             }
             parsed.add(element);
         }
-        return ValidationResult.success();
+        return EvaluationResult.success();
     }
 }
 
-class MaxContainsValidator implements Validator {
+class MaxContainsEvaluator implements Evaluator {
     private final String containsPath;
     private final int max;
 
-    MaxContainsValidator(SchemaParsingContext ctx, JsonNode node) {
+    MaxContainsEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isInteger()) {
             throw new IllegalArgumentException();
         }
@@ -352,18 +352,18 @@ class MaxContainsValidator implements Validator {
     }
 
     @Override
-    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isArray() || containsPath == null) {
-            return ValidationResult.success();
+            return EvaluationResult.success();
         }
 
         long count = ctx.getAnnotations().stream()
                 .filter(a -> a.header().schemaLocation().equals(containsPath))
                 .count();
         if (count <= max) {
-            return ValidationResult.success();
+            return EvaluationResult.success();
         } else {
-            return ValidationResult.failure("Array contains more than %d matching items".formatted(max));
+            return EvaluationResult.failure("Array contains more than %d matching items".formatted(max));
         }
     }
 
@@ -373,11 +373,11 @@ class MaxContainsValidator implements Validator {
     }
 }
 
-class MinContainsValidator implements Validator {
+class MinContainsEvaluator implements Evaluator {
     private final String containsPath;
     private final int min;
 
-    MinContainsValidator(SchemaParsingContext ctx, JsonNode node) {
+    MinContainsEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isInteger()) {
             throw new IllegalArgumentException();
         }
@@ -388,18 +388,18 @@ class MinContainsValidator implements Validator {
     }
 
     @Override
-    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isArray() || containsPath == null) {
-            return ValidationResult.success();
+            return EvaluationResult.success();
         }
 
         long count = ctx.getAnnotations().stream()
                 .filter(a -> a.header().schemaLocation().equals(containsPath))
                 .count();
         if (count >= min) {
-            return ValidationResult.success();
+            return EvaluationResult.success();
         } else {
-            return ValidationResult.failure("Array contains less than %d matching items".formatted(min));
+            return EvaluationResult.failure("Array contains less than %d matching items".formatted(min));
         }
     }
 
@@ -409,10 +409,10 @@ class MinContainsValidator implements Validator {
     }
 }
 
-class MaxPropertiesValidator implements Validator {
+class MaxPropertiesEvaluator implements Evaluator {
     private final int max;
 
-    MaxPropertiesValidator(JsonNode node) {
+    MaxPropertiesEvaluator(JsonNode node) {
         if (!node.isInteger()) {
             throw new IllegalArgumentException();
         }
@@ -420,23 +420,23 @@ class MaxPropertiesValidator implements Validator {
     }
 
     @Override
-    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isObject()) {
-            return ValidationResult.success();
+            return EvaluationResult.success();
         }
 
         if (node.asObject().size() <= max) {
-            return ValidationResult.success();
+            return EvaluationResult.success();
         } else {
-            return ValidationResult.failure("Object has more than %d properties".formatted(max));
+            return EvaluationResult.failure("Object has more than %d properties".formatted(max));
         }
     }
 }
 
-class MinPropertiesValidator implements Validator {
+class MinPropertiesEvaluator implements Evaluator {
     private final int min;
 
-    MinPropertiesValidator(JsonNode node) {
+    MinPropertiesEvaluator(JsonNode node) {
         if (!node.isInteger()) {
             throw new IllegalArgumentException();
         }
@@ -444,23 +444,23 @@ class MinPropertiesValidator implements Validator {
     }
 
     @Override
-    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isObject()) {
-            return ValidationResult.success();
+            return EvaluationResult.success();
         }
 
         if (node.asObject().size() >= min) {
-            return ValidationResult.success();
+            return EvaluationResult.success();
         } else {
-            return ValidationResult.failure("Object has less than %d properties".formatted(min));
+            return EvaluationResult.failure("Object has less than %d properties".formatted(min));
         }
     }
 }
 
-class RequiredValidator implements Validator {
+class RequiredEvaluator implements Evaluator {
     private final List<String> requiredProperties;
 
-    RequiredValidator(JsonNode node) {
+    RequiredEvaluator(JsonNode node) {
         if (!node.isArray()) {
             throw new IllegalArgumentException();
         }
@@ -468,26 +468,26 @@ class RequiredValidator implements Validator {
     }
 
     @Override
-    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isObject()) {
-            return ValidationResult.success();
+            return EvaluationResult.success();
         }
 
         Set<String> keys = node.asObject().keySet();
         if (keys.containsAll(requiredProperties)) {
-            return ValidationResult.success();
+            return EvaluationResult.success();
         } else {
             HashSet<String> unsatisfied = new HashSet<>(requiredProperties);
             unsatisfied.removeAll(keys);
-            return ValidationResult.failure("Object does not have some of the required properties [%s]".formatted(unsatisfied));
+            return EvaluationResult.failure("Object does not have some of the required properties [%s]".formatted(unsatisfied));
         }
     }
 }
 
-class DependentRequiredValidator implements Validator {
+class DependentRequiredEvaluator implements Evaluator {
     private final Map<String, List<String>> requiredProperties;
 
-    DependentRequiredValidator(JsonNode node) {
+    DependentRequiredEvaluator(JsonNode node) {
         if (!node.isObject()) {
             throw new IllegalArgumentException();
         }
@@ -497,9 +497,9 @@ class DependentRequiredValidator implements Validator {
     }
 
     @Override
-    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isObject()) {
-            return ValidationResult.success();
+            return EvaluationResult.success();
         }
 
         Set<String> objectKeys = node.asObject().keySet();
@@ -510,10 +510,10 @@ class DependentRequiredValidator implements Validator {
                 .flatMap(List::stream)
                 .collect(Collectors.toSet());
         if (objectKeys.containsAll(requiredSet)) {
-            return ValidationResult.success();
+            return EvaluationResult.success();
         } else {
             requiredSet.removeAll(objectKeys);
-            return ValidationResult.failure("Object does not have some of the required properties [%s]".formatted(requiredSet));
+            return EvaluationResult.failure("Object does not have some of the required properties [%s]".formatted(requiredSet));
         }
     }
 

@@ -3,7 +3,7 @@ package dev.harrel.jsonschema;
 import java.net.URI;
 import java.util.*;
 
-public final class ValidationContext {
+public final class EvaluationContext {
     private final JsonParser jsonParser;
     private final SchemaRegistry schemaRegistry;
     private final SchemaResolver schemaResolver;
@@ -11,7 +11,7 @@ public final class ValidationContext {
     private final List<Annotation> annotations;
     private final List<Annotation> validationAnnotations;
 
-    ValidationContext(JsonParser jsonParser, SchemaRegistry schemaRegistry, SchemaResolver schemaResolver) {
+    EvaluationContext(JsonParser jsonParser, SchemaRegistry schemaRegistry, SchemaResolver schemaResolver) {
         this.jsonParser = jsonParser;
         this.schemaRegistry = schemaRegistry;
         this.schemaResolver = schemaResolver;

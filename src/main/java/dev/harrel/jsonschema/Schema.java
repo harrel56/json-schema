@@ -8,27 +8,27 @@ import java.util.Objects;
 
 final class Schema {
 
-    private static final Validator TRUE_VALIDATOR = (ctx, node) -> ValidationResult.success();
-    private static final Validator FALSE_VALIDATOR = (ctx, node) -> ValidationResult.failure("False schema always fails.");
+    private static final Evaluator TRUE_EVALUATOR = (ctx, node) -> EvaluationResult.success();
+    private static final Evaluator FALSE_EVALUATOR = (ctx, node) -> EvaluationResult.failure("False schema always fails.");
 
     private final URI parentUri;
     private final String schemaLocation;
-    private final List<ValidatorWrapper> validators;
+    private final List<EvaluatorWrapper> evaluators;
 
-    Schema(URI parentUri, String schemaLocation, List<ValidatorWrapper> validators) {
+    Schema(URI parentUri, String schemaLocation, List<EvaluatorWrapper> evaluators) {
         this.parentUri = parentUri;
         this.schemaLocation = Objects.requireNonNull(schemaLocation);
-        Objects.requireNonNull(validators);
-        List<ValidatorWrapper> unsortedValidators = new ArrayList<>(validators);
-        Collections.sort(unsortedValidators);
-        this.validators = Collections.unmodifiableList(unsortedValidators);
+        Objects.requireNonNull(evaluators);
+        List<EvaluatorWrapper> unsortedEvaluators = new ArrayList<>(evaluators);
+        Collections.sort(unsortedEvaluators);
+        this.evaluators = Collections.unmodifiableList(unsortedEvaluators);
     }
 
-    static Validator getBooleanValidator(boolean val) {
-        return val ? TRUE_VALIDATOR : FALSE_VALIDATOR;
+    static Evaluator getBooleanEvaluator(boolean val) {
+        return val ? TRUE_EVALUATOR : FALSE_EVALUATOR;
     }
 
-    boolean validate(ValidationContext ctx, JsonNode node) {
+    boolean validate(EvaluationContext ctx, JsonNode node) {
         boolean outOfDynamicScope = ctx.isOutOfDynamicScope(parentUri);
         if (outOfDynamicScope) {
             ctx.pushDynamicScope(parentUri);
@@ -36,11 +36,11 @@ final class Schema {
 
         int annotationsBefore = ctx.getAnnotations().size();
         boolean valid = true;
-        for (ValidatorWrapper validator : validators) {
-            ValidationResult result = validator.validate(ctx, node);
+        for (EvaluatorWrapper evaluator : evaluators) {
+            EvaluationResult result = evaluator.evaluate(ctx, node);
             Annotation annotation = new Annotation(
-                    new AnnotationHeader(validator.getKeywordPath(), schemaLocation, node.getJsonPointer()),
-                    validator.getKeyword(), result.getErrorMessage(), result.isValid());
+                    new AnnotationHeader(evaluator.getKeywordPath(), schemaLocation, node.getJsonPointer()),
+                    evaluator.getKeyword(), result.getErrorMessage(), result.isValid());
             ctx.addValidationAnnotation(annotation);
             ctx.addAnnotation(annotation);
             valid = valid && result.isValid();

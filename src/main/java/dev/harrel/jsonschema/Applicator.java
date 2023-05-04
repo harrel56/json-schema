@@ -1,11 +1,11 @@
 package dev.harrel.jsonschema;
 
-interface Applicator extends Validator {
+interface Applicator extends Evaluator {
 
     @Override
-    default ValidationResult validate(ValidationContext ctx, JsonNode node) {
-        return apply(ctx, node) ? ValidationResult.success() : ValidationResult.failure();
+    default EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
+        return apply(ctx, node) ? EvaluationResult.success() : EvaluationResult.failure();
     }
 
-    boolean apply(ValidationContext ctx, JsonNode node);
+    boolean apply(EvaluationContext ctx, JsonNode node);
 }

@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 import static dev.harrel.jsonschema.SimpleType.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public abstract class CoreValidatorFactoryTest {
+public abstract class CoreEvaluatorFactoryTest {
 
     protected static JsonNodeFactory nodeFactory;
     private static final Map<SimpleType, String> TYPE_MAP = Map.of(
@@ -27,19 +27,19 @@ public abstract class CoreValidatorFactoryTest {
 
     @ParameterizedTest
     @MethodSource("getKeywords")
-    void shouldCreateValidatorOnlyForSupportedTypes(String keyword, Set<SimpleType> supportedTypes) {
-        CoreValidatorFactory validatorFactory = new CoreValidatorFactory();
-        SchemaParsingContext ctx = new SchemaParsingContext(new SchemaRegistry(), "CoreValidatorFactoryTest");
+    void shouldCreateEvaluatorOnlyForSupportedTypes(String keyword, Set<SimpleType> supportedTypes) {
+        CoreEvaluatorFactory evaluatorFactory = new CoreEvaluatorFactory();
+        SchemaParsingContext ctx = new SchemaParsingContext(new SchemaRegistry(), "CoreEvaluatorFactoryTest");
 
         for (var entry : TYPE_MAP.entrySet()) {
             JsonNode wrappedNode = nodeFactory.create("{\"%s\": %s}".formatted(keyword, entry.getValue()));
-            Optional<Validator> validator = validatorFactory.create(ctx, keyword, wrappedNode.asObject().get(keyword));
+            Optional<Evaluator> evaluator = evaluatorFactory.create(ctx, keyword, wrappedNode.asObject().get(keyword));
             if (supportedTypes.contains(entry.getKey())) {
-                assertThat(validator)
+                assertThat(evaluator)
                         .withFailMessage("Expected type [%s] to pass", entry.getKey())
                         .isPresent();
             } else {
-                assertThat(validator)
+                assertThat(evaluator)
                         .withFailMessage("Expected type [%s] to fail", entry.getKey())
                         .isEmpty();
             }

@@ -6,18 +6,18 @@ import java.util.*;
 final class JsonParser {
     private final String defaultMetaSchemaUri;
     private final JsonNodeFactory jsonNodeFactory;
-    private final ValidatorFactory validatorFactory;
+    private final EvaluatorFactory evaluatorFactory;
     private final SchemaRegistry schemaRegistry;
     private final MetaSchemaValidator metaSchemaValidator;
 
     JsonParser(String defaultMetaSchemaUri,
                JsonNodeFactory jsonNodeFactory,
-               ValidatorFactory validatorFactory,
+               EvaluatorFactory evaluatorFactory,
                SchemaRegistry schemaRegistry,
                MetaSchemaValidator metaSchemaValidator) {
         this.defaultMetaSchemaUri = defaultMetaSchemaUri;
         this.jsonNodeFactory = jsonNodeFactory;
-        this.validatorFactory = validatorFactory;
+        this.evaluatorFactory = evaluatorFactory;
         this.schemaRegistry = schemaRegistry;
         this.metaSchemaValidator = metaSchemaValidator;
     }
@@ -31,7 +31,7 @@ final class JsonParser {
             metaSchemaValidator.validateMetaSchema(this, defaultMetaSchemaUri, baseUri.toString(), node);
             SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, baseUri.toString());
             boolean schemaValue = node.asBoolean();
-            schemaRegistry.registerIdentifiableSchema(ctx, baseUri, node, List.of(new ValidatorWrapper(String.valueOf(schemaValue), node, Schema.getBooleanValidator(schemaValue))));
+            schemaRegistry.registerIdentifiableSchema(ctx, baseUri, node, List.of(new EvaluatorWrapper(String.valueOf(schemaValue), node, Schema.getBooleanEvaluator(schemaValue))));
             return baseUri;
         } else {
             Map<String, JsonNode> objectMap = node.asObject();
@@ -45,15 +45,15 @@ final class JsonParser {
                 metaSchemaValidator.validateMetaSchema(this, metaSchemaUri, idString, node);
                 if (!baseUri.toString().equals(idString)) {
                     SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, idString);
-                    List<ValidatorWrapper> validators = parseValidators(ctx, objectMap, node.getJsonPointer());
-                    schemaRegistry.registerIdentifiableSchema(ctx, URI.create(idString), node, validators);
+                    List<EvaluatorWrapper> evaluators = parseEvaluators(ctx, objectMap, node.getJsonPointer());
+                    schemaRegistry.registerIdentifiableSchema(ctx, URI.create(idString), node, evaluators);
                 }
             } else {
                 metaSchemaValidator.validateMetaSchema(this, metaSchemaUri, baseUri.toString(), node);
             }
             SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, baseUri.toString());
-            List<ValidatorWrapper> validators = parseValidators(ctx, objectMap, node.getJsonPointer());
-            schemaRegistry.registerIdentifiableSchema(ctx, baseUri, node, validators);
+            List<EvaluatorWrapper> evaluators = parseEvaluators(ctx, objectMap, node.getJsonPointer());
+            schemaRegistry.registerIdentifiableSchema(ctx, baseUri, node, evaluators);
 
             return Optional.ofNullable(objectMap.get(Keyword.ID))
                     .filter(JsonNode::isString)
@@ -75,8 +75,8 @@ final class JsonParser {
 
     private void parseBoolean(SchemaParsingContext ctx, JsonNode node) {
         boolean schemaValue = node.asBoolean();
-        Validator booleanValidator = Schema.getBooleanValidator(schemaValue);
-        schemaRegistry.registerSchema(ctx, node, List.of(new ValidatorWrapper(String.valueOf(schemaValue), node, booleanValidator)));
+        Evaluator booleanEvaluator = Schema.getBooleanEvaluator(schemaValue);
+        schemaRegistry.registerSchema(ctx, node, List.of(new EvaluatorWrapper(String.valueOf(schemaValue), node, booleanEvaluator)));
     }
 
     private void parseArray(SchemaParsingContext ctx, JsonNode node) {
@@ -96,27 +96,27 @@ final class JsonParser {
             metaSchemaUri.ifPresent(uri -> metaSchemaValidator.validateMetaSchema(this, uri, idString, node));
             URI uri = ctx.getParentUri().resolve(idString);
             SchemaParsingContext newCtx = ctx.withParentUri(uri);
-            List<ValidatorWrapper> validators = parseValidators(newCtx, objectMap, node.getJsonPointer());
-            schemaRegistry.registerIdentifiableSchema(newCtx, uri, node, validators);
+            List<EvaluatorWrapper> evaluators = parseEvaluators(newCtx, objectMap, node.getJsonPointer());
+            schemaRegistry.registerIdentifiableSchema(newCtx, uri, node, evaluators);
         } else {
             metaSchemaUri.ifPresent(uri -> metaSchemaValidator.validateMetaSchema(this, uri, ctx.getAbsoluteUri(node), node));
-            schemaRegistry.registerSchema(ctx, node, parseValidators(ctx, objectMap, node.getJsonPointer()));
+            schemaRegistry.registerSchema(ctx, node, parseEvaluators(ctx, objectMap, node.getJsonPointer()));
         }
     }
 
-    private List<ValidatorWrapper> parseValidators(SchemaParsingContext ctx, Map<String, JsonNode> object, String objectPath) {
+    private List<EvaluatorWrapper> parseEvaluators(SchemaParsingContext ctx, Map<String, JsonNode> object, String objectPath) {
         SchemaParsingContext newCtx = ctx.withCurrentSchemaContext(object);
-        List<ValidatorWrapper> validators = new ArrayList<>();
+        List<EvaluatorWrapper> evaluators = new ArrayList<>();
         for (Map.Entry<String, JsonNode> entry : object.entrySet()) {
-            validatorFactory.create(newCtx, entry.getKey(), entry.getValue())
-                    .map(validator -> new ValidatorWrapper(entry.getKey(), entry.getValue(), validator))
-                    .ifPresent(validators::add);
+            evaluatorFactory.create(newCtx, entry.getKey(), entry.getValue())
+                    .map(evaluator -> new EvaluatorWrapper(entry.getKey(), entry.getValue(), evaluator))
+                    .ifPresent(evaluators::add);
             parseNode(newCtx, entry.getValue());
         }
-        if (validators.isEmpty()) {
-            validators.add(new ValidatorWrapper("true", objectPath, Schema.getBooleanValidator(true)));
+        if (evaluators.isEmpty()) {
+            evaluators.add(new EvaluatorWrapper("true", objectPath, Schema.getBooleanEvaluator(true)));
         }
-        return validators;
+        return evaluators;
     }
 }
 

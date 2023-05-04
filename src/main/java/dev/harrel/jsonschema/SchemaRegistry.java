@@ -19,13 +19,13 @@ final class SchemaRegistry {
         return dynamicSchemas.get(anchor);
     }
 
-    void registerSchema(SchemaParsingContext ctx, JsonNode schemaNode, List<ValidatorWrapper> validators) {
-        Schema schema = new Schema(ctx.getParentUri(), ctx.getAbsoluteUri(schemaNode), validators);
+    void registerSchema(SchemaParsingContext ctx, JsonNode schemaNode, List<EvaluatorWrapper> evaluators) {
+        Schema schema = new Schema(ctx.getParentUri(), ctx.getAbsoluteUri(schemaNode), evaluators);
         schemas.put(ctx.getAbsoluteUri(schemaNode), schema);
         registerAnchorsIfPresent(ctx, schemaNode, schema);
     }
 
-    void registerIdentifiableSchema(SchemaParsingContext ctx, URI id, JsonNode schemaNode, List<ValidatorWrapper> validators) {
+    void registerIdentifiableSchema(SchemaParsingContext ctx, URI id, JsonNode schemaNode, List<EvaluatorWrapper> evaluators) {
         String absoluteUri = ctx.getAbsoluteUri(schemaNode);
         schemas.entrySet().stream()
                 .filter(e -> e.getKey().startsWith(absoluteUri))
@@ -36,7 +36,7 @@ final class SchemaRegistry {
                     String newUri = id.toString() + "#" + newJsonPointer;
                     additionalSchemas.put(newUri, e.getValue());
                 });
-        Schema identifiableSchema = new Schema(ctx.getParentUri(), id.toString(), validators);
+        Schema identifiableSchema = new Schema(ctx.getParentUri(), id.toString(), evaluators);
         schemas.put(id.toString(), identifiableSchema);
         schemas.put(absoluteUri, identifiableSchema);
         registerAnchorsIfPresent(ctx, schemaNode, identifiableSchema);

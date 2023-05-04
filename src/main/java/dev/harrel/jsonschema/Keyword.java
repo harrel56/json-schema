@@ -15,7 +15,7 @@ public final class Keyword {
     public static final String COMMENT = "$comment";
     public static final String DEFS = "$defs";
 
-    /* Validators */
+    /* Evaluators */
     public static final String TYPE = "type";
     public static final String CONST = "const";
     public static final String ENUM = "enum";

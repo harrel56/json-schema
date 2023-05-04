@@ -6,10 +6,10 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-class PrefixItemsValidator implements Applicator {
+class PrefixItemsEvaluator implements Applicator {
     private final List<String> prefixRefs;
 
-    PrefixItemsValidator(SchemaParsingContext ctx, JsonNode node) {
+    PrefixItemsEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isArray()) {
             throw new IllegalArgumentException();
         }
@@ -19,7 +19,7 @@ class PrefixItemsValidator implements Applicator {
     }
 
     @Override
-    public boolean apply(ValidationContext ctx, JsonNode node) {
+    public boolean apply(EvaluationContext ctx, JsonNode node) {
         if (!node.isArray()) {
             return true;
         }
@@ -30,11 +30,11 @@ class PrefixItemsValidator implements Applicator {
     }
 }
 
-class ItemsValidator implements Applicator {
+class ItemsEvaluator implements Applicator {
     private final String schemaRef;
     private final int prefixItemsSize;
 
-    ItemsValidator(SchemaParsingContext ctx, JsonNode node) {
+    ItemsEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isObject() && !node.isBoolean()) {
             throw new IllegalArgumentException();
         }
@@ -46,7 +46,7 @@ class ItemsValidator implements Applicator {
     }
 
     @Override
-    public boolean apply(ValidationContext ctx, JsonNode node) {
+    public boolean apply(EvaluationContext ctx, JsonNode node) {
         if (!node.isArray()) {
             return true;
         }
@@ -57,11 +57,11 @@ class ItemsValidator implements Applicator {
     }
 }
 
-class ContainsValidator implements Applicator {
+class ContainsEvaluator implements Applicator {
     private final String schemaRef;
     private final boolean minContainsZero;
 
-    ContainsValidator(SchemaParsingContext ctx, JsonNode node) {
+    ContainsEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isObject() && !node.isBoolean()) {
             throw new IllegalArgumentException();
         }
@@ -74,7 +74,7 @@ class ContainsValidator implements Applicator {
     }
 
     @Override
-    public boolean apply(ValidationContext ctx, JsonNode node) {
+    public boolean apply(EvaluationContext ctx, JsonNode node) {
         if (!node.isArray()) {
             return true;
         }
@@ -87,11 +87,11 @@ class ContainsValidator implements Applicator {
     }
 }
 
-class AdditionalPropertiesValidator implements Applicator {
+class AdditionalPropertiesEvaluator implements Applicator {
     private final String schemaRef;
     private final String parentPath;
 
-    AdditionalPropertiesValidator(SchemaParsingContext ctx, JsonNode node) {
+    AdditionalPropertiesEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isObject() && !node.isBoolean()) {
             throw new IllegalArgumentException();
         }
@@ -101,7 +101,7 @@ class AdditionalPropertiesValidator implements Applicator {
     }
 
     @Override
-    public boolean apply(ValidationContext ctx, JsonNode node) {
+    public boolean apply(EvaluationContext ctx, JsonNode node) {
         if (!node.isObject()) {
             return true;
         }
@@ -128,10 +128,10 @@ class AdditionalPropertiesValidator implements Applicator {
     }
 }
 
-class PropertiesValidator implements Applicator {
+class PropertiesEvaluator implements Applicator {
     private final Map<String, String> schemaRefs;
 
-    PropertiesValidator(SchemaParsingContext ctx, JsonNode node) {
+    PropertiesEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isObject()) {
             throw new IllegalArgumentException();
         }
@@ -143,7 +143,7 @@ class PropertiesValidator implements Applicator {
     }
 
     @Override
-    public boolean apply(ValidationContext ctx, JsonNode node) {
+    public boolean apply(EvaluationContext ctx, JsonNode node) {
         if (!node.isObject()) {
             return true;
         }
@@ -157,10 +157,10 @@ class PropertiesValidator implements Applicator {
     }
 }
 
-class PatternPropertiesValidator implements Applicator {
+class PatternPropertiesEvaluator implements Applicator {
     private final Map<Pattern, String> schemasByPatterns;
 
-    PatternPropertiesValidator(SchemaParsingContext ctx, JsonNode node) {
+    PatternPropertiesEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isObject()) {
             throw new IllegalArgumentException();
         }
@@ -169,7 +169,7 @@ class PatternPropertiesValidator implements Applicator {
     }
 
     @Override
-    public boolean apply(ValidationContext ctx, JsonNode node) {
+    public boolean apply(EvaluationContext ctx, JsonNode node) {
         if (!node.isObject()) {
             return true;
         }
@@ -187,10 +187,10 @@ class PatternPropertiesValidator implements Applicator {
     }
 }
 
-class DependentSchemasValidator implements Applicator {
+class DependentSchemasEvaluator implements Applicator {
     private final Map<String, String> dependentSchemas;
 
-    DependentSchemasValidator(SchemaParsingContext ctx, JsonNode node) {
+    DependentSchemasEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isObject()) {
             throw new IllegalArgumentException();
         }
@@ -200,7 +200,7 @@ class DependentSchemasValidator implements Applicator {
     }
 
     @Override
-    public boolean apply(ValidationContext ctx, JsonNode node) {
+    public boolean apply(EvaluationContext ctx, JsonNode node) {
         if (!node.isObject()) {
             return true;
         }
@@ -214,10 +214,10 @@ class DependentSchemasValidator implements Applicator {
     }
 }
 
-class PropertyNamesValidator implements Applicator {
+class PropertyNamesEvaluator implements Applicator {
     private final String schemaRef;
 
-    PropertyNamesValidator(SchemaParsingContext ctx, JsonNode node) {
+    PropertyNamesEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isObject() && !node.isBoolean()) {
             throw new IllegalArgumentException();
         }
@@ -225,7 +225,7 @@ class PropertyNamesValidator implements Applicator {
     }
 
     @Override
-    public boolean apply(ValidationContext ctx, JsonNode node) {
+    public boolean apply(EvaluationContext ctx, JsonNode node) {
         if (!node.isObject()) {
             return true;
         }
@@ -236,12 +236,12 @@ class PropertyNamesValidator implements Applicator {
     }
 }
 
-class IfThenElseValidator implements Applicator {
+class IfThenElseEvaluator implements Applicator {
     private final String ifRef;
     private final Optional<String> thenRef;
     private final Optional<String> elseRef;
 
-    IfThenElseValidator(SchemaParsingContext ctx, JsonNode node) {
+    IfThenElseEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isObject() && !node.isBoolean()) {
             throw new IllegalArgumentException();
         }
@@ -253,7 +253,7 @@ class IfThenElseValidator implements Applicator {
     }
 
     @Override
-    public boolean apply(ValidationContext ctx, JsonNode node) {
+    public boolean apply(EvaluationContext ctx, JsonNode node) {
         if (ctx.resolveRequiredSchema(ifRef).validate(ctx, node)) {
             return thenRef
                     .map(ctx::resolveRequiredSchema)
@@ -266,10 +266,10 @@ class IfThenElseValidator implements Applicator {
     }
 }
 
-class AllOfValidator implements Applicator {
+class AllOfEvaluator implements Applicator {
     private final List<String> refs;
 
-    AllOfValidator(SchemaParsingContext ctx, JsonNode node) {
+    AllOfEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isArray()) {
             throw new IllegalArgumentException();
         }
@@ -277,15 +277,15 @@ class AllOfValidator implements Applicator {
     }
 
     @Override
-    public boolean apply(ValidationContext ctx, JsonNode node) {
+    public boolean apply(EvaluationContext ctx, JsonNode node) {
         return refs.stream().allMatch(pointer -> ctx.resolveRequiredSchema(pointer).validate(ctx, node));
     }
 }
 
-class AnyOfValidator implements Applicator {
+class AnyOfEvaluator implements Applicator {
     private final List<String> refs;
 
-    AnyOfValidator(SchemaParsingContext ctx, JsonNode node) {
+    AnyOfEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isArray()) {
             throw new IllegalArgumentException();
         }
@@ -293,17 +293,17 @@ class AnyOfValidator implements Applicator {
     }
 
     @Override
-    public boolean apply(ValidationContext ctx, JsonNode node) {
+    public boolean apply(EvaluationContext ctx, JsonNode node) {
         return refs.stream()
                 .filter(pointer -> ctx.resolveRequiredSchema(pointer).validate(ctx, node))
                 .count() > 0;
     }
 }
 
-class OneOfValidator implements Applicator {
+class OneOfEvaluator implements Applicator {
     private final List<String> refs;
 
-    OneOfValidator(SchemaParsingContext ctx, JsonNode node) {
+    OneOfEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isArray()) {
             throw new IllegalArgumentException();
         }
@@ -311,18 +311,18 @@ class OneOfValidator implements Applicator {
     }
 
     @Override
-    public boolean apply(ValidationContext ctx, JsonNode node) {
+    public boolean apply(EvaluationContext ctx, JsonNode node) {
         return refs.stream()
                 .filter(uri -> ctx.resolveRequiredSchema(uri).validate(ctx, node))
                 .count() == 1;
     }
 }
 
-class NotValidator implements Applicator {
+class NotEvaluator implements Applicator {
     private final String schemaUri;
 
 
-    NotValidator(SchemaParsingContext ctx, JsonNode node) {
+    NotEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isObject() && !node.isBoolean()) {
             throw new IllegalArgumentException();
         }
@@ -330,16 +330,16 @@ class NotValidator implements Applicator {
     }
 
     @Override
-    public boolean apply(ValidationContext ctx, JsonNode node) {
+    public boolean apply(EvaluationContext ctx, JsonNode node) {
         return !ctx.resolveRequiredSchema(schemaUri).validate(ctx, node);
     }
 }
 
-class UnevaluatedItemsValidator implements Applicator {
+class UnevaluatedItemsEvaluator implements Applicator {
     private final String schemaRef;
     private final String parentPath;
 
-    UnevaluatedItemsValidator(SchemaParsingContext ctx, JsonNode node) {
+    UnevaluatedItemsEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isObject() && !node.isBoolean()) {
             throw new IllegalArgumentException();
         }
@@ -349,7 +349,7 @@ class UnevaluatedItemsValidator implements Applicator {
     }
 
     @Override
-    public boolean apply(ValidationContext ctx, JsonNode node) {
+    public boolean apply(EvaluationContext ctx, JsonNode node) {
         if (!node.isArray()) {
             return true;
         }
@@ -370,11 +370,11 @@ class UnevaluatedItemsValidator implements Applicator {
     }
 }
 
-class UnevaluatedPropertiesValidator implements Applicator {
+class UnevaluatedPropertiesEvaluator implements Applicator {
     private final String schemaRef;
     private final String parentPath;
 
-    UnevaluatedPropertiesValidator(SchemaParsingContext ctx, JsonNode node) {
+    UnevaluatedPropertiesEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isObject() && !node.isBoolean()) {
             throw new IllegalArgumentException();
         }
@@ -384,7 +384,7 @@ class UnevaluatedPropertiesValidator implements Applicator {
     }
 
     @Override
-    public boolean apply(ValidationContext ctx, JsonNode node) {
+    public boolean apply(EvaluationContext ctx, JsonNode node) {
         if (!node.isObject()) {
             return true;
         }
@@ -406,10 +406,10 @@ class UnevaluatedPropertiesValidator implements Applicator {
     }
 }
 
-class RefValidator implements Validator {
+class RefEvaluator implements Evaluator {
     private final String ref;
 
-    RefValidator(JsonNode node) {
+    RefEvaluator(JsonNode node) {
         if (!node.isString()) {
             throw new IllegalArgumentException();
         }
@@ -417,20 +417,20 @@ class RefValidator implements Validator {
     }
 
     @Override
-    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
         Optional<Schema> schema = ctx.resolveSchema(ref);
         if (schema.isEmpty()) {
-            return ValidationResult.failure("Resolution of $ref [%s] failed".formatted(ref));
+            return EvaluationResult.failure("Resolution of $ref [%s] failed".formatted(ref));
         } else {
-            return schema.get().validate(ctx, node) ? ValidationResult.success() : ValidationResult.failure();
+            return schema.get().validate(ctx, node) ? EvaluationResult.success() : EvaluationResult.failure();
         }
     }
 }
 
-class DynamicRefValidator implements Validator {
+class DynamicRefEvaluator implements Evaluator {
     private final String ref;
 
-    DynamicRefValidator(JsonNode node) {
+    DynamicRefEvaluator(JsonNode node) {
         if (!node.isString()) {
             throw new IllegalArgumentException();
         }
@@ -438,12 +438,12 @@ class DynamicRefValidator implements Validator {
     }
 
     @Override
-    public ValidationResult validate(ValidationContext ctx, JsonNode node) {
+    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
         Optional<Schema> schema = ctx.resolveDynamicSchema(ref);
         if (schema.isEmpty()) {
-            return ValidationResult.failure("Resolution of $ref [%s] failed".formatted(ref));
+            return EvaluationResult.failure("Resolution of $ref [%s] failed".formatted(ref));
         } else {
-            return schema.get().validate(ctx, node) ? ValidationResult.success() : ValidationResult.failure();
+            return schema.get().validate(ctx, node) ? EvaluationResult.success() : EvaluationResult.failure();
         }
     }
 }

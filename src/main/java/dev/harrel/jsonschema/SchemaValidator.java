@@ -23,13 +23,13 @@ public final class SchemaValidator {
         return new Builder();
     }
 
-    private SchemaValidator(ValidatorFactory validatorFactory, JsonNodeFactory jsonNodeFactory, SchemaResolver schemaResolver, String defaultMetaSchemaUri) {
-        validatorFactory = validatorFactory == null ? new CoreValidatorFactory() : validatorFactory;
+    private SchemaValidator(EvaluatorFactory evaluatorFactory, JsonNodeFactory jsonNodeFactory, SchemaResolver schemaResolver, String defaultMetaSchemaUri) {
+        evaluatorFactory = evaluatorFactory == null ? new CoreEvaluatorFactory() : evaluatorFactory;
         this.jsonNodeFactory = jsonNodeFactory == null ? new JacksonNode.Factory() : jsonNodeFactory;
         this.schemaResolver = decorateSchemaResolver(schemaResolver == null ? uri -> Optional.empty() : schemaResolver, defaultMetaSchemaUri);
         this.schemaRegistry = new SchemaRegistry();
         MetaSchemaValidator metaSchemaValidator = new MetaSchemaValidator(this.schemaRegistry, this.schemaResolver);
-        this.jsonParser = new JsonParser(defaultMetaSchemaUri, this.jsonNodeFactory, validatorFactory, this.schemaRegistry, metaSchemaValidator);
+        this.jsonParser = new JsonParser(defaultMetaSchemaUri, this.jsonNodeFactory, evaluatorFactory, this.schemaRegistry, metaSchemaValidator);
     }
 
     public URI registerSchema(String rawSchema) {
@@ -58,7 +58,7 @@ public final class SchemaValidator {
 
     public boolean validate(URI schemaUri, JsonNode instanceNode) {
         Schema schema = getRootSchema(schemaUri.toString());
-        ValidationContext ctx = createNewValidationContext();
+        EvaluationContext ctx = createNewEvaluationContext();
         return schema.validate(ctx, instanceNode);
     }
 
@@ -70,8 +70,8 @@ public final class SchemaValidator {
         return schema;
     }
 
-    private ValidationContext createNewValidationContext() {
-        return new ValidationContext(jsonParser, schemaRegistry, schemaResolver);
+    private EvaluationContext createNewEvaluationContext() {
+        return new EvaluationContext(jsonParser, schemaRegistry, schemaResolver);
     }
 
     private SchemaResolver decorateSchemaResolver(SchemaResolver schemaResolver, String defaultMetaSchemaUri) {
@@ -84,13 +84,13 @@ public final class SchemaValidator {
     }
 
     public static final class Builder {
-        private ValidatorFactory validatorFactory;
+        private EvaluatorFactory evaluatorFactory;
         private JsonNodeFactory jsonNodeFactory;
         private SchemaResolver schemaResolver;
         private String defaultMetaSchemaUri = DEFAULT_META_SCHEMA;
 
-        public Builder withValidatorFactory(ValidatorFactory validatorFactory) {
-            this.validatorFactory = Objects.requireNonNull(validatorFactory);
+        public Builder withEvaluatorFactory(EvaluatorFactory evaluatorFactory) {
+            this.evaluatorFactory = Objects.requireNonNull(evaluatorFactory);
             return this;
         }
 
@@ -110,7 +110,7 @@ public final class SchemaValidator {
         }
 
         public SchemaValidator build() {
-            return new SchemaValidator(validatorFactory, jsonNodeFactory, schemaResolver, defaultMetaSchemaUri);
+            return new SchemaValidator(evaluatorFactory, jsonNodeFactory, schemaResolver, defaultMetaSchemaUri);
         }
     }
 
