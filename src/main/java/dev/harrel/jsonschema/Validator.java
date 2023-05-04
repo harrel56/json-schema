@@ -23,7 +23,7 @@ public final class Validator {
         return new Builder();
     }
 
-    private Validator(EvaluatorFactory evaluatorFactory, JsonNodeFactory jsonNodeFactory, SchemaResolver schemaResolver, String defaultMetaSchemaUri) {
+    Validator(EvaluatorFactory evaluatorFactory, JsonNodeFactory jsonNodeFactory, SchemaResolver schemaResolver, String defaultMetaSchemaUri) {
         evaluatorFactory = evaluatorFactory == null ? new CoreEvaluatorFactory() : evaluatorFactory;
         this.jsonNodeFactory = jsonNodeFactory == null ? new JacksonNode.Factory() : jsonNodeFactory;
         this.schemaResolver = decorateSchemaResolver(schemaResolver == null ? uri -> Optional.empty() : schemaResolver, defaultMetaSchemaUri);
@@ -83,6 +83,7 @@ public final class Validator {
         }
     }
 
+    // todo remove, replaced by ValidatorFactory
     public static final class Builder {
         private EvaluatorFactory evaluatorFactory;
         private JsonNodeFactory jsonNodeFactory;
