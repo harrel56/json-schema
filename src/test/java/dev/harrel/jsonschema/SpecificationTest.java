@@ -294,8 +294,8 @@ public abstract class SpecificationTest {
     }
 
     private void testValidation(String bundle, String name, JsonNode schema, JsonNode instance, boolean valid) {
-//        Assumptions.assumeTrue(bundle.equals("$anchor inside an enum is not a real identifier"));
-//        Assumptions.assumeTrue(name.equals("both valid - invalid"));
+//        Assumptions.assumeTrue(bundle.equals("unevaluatedItems with nested items"));
+//        Assumptions.assumeTrue(name.equals("with only (valid) additional items"));
         String schemaString = schema.toPrettyString();
         String instanceString = instance.toPrettyString();
         Validator validator = new ValidatorFactory()
@@ -308,7 +308,7 @@ public abstract class SpecificationTest {
         logger.info(String.valueOf(valid));
         skipUnsupportedTests(bundle, name);
         URI uri = validator.registerSchema(schemaString);
-        Assertions.assertEquals(valid, validator.validate(uri, instanceString));
+        Assertions.assertEquals(valid, validator.validate(uri, instanceString).isValid());
     }
 
     private void skipUnsupportedTests(String bundle, String name) {

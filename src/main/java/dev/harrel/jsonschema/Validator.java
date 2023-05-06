@@ -42,18 +42,19 @@ public final class Validator {
         return jsonParser.parseRootSchema(uri, schemaNode);
     }
 
-    public boolean validate(URI schemaUri, String rawInstance) {
+    public ValidationResult validate(URI schemaUri, String rawInstance) {
         return validate(schemaUri, jsonNodeFactory.create(rawInstance));
     }
 
-    public boolean validate(URI schemaUri, Object instanceProviderNode) {
+    public ValidationResult validate(URI schemaUri, Object instanceProviderNode) {
         return validate(schemaUri, jsonNodeFactory.wrap(instanceProviderNode));
     }
 
-    public boolean validate(URI schemaUri, JsonNode instanceNode) {
+    public ValidationResult validate(URI schemaUri, JsonNode instanceNode) {
         Schema schema = getRootSchema(schemaUri.toString());
         EvaluationContext ctx = createNewEvaluationContext();
-        return schema.validate(ctx, instanceNode);
+        boolean valid = schema.validate(ctx, instanceNode);
+        return ValidationResult.fromEvaluationContext(valid, ctx);
     }
 
     private Schema getRootSchema(String uri) {
