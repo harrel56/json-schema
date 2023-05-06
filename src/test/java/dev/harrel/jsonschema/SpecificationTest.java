@@ -298,10 +298,10 @@ public abstract class SpecificationTest {
 //        Assumptions.assumeTrue(name.equals("both valid - invalid"));
         String schemaString = schema.toPrettyString();
         String instanceString = instance.toPrettyString();
-        Validator validator = Validator.builder()
+        Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(nodeFactory)
                 .withSchemaResolver(resolver)
-                .build();
+                .createValidator();
         logger.info("%s: %s".formatted(bundle, name));
         logger.info(schemaString);
         logger.info(instanceString);

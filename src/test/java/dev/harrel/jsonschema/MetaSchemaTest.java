@@ -34,11 +34,9 @@ public abstract class MetaSchemaTest {
                 {
                     "type": ["null"]
                 }""";
-        Validator validator = Validator.builder()
+        new ValidatorFactory()
                 .withJsonNodeFactory(nodeFactory)
-                .build();
-        URI uri = validator.registerSchema(rawSchema);
-        validator.validate(uri, "null");
+                .validate(rawSchema, "null");
     }
 
     @Test
@@ -47,9 +45,9 @@ public abstract class MetaSchemaTest {
                 {
                     "type": []
                 }""";
-        Validator validator = Validator.builder()
+        Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(nodeFactory)
-                .build();
+                .createValidator();
         assertThatThrownBy(() -> validator.registerSchema(rawSchema))
                 .isInstanceOf(InvalidSchemaException.class);
     }
@@ -60,13 +58,11 @@ public abstract class MetaSchemaTest {
                 {
                     "type": ["null"]
                 }""";
-        Validator validator = Validator.builder()
+        new ValidatorFactory()
                 .withJsonNodeFactory(nodeFactory)
                 .withDefaultMetaSchemaUri("custom")
                 .withSchemaResolver(resolver)
-                .build();
-        URI uri = validator.registerSchema(rawSchema);
-        validator.validate(uri, "null");
+                .validate(rawSchema, "null");
     }
 
     @Test
@@ -77,11 +73,11 @@ public abstract class MetaSchemaTest {
                     "maxLength": 1,
                     "minLength": 1
                 }""";
-        Validator validator = Validator.builder()
+        Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(nodeFactory)
                 .withDefaultMetaSchemaUri("custom")
                 .withSchemaResolver(resolver)
-                .build();
+                .createValidator();
         assertThatThrownBy(() -> validator.registerSchema(rawSchema))
                 .isInstanceOf(InvalidSchemaException.class);
     }
@@ -92,12 +88,10 @@ public abstract class MetaSchemaTest {
                 {
                     "type": 1
                 }""";
-        Validator validator = Validator.builder()
+        new ValidatorFactory()
                 .withJsonNodeFactory(nodeFactory)
                 .withDefaultMetaSchemaUri(null)
-                .build();
-        URI uri = validator.registerSchema(rawSchema);
-        validator.validate(uri, "null");
+                .validate(rawSchema, "null");
     }
 
     @Test
@@ -106,10 +100,10 @@ public abstract class MetaSchemaTest {
                 {
                     "type": 1
                 }""";
-        Validator validator = Validator.builder()
+        Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(nodeFactory)
                 .withDefaultMetaSchemaUri("custom")
-                .build();
+                .createValidator();
         assertThatThrownBy(() -> validator.registerSchema(rawSchema))
                 .isInstanceOf(MetaSchemaResolvingException.class);
     }
@@ -120,10 +114,10 @@ public abstract class MetaSchemaTest {
                 {
                     "type": "string"
                 }""";
-        Validator validator = Validator.builder()
+        Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(nodeFactory)
                 .withDefaultMetaSchemaUri("invalid")
-                .build();
+                .createValidator();
         assertThatThrownBy(() -> validator.registerSchema(rawSchema))
                 .isInstanceOf(MetaSchemaResolvingException.class);
     }
@@ -139,12 +133,10 @@ public abstract class MetaSchemaTest {
                         }
                     }
                 }""";
-        Validator validator = Validator.builder()
+        new ValidatorFactory()
                 .withJsonNodeFactory(nodeFactory)
                 .withSchemaResolver(resolver)
-                .build();
-        URI uri = validator.registerSchema(rawSchema);
-        validator.validate(uri, "{}");
+                .validate(rawSchema, "{}");
     }
 
     @Test
@@ -160,10 +152,10 @@ public abstract class MetaSchemaTest {
                         }
                     }
                 }""";
-        Validator validator = Validator.builder()
+        Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(nodeFactory)
                 .withSchemaResolver(resolver)
-                .build();
+                .createValidator();
         assertThatThrownBy(() -> validator.registerSchema(rawSchema))
                 .isInstanceOf(InvalidSchemaException.class);
     }
@@ -175,12 +167,10 @@ public abstract class MetaSchemaTest {
                     "$schema": "custom",
                     "type": 1
                 }""";
-        Validator validator = Validator.builder()
+        new ValidatorFactory()
                 .withJsonNodeFactory(nodeFactory)
                 .withSchemaResolver(resolver)
-                .build();
-        URI uri = validator.registerSchema(rawSchema);
-        validator.validate(uri, "{}");
+                .validate(rawSchema, "{}");
     }
 
     @Test
@@ -191,10 +181,10 @@ public abstract class MetaSchemaTest {
                     "maxLength": 1,
                     "minLength": 1
                 }""";
-        Validator validator = Validator.builder()
+        Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(nodeFactory)
                 .withSchemaResolver(resolver)
-                .build();
+                .createValidator();
         assertThatThrownBy(() -> validator.registerSchema(rawSchema))
                 .isInstanceOf(InvalidSchemaException.class);
     }

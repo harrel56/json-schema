@@ -16,10 +16,10 @@ final class JsonParser {
                SchemaRegistry schemaRegistry,
                MetaSchemaValidator metaSchemaValidator) {
         this.defaultMetaSchemaUri = defaultMetaSchemaUri;
-        this.jsonNodeFactory = jsonNodeFactory;
-        this.evaluatorFactory = evaluatorFactory;
-        this.schemaRegistry = schemaRegistry;
-        this.metaSchemaValidator = metaSchemaValidator;
+        this.jsonNodeFactory = Objects.requireNonNull(jsonNodeFactory);
+        this.evaluatorFactory = Objects.requireNonNull(evaluatorFactory);
+        this.schemaRegistry = Objects.requireNonNull(schemaRegistry);
+        this.metaSchemaValidator = Objects.requireNonNull(metaSchemaValidator);
     }
 
     void parseRootSchema(String baseUri, String rawJson) {
