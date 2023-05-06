@@ -33,27 +33,35 @@ public final class Validator {
     }
 
     public URI registerSchema(String rawSchema) {
-        return jsonParser.parseRootSchema(URI.create(UUID.randomUUID().toString()), jsonNodeFactory.create(rawSchema));
+        return registerSchema(jsonNodeFactory.create(rawSchema));
     }
 
-    public URI registerSchema(Object schemaNode) {
-        return jsonParser.parseRootSchema(URI.create(UUID.randomUUID().toString()), jsonNodeFactory.wrap(schemaNode));
+    public URI registerSchema(Object schemaProviderNode) {
+        return registerSchema(jsonNodeFactory.wrap(schemaProviderNode));
+    }
+
+    public URI registerSchema(JsonNode schemaNode) {
+        return jsonParser.parseRootSchema(URI.create(UUID.randomUUID().toString()), schemaNode);
     }
 
     public URI registerSchema(URI uri, String rawSchema) {
-        return jsonParser.parseRootSchema(uri, jsonNodeFactory.create(rawSchema));
+        return registerSchema(uri, jsonNodeFactory.create(rawSchema));
     }
 
-    public URI registerSchema(URI uri, Object schemaNode) {
-        return jsonParser.parseRootSchema(uri, jsonNodeFactory.wrap(schemaNode));
+    public URI registerSchema(URI uri, Object schemaProviderNode) {
+        return registerSchema(uri, jsonNodeFactory.wrap(schemaProviderNode));
+    }
+
+    public URI registerSchema(URI uri, JsonNode schemaNode) {
+        return jsonParser.parseRootSchema(uri, schemaNode);
     }
 
     public boolean validate(URI schemaUri, String rawInstance) {
         return validate(schemaUri, jsonNodeFactory.create(rawInstance));
     }
 
-    public boolean validate(URI schemaUri, Object instanceNode) {
-        return validate(schemaUri, jsonNodeFactory.wrap(instanceNode));
+    public boolean validate(URI schemaUri, Object instanceProviderNode) {
+        return validate(schemaUri, jsonNodeFactory.wrap(instanceProviderNode));
     }
 
     public boolean validate(URI schemaUri, JsonNode instanceNode) {

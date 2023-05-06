@@ -18,12 +18,6 @@ public final class ValidatorFactory {
     private SchemaResolver schemaResolver = new DefaultMetaSchemaResolver();
     private String defaultMetaSchemaUri = DEFAULT_META_SCHEMA;
 
-    public boolean validate(String rawSchema, String rawInstance) {
-        Validator validator = createValidator();
-        URI uri = validator.registerSchema(rawSchema);
-        return validator.validate(uri, rawInstance);
-    }
-
     public Validator createValidator() {
         return new Validator(evaluatorFactory, jsonNodeFactory, schemaResolver, defaultMetaSchemaUri);
     }
@@ -46,6 +40,44 @@ public final class ValidatorFactory {
     public ValidatorFactory withDefaultMetaSchemaUri(String defaultMetaSchemaUri) {
         this.defaultMetaSchemaUri = defaultMetaSchemaUri;
         return this;
+    }
+
+    public boolean validate(String rawSchema, String rawInstance) {
+        return validate(jsonNodeFactory.create(rawSchema), jsonNodeFactory.create(rawInstance));
+    }
+
+    public boolean validate(Object schemaProviderNode, String rawInstance) {
+        return validate(jsonNodeFactory.wrap(schemaProviderNode), jsonNodeFactory.create(rawInstance));
+    }
+
+    public boolean validate(JsonNode schemaNode, String rawInstance) {
+        return validate(schemaNode, jsonNodeFactory.create(rawInstance));
+    }
+
+    public boolean validate(String rawSchema, Object instanceProviderNode) {
+        return validate(jsonNodeFactory.create(rawSchema), jsonNodeFactory.wrap(instanceProviderNode));
+    }
+
+    public boolean validate(Object schemaProviderNode, Object instanceProviderNode) {
+        return validate(jsonNodeFactory.wrap(schemaProviderNode), jsonNodeFactory.wrap(instanceProviderNode));
+    }
+
+    public boolean validate(JsonNode schemaNode, Object instanceProviderNode) {
+        return validate(schemaNode, jsonNodeFactory.wrap(instanceProviderNode));
+    }
+
+    public boolean validate(String rawSchema, JsonNode instanceNode) {
+        return validate(jsonNodeFactory.create(rawSchema), instanceNode);
+    }
+
+    public boolean validate(Object schemaProviderNode, JsonNode instanceNode) {
+        return validate(jsonNodeFactory.wrap(schemaProviderNode), instanceNode);
+    }
+
+    public boolean validate(JsonNode schemaNode, JsonNode instanceNode) {
+        Validator validator = createValidator();
+        URI uri = validator.registerSchema(schemaNode);
+        return validator.validate(uri, instanceNode);
     }
 
     static class DefaultMetaSchemaResolver implements SchemaResolver {
