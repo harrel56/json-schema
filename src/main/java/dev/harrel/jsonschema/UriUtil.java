@@ -5,16 +5,16 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
-public final class UriUtil {
+final class UriUtil {
 
     private UriUtil() {}
 
-    public static Optional<String> getAnchor(String uri) {
+    static Optional<String> getAnchor(String uri) {
         return Optional.ofNullable(URI.create(uri).getFragment())
                 .filter(fragment -> !fragment.startsWith("/"));
     }
 
-    public static String getUriWithoutFragment(String uri) {
+    static String getUriWithoutFragment(String uri) {
         int fragmentIdx = uri.indexOf('#');
         if (fragmentIdx < 0) {
             return uri;
@@ -23,11 +23,11 @@ public final class UriUtil {
         }
     }
 
-    public static boolean isJsonPointerOrAnchor(String uri) {
+    static boolean isJsonPointerOrAnchor(String uri) {
         return uri.startsWith("#") && uri.length() > 1;
     }
 
-    public static String resolveUri(URI baseUri, String ref) {
+    static String resolveUri(URI baseUri, String ref) {
         ref = UriUtil.decodeUrl(ref);
         if (baseUri.getAuthority() == null && UriUtil.isJsonPointerOrAnchor(ref)) {
             return baseUri + ref;
@@ -41,7 +41,7 @@ public final class UriUtil {
         }
     }
 
-    public static String decodeUrl(String url) {
+    static String decodeUrl(String url) {
         String decoded = URLDecoder.decode(url, StandardCharsets.UTF_8);
         String[] split = decoded.split("#", -1);
         StringBuilder sb = new StringBuilder(split[0]);
@@ -52,7 +52,7 @@ public final class UriUtil {
         return sb.toString();
     }
 
-    public static String decodeJsonPointer(String pointer) {
+    static String decodeJsonPointer(String pointer) {
         return pointer.replace("~0", "~").replace("~1", "/");
     }
 }
