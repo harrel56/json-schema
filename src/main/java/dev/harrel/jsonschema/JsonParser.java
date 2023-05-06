@@ -33,7 +33,7 @@ final class JsonParser {
             boolean schemaValue = node.asBoolean();
             schemaRegistry.registerIdentifiableSchema(ctx, baseUri, node, List.of(new EvaluatorWrapper(String.valueOf(schemaValue), node, Schema.getBooleanEvaluator(schemaValue))));
             return baseUri;
-        } else {
+        } else if (node.isObject()) {
             Map<String, JsonNode> objectMap = node.asObject();
             String metaSchemaUri = Optional.ofNullable(objectMap.get(Keyword.SCHEMA))
                     .filter(JsonNode::isString)
@@ -60,6 +60,8 @@ final class JsonParser {
                     .map(JsonNode::asString)
                     .map(URI::create)
                     .orElse(baseUri);
+        } else {
+            throw new InvalidSchemaException("Schema [%s] was of invalid type [%s]".formatted(baseUri, node.getNodeType()));
         }
     }
 

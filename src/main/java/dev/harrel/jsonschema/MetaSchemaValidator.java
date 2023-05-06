@@ -1,5 +1,6 @@
 package dev.harrel.jsonschema;
 
+import java.util.Objects;
 import java.util.Optional;
 
 final class MetaSchemaValidator {
@@ -9,8 +10,8 @@ final class MetaSchemaValidator {
     private final SchemaResolver schemaResolver;
 
     MetaSchemaValidator(SchemaRegistry schemaRegistry, SchemaResolver schemaResolver) {
-        this.schemaRegistry = schemaRegistry;
-        this.schemaResolver = schemaResolver;
+        this.schemaRegistry = Objects.requireNonNull(schemaRegistry);
+        this.schemaResolver = Objects.requireNonNull(schemaResolver);
     }
 
     void validateMetaSchema(JsonParser jsonParser, String metaSchemaUri, String schemaUri, JsonNode node) {

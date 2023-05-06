@@ -12,9 +12,9 @@ public final class EvaluationContext {
     private final List<Annotation> validationAnnotations;
 
     EvaluationContext(JsonParser jsonParser, SchemaRegistry schemaRegistry, SchemaResolver schemaResolver) {
-        this.jsonParser = jsonParser;
-        this.schemaRegistry = schemaRegistry;
-        this.schemaResolver = schemaResolver;
+        this.jsonParser = Objects.requireNonNull(jsonParser);
+        this.schemaRegistry = Objects.requireNonNull(schemaRegistry);
+        this.schemaResolver = Objects.requireNonNull(schemaResolver);
         this.dynamicScope = new LinkedList<>();
         this.annotations = new ArrayList<>();
         this.validationAnnotations = new ArrayList<>();
@@ -24,7 +24,7 @@ public final class EvaluationContext {
         return Collections.unmodifiableList(annotations);
     }
 
-    void addAnnotation(Annotation annotation) {
+    public void addAnnotation(Annotation annotation) {
         this.annotations.add(annotation);
     }
 
