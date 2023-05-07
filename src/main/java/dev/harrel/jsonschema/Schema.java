@@ -5,8 +5,11 @@ import java.util.*;
 
 import static dev.harrel.jsonschema.Evaluator.*;
 
-final class Schema {
-
+/**
+ * {@code Schema} class is a representation of a JSON schema (subschema as well).
+ * It consists of list of {@link Evaluator}s to be executed for this schema.
+ */
+public final class Schema {
     private static final Evaluator TRUE_EVALUATOR = (ctx, node) -> Result.success();
     private static final Evaluator FALSE_EVALUATOR = (ctx, node) -> Result.failure("False schema always fails.");
 
@@ -27,7 +30,13 @@ final class Schema {
         return val ? TRUE_EVALUATOR : FALSE_EVALUATOR;
     }
 
-    boolean validate(EvaluationContext ctx, JsonNode node) {
+    /**
+     * Performs validation and mutates {@link EvaluationContext} accordingly.
+     * @param ctx evaluation context
+     * @param node current instance node
+     * @return {@code true} if all evaluators evaluated to {@code true}, {@code false} otherwise
+     */
+    public boolean validate(EvaluationContext ctx, JsonNode node) {
         boolean outOfDynamicScope = ctx.isOutOfDynamicScope(parentUri);
         if (outOfDynamicScope) {
             ctx.pushDynamicScope(parentUri);

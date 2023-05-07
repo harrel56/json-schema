@@ -3,6 +3,9 @@ package dev.harrel.jsonschema;
 import java.util.*;
 import java.util.function.BiFunction;
 
+/**
+ * {@code EvaluatorFactory} implementation that supports <a href="https://json-schema.org/draft/2020-12/schema">2020 draft</a> specification.
+ */
 public class Draft2020EvaluatorFactory implements EvaluatorFactory {
 
     protected final Map<String, BiFunction<SchemaParsingContext, JsonNode, Evaluator>> evaluatorsMap;

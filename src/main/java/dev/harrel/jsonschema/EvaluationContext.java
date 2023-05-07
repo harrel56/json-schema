@@ -3,6 +3,11 @@ package dev.harrel.jsonschema;
 import java.net.URI;
 import java.util.*;
 
+/**
+ * {@code EvaluationContext} class represents state of current evaluation (instance validation against schema).
+ * {@link Evaluator} can use this class for its processing logic.
+ * @see Evaluator
+ */
 public final class EvaluationContext {
     private final JsonNodeFactory jsonNodeFactory;
     private final JsonParser jsonParser;
@@ -25,14 +30,29 @@ public final class EvaluationContext {
         this.validationAnnotations = new ArrayList<>();
     }
 
+    /**
+     * Returns collected annotations up to this point.
+     * Discarded annotations are not included.
+     * @return unmodifiable list of annotations
+     */
     public List<Annotation> getAnnotations() {
         return Collections.unmodifiableList(annotations);
     }
 
+    /**
+     * Adds new annotation. It may get discarded by further processing.
+     * @param annotation new annotation
+     */
     public void addAnnotation(Annotation annotation) {
         this.annotations.add(annotation);
     }
 
+    /**
+     * Optionally resolves reference (URI) to a schema.
+     * @param ref reference to a schema
+     * @return Resolved {@link Schema} wrapped in {@link Optional}, {@code Optional.empty()} otherwise
+     * @see EvaluationContext#resolveRequiredSchema(String)
+     */
     public Optional<Schema> resolveSchema(String ref) {
         String resolvedUri = UriUtil.resolveUri(dynamicScope.peek(), ref);
         return Optional.ofNullable(schemaRegistry.get(resolvedUri))
@@ -40,6 +60,12 @@ public final class EvaluationContext {
                 .or(() -> resolveExternalSchema(resolvedUri));
     }
 
+    /**
+     * Optionally resolves dynamic reference (URI) to a schema.
+     * Mainly used in conjunction with <i>$dynamicRef</i> keyword.
+     * @param ref dynamic reference to a schema
+     * @return Resolved {@link Schema} wrapped in {@link Optional}, {@code Optional.empty()} otherwise
+     */
     public Optional<Schema> resolveDynamicSchema(String ref) {
         String resolvedUri = UriUtil.resolveUri(dynamicScope.peek(), ref);
         if (schemaRegistry.get(resolvedUri) != null) {
@@ -58,6 +84,13 @@ public final class EvaluationContext {
         return Optional.empty();
     }
 
+    /**
+     * Resolves required reference (URI) to a schema.
+     * @param ref reference to a schema
+     * @return Resolved {@link Schema}
+     * @throws IllegalStateException when schema resolution failed
+     * @see EvaluationContext#resolveSchema(String)
+     */
     public Schema resolveRequiredSchema(String ref) {
         return Optional.ofNullable(schemaRegistry.get(ref))
                 .orElseThrow(() -> new IllegalStateException("Resolution of schema [%s] failed and was required".formatted(ref)));
