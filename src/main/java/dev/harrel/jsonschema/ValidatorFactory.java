@@ -41,39 +41,39 @@ public final class ValidatorFactory {
         return this;
     }
 
-    public ValidationResult validate(String rawSchema, String rawInstance) {
+    public Validator.Result validate(String rawSchema, String rawInstance) {
         return validate(jsonNodeFactory.create(rawSchema), jsonNodeFactory.create(rawInstance));
     }
 
-    public ValidationResult validate(Object schemaProviderNode, String rawInstance) {
+    public Validator.Result validate(Object schemaProviderNode, String rawInstance) {
         return validate(jsonNodeFactory.wrap(schemaProviderNode), jsonNodeFactory.create(rawInstance));
     }
 
-    public ValidationResult validate(JsonNode schemaNode, String rawInstance) {
+    public Validator.Result validate(JsonNode schemaNode, String rawInstance) {
         return validate(schemaNode, jsonNodeFactory.create(rawInstance));
     }
 
-    public ValidationResult validate(String rawSchema, Object instanceProviderNode) {
+    public Validator.Result validate(String rawSchema, Object instanceProviderNode) {
         return validate(jsonNodeFactory.create(rawSchema), jsonNodeFactory.wrap(instanceProviderNode));
     }
 
-    public ValidationResult validate(Object schemaProviderNode, Object instanceProviderNode) {
+    public Validator.Result validate(Object schemaProviderNode, Object instanceProviderNode) {
         return validate(jsonNodeFactory.wrap(schemaProviderNode), jsonNodeFactory.wrap(instanceProviderNode));
     }
 
-    public ValidationResult validate(JsonNode schemaNode, Object instanceProviderNode) {
+    public Validator.Result validate(JsonNode schemaNode, Object instanceProviderNode) {
         return validate(schemaNode, jsonNodeFactory.wrap(instanceProviderNode));
     }
 
-    public ValidationResult validate(String rawSchema, JsonNode instanceNode) {
+    public Validator.Result validate(String rawSchema, JsonNode instanceNode) {
         return validate(jsonNodeFactory.create(rawSchema), instanceNode);
     }
 
-    public ValidationResult validate(Object schemaProviderNode, JsonNode instanceNode) {
+    public Validator.Result validate(Object schemaProviderNode, JsonNode instanceNode) {
         return validate(jsonNodeFactory.wrap(schemaProviderNode), instanceNode);
     }
 
-    public ValidationResult validate(JsonNode schemaNode, JsonNode instanceNode) {
+    public Validator.Result validate(JsonNode schemaNode, JsonNode instanceNode) {
         Validator validator = createValidator();
         URI uri = validator.registerSchema(schemaNode);
         return validator.validate(uri, instanceNode);

@@ -1,6 +1,7 @@
 package dev.harrel.jsonschema;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -42,19 +43,19 @@ public final class Validator {
         return jsonParser.parseRootSchema(uri, schemaNode);
     }
 
-    public ValidationResult validate(URI schemaUri, String rawInstance) {
+    public Result validate(URI schemaUri, String rawInstance) {
         return validate(schemaUri, jsonNodeFactory.create(rawInstance));
     }
 
-    public ValidationResult validate(URI schemaUri, Object instanceProviderNode) {
+    public Result validate(URI schemaUri, Object instanceProviderNode) {
         return validate(schemaUri, jsonNodeFactory.wrap(instanceProviderNode));
     }
 
-    public ValidationResult validate(URI schemaUri, JsonNode instanceNode) {
+    public Result validate(URI schemaUri, JsonNode instanceNode) {
         Schema schema = getRootSchema(schemaUri.toString());
         EvaluationContext ctx = createNewEvaluationContext();
         boolean valid = schema.validate(ctx, instanceNode);
-        return ValidationResult.fromEvaluationContext(valid, ctx);
+        return Result.fromEvaluationContext(valid, ctx);
     }
 
     private Schema getRootSchema(String uri) {
@@ -67,5 +68,33 @@ public final class Validator {
 
     private EvaluationContext createNewEvaluationContext() {
         return new EvaluationContext(jsonNodeFactory, jsonParser, schemaRegistry, schemaResolver);
+    }
+
+    public static final class Result {
+        private final boolean valid;
+        private final List<Annotation> annotations;
+        private final List<Annotation> validationAnnotations;
+
+        Result(boolean valid, List<Annotation> annotations, List<Annotation> validationAnnotations) {
+            this.valid = valid;
+            this.annotations = Objects.requireNonNull(annotations);
+            this.validationAnnotations = Objects.requireNonNull(validationAnnotations);
+        }
+
+        static Result fromEvaluationContext(boolean valid, EvaluationContext ctx) {
+            return new Result(valid, List.copyOf(ctx.getAnnotations()), List.copyOf(ctx.getValidationAnnotations()));
+        }
+
+        public boolean isValid() {
+            return valid;
+        }
+
+        public List<Annotation> getAnnotations() {
+            return annotations;
+        }
+
+        public List<Annotation> getValidationAnnotations() {
+            return validationAnnotations;
+        }
     }
 }
