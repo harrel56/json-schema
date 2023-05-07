@@ -23,12 +23,12 @@ class TypeEvaluator implements Evaluator {
     }
 
     @Override
-    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
         SimpleType nodeType = node.getNodeType();
         if (types.contains(nodeType) || nodeType == SimpleType.INTEGER && types.contains(SimpleType.NUMBER)) {
-            return EvaluationResult.success();
+            return Result.success();
         } else {
-            return EvaluationResult.failure("Value is [%s] but should be [%s]".formatted(nodeType.getName(), types));
+            return Result.failure("Value is [%s] but should be [%s]".formatted(nodeType.getName(), types));
         }
     }
 }
@@ -41,8 +41,8 @@ class ConstEvaluator implements Evaluator {
     }
 
     @Override
-    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
-        return constNode.isEqualTo(node) ? EvaluationResult.success() : EvaluationResult.failure("Expected " + constNode.toPrintableString());
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
+        return constNode.isEqualTo(node) ? Result.success() : Result.failure("Expected " + constNode.toPrintableString());
     }
 }
 
@@ -57,11 +57,11 @@ class EnumEvaluator implements Evaluator {
     }
 
     @Override
-    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (enumNodes.stream().anyMatch(node::isEqualTo)) {
-            return EvaluationResult.success();
+            return Result.success();
         } else {
-            return EvaluationResult.failure("Expected any of [%s]".formatted(enumNodes.stream().map(JsonNode::toPrintableString).toList()));
+            return Result.failure("Expected any of [%s]".formatted(enumNodes.stream().map(JsonNode::toPrintableString).toList()));
         }
     }
 }
@@ -77,15 +77,15 @@ class MultipleOfEvaluator implements Evaluator {
     }
 
     @Override
-    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isNumber()) {
-            return EvaluationResult.success();
+            return Result.success();
         }
 
         if (node.asNumber().remainder(factor).doubleValue() == 0.0) {
-            return EvaluationResult.success();
+            return Result.success();
         } else {
-            return EvaluationResult.failure("%s is not multiple of %s".formatted(node.asNumber(), factor));
+            return Result.failure("%s is not multiple of %s".formatted(node.asNumber(), factor));
         }
     }
 }
@@ -101,15 +101,15 @@ class MaximumEvaluator implements Evaluator {
     }
 
     @Override
-    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isNumber()) {
-            return EvaluationResult.success();
+            return Result.success();
         }
 
         if (node.asNumber().compareTo(max) <= 0) {
-            return EvaluationResult.success();
+            return Result.success();
         } else {
-            return EvaluationResult.failure("%s is greater than %s".formatted(node.asNumber(), max));
+            return Result.failure("%s is greater than %s".formatted(node.asNumber(), max));
         }
     }
 }
@@ -125,15 +125,15 @@ class ExclusiveMaximumEvaluator implements Evaluator {
     }
 
     @Override
-    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isNumber()) {
-            return EvaluationResult.success();
+            return Result.success();
         }
 
         if (node.asNumber().compareTo(max) < 0) {
-            return EvaluationResult.success();
+            return Result.success();
         } else {
-            return EvaluationResult.failure("%s is greater or equal to %s".formatted(node.asNumber(), max));
+            return Result.failure("%s is greater or equal to %s".formatted(node.asNumber(), max));
         }
     }
 }
@@ -149,15 +149,15 @@ class MinimumEvaluator implements Evaluator {
     }
 
     @Override
-    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isNumber()) {
-            return EvaluationResult.success();
+            return Result.success();
         }
 
         if (node.asNumber().compareTo(min) >= 0) {
-            return EvaluationResult.success();
+            return Result.success();
         } else {
-            return EvaluationResult.failure("%s is lesser than %s".formatted(node.asNumber(), min));
+            return Result.failure("%s is lesser than %s".formatted(node.asNumber(), min));
         }
     }
 }
@@ -173,15 +173,15 @@ class ExclusiveMinimumEvaluator implements Evaluator {
     }
 
     @Override
-    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isNumber()) {
-            return EvaluationResult.success();
+            return Result.success();
         }
 
         if (node.asNumber().compareTo(min) > 0) {
-            return EvaluationResult.success();
+            return Result.success();
         } else {
-            return EvaluationResult.failure("%s is lesser or equal to %s".formatted(node.asNumber(), min));
+            return Result.failure("%s is lesser or equal to %s".formatted(node.asNumber(), min));
         }
     }
 }
@@ -197,16 +197,16 @@ class MaxLengthEvaluator implements Evaluator {
     }
 
     @Override
-    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isString()) {
-            return EvaluationResult.success();
+            return Result.success();
         }
 
         String string = node.asString();
         if (string.codePointCount(0, string.length()) <= maxLength) {
-            return EvaluationResult.success();
+            return Result.success();
         } else {
-            return EvaluationResult.failure("\"%s\" is longer than %d characters".formatted(string, maxLength));
+            return Result.failure("\"%s\" is longer than %d characters".formatted(string, maxLength));
         }
     }
 }
@@ -222,16 +222,16 @@ class MinLengthEvaluator implements Evaluator {
     }
 
     @Override
-    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isString()) {
-            return EvaluationResult.success();
+            return Result.success();
         }
 
         String string = node.asString();
         if (string.codePointCount(0, string.length()) >= minLength) {
-            return EvaluationResult.success();
+            return Result.success();
         } else {
-            return EvaluationResult.failure("\"%s\" is shorter than %d characters".formatted(string, minLength));
+            return Result.failure("\"%s\" is shorter than %d characters".formatted(string, minLength));
         }
     }
 }
@@ -247,15 +247,15 @@ class PatternEvaluator implements Evaluator {
     }
 
     @Override
-    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isString()) {
-            return EvaluationResult.success();
+            return Result.success();
         }
 
         if (pattern.matcher(node.asString()).find()) {
-            return EvaluationResult.success();
+            return Result.success();
         } else {
-            return EvaluationResult.failure("\"%s\" does not match regular expression [%s]".formatted(node.asString(), pattern.toString()));
+            return Result.failure("\"%s\" does not match regular expression [%s]".formatted(node.asString(), pattern.toString()));
         }
     }
 }
@@ -271,15 +271,15 @@ class MaxItemsEvaluator implements Evaluator {
     }
 
     @Override
-    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isArray()) {
-            return EvaluationResult.success();
+            return Result.success();
         }
 
         if (node.asArray().size() <= maxItems) {
-            return EvaluationResult.success();
+            return Result.success();
         } else {
-            return EvaluationResult.failure("Array has more than %d items".formatted(maxItems));
+            return Result.failure("Array has more than %d items".formatted(maxItems));
         }
     }
 }
@@ -295,15 +295,15 @@ class MinItemsEvaluator implements Evaluator {
     }
 
     @Override
-    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isArray()) {
-            return EvaluationResult.success();
+            return Result.success();
         }
 
         if (node.asArray().size() >= minItems) {
-            return EvaluationResult.success();
+            return Result.success();
         } else {
-            return EvaluationResult.failure("Array has less than %d items".formatted(minItems));
+            return Result.failure("Array has less than %d items".formatted(minItems));
         }
     }
 }
@@ -319,9 +319,9 @@ class UniqueItemsEvaluator implements Evaluator {
     }
 
     @Override
-    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isArray() || !unique) {
-            return EvaluationResult.success();
+            return Result.success();
         }
 
         List<JsonNode> parsed = new ArrayList<>();
@@ -329,11 +329,11 @@ class UniqueItemsEvaluator implements Evaluator {
         for (int i = 0; i < jsonNodes.size(); i++) {
             JsonNode element = jsonNodes.get(i);
             if (parsed.stream().anyMatch(element::isEqualTo)) {
-                return EvaluationResult.failure("Array contains non-unique item at index [%d]".formatted(i));
+                return Result.failure("Array contains non-unique item at index [%d]".formatted(i));
             }
             parsed.add(element);
         }
-        return EvaluationResult.success();
+        return Result.success();
     }
 }
 
@@ -352,18 +352,18 @@ class MaxContainsEvaluator implements Evaluator {
     }
 
     @Override
-    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isArray() || containsPath == null) {
-            return EvaluationResult.success();
+            return Result.success();
         }
 
         long count = ctx.getAnnotations().stream()
                 .filter(a -> a.header().schemaLocation().equals(containsPath))
                 .count();
         if (count <= max) {
-            return EvaluationResult.success();
+            return Result.success();
         } else {
-            return EvaluationResult.failure("Array contains more than %d matching items".formatted(max));
+            return Result.failure("Array contains more than %d matching items".formatted(max));
         }
     }
 
@@ -388,18 +388,18 @@ class MinContainsEvaluator implements Evaluator {
     }
 
     @Override
-    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isArray() || containsPath == null) {
-            return EvaluationResult.success();
+            return Result.success();
         }
 
         long count = ctx.getAnnotations().stream()
                 .filter(a -> a.header().schemaLocation().equals(containsPath))
                 .count();
         if (count >= min) {
-            return EvaluationResult.success();
+            return Result.success();
         } else {
-            return EvaluationResult.failure("Array contains less than %d matching items".formatted(min));
+            return Result.failure("Array contains less than %d matching items".formatted(min));
         }
     }
 
@@ -420,15 +420,15 @@ class MaxPropertiesEvaluator implements Evaluator {
     }
 
     @Override
-    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isObject()) {
-            return EvaluationResult.success();
+            return Result.success();
         }
 
         if (node.asObject().size() <= max) {
-            return EvaluationResult.success();
+            return Result.success();
         } else {
-            return EvaluationResult.failure("Object has more than %d properties".formatted(max));
+            return Result.failure("Object has more than %d properties".formatted(max));
         }
     }
 }
@@ -444,15 +444,15 @@ class MinPropertiesEvaluator implements Evaluator {
     }
 
     @Override
-    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isObject()) {
-            return EvaluationResult.success();
+            return Result.success();
         }
 
         if (node.asObject().size() >= min) {
-            return EvaluationResult.success();
+            return Result.success();
         } else {
-            return EvaluationResult.failure("Object has less than %d properties".formatted(min));
+            return Result.failure("Object has less than %d properties".formatted(min));
         }
     }
 }
@@ -468,18 +468,18 @@ class RequiredEvaluator implements Evaluator {
     }
 
     @Override
-    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isObject()) {
-            return EvaluationResult.success();
+            return Result.success();
         }
 
         Set<String> keys = node.asObject().keySet();
         if (keys.containsAll(requiredProperties)) {
-            return EvaluationResult.success();
+            return Result.success();
         } else {
             HashSet<String> unsatisfied = new HashSet<>(requiredProperties);
             unsatisfied.removeAll(keys);
-            return EvaluationResult.failure("Object does not have some of the required properties [%s]".formatted(unsatisfied));
+            return Result.failure("Object does not have some of the required properties [%s]".formatted(unsatisfied));
         }
     }
 }
@@ -497,9 +497,9 @@ class DependentRequiredEvaluator implements Evaluator {
     }
 
     @Override
-    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isObject()) {
-            return EvaluationResult.success();
+            return Result.success();
         }
 
         Set<String> objectKeys = node.asObject().keySet();
@@ -510,10 +510,10 @@ class DependentRequiredEvaluator implements Evaluator {
                 .flatMap(List::stream)
                 .collect(Collectors.toSet());
         if (objectKeys.containsAll(requiredSet)) {
-            return EvaluationResult.success();
+            return Result.success();
         } else {
             requiredSet.removeAll(objectKeys);
-            return EvaluationResult.failure("Object does not have some of the required properties [%s]".formatted(requiredSet));
+            return Result.failure("Object does not have some of the required properties [%s]".formatted(requiredSet));
         }
     }
 

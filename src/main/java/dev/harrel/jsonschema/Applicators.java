@@ -417,12 +417,12 @@ class RefEvaluator implements Evaluator {
     }
 
     @Override
-    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
         Optional<Schema> schema = ctx.resolveSchema(ref);
         if (schema.isEmpty()) {
-            return EvaluationResult.failure("Resolution of $ref [%s] failed".formatted(ref));
+            return Result.failure("Resolution of $ref [%s] failed".formatted(ref));
         } else {
-            return schema.get().validate(ctx, node) ? EvaluationResult.success() : EvaluationResult.failure();
+            return schema.get().validate(ctx, node) ? Result.success() : Result.failure();
         }
     }
 }
@@ -438,12 +438,12 @@ class DynamicRefEvaluator implements Evaluator {
     }
 
     @Override
-    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode node) {
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
         Optional<Schema> schema = ctx.resolveDynamicSchema(ref);
         if (schema.isEmpty()) {
-            return EvaluationResult.failure("Resolution of $ref [%s] failed".formatted(ref));
+            return Result.failure("Resolution of $ref [%s] failed".formatted(ref));
         } else {
-            return schema.get().validate(ctx, node) ? EvaluationResult.success() : EvaluationResult.failure();
+            return schema.get().validate(ctx, node) ? Result.success() : Result.failure();
         }
     }
 }

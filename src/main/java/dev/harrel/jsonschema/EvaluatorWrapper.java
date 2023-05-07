@@ -18,7 +18,7 @@ final class EvaluatorWrapper implements Evaluator {
     }
 
     @Override
-    public EvaluationResult evaluate(EvaluationContext ctx, JsonNode instanceNode) {
+    public Result evaluate(EvaluationContext ctx, JsonNode instanceNode) {
         return evaluator.evaluate(ctx, instanceNode);
     }
 

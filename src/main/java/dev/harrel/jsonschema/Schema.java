@@ -3,10 +3,12 @@ package dev.harrel.jsonschema;
 import java.net.URI;
 import java.util.*;
 
+import static dev.harrel.jsonschema.Evaluator.*;
+
 final class Schema {
 
-    private static final Evaluator TRUE_EVALUATOR = (ctx, node) -> EvaluationResult.success();
-    private static final Evaluator FALSE_EVALUATOR = (ctx, node) -> EvaluationResult.failure("False schema always fails.");
+    private static final Evaluator TRUE_EVALUATOR = (ctx, node) -> Result.success();
+    private static final Evaluator FALSE_EVALUATOR = (ctx, node) -> Result.failure("False schema always fails.");
 
     private final URI parentUri;
     private final String schemaLocation;
@@ -34,7 +36,7 @@ final class Schema {
         int annotationsBefore = ctx.getAnnotations().size();
         boolean valid = true;
         for (EvaluatorWrapper evaluator : evaluators) {
-            EvaluationResult result = evaluator.evaluate(ctx, node);
+            Result result = evaluator.evaluate(ctx, node);
             Annotation annotation = new Annotation(
                     new AnnotationHeader(evaluator.getKeywordPath(), schemaLocation, node.getJsonPointer()),
                     evaluator.getKeyword(), result.getErrorMessage(), result.isValid());
