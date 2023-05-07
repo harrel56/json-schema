@@ -1,5 +1,8 @@
 package dev.harrel.jsonschema;
 
+/**
+ * {@code Keyword} class exposes keyword names in form of static final fields.
+ */
 public final class Keyword {
 
     private Keyword() {}

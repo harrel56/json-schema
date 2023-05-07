@@ -1,10 +1,7 @@
 package dev.harrel.jsonschema;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 final class Schema {
 
@@ -20,7 +17,7 @@ final class Schema {
         this.schemaLocation = Objects.requireNonNull(schemaLocation);
         Objects.requireNonNull(evaluators);
         List<EvaluatorWrapper> unsortedEvaluators = new ArrayList<>(evaluators);
-        Collections.sort(unsortedEvaluators);
+        unsortedEvaluators.sort(Comparator.comparingInt(Evaluator::getOrder));
         this.evaluators = Collections.unmodifiableList(unsortedEvaluators);
     }
 
