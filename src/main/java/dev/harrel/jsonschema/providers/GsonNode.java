@@ -17,9 +17,9 @@ public final class GsonNode implements JsonNode {
     private final SimpleType nodeType;
 
     private GsonNode(JsonElement node, String jsonPointer) {
-        this.node = node;
-        this.jsonPointer = jsonPointer;
-        this.nodeType = computeNodeType();
+        this.node = Objects.requireNonNull(node);
+        this.jsonPointer = Objects.requireNonNull(jsonPointer);
+        this.nodeType = computeNodeType(this.node);
     }
 
     public GsonNode(JsonElement node) {
@@ -95,7 +95,7 @@ public final class GsonNode implements JsonNode {
         }
     }
 
-    public SimpleType computeNodeType() {
+    private static SimpleType computeNodeType(JsonElement node) {
         if (node.isJsonNull()) {
             return SimpleType.NULL;
         } else if (node.isJsonArray()) {

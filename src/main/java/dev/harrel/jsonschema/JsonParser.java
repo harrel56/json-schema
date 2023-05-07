@@ -5,25 +5,18 @@ import java.util.*;
 
 final class JsonParser {
     private final String defaultMetaSchemaUri;
-    private final JsonNodeFactory jsonNodeFactory;
     private final EvaluatorFactory evaluatorFactory;
     private final SchemaRegistry schemaRegistry;
     private final MetaSchemaValidator metaSchemaValidator;
 
     JsonParser(String defaultMetaSchemaUri,
-               JsonNodeFactory jsonNodeFactory,
                EvaluatorFactory evaluatorFactory,
                SchemaRegistry schemaRegistry,
                MetaSchemaValidator metaSchemaValidator) {
         this.defaultMetaSchemaUri = defaultMetaSchemaUri;
-        this.jsonNodeFactory = Objects.requireNonNull(jsonNodeFactory);
         this.evaluatorFactory = Objects.requireNonNull(evaluatorFactory);
         this.schemaRegistry = Objects.requireNonNull(schemaRegistry);
         this.metaSchemaValidator = Objects.requireNonNull(metaSchemaValidator);
-    }
-
-    void parseRootSchema(String baseUri, String rawJson) {
-        parseRootSchema(URI.create(baseUri), jsonNodeFactory.create(rawJson));
     }
 
     URI parseRootSchema(URI baseUri, JsonNode node) {

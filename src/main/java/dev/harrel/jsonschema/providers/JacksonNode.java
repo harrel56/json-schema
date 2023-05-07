@@ -10,10 +10,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public final class JacksonNode implements JsonNode {
 
@@ -30,8 +27,8 @@ public final class JacksonNode implements JsonNode {
     private final String jsonPointer;
 
     private JacksonNode(com.fasterxml.jackson.databind.JsonNode node, String jsonPointer) {
-        this.node = node;
-        this.jsonPointer = jsonPointer;
+        this.node = Objects.requireNonNull(node);
+        this.jsonPointer = Objects.requireNonNull(jsonPointer);
     }
 
     public JacksonNode(com.fasterxml.jackson.databind.JsonNode node) {

@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.*;
 
 public final class EvaluationContext {
+    private final JsonNodeFactory jsonNodeFactory;
     private final JsonParser jsonParser;
     private final SchemaRegistry schemaRegistry;
     private final SchemaResolver schemaResolver;
@@ -11,7 +12,11 @@ public final class EvaluationContext {
     private final List<Annotation> annotations;
     private final List<Annotation> validationAnnotations;
 
-    EvaluationContext(JsonParser jsonParser, SchemaRegistry schemaRegistry, SchemaResolver schemaResolver) {
+    EvaluationContext(JsonNodeFactory jsonNodeFactory,
+                      JsonParser jsonParser,
+                      SchemaRegistry schemaRegistry,
+                      SchemaResolver schemaResolver) {
+        this.jsonNodeFactory = Objects.requireNonNull(jsonNodeFactory);
         this.jsonParser = Objects.requireNonNull(jsonParser);
         this.schemaRegistry = Objects.requireNonNull(schemaRegistry);
         this.schemaResolver = Objects.requireNonNull(schemaResolver);
@@ -87,15 +92,15 @@ public final class EvaluationContext {
         if (schemaRegistry.get(baseUri) != null) {
             return Optional.empty();
         }
-        Optional<String> rawJson = schemaResolver.resolve(baseUri);
-        if (rawJson.isPresent()) {
-            try {
-                jsonParser.parseRootSchema(baseUri, rawJson.get());
-                return resolveSchema(uri);
-            } catch (Exception e) {
-                return Optional.empty();
-            }
-        }
-        return Optional.empty();
+        return schemaResolver.resolve(baseUri)
+                .toJsonNode(jsonNodeFactory)
+                .flatMap(node -> {
+                    try {
+                        jsonParser.parseRootSchema(URI.create(baseUri), node);
+                        return resolveSchema(uri);
+                    } catch (Exception e) {
+                        return Optional.empty();
+                    }
+                });
     }
 }

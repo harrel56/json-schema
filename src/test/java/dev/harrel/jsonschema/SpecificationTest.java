@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.util.Map;
-import java.util.Optional;
 import java.util.logging.Logger;
 
 @SuppressWarnings("unused")
@@ -282,7 +281,7 @@ public abstract class SpecificationTest {
                 Map.entry("http://localhost:1234/draft2020-12/nested/foo-ref-string.json", readResource("/schemas/nested/foo-ref-string.json")),
                 Map.entry("http://localhost:1234/draft2020-12/nested/string.json", readResource("/schemas/nested/string.json"))
         );
-        resolver = uri -> Optional.ofNullable(schemaMap.get(uri));
+        resolver = uri -> SchemaResolver.Result.fromString(schemaMap.get(uri));
     }
 
     static String readResource(String resource) {

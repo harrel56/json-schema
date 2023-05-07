@@ -14,8 +14,8 @@ public final class Validator {
         this.jsonNodeFactory = Objects.requireNonNull(jsonNodeFactory);
         this.schemaResolver = Objects.requireNonNull(schemaResolver);
         this.schemaRegistry = new SchemaRegistry();
-        MetaSchemaValidator metaSchemaValidator = new MetaSchemaValidator(this.schemaRegistry, this.schemaResolver);
-        this.jsonParser = new JsonParser(defaultMetaSchemaUri, this.jsonNodeFactory, evaluatorFactory, this.schemaRegistry, metaSchemaValidator);
+        MetaSchemaValidator metaSchemaValidator = new MetaSchemaValidator(this.jsonNodeFactory, this.schemaRegistry, this.schemaResolver);
+        this.jsonParser = new JsonParser(defaultMetaSchemaUri, evaluatorFactory, this.schemaRegistry, metaSchemaValidator);
     }
 
     public URI registerSchema(String rawSchema) {
@@ -66,6 +66,6 @@ public final class Validator {
     }
 
     private EvaluationContext createNewEvaluationContext() {
-        return new EvaluationContext(jsonParser, schemaRegistry, schemaResolver);
+        return new EvaluationContext(jsonNodeFactory, jsonParser, schemaRegistry, schemaResolver);
     }
 }

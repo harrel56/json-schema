@@ -2,8 +2,6 @@ package dev.harrel.jsonschema;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public abstract class MetaSchemaTest {
@@ -19,11 +17,11 @@ public abstract class MetaSchemaTest {
 
     private final SchemaResolver resolver = uri -> {
         if ("custom".equals(uri)) {
-            return Optional.of(CUSTOM_META_SCHEMA);
+            return SchemaResolver.Result.fromString(CUSTOM_META_SCHEMA);
         } else if ("invalid".equals(uri)) {
-            return Optional.of(INVALID_META_SCHEMA);
+            return SchemaResolver.Result.fromString(INVALID_META_SCHEMA);
         } else {
-            return Optional.empty();
+            return SchemaResolver.Result.empty();
         }
     };
 
