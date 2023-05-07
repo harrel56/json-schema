@@ -45,7 +45,7 @@ class JacksonTest {
     }
 
     @Nested
-    class CoreEvaluatorFactoryTest extends dev.harrel.jsonschema.CoreEvaluatorFactoryTest {
+    class Draft2020EvaluatorFactoryTest extends dev.harrel.jsonschema.Draft2020EvaluatorFactoryTest {
         @BeforeAll
         static void beforeAll() {
             nodeFactory = new JacksonNode.Factory();

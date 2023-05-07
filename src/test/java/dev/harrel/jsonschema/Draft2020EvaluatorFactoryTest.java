@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 import static dev.harrel.jsonschema.SimpleType.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public abstract class CoreEvaluatorFactoryTest {
+public abstract class Draft2020EvaluatorFactoryTest {
 
     protected static JsonNodeFactory nodeFactory;
     private static final Map<SimpleType, String> TYPE_MAP = Map.of(
@@ -28,7 +28,7 @@ public abstract class CoreEvaluatorFactoryTest {
     @ParameterizedTest
     @MethodSource("getKeywords")
     void shouldCreateEvaluatorOnlyForSupportedTypes(String keyword, Set<SimpleType> supportedTypes) {
-        CoreEvaluatorFactory evaluatorFactory = new CoreEvaluatorFactory();
+        Draft2020EvaluatorFactory evaluatorFactory = new Draft2020EvaluatorFactory();
         SchemaParsingContext ctx = new SchemaParsingContext(new SchemaRegistry(), "CoreEvaluatorFactoryTest");
 
         for (var entry : TYPE_MAP.entrySet()) {

@@ -1,6 +1,9 @@
 package dev.harrel.jsonschema;
 
-public class JsonSchemaException extends RuntimeException {
+/**
+ * Base exception class for {@link dev.harrel.jsonschema}
+ */
+public abstract class JsonSchemaException extends RuntimeException {
     JsonSchemaException(String message, Throwable cause) {
         super(message, cause);
     }

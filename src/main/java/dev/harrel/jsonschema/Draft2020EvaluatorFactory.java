@@ -3,11 +3,11 @@ package dev.harrel.jsonschema;
 import java.util.*;
 import java.util.function.BiFunction;
 
-public class CoreEvaluatorFactory implements EvaluatorFactory {
+public class Draft2020EvaluatorFactory implements EvaluatorFactory {
 
-    private final Map<String, BiFunction<SchemaParsingContext, JsonNode, Evaluator>> evaluatorsMap;
+    protected final Map<String, BiFunction<SchemaParsingContext, JsonNode, Evaluator>> evaluatorsMap;
 
-    public CoreEvaluatorFactory() {
+    public Draft2020EvaluatorFactory() {
         Map<String, BiFunction<SchemaParsingContext, JsonNode, Evaluator>> map = new HashMap<>();
         map.put(Keyword.TYPE, (ctx, node) -> new TypeEvaluator(node));
         map.put(Keyword.CONST, (ctx, node) -> new ConstEvaluator(node));

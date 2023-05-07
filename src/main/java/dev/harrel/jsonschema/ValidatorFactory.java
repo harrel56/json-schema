@@ -12,7 +12,7 @@ import java.util.Objects;
 public final class ValidatorFactory {
     private static final String DEFAULT_META_SCHEMA = "https://json-schema.org/draft/2020-12/schema";
 
-    private EvaluatorFactory evaluatorFactory = new CoreEvaluatorFactory();
+    private EvaluatorFactory evaluatorFactory = new Draft2020EvaluatorFactory();
     private JsonNodeFactory jsonNodeFactory = new JacksonNode.Factory();
     private SchemaResolver schemaResolver = new DefaultMetaSchemaResolver();
     private String defaultMetaSchemaUri = DEFAULT_META_SCHEMA;
