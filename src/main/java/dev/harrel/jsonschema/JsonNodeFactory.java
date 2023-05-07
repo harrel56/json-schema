@@ -17,7 +17,7 @@ public interface JsonNodeFactory {
      * Creates {@link JsonNode} from raw JSON string.
      * @param rawJson JSON in string form
      * @return created node
-     * @throws RuntimeException when creation fails for any reasons (e.g. provided string was not a valid JSON)
+     * @throws RuntimeException when creation fails for any reasons (e.g. provided string is not a valid JSON)
      */
     JsonNode create(String rawJson);
 }
