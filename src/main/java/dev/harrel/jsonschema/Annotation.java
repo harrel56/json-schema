@@ -5,4 +5,4 @@ public record Annotation(String evaluationPath,
                          String instanceLocation,
                          String keyword,
                          String message,
-                         boolean successful) {}
+                         boolean valid) {}

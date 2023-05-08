@@ -93,7 +93,7 @@ public final class Validator {
             return annotations;
         }
 
-        public List<Annotation> getValidationAnnotations() {
+        List<Annotation> getValidationAnnotations() {
             return validationAnnotations;
         }
 
@@ -102,7 +102,7 @@ public final class Validator {
                 return List.of();
             } else {
                 return validationAnnotations.stream()
-                        .filter(a -> !a.successful())
+                        .filter(a -> !a.valid())
                         .filter(a -> a.message() != null)
                         .toList();
             }

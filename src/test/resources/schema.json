@@ -1,6 +1,6 @@
 {
   "unevaluatedItems" : {
-    "type" : "object"
+    "type" : "boolean"
   },
   "anyOf" : [ {
     "items" : {

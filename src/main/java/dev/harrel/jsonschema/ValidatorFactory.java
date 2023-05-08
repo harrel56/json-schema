@@ -8,17 +8,18 @@ import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 public final class ValidatorFactory {
     private static final String DEFAULT_META_SCHEMA = "https://json-schema.org/draft/2020-12/schema";
 
     private EvaluatorFactory evaluatorFactory = new Draft2020EvaluatorFactory();
-    private JsonNodeFactory jsonNodeFactory = new JacksonNode.Factory();
+    private Supplier<JsonNodeFactory> jsonNodeFactory = JacksonNode.Factory::new;
     private SchemaResolver schemaResolver = new DefaultMetaSchemaResolver();
     private String defaultMetaSchemaUri = DEFAULT_META_SCHEMA;
 
     public Validator createValidator() {
-        return new Validator(evaluatorFactory, jsonNodeFactory, schemaResolver, defaultMetaSchemaUri);
+        return new Validator(evaluatorFactory, jsonNodeFactory.get(), schemaResolver, defaultMetaSchemaUri);
     }
 
     public ValidatorFactory withEvaluatorFactory(EvaluatorFactory evaluatorFactory) {
@@ -27,7 +28,8 @@ public final class ValidatorFactory {
     }
 
     public ValidatorFactory withJsonNodeFactory(JsonNodeFactory jsonNodeFactory) {
-        this.jsonNodeFactory = Objects.requireNonNull(jsonNodeFactory);
+        Objects.requireNonNull(jsonNodeFactory);
+        this.jsonNodeFactory = () -> jsonNodeFactory;
         return this;
     }
 
@@ -42,35 +44,35 @@ public final class ValidatorFactory {
     }
 
     public Validator.Result validate(String rawSchema, String rawInstance) {
-        return validate(jsonNodeFactory.create(rawSchema), jsonNodeFactory.create(rawInstance));
+        return validate(jsonNodeFactory.get().create(rawSchema), jsonNodeFactory.get().create(rawInstance));
     }
 
     public Validator.Result validate(Object schemaProviderNode, String rawInstance) {
-        return validate(jsonNodeFactory.wrap(schemaProviderNode), jsonNodeFactory.create(rawInstance));
+        return validate(jsonNodeFactory.get().wrap(schemaProviderNode), jsonNodeFactory.get().create(rawInstance));
     }
 
     public Validator.Result validate(JsonNode schemaNode, String rawInstance) {
-        return validate(schemaNode, jsonNodeFactory.create(rawInstance));
+        return validate(schemaNode, jsonNodeFactory.get().create(rawInstance));
     }
 
     public Validator.Result validate(String rawSchema, Object instanceProviderNode) {
-        return validate(jsonNodeFactory.create(rawSchema), jsonNodeFactory.wrap(instanceProviderNode));
+        return validate(jsonNodeFactory.get().create(rawSchema), jsonNodeFactory.get().wrap(instanceProviderNode));
     }
 
     public Validator.Result validate(Object schemaProviderNode, Object instanceProviderNode) {
-        return validate(jsonNodeFactory.wrap(schemaProviderNode), jsonNodeFactory.wrap(instanceProviderNode));
+        return validate(jsonNodeFactory.get().wrap(schemaProviderNode), jsonNodeFactory.get().wrap(instanceProviderNode));
     }
 
     public Validator.Result validate(JsonNode schemaNode, Object instanceProviderNode) {
-        return validate(schemaNode, jsonNodeFactory.wrap(instanceProviderNode));
+        return validate(schemaNode, jsonNodeFactory.get().wrap(instanceProviderNode));
     }
 
     public Validator.Result validate(String rawSchema, JsonNode instanceNode) {
-        return validate(jsonNodeFactory.create(rawSchema), instanceNode);
+        return validate(jsonNodeFactory.get().create(rawSchema), instanceNode);
     }
 
     public Validator.Result validate(Object schemaProviderNode, JsonNode instanceNode) {
-        return validate(jsonNodeFactory.wrap(schemaProviderNode), instanceNode);
+        return validate(jsonNodeFactory.get().wrap(schemaProviderNode), instanceNode);
     }
 
     public Validator.Result validate(JsonNode schemaNode, JsonNode instanceNode) {

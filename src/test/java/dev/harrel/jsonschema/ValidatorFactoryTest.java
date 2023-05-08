@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static dev.harrel.jsonschema.TestUtil.readResource;
-import static org.junit.jupiter.api.Assertions.*;
 
 class ValidatorFactoryTest {
 
