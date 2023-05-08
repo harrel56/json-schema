@@ -96,5 +96,16 @@ public final class Validator {
         public List<Annotation> getValidationAnnotations() {
             return validationAnnotations;
         }
+
+        public List<Annotation> getErrors() {
+            if (isValid()) {
+                return List.of();
+            } else {
+                return validationAnnotations.stream()
+                        .filter(a -> !a.successful())
+                        .filter(a -> a.message() != null)
+                        .toList();
+            }
+        }
     }
 }

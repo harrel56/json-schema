@@ -12,6 +12,8 @@ import java.net.URI;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import static dev.harrel.jsonschema.TestUtil.readResource;
+
 @SuppressWarnings("unused")
 public abstract class SpecificationTest {
     static final Logger logger = Logger.getLogger("SpecificationTest");
@@ -282,14 +284,6 @@ public abstract class SpecificationTest {
                 Map.entry("http://localhost:1234/draft2020-12/nested/string.json", readResource("/schemas/nested/string.json"))
         );
         resolver = uri -> SchemaResolver.Result.fromString(schemaMap.get(uri));
-    }
-
-    static String readResource(String resource) {
-        try {
-            return new String(SpecificationTest.class.getResourceAsStream(resource).readAllBytes());
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
     }
 
     private void testValidation(String bundle, String name, JsonNode schema, JsonNode instance, boolean valid) {

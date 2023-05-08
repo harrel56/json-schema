@@ -47,7 +47,7 @@ public final class Schema {
         for (EvaluatorWrapper evaluator : evaluators) {
             Result result = evaluator.evaluate(ctx, node);
             Annotation annotation = new Annotation(
-                    new AnnotationHeader(evaluator.getKeywordPath(), schemaLocation, node.getJsonPointer()),
+                    evaluator.getKeywordPath(), schemaLocation, node.getJsonPointer(),
                     evaluator.getKeyword(), result.getErrorMessage(), result.isValid());
             ctx.addValidationAnnotation(annotation);
             ctx.addAnnotation(annotation);

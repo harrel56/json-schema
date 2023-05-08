@@ -1,11 +1,10 @@
 {
-  "properties": {
-    "x": {
-      "type": "string",
-      "maxLength": 2
-    }
+  "unevaluatedItems" : {
+    "type" : "object"
   },
-  "additionalProperties": {
-    "$ref": "#"
-  }
+  "anyOf" : [ {
+    "items" : {
+      "type" : "string"
+    }
+  }, true ]
 }

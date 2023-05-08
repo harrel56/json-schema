@@ -28,7 +28,8 @@ class TypeEvaluator implements Evaluator {
         if (types.contains(nodeType) || nodeType == SimpleType.INTEGER && types.contains(SimpleType.NUMBER)) {
             return Result.success();
         } else {
-            return Result.failure("Value is [%s] but should be [%s]".formatted(nodeType.getName(), types));
+            List<String> typeNames = types.stream().map(SimpleType::getName).toList();
+            return Result.failure("Value is [%s] but should be %s".formatted(nodeType.getName(), typeNames));
         }
     }
 }
@@ -358,7 +359,7 @@ class MaxContainsEvaluator implements Evaluator {
         }
 
         long count = ctx.getAnnotations().stream()
-                .filter(a -> a.header().schemaLocation().equals(containsPath))
+                .filter(a -> a.schemaLocation().equals(containsPath))
                 .count();
         if (count <= max) {
             return Result.success();
@@ -394,7 +395,7 @@ class MinContainsEvaluator implements Evaluator {
         }
 
         long count = ctx.getAnnotations().stream()
-                .filter(a -> a.header().schemaLocation().equals(containsPath))
+                .filter(a -> a.schemaLocation().equals(containsPath))
                 .count();
         if (count >= min) {
             return Result.success();
