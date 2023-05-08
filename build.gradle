@@ -12,6 +12,7 @@ targetCompatibility JavaVersion.VERSION_17
 java {
     withSourcesJar()
     withJavadocJar()
+    javadoc.options.addStringOption('Xdoclint:none', '-quiet')
     registerFeature('jackson') {
         usingSourceSet(sourceSets.main)
     }
