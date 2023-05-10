@@ -25,9 +25,15 @@ repositories {
     mavenCentral()
 }
 
+def JACKSON_VERSION = '2.14.1'
+def GSON_VERSION = '2.10.1'
+
+setupProviderTest('jackson', "com.fasterxml.jackson.core:jackson-databind:$JACKSON_VERSION")
+setupProviderTest('gson', "com.google.code.gson:gson:$GSON_VERSION")
+
 dependencies {
-    jacksonImplementation 'com.fasterxml.jackson.core:jackson-databind:2.14.1'
-    gsonImplementation 'com.google.code.gson:gson:2.10.1'
+    jacksonImplementation "com.fasterxml.jackson.core:jackson-databind:$JACKSON_VERSION"
+    gsonImplementation "com.google.code.gson:gson:$GSON_VERSION"
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
@@ -103,4 +109,25 @@ signing {
         useInMemoryPgpKeys(decodedKey, findProperty('signingPassword'))
     }
     sign publishing.publications.sonatype
+}
+
+def setupProviderTest(String provider, String dependency) {
+    def taskName = "${provider}Test"
+    def configName = "${taskName}Implementation"
+    sourceSets.create(taskName) {
+        java {
+            srcDir file("src/provider-test/$provider")
+            compileClasspath += sourceSets.main.output
+            runtimeClasspath += sourceSets.main.output
+        }
+    }
+    configurations.getByName(configName).extendsFrom configurations.getByName('testImplementation')
+    dependencies.add(configName, dependency)
+    tasks.register(taskName, Test) {
+        useJUnitPlatform()
+        group = 'verification'
+        testClassesDirs = sourceSets.getByName(taskName).output.classesDirs
+        classpath = sourceSets.getByName(taskName).runtimeClasspath
+    }
+    tasks.check.dependsOn taskName
 }
