@@ -24,10 +24,10 @@ jobs:
           gradle-version: 8.0.2
 
       - name: Gradle build
-        run: ./gradlew build testClasses -x test
+        run: ./gradlew build testClasses -x check
 
-      - name: Gradle test
-        run: ./gradlew test
+      - name: Gradle check
+        run: ./gradlew check
 
       - name: Upload build
         uses: actions/upload-artifact@v3
