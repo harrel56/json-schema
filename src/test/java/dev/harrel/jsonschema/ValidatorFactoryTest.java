@@ -1,6 +1,5 @@
 package dev.harrel.jsonschema;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
