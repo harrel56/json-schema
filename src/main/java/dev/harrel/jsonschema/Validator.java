@@ -72,38 +72,36 @@ public final class Validator {
 
     public static final class Result {
         private final boolean valid;
-        private final List<Annotation> annotations;
-        private final List<Annotation> validationAnnotations;
+        private final List<EvaluationItem> evaluationItems;
+        private final List<EvaluationItem> validationItems;
 
-        Result(boolean valid, List<Annotation> annotations, List<Annotation> validationAnnotations) {
+        Result(boolean valid, List<EvaluationItem> evaluationItems, List<EvaluationItem> validationItems) {
             this.valid = valid;
-            this.annotations = Objects.requireNonNull(annotations);
-            this.validationAnnotations = Objects.requireNonNull(validationAnnotations);
+            this.evaluationItems = Objects.requireNonNull(evaluationItems);
+            this.validationItems = Objects.requireNonNull(validationItems);
         }
 
         static Result fromEvaluationContext(boolean valid, EvaluationContext ctx) {
-            return new Result(valid, List.copyOf(ctx.getAnnotations()), List.copyOf(ctx.getValidationAnnotations()));
+            return new Result(valid, List.copyOf(ctx.getEvaluationItems()), List.copyOf(ctx.getValidationItems()));
         }
 
         public boolean isValid() {
             return valid;
         }
 
-        public List<Annotation> getAnnotations() {
-            return annotations;
+        public List<EvaluationItem> getAnnotations() {
+            return evaluationItems.stream()
+                    .filter(a -> a.annotation() != null)
+                    .toList();
         }
 
-        List<Annotation> getValidationAnnotations() {
-            return validationAnnotations;
-        }
-
-        public List<Annotation> getErrors() {
+        public List<EvaluationItem> getErrors() {
             if (isValid()) {
                 return List.of();
             } else {
-                return validationAnnotations.stream()
+                return validationItems.stream()
                         .filter(a -> !a.valid())
-                        .filter(a -> a.message() != null)
+                        .filter(a -> a.error() != null)
                         .toList();
             }
         }

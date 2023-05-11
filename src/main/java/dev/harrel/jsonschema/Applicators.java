@@ -109,10 +109,10 @@ class AdditionalPropertiesEvaluator implements Applicator {
         String instanceLocation = node.getJsonPointer();
         String propertiesPath = parentPath + "/" + Keyword.PROPERTIES;
         String patternPropertiesPath = parentPath + "/" + Keyword.PATTERN_PROPERTIES;
-        Set<String> evaluatedInstances = ctx.getAnnotations().stream()
+        Set<String> evaluatedInstances = ctx.getEvaluationItems().stream()
                 .filter(a -> a.instanceLocation().startsWith(instanceLocation))
                 .filter(a -> a.evaluationPath().startsWith(propertiesPath) || a.evaluationPath().startsWith(patternPropertiesPath))
-                .map(Annotation::instanceLocation)
+                .map(EvaluationItem::instanceLocation)
                 .collect(Collectors.toSet());
         Schema schema = ctx.resolveRequiredSchema(schemaRef);
         return node.asObject()
@@ -355,12 +355,12 @@ class UnevaluatedItemsEvaluator implements Applicator {
         }
 
         Schema schema = ctx.resolveRequiredSchema(schemaRef);
-        List<Annotation> annotations = ctx.getAnnotations().stream()
+        List<EvaluationItem> evaluationItems = ctx.getEvaluationItems().stream()
                 .filter(a -> a.evaluationPath().startsWith(parentPath))
                 .toList();
         return node.asArray()
                 .stream()
-                .filter(arrayNode -> annotations.stream().noneMatch(a -> a.instanceLocation().startsWith(arrayNode.getJsonPointer())))
+                .filter(arrayNode -> evaluationItems.stream().noneMatch(a -> a.instanceLocation().startsWith(arrayNode.getJsonPointer())))
                 .allMatch(arrayNode -> schema.validate(ctx, arrayNode));
     }
 
@@ -390,13 +390,13 @@ class UnevaluatedPropertiesEvaluator implements Applicator {
         }
 
         Schema schema = ctx.resolveRequiredSchema(schemaRef);
-        List<Annotation> annotations = ctx.getAnnotations().stream()
+        List<EvaluationItem> evaluationItems = ctx.getEvaluationItems().stream()
                 .filter(a -> a.evaluationPath().startsWith(parentPath))
                 .toList();
         return node.asObject()
                 .values()
                 .stream()
-                .filter(propertyNode -> annotations.stream().noneMatch(a -> a.instanceLocation().startsWith(propertyNode.getJsonPointer())))
+                .filter(propertyNode -> evaluationItems.stream().noneMatch(a -> a.instanceLocation().startsWith(propertyNode.getJsonPointer())))
                 .allMatch(propertyNode -> schema.validate(ctx, propertyNode));
     }
 

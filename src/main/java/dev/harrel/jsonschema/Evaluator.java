@@ -29,15 +29,17 @@ public interface Evaluator {
      * {@code Result} class represents evaluation outcome.
      */
     final class Result {
-        private static final Result SUCCESSFUL_RESULT = new Result(true, null);
-        private static final Result FAILED_RESULT = new Result(false, null);
+        private static final Result SUCCESSFUL_RESULT = new Result(true, null, null);
+        private static final Result FAILED_RESULT = new Result(false, null, null);
 
         private final boolean valid;
-        private final String errorMessage;
+        private final Object annotation;
+        private final String error;
 
-        private Result(boolean valid, String errorMessage) {
+        private Result(boolean valid, Object annotation, String error) {
             this.valid = valid;
-            this.errorMessage = errorMessage;
+            this.annotation = annotation;
+            this.error = error;
         }
 
         /**
@@ -46,6 +48,14 @@ public interface Evaluator {
          */
         public static Result success() {
             return SUCCESSFUL_RESULT;
+        }
+
+        /**
+         * Factory method for successful evaluation result with annotation.
+         * @return {@link Result}
+         */
+        public static Result success(Object annotation) {
+            return new Result(true, annotation, null);
         }
 
         /**
@@ -61,15 +71,19 @@ public interface Evaluator {
          * @return {@link Result}
          */
         public static Result failure(String message) {
-            return new Result(false, message);
+            return new Result(false, null, message);
         }
 
         boolean isValid() {
             return valid;
         }
 
-        String getErrorMessage() {
-            return errorMessage;
+        public Object getAnnotation() {
+            return annotation;
+        }
+
+        String getError() {
+            return error;
         }
     }
 }

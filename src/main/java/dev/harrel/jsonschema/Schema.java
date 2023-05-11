@@ -42,15 +42,14 @@ public final class Schema {
             ctx.pushDynamicScope(parentUri);
         }
 
-        int annotationsBefore = ctx.getAnnotations().size();
+        int annotationsBefore = ctx.getEvaluationItems().size();
         boolean valid = true;
         for (EvaluatorWrapper evaluator : evaluators) {
             Result result = evaluator.evaluate(ctx, node);
-            Annotation annotation = new Annotation(
+            EvaluationItem evaluationItem = new EvaluationItem(
                     evaluator.getKeywordPath(), schemaLocation, node.getJsonPointer(),
-                    evaluator.getKeyword(), result.getErrorMessage(), result.isValid());
-            ctx.addValidationAnnotation(annotation);
-            ctx.addAnnotation(annotation);
+                    evaluator.getKeyword(), result.isValid(), result.getAnnotation(), result.getError());
+            ctx.addEvaluationItem(evaluationItem);
             valid = valid && result.isValid();
         }
         if (!valid) {

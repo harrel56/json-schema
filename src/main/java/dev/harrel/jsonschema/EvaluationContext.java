@@ -14,8 +14,8 @@ public final class EvaluationContext {
     private final SchemaRegistry schemaRegistry;
     private final SchemaResolver schemaResolver;
     private final LinkedList<URI> dynamicScope;
-    private final List<Annotation> annotations;
-    private final List<Annotation> validationAnnotations;
+    private final List<EvaluationItem> evaluationItems;
+    private final List<EvaluationItem> validationItems;
 
     EvaluationContext(JsonNodeFactory jsonNodeFactory,
                       JsonParser jsonParser,
@@ -26,8 +26,8 @@ public final class EvaluationContext {
         this.schemaRegistry = Objects.requireNonNull(schemaRegistry);
         this.schemaResolver = Objects.requireNonNull(schemaResolver);
         this.dynamicScope = new LinkedList<>();
-        this.annotations = new ArrayList<>();
-        this.validationAnnotations = new ArrayList<>();
+        this.evaluationItems = new ArrayList<>();
+        this.validationItems = new ArrayList<>();
     }
 
     /**
@@ -35,16 +35,8 @@ public final class EvaluationContext {
      * Discarded annotations are not included.
      * @return unmodifiable list of annotations
      */
-    public List<Annotation> getAnnotations() {
-        return Collections.unmodifiableList(annotations);
-    }
-
-    /**
-     * Adds new annotation. It may get discarded by further processing.
-     * @param annotation new annotation
-     */
-    public void addAnnotation(Annotation annotation) {
-        this.annotations.add(annotation);
+    public List<EvaluationItem> getEvaluationItems() {
+        return Collections.unmodifiableList(evaluationItems);
     }
 
     /**
@@ -108,16 +100,17 @@ public final class EvaluationContext {
         dynamicScope.pop();
     }
 
-    List<Annotation> getValidationAnnotations() {
-        return Collections.unmodifiableList(validationAnnotations);
+    List<EvaluationItem> getValidationItems() {
+        return Collections.unmodifiableList(validationItems);
     }
 
-    void addValidationAnnotation(Annotation annotation) {
-        this.validationAnnotations.add(annotation);
+    void addEvaluationItem(EvaluationItem annotation) {
+        this.evaluationItems.add(annotation);
+        this.validationItems.add(annotation);
     }
 
     void truncateAnnotationsToSize(int size) {
-        annotations.subList(size, annotations.size()).clear();
+        evaluationItems.subList(size, evaluationItems.size()).clear();
     }
 
     private Optional<Schema> resolveExternalSchema(String uri) {

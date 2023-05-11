@@ -358,7 +358,7 @@ class MaxContainsEvaluator implements Evaluator {
             return Result.success();
         }
 
-        long count = ctx.getAnnotations().stream()
+        long count = ctx.getEvaluationItems().stream()
                 .filter(a -> a.schemaLocation().equals(containsPath))
                 .count();
         if (count <= max) {
@@ -394,7 +394,7 @@ class MinContainsEvaluator implements Evaluator {
             return Result.success();
         }
 
-        long count = ctx.getAnnotations().stream()
+        long count = ctx.getEvaluationItems().stream()
                 .filter(a -> a.schemaLocation().equals(containsPath))
                 .count();
         if (count >= min) {
