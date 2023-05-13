@@ -21,22 +21,20 @@ final class MetaSchemaValidator {
         if (metaSchemaUri == null || metaSchemaUri.equals(schemaUri)) {
             return;
         }
-        Schema schema = resolveMetaSchema(jsonParser, metaSchemaUri)
-                .orElseThrow(() -> new MetaSchemaResolvingException(RESOLVING_ERROR_MSG.formatted(metaSchemaUri)));
+        Schema schema = resolveMetaSchema(jsonParser, metaSchemaUri);
         EvaluationContext ctx = new EvaluationContext(jsonNodeFactory, jsonParser, schemaRegistry, schemaResolver);
         if (!ctx.validateAgainstSchema(schema, node)) {
             throw new InvalidSchemaException("Schema [%s] failed to validate against meta-schema [%s]".formatted(schemaUri, metaSchemaUri));
         }
     }
 
-    private Optional<Schema> resolveMetaSchema(JsonParser jsonParser, String uri) {
+    private Schema resolveMetaSchema(JsonParser jsonParser, String uri) {
         return Optional.ofNullable(schemaRegistry.get(uri))
                 .or(() -> Optional.ofNullable(schemaRegistry.getDynamic(uri)))
-                .or(() -> resolveExternalSchema(jsonParser, uri));
+                .orElseGet(() -> resolveExternalSchema(jsonParser, uri));
     }
 
-    // TODO doubled optional?
-    private Optional<Schema> resolveExternalSchema(JsonParser jsonParser, String uri) {
+    private Schema resolveExternalSchema(JsonParser jsonParser, String uri) {
         String baseUri = UriUtil.getUriWithoutFragment(uri);
         if (schemaRegistry.get(baseUri) != null) {
             throw new MetaSchemaResolvingException(RESOLVING_ERROR_MSG.formatted(uri));
