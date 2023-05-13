@@ -54,7 +54,7 @@ public final class Validator {
     public Result validate(URI schemaUri, JsonNode instanceNode) {
         Schema schema = getRootSchema(schemaUri.toString());
         EvaluationContext ctx = createNewEvaluationContext();
-        boolean valid = schema.validate(ctx, instanceNode);
+        boolean valid = ctx.validateAgainstSchema(schema, instanceNode);
         return Result.fromEvaluationContext(valid, ctx);
     }
 

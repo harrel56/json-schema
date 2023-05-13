@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Disabled;
 
 import java.net.URI;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 import static dev.harrel.jsonschema.TestUtil.readResource;
@@ -281,7 +282,9 @@ public abstract class SpecificationTest {
                 Map.entry("http://localhost:1234/draft2020-12/nested/foo-ref-string.json", readResource("/schemas/nested/foo-ref-string.json")),
                 Map.entry("http://localhost:1234/draft2020-12/nested/string.json", readResource("/schemas/nested/string.json"))
         );
-        resolver = uri -> SchemaResolver.Result.fromString(schemaMap.get(uri));
+        resolver = uri -> Optional.ofNullable(schemaMap.get(uri))
+                .map(SchemaResolver.Result::fromString)
+                .orElse(SchemaResolver.Result.empty());
     }
 
     private void testValidation(String bundle, String name, JsonNode schema, JsonNode instance, boolean valid) {

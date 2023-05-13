@@ -26,7 +26,7 @@ class PrefixItemsEvaluator implements Applicator {
 
         List<JsonNode> elements = node.asArray();
         return IntStream.range(0, elements.size()).limit(prefixRefs.size()).boxed()
-                .allMatch(idx -> ctx.resolveRequiredSchema(prefixRefs.get(idx)).validate(ctx, elements.get(idx)));
+                .allMatch(idx -> ctx.validateAgainstRequiredSchema(prefixRefs.get(idx), elements.get(idx)));
     }
 }
 
@@ -53,7 +53,7 @@ class ItemsEvaluator implements Applicator {
         Schema schema = ctx.resolveRequiredSchema(schemaRef);
         return node.asArray().stream()
                 .skip(prefixItemsSize)
-                .allMatch(element -> schema.validate(ctx, element));
+                .allMatch(element -> ctx.validateAgainstSchema(schema, element));
     }
 }
 
@@ -81,7 +81,7 @@ class ContainsEvaluator implements Applicator {
 
         Schema schema = ctx.resolveRequiredSchema(schemaRef);
         long count = node.asArray().stream()
-                .filter(element -> schema.validate(ctx, element))
+                .filter(element -> ctx.validateAgainstSchema(schema, element))
                 .count();
         return count > 0 || minContainsZero;
     }
@@ -119,7 +119,7 @@ class AdditionalPropertiesEvaluator implements Applicator {
                 .values()
                 .stream()
                 .filter(prop -> !evaluatedInstances.contains(prop.getJsonPointer()))
-                .allMatch(prop -> schema.validate(ctx, prop));
+                .allMatch(prop -> ctx.validateAgainstSchema(schema, prop));
     }
 
     @Override
@@ -153,7 +153,7 @@ class PropertiesEvaluator implements Applicator {
                 .stream()
                 .filter(e -> schemaRefs.containsKey(e.getKey()))
                 .map(e -> Map.entry(schemaRefs.get(e.getKey()), e.getValue()))
-                .allMatch(e -> ctx.resolveRequiredSchema(e.getKey()).validate(ctx, e.getValue()));
+                .allMatch(e -> ctx.validateAgainstRequiredSchema(e.getKey(), e.getValue()));
     }
 }
 
@@ -181,7 +181,7 @@ class PatternPropertiesEvaluator implements Applicator {
                     .map(Map.Entry::getValue)
                     .map(ctx::resolveRequiredSchema)
                     .toList();
-            valid = schemas.stream().allMatch(schema -> schema.validate(ctx, entry.getValue())) && valid;
+            valid = schemas.stream().allMatch(schema -> ctx.validateAgainstSchema(schema, entry.getValue())) && valid;
         }
         return valid;
     }
@@ -210,7 +210,7 @@ class DependentSchemasEvaluator implements Applicator {
                 .filter(dependentSchemas::containsKey)
                 .map(dependentSchemas::get)
                 .map(ctx::resolveRequiredSchema)
-                .allMatch(schema -> schema.validate(ctx, node));
+                .allMatch(schema -> ctx.validateAgainstSchema(schema, node));
     }
 }
 
@@ -232,7 +232,7 @@ class PropertyNamesEvaluator implements Applicator {
 
         Schema schema = ctx.resolveRequiredSchema(schemaRef);
         return node.asObject().keySet().stream()
-                .allMatch(propName -> schema.validate(ctx, new StringNode(propName, node.getJsonPointer())));
+                .allMatch(propName -> ctx.validateAgainstSchema(schema, new StringNode(propName, node.getJsonPointer())));
     }
 }
 
@@ -254,14 +254,14 @@ class IfThenElseEvaluator implements Applicator {
 
     @Override
     public boolean apply(EvaluationContext ctx, JsonNode node) {
-        if (ctx.resolveRequiredSchema(ifRef).validate(ctx, node)) {
+        if (ctx.validateAgainstRequiredSchema(ifRef, node)) {
             return thenRef
-                    .map(ctx::resolveRequiredSchema)
-                    .map(schema -> schema.validate(ctx, node)).orElse(true);
+                    .map(ref -> ctx.validateAgainstRequiredSchema(ref, node))
+                    .orElse(true);
         } else {
             return elseRef
-                    .map(ctx::resolveRequiredSchema)
-                    .map(schema -> schema.validate(ctx, node)).orElse(true);
+                    .map(ref -> ctx.validateAgainstRequiredSchema(ref, node))
+                    .orElse(true);
         }
     }
 }
@@ -278,7 +278,7 @@ class AllOfEvaluator implements Applicator {
 
     @Override
     public boolean apply(EvaluationContext ctx, JsonNode node) {
-        return refs.stream().allMatch(pointer -> ctx.resolveRequiredSchema(pointer).validate(ctx, node));
+        return refs.stream().allMatch(pointer -> ctx.validateAgainstRequiredSchema(pointer, node));
     }
 }
 
@@ -295,7 +295,7 @@ class AnyOfEvaluator implements Applicator {
     @Override
     public boolean apply(EvaluationContext ctx, JsonNode node) {
         return refs.stream()
-                .filter(pointer -> ctx.resolveRequiredSchema(pointer).validate(ctx, node))
+                .filter(pointer -> ctx.validateAgainstRequiredSchema(pointer, node))
                 .count() > 0;
     }
 }
@@ -313,7 +313,7 @@ class OneOfEvaluator implements Applicator {
     @Override
     public boolean apply(EvaluationContext ctx, JsonNode node) {
         return refs.stream()
-                .filter(uri -> ctx.resolveRequiredSchema(uri).validate(ctx, node))
+                .filter(uri -> ctx.validateAgainstRequiredSchema(uri, node))
                 .count() == 1;
     }
 }
@@ -331,7 +331,7 @@ class NotEvaluator implements Applicator {
 
     @Override
     public boolean apply(EvaluationContext ctx, JsonNode node) {
-        return !ctx.resolveRequiredSchema(schemaUri).validate(ctx, node);
+        return !ctx.validateAgainstRequiredSchema(schemaUri, node);
     }
 }
 
@@ -361,7 +361,7 @@ class UnevaluatedItemsEvaluator implements Applicator {
         return node.asArray()
                 .stream()
                 .filter(arrayNode -> evaluationItems.stream().noneMatch(a -> a.instanceLocation().startsWith(arrayNode.getJsonPointer())))
-                .allMatch(arrayNode -> schema.validate(ctx, arrayNode));
+                .allMatch(arrayNode -> ctx.validateAgainstSchema(schema, arrayNode));
     }
 
     @Override
@@ -397,7 +397,7 @@ class UnevaluatedPropertiesEvaluator implements Applicator {
                 .values()
                 .stream()
                 .filter(propertyNode -> evaluationItems.stream().noneMatch(a -> a.instanceLocation().startsWith(propertyNode.getJsonPointer())))
-                .allMatch(propertyNode -> schema.validate(ctx, propertyNode));
+                .allMatch(propertyNode -> ctx.validateAgainstSchema(schema, propertyNode));
     }
 
     @Override
@@ -422,7 +422,7 @@ class RefEvaluator implements Evaluator {
         if (schema.isEmpty()) {
             return Result.failure("Resolution of $ref [%s] failed".formatted(ref));
         } else {
-            return schema.get().validate(ctx, node) ? Result.success() : Result.failure();
+            return ctx.validateAgainstSchema(schema.get(), node) ? Result.success() : Result.failure();
         }
     }
 }
@@ -443,7 +443,7 @@ class DynamicRefEvaluator implements Evaluator {
         if (schema.isEmpty()) {
             return Result.failure("Resolution of $ref [%s] failed".formatted(ref));
         } else {
-            return schema.get().validate(ctx, node) ? Result.success() : Result.failure();
+            return ctx.validateAgainstSchema(schema.get(), node) ? Result.success() : Result.failure();
         }
     }
 }

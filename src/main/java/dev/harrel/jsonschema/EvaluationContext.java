@@ -40,25 +40,58 @@ public final class EvaluationContext {
     }
 
     /**
-     * Optionally resolves reference (URI) to a schema.
-     * @param ref reference to a schema
-     * @return Resolved {@link Schema} wrapped in {@link Optional}, {@code Optional.empty()} otherwise
-     * @see EvaluationContext#resolveRequiredSchema(String)
+     * Resolves schema using provided reference string, and then validates instance node against it.
+     * This method can invoke {@link SchemaResolver}.
+     * @param schemaRef reference to the schema
+     * @param node instance node to be validated
+     * @return if validation was successful
+     * @throws IllegalStateException when schema cannot be resolved
      */
-    public Optional<Schema> resolveSchema(String ref) {
+    public boolean validateAgainstSchema(String schemaRef, JsonNode node) {
+        return resolveSchema(schemaRef)
+                .map(schema -> validateAgainstSchema(schema, node))
+                .orElseThrow(() -> new IllegalStateException("Resolution of schema [%s] failed and was required".formatted(schemaRef)));
+    }
+
+    boolean validateAgainstRequiredSchema(String schemaRef, JsonNode node) {
+        return validateAgainstSchema(resolveRequiredSchema(schemaRef), node);
+    }
+
+    boolean validateAgainstSchema(Schema schema, JsonNode node) {
+        boolean outOfDynamicScope = isOutOfDynamicScope(schema.getParentUri());
+        if (outOfDynamicScope) {
+            dynamicScope.push(schema.getParentUri());
+        }
+
+        int annotationsBefore = getEvaluationItems().size();
+        boolean valid = true;
+        for (EvaluatorWrapper evaluator : schema.getEvaluators()) {
+            Evaluator.Result result = evaluator.evaluate(this, node);
+            EvaluationItem evaluationItem = new EvaluationItem(
+                    evaluator.getKeywordPath(), schema.getSchemaLocation(), node.getJsonPointer(),
+                    evaluator.getKeyword(), result.isValid(), result.getAnnotation(), result.getError());
+            evaluationItems.add(evaluationItem);
+            validationItems.add(evaluationItem);
+            valid = valid && result.isValid();
+        }
+        if (!valid) {
+            /* Discarding annotations */
+            evaluationItems.subList(annotationsBefore, evaluationItems.size()).clear();
+        }
+        if (outOfDynamicScope) {
+            dynamicScope.pop();
+        }
+        return valid;
+    }
+
+    Optional<Schema> resolveSchema(String ref) {
         String resolvedUri = UriUtil.resolveUri(dynamicScope.peek(), ref);
         return Optional.ofNullable(schemaRegistry.get(resolvedUri))
                 .or(() -> Optional.ofNullable(schemaRegistry.getDynamic(resolvedUri)))
                 .or(() -> resolveExternalSchema(resolvedUri));
     }
 
-    /**
-     * Optionally resolves dynamic reference (URI) to a schema.
-     * Mainly used in conjunction with <i>$dynamicRef</i> keyword.
-     * @param ref dynamic reference to a schema
-     * @return Resolved {@link Schema} wrapped in {@link Optional}, {@code Optional.empty()} otherwise
-     */
-    public Optional<Schema> resolveDynamicSchema(String ref) {
+    Optional<Schema> resolveDynamicSchema(String ref) {
         String resolvedUri = UriUtil.resolveUri(dynamicScope.peek(), ref);
         if (schemaRegistry.get(resolvedUri) != null) {
             return Optional.of(schemaRegistry.get(resolvedUri));
@@ -76,41 +109,17 @@ public final class EvaluationContext {
         return Optional.empty();
     }
 
-    /**
-     * Resolves required reference (URI) to a schema.
-     * @param ref reference to a schema
-     * @return Resolved {@link Schema}
-     * @throws IllegalStateException when schema resolution failed
-     * @see EvaluationContext#resolveSchema(String)
-     */
-    public Schema resolveRequiredSchema(String ref) {
+    Schema resolveRequiredSchema(String ref) {
         return Optional.ofNullable(schemaRegistry.get(ref))
                 .orElseThrow(() -> new IllegalStateException("Resolution of schema [%s] failed and was required".formatted(ref)));
-    }
-
-    boolean isOutOfDynamicScope(URI uri) {
-        return dynamicScope.isEmpty() || !uri.equals(dynamicScope.peek());
-    }
-
-    void pushDynamicScope(URI uri) {
-        dynamicScope.push(uri);
-    }
-
-    void popDynamicContext() {
-        dynamicScope.pop();
     }
 
     List<EvaluationItem> getValidationItems() {
         return Collections.unmodifiableList(validationItems);
     }
 
-    void addEvaluationItem(EvaluationItem annotation) {
-        this.evaluationItems.add(annotation);
-        this.validationItems.add(annotation);
-    }
-
-    void truncateAnnotationsToSize(int size) {
-        evaluationItems.subList(size, evaluationItems.size()).clear();
+    private boolean isOutOfDynamicScope(URI uri) {
+        return dynamicScope.isEmpty() || !uri.equals(dynamicScope.peek());
     }
 
     private Optional<Schema> resolveExternalSchema(String uri) {
