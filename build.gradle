@@ -25,7 +25,7 @@ repositories {
     mavenCentral()
 }
 
-def JACKSON_VERSION = '2.14.1'
+def JACKSON_VERSION = '2.15.0'
 def GSON_VERSION = '2.10.1'
 
 setupProviderTest('jackson', "com.fasterxml.jackson.core:jackson-databind:$JACKSON_VERSION")
