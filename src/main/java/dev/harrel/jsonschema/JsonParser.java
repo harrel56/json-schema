@@ -54,7 +54,7 @@ final class JsonParser {
                     .map(URI::create)
                     .orElse(baseUri);
         } else {
-            throw new InvalidSchemaException("Schema [%s] was of invalid type [%s]".formatted(baseUri, node.getNodeType()));
+            throw new InvalidSchemaException("Schema [%s] was of invalid type [%s]".formatted(baseUri, node.getNodeType()), List.of());
         }
     }
 

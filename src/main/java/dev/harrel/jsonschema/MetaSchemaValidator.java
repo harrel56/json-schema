@@ -24,7 +24,8 @@ final class MetaSchemaValidator {
         Schema schema = resolveMetaSchema(jsonParser, metaSchemaUri);
         EvaluationContext ctx = new EvaluationContext(jsonNodeFactory, jsonParser, schemaRegistry, schemaResolver);
         if (!ctx.validateAgainstSchema(schema, node)) {
-            throw new InvalidSchemaException("Schema [%s] failed to validate against meta-schema [%s]".formatted(schemaUri, metaSchemaUri));
+            throw new InvalidSchemaException("Schema [%s] failed to validate against meta-schema [%s]".formatted(schemaUri, metaSchemaUri),
+                    Validator.Result.fromEvaluationContext(false, ctx).getErrors());
         }
     }
 
