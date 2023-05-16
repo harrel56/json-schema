@@ -28,7 +28,7 @@ public final class Validator {
     }
 
     public URI registerSchema(JsonNode schemaNode) {
-        return jsonParser.parseRootSchema(URI.create(UUID.randomUUID().toString()), schemaNode);
+        return jsonParser.parseRootSchema(generateSchemaUri(), schemaNode);
     }
 
     public URI registerSchema(URI uri, String rawSchema) {
@@ -64,6 +64,10 @@ public final class Validator {
             throw new IllegalArgumentException("Couldn't find schema with uri [%s]".formatted(uri));
         }
         return schema;
+    }
+
+    private URI generateSchemaUri() {
+        return URI.create("https://harrel.dev/" + UUID.randomUUID().toString().substring(0, 8));
     }
 
     private EvaluationContext createNewEvaluationContext() {
