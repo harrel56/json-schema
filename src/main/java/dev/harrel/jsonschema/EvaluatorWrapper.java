@@ -8,7 +8,7 @@ final class EvaluatorWrapper implements Evaluator {
     private final Evaluator evaluator;
 
     EvaluatorWrapper(String keyword, String keywordPath, Evaluator evaluator) {
-        this.keyword = Objects.requireNonNull(keyword);
+        this.keyword = keyword;
         this.keywordPath = Objects.requireNonNull(keywordPath);
         this.evaluator = Objects.requireNonNull(evaluator);
     }
