@@ -1,1 +1,5 @@
-[ true, false ]
+{
+  "foo": {
+    "bar": null
+  }
+}

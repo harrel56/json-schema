@@ -1,11 +1,21 @@
 {
-  "title": "siemka",
-  "unevaluatedItems" : {
-    "type" : "boolean"
-  },
-  "anyOf" : [ {
-    "items" : {
-      "type" : "string"
+  "$defs": {
+    "reffed": {
+      "type": "object",
+      "properties": {
+        "bar": {
+          "$ref": "#/$defs/reffed2"
+        }
+      }
+    },
+    "reffed2": {
+      "type": "null"
     }
-  }, true ]
+  },
+  "properties": {
+    "foo": {
+      "$ref": "#/$defs/reffed",
+      "maxItems": 2
+    }
+  }
 }

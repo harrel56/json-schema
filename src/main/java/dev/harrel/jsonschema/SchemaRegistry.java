@@ -36,7 +36,7 @@ final class SchemaRegistry {
                     String newUri = id.toString() + "#" + newJsonPointer;
                     additionalSchemas.put(newUri, e.getValue());
                 });
-        Schema identifiableSchema = new Schema(ctx.getParentUri(), id.toString(), evaluators);
+        Schema identifiableSchema = new Schema(ctx.getParentUri(), absoluteUri, evaluators);
         schemas.put(id.toString(), identifiableSchema);
         schemas.put(absoluteUri, identifiableSchema);
         registerAnchorsIfPresent(ctx, schemaNode, identifiableSchema);

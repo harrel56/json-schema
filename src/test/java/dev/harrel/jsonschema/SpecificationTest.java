@@ -288,8 +288,8 @@ public abstract class SpecificationTest {
     }
 
     private void testValidation(String bundle, String name, JsonNode schema, JsonNode instance, boolean valid) {
-//        Assumptions.assumeTrue(bundle.equals("unevaluatedItems with nested items"));
-//        Assumptions.assumeTrue(name.equals("with only (valid) additional items"));
+//        Assumptions.assumeTrue(bundle.equals("tests for implementation dynamic anchor and reference link"));
+//        Assumptions.assumeTrue(name.equals("correct extended schema"));
         String schemaString = schema.toPrettyString();
         String instanceString = instance.toPrettyString();
         Validator validator = new ValidatorFactory()

@@ -6,6 +6,7 @@ import java.util.*;
 /**
  * {@code EvaluationContext} class represents state of current evaluation (instance validation against schema).
  * {@link Evaluator} can use this class for its processing logic.
+ *
  * @see Evaluator
  */
 public final class EvaluationContext {
@@ -13,9 +14,11 @@ public final class EvaluationContext {
     private final JsonParser jsonParser;
     private final SchemaRegistry schemaRegistry;
     private final SchemaResolver schemaResolver;
-    private final LinkedList<URI> dynamicScope;
-    private final List<EvaluationItem> evaluationItems;
-    private final List<EvaluationItem> validationItems;
+    private final Deque<URI> dynamicScope = new LinkedList<>();
+    private final Deque<RefStackItem> refStack = new LinkedList<>();
+    private final Deque<String> evaluationStack = new LinkedList<>();
+    private final List<EvaluationItem> evaluationItems = new ArrayList<>();
+    private final List<EvaluationItem> validationItems = new ArrayList<>();
 
     EvaluationContext(JsonNodeFactory jsonNodeFactory,
                       JsonParser jsonParser,
@@ -25,14 +28,12 @@ public final class EvaluationContext {
         this.jsonParser = Objects.requireNonNull(jsonParser);
         this.schemaRegistry = Objects.requireNonNull(schemaRegistry);
         this.schemaResolver = Objects.requireNonNull(schemaResolver);
-        this.dynamicScope = new LinkedList<>();
-        this.evaluationItems = new ArrayList<>();
-        this.validationItems = new ArrayList<>();
     }
 
     /**
      * Returns collected annotations up to this point.
      * Discarded annotations are not included.
+     *
      * @return unmodifiable list of annotations
      */
     public List<EvaluationItem> getEvaluationItems() {
@@ -42,19 +43,53 @@ public final class EvaluationContext {
     /**
      * Resolves schema using provided reference string, and then validates instance node against it.
      * This method can invoke {@link SchemaResolver}.
+     *
      * @param schemaRef reference to the schema
-     * @param node instance node to be validated
+     * @param node      instance node to be validated
      * @return if validation was successful
-     * @throws IllegalStateException when schema cannot be resolved
+     * @throws SchemaNotFoundException when schema cannot be resolved
      */
-    public boolean validateAgainstSchema(String schemaRef, JsonNode node) {
+    public boolean resolveRefAndValidate(String schemaRef, JsonNode node) {
         return resolveSchema(schemaRef)
-                .map(schema -> validateAgainstSchema(schema, node))
-                .orElseThrow(() -> new IllegalStateException("Resolution of schema [%s] failed and was required".formatted(schemaRef)));
+                .map(schema -> validateAgainstRefSchema(schema, node))
+                .orElseThrow(() -> new SchemaNotFoundException(schemaRef));
     }
 
-    boolean validateAgainstRequiredSchema(String schemaRef, JsonNode node) {
-        return validateAgainstSchema(resolveRequiredSchema(schemaRef), node);
+    /**
+     * Dynamically resolves schema using provided reference string, and then validates instance node against it.
+     * This method is specifically created for <i>$dynamicRef</i> keyword.
+     *
+     * @param schemaRef reference to the schema
+     * @param node      instance node to be validated
+     * @return if validation was successful
+     * @throws SchemaNotFoundException when schema cannot be resolved
+     */
+    public boolean resolveDynamicRefAndValidate(String schemaRef, JsonNode node) {
+        return resolveDynamicSchema(schemaRef)
+                .map(schema -> validateAgainstRefSchema(schema, node))
+                .orElseThrow(() -> new SchemaNotFoundException(schemaRef));
+    }
+
+    /**
+     * Resolves <i>internal</i> schema using provided reference string and then validates instance node against it.
+     * This method should only be used for internal schema resolutions, that means schema/evaluator calling this
+     * method should only refer to schema instances which are descendants of calling node.
+     * Note that this method is semantically different from {@link EvaluationContext#resolveRefAndValidate} and it
+     * cannot invoke {@link SchemaResolver}.
+     *
+     * @param schemaRef reference to the schema
+     * @param node      instance node to be validated
+     * @return if validation was successful
+     * @throws SchemaNotFoundException when schema cannot be resolved
+     */
+    public boolean resolveInternalRefAndValidate(String schemaRef, JsonNode node) {
+        return Optional.ofNullable(schemaRegistry.get(schemaRef))
+                .map(schema -> validateAgainstSchema(schema, node))
+                .orElseThrow(() -> new SchemaNotFoundException(schemaRef));
+    }
+
+    List<EvaluationItem> getValidationItems() {
+        return Collections.unmodifiableList(validationItems);
     }
 
     boolean validateAgainstSchema(Schema schema, JsonNode node) {
@@ -66,13 +101,16 @@ public final class EvaluationContext {
         int annotationsBefore = getEvaluationItems().size();
         boolean valid = true;
         for (EvaluatorWrapper evaluator : schema.getEvaluators()) {
+            String evaluationPath = resolveEvaluationPath(evaluator);
+            evaluationStack.push(evaluationPath);
             Evaluator.Result result = evaluator.evaluate(this, node);
             EvaluationItem evaluationItem = new EvaluationItem(
-                    evaluator.getKeywordPath(), schema.getSchemaLocation(), node.getJsonPointer(),
+                    evaluationPath, schema.getSchemaLocation(), node.getJsonPointer(),
                     evaluator.getKeyword(), result.isValid(), result.getAnnotation(), result.getError());
             evaluationItems.add(evaluationItem);
             validationItems.add(evaluationItem);
             valid = valid && result.isValid();
+            evaluationStack.pop();
         }
         if (!valid) {
             /* Discarding annotations */
@@ -84,14 +122,21 @@ public final class EvaluationContext {
         return valid;
     }
 
-    Optional<Schema> resolveSchema(String ref) {
+    private boolean validateAgainstRefSchema(Schema schema, JsonNode node) {
+        refStack.push(new RefStackItem(UriUtil.getJsonPointer(schema.getSchemaLocation()), evaluationStack.peek()));
+        boolean valid = validateAgainstSchema(schema, node);
+        refStack.pop();
+        return valid;
+    }
+
+    private Optional<Schema> resolveSchema(String ref) {
         String resolvedUri = UriUtil.resolveUri(dynamicScope.peek(), ref);
         return Optional.ofNullable(schemaRegistry.get(resolvedUri))
                 .or(() -> Optional.ofNullable(schemaRegistry.getDynamic(resolvedUri)))
                 .or(() -> resolveExternalSchema(resolvedUri));
     }
 
-    Optional<Schema> resolveDynamicSchema(String ref) {
+    private Optional<Schema> resolveDynamicSchema(String ref) {
         String resolvedUri = UriUtil.resolveUri(dynamicScope.peek(), ref);
         if (schemaRegistry.get(resolvedUri) != null) {
             return Optional.of(schemaRegistry.get(resolvedUri));
@@ -109,17 +154,22 @@ public final class EvaluationContext {
         return Optional.empty();
     }
 
-    Schema resolveRequiredSchema(String ref) {
-        return Optional.ofNullable(schemaRegistry.get(ref))
-                .orElseThrow(() -> new IllegalStateException("Resolution of schema [%s] failed and was required".formatted(ref)));
-    }
-
-    List<EvaluationItem> getValidationItems() {
-        return Collections.unmodifiableList(validationItems);
-    }
-
     private boolean isOutOfDynamicScope(URI uri) {
         return dynamicScope.isEmpty() || !uri.equals(dynamicScope.peek());
+    }
+
+    private String resolveEvaluationPath(EvaluatorWrapper evaluator) {
+        if (refStack.isEmpty()) {
+            return evaluator.getKeywordPath();
+        }
+        RefStackItem refItem = refStack.peek();
+        String currentPath = evaluator.getKeywordPath();
+        if (!currentPath.startsWith(refItem.schemaLocation())) {
+            throw new IllegalStateException("Unexpected evaluation path resolution error");
+        }
+
+        String evaluationPathPart = currentPath.substring(refItem.schemaLocation().length());
+        return refItem.evaluationPath + evaluationPathPart;
     }
 
     private Optional<Schema> resolveExternalSchema(String uri) {
@@ -138,4 +188,6 @@ public final class EvaluationContext {
                     }
                 });
     }
+
+    private record RefStackItem(String schemaLocation, String evaluationPath) {}
 }

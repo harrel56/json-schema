@@ -23,6 +23,15 @@ final class UriUtil {
         }
     }
 
+    static String getJsonPointer(String uri) {
+        int fragmentIdx = uri.indexOf('#');
+        if (fragmentIdx < 0) {
+            return "";
+        } else {
+            return uri.substring(fragmentIdx + 1);
+        }
+    }
+
     static boolean isJsonPointerOrAnchor(String uri) {
         return uri.startsWith("#") && uri.length() > 1;
     }

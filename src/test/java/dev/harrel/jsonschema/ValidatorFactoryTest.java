@@ -12,7 +12,7 @@ class ValidatorFactoryTest {
     void name() {
         String schema = readResource("/schema.json");
         String instance = readResource("/instance.json");
-        Validator.Result result = new ValidatorFactory().validate(schema, instance);
+        Validator.Result result = new ValidatorFactory().withDefaultMetaSchemaUri(null).validate(schema, instance);
         List<EvaluationItem> errors = result.getErrors();
         System.out.println(errors);
     }

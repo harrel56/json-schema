@@ -26,7 +26,7 @@ class PrefixItemsEvaluator implements Applicator {
 
         List<JsonNode> elements = node.asArray();
         return IntStream.range(0, elements.size()).limit(prefixRefs.size()).boxed()
-                .allMatch(idx -> ctx.validateAgainstRequiredSchema(prefixRefs.get(idx), elements.get(idx)));
+                .allMatch(idx -> ctx.resolveInternalRefAndValidate(prefixRefs.get(idx), elements.get(idx)));
     }
 }
 
@@ -50,10 +50,9 @@ class ItemsEvaluator implements Applicator {
         if (!node.isArray()) {
             return true;
         }
-        Schema schema = ctx.resolveRequiredSchema(schemaRef);
         return node.asArray().stream()
                 .skip(prefixItemsSize)
-                .allMatch(element -> ctx.validateAgainstSchema(schema, element));
+                .allMatch(element -> ctx.resolveInternalRefAndValidate(schemaRef, element));
     }
 }
 
@@ -79,9 +78,8 @@ class ContainsEvaluator implements Applicator {
             return true;
         }
 
-        Schema schema = ctx.resolveRequiredSchema(schemaRef);
         long count = node.asArray().stream()
-                .filter(element -> ctx.validateAgainstSchema(schema, element))
+                .filter(element -> ctx.resolveInternalRefAndValidate(schemaRef, element))
                 .count();
         return count > 0 || minContainsZero;
     }
@@ -111,20 +109,23 @@ class AdditionalPropertiesEvaluator implements Applicator {
         String patternPropertiesPath = parentPath + "/" + Keyword.PATTERN_PROPERTIES;
         Set<String> evaluatedInstances = ctx.getEvaluationItems().stream()
                 .filter(a -> a.instanceLocation().startsWith(instanceLocation))
-                .filter(a -> a.evaluationPath().startsWith(propertiesPath) || a.evaluationPath().startsWith(patternPropertiesPath))
+                .filter(a -> getSchemaPath(a).startsWith(propertiesPath) || getSchemaPath(a).startsWith(patternPropertiesPath))
                 .map(EvaluationItem::instanceLocation)
                 .collect(Collectors.toSet());
-        Schema schema = ctx.resolveRequiredSchema(schemaRef);
         return node.asObject()
                 .values()
                 .stream()
                 .filter(prop -> !evaluatedInstances.contains(prop.getJsonPointer()))
-                .allMatch(prop -> ctx.validateAgainstSchema(schema, prop));
+                .allMatch(prop -> ctx.resolveInternalRefAndValidate(schemaRef, prop));
     }
 
     @Override
     public int getOrder() {
         return 10;
+    }
+
+    private String getSchemaPath(EvaluationItem item) {
+        return UriUtil.getJsonPointer(item.schemaLocation());
     }
 }
 
@@ -153,7 +154,7 @@ class PropertiesEvaluator implements Applicator {
                 .stream()
                 .filter(e -> schemaRefs.containsKey(e.getKey()))
                 .map(e -> Map.entry(schemaRefs.get(e.getKey()), e.getValue()))
-                .allMatch(e -> ctx.validateAgainstRequiredSchema(e.getKey(), e.getValue()));
+                .allMatch(e -> ctx.resolveInternalRefAndValidate(e.getKey(), e.getValue()));
     }
 }
 
@@ -176,12 +177,11 @@ class PatternPropertiesEvaluator implements Applicator {
 
         boolean valid = true;
         for (Map.Entry<String, JsonNode> entry : node.asObject().entrySet()) {
-            List<Schema> schemas = schemasByPatterns.entrySet().stream()
+            List<String> schemaRefs = schemasByPatterns.entrySet().stream()
                     .filter(e -> e.getKey().matcher(entry.getKey()).find())
                     .map(Map.Entry::getValue)
-                    .map(ctx::resolveRequiredSchema)
                     .toList();
-            valid = schemas.stream().allMatch(schema -> ctx.validateAgainstSchema(schema, entry.getValue())) && valid;
+            valid = schemaRefs.stream().allMatch(ref -> ctx.resolveInternalRefAndValidate(ref, entry.getValue())) && valid;
         }
         return valid;
     }
@@ -209,8 +209,7 @@ class DependentSchemasEvaluator implements Applicator {
                 .stream()
                 .filter(dependentSchemas::containsKey)
                 .map(dependentSchemas::get)
-                .map(ctx::resolveRequiredSchema)
-                .allMatch(schema -> ctx.validateAgainstSchema(schema, node));
+                .allMatch(ref -> ctx.resolveInternalRefAndValidate(ref, node));
     }
 }
 
@@ -230,9 +229,8 @@ class PropertyNamesEvaluator implements Applicator {
             return true;
         }
 
-        Schema schema = ctx.resolveRequiredSchema(schemaRef);
         return node.asObject().keySet().stream()
-                .allMatch(propName -> ctx.validateAgainstSchema(schema, new StringNode(propName, node.getJsonPointer())));
+                .allMatch(propName -> ctx.resolveInternalRefAndValidate(schemaRef, new StringNode(propName, node.getJsonPointer())));
     }
 }
 
@@ -254,13 +252,13 @@ class IfThenElseEvaluator implements Applicator {
 
     @Override
     public boolean apply(EvaluationContext ctx, JsonNode node) {
-        if (ctx.validateAgainstRequiredSchema(ifRef, node)) {
+        if (ctx.resolveInternalRefAndValidate(ifRef, node)) {
             return thenRef
-                    .map(ref -> ctx.validateAgainstRequiredSchema(ref, node))
+                    .map(ref -> ctx.resolveInternalRefAndValidate(ref, node))
                     .orElse(true);
         } else {
             return elseRef
-                    .map(ref -> ctx.validateAgainstRequiredSchema(ref, node))
+                    .map(ref -> ctx.resolveInternalRefAndValidate(ref, node))
                     .orElse(true);
         }
     }
@@ -278,7 +276,7 @@ class AllOfEvaluator implements Applicator {
 
     @Override
     public boolean apply(EvaluationContext ctx, JsonNode node) {
-        return refs.stream().allMatch(pointer -> ctx.validateAgainstRequiredSchema(pointer, node));
+        return refs.stream().allMatch(pointer -> ctx.resolveInternalRefAndValidate(pointer, node));
     }
 }
 
@@ -295,7 +293,7 @@ class AnyOfEvaluator implements Applicator {
     @Override
     public boolean apply(EvaluationContext ctx, JsonNode node) {
         return refs.stream()
-                .filter(pointer -> ctx.validateAgainstRequiredSchema(pointer, node))
+                .filter(pointer -> ctx.resolveInternalRefAndValidate(pointer, node))
                 .count() > 0;
     }
 }
@@ -313,7 +311,7 @@ class OneOfEvaluator implements Applicator {
     @Override
     public boolean apply(EvaluationContext ctx, JsonNode node) {
         return refs.stream()
-                .filter(uri -> ctx.validateAgainstRequiredSchema(uri, node))
+                .filter(uri -> ctx.resolveInternalRefAndValidate(uri, node))
                 .count() == 1;
     }
 }
@@ -331,7 +329,7 @@ class NotEvaluator implements Applicator {
 
     @Override
     public boolean apply(EvaluationContext ctx, JsonNode node) {
-        return !ctx.validateAgainstRequiredSchema(schemaUri, node);
+        return !ctx.resolveInternalRefAndValidate(schemaUri, node);
     }
 }
 
@@ -354,19 +352,22 @@ class UnevaluatedItemsEvaluator implements Applicator {
             return true;
         }
 
-        Schema schema = ctx.resolveRequiredSchema(schemaRef);
         List<EvaluationItem> evaluationItems = ctx.getEvaluationItems().stream()
-                .filter(a -> a.evaluationPath().startsWith(parentPath))
+                .filter(a -> getSchemaPath(a).startsWith(parentPath))
                 .toList();
         return node.asArray()
                 .stream()
                 .filter(arrayNode -> evaluationItems.stream().noneMatch(a -> a.instanceLocation().startsWith(arrayNode.getJsonPointer())))
-                .allMatch(arrayNode -> ctx.validateAgainstSchema(schema, arrayNode));
+                .allMatch(arrayNode -> ctx.resolveInternalRefAndValidate(schemaRef, arrayNode));
     }
 
     @Override
     public int getOrder() {
         return 20;
+    }
+
+    private String getSchemaPath(EvaluationItem item) {
+        return UriUtil.getJsonPointer(item.schemaLocation());
     }
 }
 
@@ -389,20 +390,23 @@ class UnevaluatedPropertiesEvaluator implements Applicator {
             return true;
         }
 
-        Schema schema = ctx.resolveRequiredSchema(schemaRef);
         List<EvaluationItem> evaluationItems = ctx.getEvaluationItems().stream()
-                .filter(a -> a.evaluationPath().startsWith(parentPath))
+                .filter(a -> getSchemaPath(a).startsWith(parentPath))
                 .toList();
         return node.asObject()
                 .values()
                 .stream()
                 .filter(propertyNode -> evaluationItems.stream().noneMatch(a -> a.instanceLocation().startsWith(propertyNode.getJsonPointer())))
-                .allMatch(propertyNode -> ctx.validateAgainstSchema(schema, propertyNode));
+                .allMatch(propertyNode -> ctx.resolveInternalRefAndValidate(schemaRef, propertyNode));
     }
 
     @Override
     public int getOrder() {
         return 20;
+    }
+
+    private String getSchemaPath(EvaluationItem item) {
+        return UriUtil.getJsonPointer(item.schemaLocation());
     }
 }
 
@@ -418,11 +422,10 @@ class RefEvaluator implements Evaluator {
 
     @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
-        Optional<Schema> schema = ctx.resolveSchema(ref);
-        if (schema.isEmpty()) {
+        try {
+            return ctx.resolveRefAndValidate(ref, node) ? Result.success() : Result.failure();
+        } catch (SchemaNotFoundException e) {
             return Result.failure("Resolution of $ref [%s] failed".formatted(ref));
-        } else {
-            return ctx.validateAgainstSchema(schema.get(), node) ? Result.success() : Result.failure();
         }
     }
 }
@@ -439,11 +442,10 @@ class DynamicRefEvaluator implements Evaluator {
 
     @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
-        Optional<Schema> schema = ctx.resolveDynamicSchema(ref);
-        if (schema.isEmpty()) {
+        try {
+            return ctx.resolveDynamicRefAndValidate(ref, node) ? Result.success() : Result.failure();
+        } catch (SchemaNotFoundException e) {
             return Result.failure("Resolution of $ref [%s] failed".formatted(ref));
-        } else {
-            return ctx.validateAgainstSchema(schema.get(), node) ? Result.success() : Result.failure();
         }
     }
 }
