@@ -1,0 +1,8 @@
+{
+  "properties": {
+    "foo": {
+      "$ref": "urn:anchor#reffed",
+      "maxItems": 2
+    }
+  }
+}

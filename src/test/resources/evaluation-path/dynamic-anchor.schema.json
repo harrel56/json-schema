@@ -1,0 +1,23 @@
+{
+  "$defs": {
+    "reffed": {
+      "$dynamicAnchor": "dynamic",
+      "type": "object",
+      "properties": {
+        "bar": {
+          "$ref": "#dynamic2"
+        }
+      }
+    },
+    "reffed2": {
+      "$dynamicAnchor": "dynamic2",
+      "type": "null"
+    }
+  },
+  "properties": {
+    "foo": {
+      "$ref": "#dynamic",
+      "maxItems": 2
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "$defs": {
+    "reffed": {
+      "type": "array",
+      "items": {
+        "$ref": "#/custom/2/0/1"
+      }
+    }
+  },
+  "items": {
+    "$ref": "#/$defs/reffed"
+  },
+  "custom": [
+    0,
+    1,
+    [
+      [
+        0,
+        false
+      ],
+      1,
+      2
+    ],
+    3
+  ]
+}
