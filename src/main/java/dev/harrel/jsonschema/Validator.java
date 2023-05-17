@@ -75,6 +75,9 @@ public final class Validator {
         return new EvaluationContext(jsonNodeFactory, jsonParser, schemaRegistry, schemaResolver);
     }
 
+    /**
+     * {@code Result} class represents validation outcome.
+     */
     public static final class Result {
         private final boolean valid;
         private final List<EvaluationItem> evaluationItems;
@@ -90,16 +93,27 @@ public final class Validator {
             return new Result(valid, List.copyOf(ctx.getEvaluationItems()), List.copyOf(ctx.getValidationItems()));
         }
 
+        /**
+         * Checks if validation was successful.
+         */
         public boolean isValid() {
             return valid;
         }
 
+        /**
+         * Returns collected annotation during schema validation.
+         * @return unmodifiable list of {@link Annotation}s
+         */
         public List<Annotation> getAnnotations() {
             return evaluationItems.stream()
                     .filter(a -> a.annotation() != null)
                     .collect(Collectors.toUnmodifiableList());
         }
 
+        /**
+         * Returns validation errors.
+         * @return unmodifiable list of {@link Error}s
+         */
         public List<Error> getErrors() {
             if (isValid()) {
                 return List.of();
