@@ -4,7 +4,7 @@ import java.util.Optional;
 
 /**
  * {@code EvaluatorFactory} interface is responsible for creation of {@link Evaluator} instances.
- * In should hold information about keyword relation with {@link Evaluator}.
+ * It should hold information about keyword relation with {@link Evaluator}.
  */
 public interface EvaluatorFactory {
     /**
