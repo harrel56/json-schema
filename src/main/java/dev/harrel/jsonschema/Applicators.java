@@ -452,7 +452,7 @@ class DynamicRefEvaluator implements Evaluator {
         try {
             return ctx.resolveDynamicRefAndValidate(ref, node) ? Result.success() : Result.failure();
         } catch (SchemaNotFoundException e) {
-            return Result.failure(String.format("Resolution of $ref [%s] failed", ref));
+            return Result.failure(String.format("Resolution of $dynamicRef [%s] failed", ref));
         }
     }
 }
