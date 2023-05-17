@@ -6,8 +6,13 @@ plugins {
 
 group 'dev.harrel'
 version '1.0.0-beta.3'
-sourceCompatibility JavaVersion.VERSION_17
-targetCompatibility JavaVersion.VERSION_17
+sourceCompatibility JavaVersion.VERSION_11
+targetCompatibility JavaVersion.VERSION_11
+
+compileTestJava {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+}
 
 java {
     withSourcesJar()

@@ -102,8 +102,8 @@ public final class JacksonNode implements JsonNode {
 
         @Override
         public JacksonNode wrap(Object node) {
-            if (node instanceof com.fasterxml.jackson.databind.JsonNode vendorNode) {
-                return new JacksonNode(vendorNode);
+            if (node instanceof com.fasterxml.jackson.databind.JsonNode) {
+                return new JacksonNode((com.fasterxml.jackson.databind.JsonNode) node);
             } else {
                 throw new IllegalArgumentException("Cannot wrap object which is not an instance of com.fasterxml.jackson.databind.JsonNode");
             }

@@ -106,7 +106,7 @@ public final class Validator {
          */
         public List<Annotation> getAnnotations() {
             return evaluationItems.stream()
-                    .filter(a -> a.annotation() != null)
+                    .filter(a -> a.getAnnotation() != null)
                     .collect(Collectors.toUnmodifiableList());
         }
 
@@ -119,8 +119,8 @@ public final class Validator {
                 return List.of();
             } else {
                 return validationItems.stream()
-                        .filter(a -> !a.valid())
-                        .filter(a -> a.error() != null)
+                        .filter(a -> !a.isValid())
+                        .filter(a -> a.getError() != null)
                         .collect(Collectors.toUnmodifiableList());
             }
         }

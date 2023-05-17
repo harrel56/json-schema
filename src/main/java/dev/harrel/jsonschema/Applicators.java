@@ -362,7 +362,7 @@ class UnevaluatedItemsEvaluator implements Applicator {
                 .toList();
         return node.asArray()
                 .stream()
-                .filter(arrayNode -> evaluationItems.stream().noneMatch(a -> a.instanceLocation().startsWith(arrayNode.getJsonPointer())))
+                .filter(arrayNode -> evaluationItems.stream().noneMatch(a -> a.getInstanceLocation().startsWith(arrayNode.getJsonPointer())))
                 .allMatch(arrayNode -> ctx.resolveInternalRefAndValidate(schemaRef, arrayNode));
     }
 
@@ -372,7 +372,7 @@ class UnevaluatedItemsEvaluator implements Applicator {
     }
 
     private String getSchemaPath(EvaluationItem item) {
-        return UriUtil.getJsonPointer(item.schemaLocation());
+        return UriUtil.getJsonPointer(item.getSchemaLocation());
     }
 }
 
@@ -401,7 +401,7 @@ class UnevaluatedPropertiesEvaluator implements Applicator {
         return node.asObject()
                 .values()
                 .stream()
-                .filter(propertyNode -> evaluationItems.stream().noneMatch(a -> a.instanceLocation().startsWith(propertyNode.getJsonPointer())))
+                .filter(propertyNode -> evaluationItems.stream().noneMatch(a -> a.getInstanceLocation().startsWith(propertyNode.getJsonPointer())))
                 .allMatch(propertyNode -> ctx.resolveInternalRefAndValidate(schemaRef, propertyNode));
     }
 
@@ -411,7 +411,7 @@ class UnevaluatedPropertiesEvaluator implements Applicator {
     }
 
     private String getSchemaPath(EvaluationItem item) {
-        return UriUtil.getJsonPointer(item.schemaLocation());
+        return UriUtil.getJsonPointer(item.getSchemaLocation());
     }
 }
 

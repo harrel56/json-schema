@@ -96,7 +96,7 @@ public final class EvaluationContext {
         String parentPath = UriUtil.getJsonPointerParent(evaluationStack.peek());
         return evaluationItems.stream()
                 .filter(item -> sibling.equals(item.getKeyword()))
-                .filter(item -> parentPath.equals(UriUtil.getJsonPointerParent(item.evaluationPath())))
+                .filter(item -> parentPath.equals(UriUtil.getJsonPointerParent(item.getEvaluationPath())))
                 .map(EvaluationItem::getAnnotation)
                 .filter(annotationType::isInstance)
                 .map(annotationType::cast)
@@ -175,11 +175,11 @@ public final class EvaluationContext {
         }
         RefStackItem refItem = refStack.peek();
         String currentPath = evaluator.getKeywordPath();
-        if (!currentPath.startsWith(refItem.schemaLocation())) {
+        if (!currentPath.startsWith(refItem.schemaLocation)) {
             throw new IllegalStateException("Unexpected evaluation path resolution error");
         }
 
-        String evaluationPathPart = currentPath.substring(refItem.schemaLocation().length());
+        String evaluationPathPart = currentPath.substring(refItem.schemaLocation.length());
         return refItem.evaluationPath + evaluationPathPart;
     }
 
@@ -200,5 +200,13 @@ public final class EvaluationContext {
                 });
     }
 
-    private record RefStackItem(String schemaLocation, String evaluationPath) {}
+    private static class RefStackItem {
+        private final String schemaLocation;
+        private final String evaluationPath;
+
+        public RefStackItem(String schemaLocation, String evaluationPath) {
+            this.schemaLocation = schemaLocation;
+            this.evaluationPath = evaluationPath;
+        }
+    }
 }
