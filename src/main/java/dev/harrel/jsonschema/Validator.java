@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public final class Validator {
     private final JsonNodeFactory jsonNodeFactory;
@@ -93,20 +94,20 @@ public final class Validator {
             return valid;
         }
 
-        public List<EvaluationItem> getAnnotations() {
+        public List<Annotation> getAnnotations() {
             return evaluationItems.stream()
                     .filter(a -> a.annotation() != null)
-                    .toList();
+                    .collect(Collectors.toUnmodifiableList());
         }
 
-        public List<EvaluationItem> getErrors() {
+        public List<Error> getErrors() {
             if (isValid()) {
                 return List.of();
             } else {
                 return validationItems.stream()
                         .filter(a -> !a.valid())
                         .filter(a -> a.error() != null)
-                        .toList();
+                        .collect(Collectors.toUnmodifiableList());
             }
         }
     }
