@@ -3,6 +3,8 @@ package dev.harrel.jsonschema;
 import java.net.URI;
 import java.util.*;
 
+import static java.util.Collections.*;
+
 final class JsonParser {
     private final String defaultMetaSchemaUri;
     private final EvaluatorFactory evaluatorFactory;
@@ -24,7 +26,7 @@ final class JsonParser {
             metaSchemaValidator.validateMetaSchema(this, defaultMetaSchemaUri, baseUri.toString(), node);
             SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, baseUri.toString());
             boolean schemaValue = node.asBoolean();
-            schemaRegistry.registerIdentifiableSchema(ctx, baseUri, node, List.of(new EvaluatorWrapper(null, node, Schema.getBooleanEvaluator(schemaValue))));
+            schemaRegistry.registerIdentifiableSchema(ctx, baseUri, node, singletonList(new EvaluatorWrapper(null, node, Schema.getBooleanEvaluator(schemaValue))));
             return baseUri;
         } else if (node.isObject()) {
             Map<String, JsonNode> objectMap = node.asObject();
@@ -54,7 +56,7 @@ final class JsonParser {
                     .map(URI::create)
                     .orElse(baseUri);
         } else {
-            throw new InvalidSchemaException("Schema [%s] was of invalid type [%s]".formatted(baseUri, node.getNodeType()), List.of());
+            throw new InvalidSchemaException(String.format("Schema [%s] was of invalid type [%s]", baseUri, node.getNodeType()), emptyList());
         }
     }
 
@@ -71,7 +73,7 @@ final class JsonParser {
     private void parseBoolean(SchemaParsingContext ctx, JsonNode node) {
         boolean schemaValue = node.asBoolean();
         Evaluator booleanEvaluator = Schema.getBooleanEvaluator(schemaValue);
-        schemaRegistry.registerSchema(ctx, node, List.of(new EvaluatorWrapper(null, node, booleanEvaluator)));
+        schemaRegistry.registerSchema(ctx, node, singletonList(new EvaluatorWrapper(null, node, booleanEvaluator)));
     }
 
     private void parseArray(SchemaParsingContext ctx, JsonNode node) {

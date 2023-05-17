@@ -2,13 +2,11 @@ package dev.harrel.jsonschema;
 
 import dev.harrel.jsonschema.providers.JacksonNode;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
+import java.io.*;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public final class ValidatorFactory {
     private static final String DEFAULT_META_SCHEMA = "https://json-schema.org/draft/2020-12/schema";
@@ -87,7 +85,8 @@ public final class ValidatorFactory {
             if (DEFAULT_META_SCHEMA.equals(uri)) {
                 try (InputStream is = getClass().getResourceAsStream("/draft2020-12.json")) {
                     if (is != null) {
-                        return Result.fromString(new String(is.readAllBytes(), StandardCharsets.UTF_8));
+                        String content = new BufferedReader(new InputStreamReader(is)).lines().collect(Collectors.joining());
+                        return Result.fromString(content);
                     }
                 } catch (IOException e) {
                     throw new UncheckedIOException(e);

@@ -142,9 +142,11 @@ public final class EvaluationContext {
 
     private Optional<Schema> resolveSchema(String ref) {
         String resolvedUri = UriUtil.resolveUri(dynamicScope.peek(), ref);
-        return Optional.ofNullable(schemaRegistry.get(resolvedUri))
-                .or(() -> Optional.ofNullable(schemaRegistry.getDynamic(resolvedUri)))
-                .or(() -> resolveExternalSchema(resolvedUri));
+        return OptionalUtil.firstPresent(
+                () -> Optional.ofNullable(schemaRegistry.get(resolvedUri)),
+                () -> Optional.ofNullable(schemaRegistry.getDynamic(resolvedUri)),
+                () -> resolveExternalSchema(resolvedUri)
+        );
     }
 
     private Optional<Schema> resolveDynamicSchema(String ref) {

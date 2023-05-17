@@ -1,5 +1,6 @@
 package dev.harrel.jsonschema;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -55,7 +56,7 @@ final class UriUtil {
     }
 
     static String decodeUrl(String url) {
-        String decoded = URLDecoder.decode(url, StandardCharsets.UTF_8);
+        String decoded = internalDecode(url);
         String[] split = decoded.split("#", -1);
         StringBuilder sb = new StringBuilder(split[0]);
         if (split.length > 1) {
@@ -67,5 +68,13 @@ final class UriUtil {
 
     static String decodeJsonPointer(String pointer) {
         return pointer.replace("~0", "~").replace("~1", "/");
+    }
+
+    private static String internalDecode(String url) {
+        try {
+            return URLDecoder.decode(url, StandardCharsets.UTF_8.toString());
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 }

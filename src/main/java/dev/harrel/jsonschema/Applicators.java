@@ -6,6 +6,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static java.util.Collections.*;
+
 class PrefixItemsEvaluator implements Evaluator {
     private final List<String> prefixRefs;
 
@@ -13,9 +15,9 @@ class PrefixItemsEvaluator implements Evaluator {
         if (!node.isArray()) {
             throw new IllegalArgumentException();
         }
-        this.prefixRefs = node.asArray().stream()
+        this.prefixRefs = unmodifiableList(node.asArray().stream()
                 .map(ctx::getAbsoluteUri)
-                .toList();
+                .collect(Collectors.toList()));
     }
 
     @Override
@@ -84,10 +86,10 @@ class ContainsEvaluator implements Evaluator {
         }
 
         List<JsonNode> array = node.asArray();
-        List<Integer> indices = IntStream.range(0, array.size())
+        List<Integer> indices = unmodifiableList(IntStream.range(0, array.size())
                 .filter(i -> ctx.resolveInternalRefAndValidate(schemaRef, array.get(i)))
                 .boxed()
-                .toList();
+                .collect(Collectors.toList()));
         return minContainsZero || !indices.isEmpty() ? Result.success(indices) : Result.failure();
     }
 }
@@ -110,14 +112,14 @@ class AdditionalPropertiesEvaluator implements Evaluator {
         }
 
         Set<String> props = new HashSet<>();
-        props.addAll(ctx.getSiblingAnnotation(Keyword.PROPERTIES, Set.class).orElse(Set.of()));
-        props.addAll(ctx.getSiblingAnnotation(Keyword.PATTERN_PROPERTIES, Set.class).orElse(Set.of()));
+        props.addAll(ctx.getSiblingAnnotation(Keyword.PROPERTIES, Set.class).orElse(emptySet()));
+        props.addAll(ctx.getSiblingAnnotation(Keyword.PATTERN_PROPERTIES, Set.class).orElse(emptySet()));
         Map<String, JsonNode> filtered = node.asObject().entrySet().stream()
                 .filter(e -> !props.contains(e.getKey()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         boolean valid = filtered.values().stream().allMatch(prop -> ctx.resolveInternalRefAndValidate(schemaRef, prop));
-        return valid ? Result.success(Collections.unmodifiableSet(filtered.keySet())) : Result.failure();
+        return valid ? Result.success(unmodifiableSet(filtered.keySet())) : Result.failure();
     }
     @Override
     public int getOrder() {
@@ -136,7 +138,7 @@ class PropertiesEvaluator implements Evaluator {
         for (Map.Entry<String, JsonNode> entry : node.asObject().entrySet()) {
             uris.put(entry.getKey(), ctx.getAbsoluteUri(entry.getValue()));
         }
-        this.schemaRefs = Collections.unmodifiableMap(uris);
+        this.schemaRefs = unmodifiableMap(uris);
     }
 
     @Override
@@ -153,9 +155,9 @@ class PropertiesEvaluator implements Evaluator {
         boolean valid = filtered
                 .entrySet()
                 .stream()
-                .map(e -> Map.entry(schemaRefs.get(e.getKey()), e.getValue()))
+                .map(e -> new AbstractMap.SimpleEntry<>(schemaRefs.get(e.getKey()), e.getValue()))
                 .allMatch(e -> ctx.resolveInternalRefAndValidate(e.getKey(), e.getValue()));
-        return valid ? Result.success(Collections.unmodifiableSet(filtered.keySet())) : Result.failure();
+        return valid ? Result.success(unmodifiableSet(filtered.keySet())) : Result.failure();
     }
 }
 
@@ -179,16 +181,16 @@ class PatternPropertiesEvaluator implements Evaluator {
         boolean valid = true;
         Set<String> processed = new HashSet<>();
         for (Map.Entry<String, JsonNode> entry : node.asObject().entrySet()) {
-            List<String> schemaRefs = schemasByPatterns.entrySet().stream()
+            List<String> schemaRefs = unmodifiableList(schemasByPatterns.entrySet().stream()
                     .filter(e -> e.getKey().matcher(entry.getKey()).find())
                     .map(Map.Entry::getValue)
-                    .toList();
+                    .collect(Collectors.toList()));
             if (!schemaRefs.isEmpty()) {
                 processed.add(entry.getKey());
             }
             valid = schemaRefs.stream().allMatch(ref -> ctx.resolveInternalRefAndValidate(ref, entry.getValue())) && valid;
         }
-        return valid ? Result.success(Collections.unmodifiableSet(processed)) : Result.failure();
+        return valid ? Result.success(unmodifiableSet(processed)) : Result.failure();
     }
 }
 
@@ -276,7 +278,7 @@ class AllOfEvaluator implements Applicator {
         if (!node.isArray()) {
             throw new IllegalArgumentException();
         }
-        this.refs = node.asArray().stream().map(ctx::getAbsoluteUri).toList();
+        this.refs = unmodifiableList(node.asArray().stream().map(ctx::getAbsoluteUri).collect(Collectors.toList()));
     }
 
     @Override
@@ -292,7 +294,7 @@ class AnyOfEvaluator implements Applicator {
         if (!node.isArray()) {
             throw new IllegalArgumentException();
         }
-        this.refs = node.asArray().stream().map(ctx::getAbsoluteUri).toList();
+        this.refs = unmodifiableList(node.asArray().stream().map(ctx::getAbsoluteUri).collect(Collectors.toList()));
     }
 
     @Override
@@ -310,7 +312,7 @@ class OneOfEvaluator implements Applicator {
         if (!node.isArray()) {
             throw new IllegalArgumentException();
         }
-        this.refs = node.asArray().stream().map(ctx::getAbsoluteUri).toList();
+        this.refs = unmodifiableList(node.asArray().stream().map(ctx::getAbsoluteUri).collect(Collectors.toList()));
     }
 
     @Override
@@ -357,9 +359,9 @@ class UnevaluatedItemsEvaluator implements Applicator {
             return true;
         }
 
-        List<EvaluationItem> evaluationItems = ctx.getEvaluationItems().stream()
+        List<EvaluationItem> evaluationItems = unmodifiableList(ctx.getEvaluationItems().stream()
                 .filter(a -> getSchemaPath(a).startsWith(parentPath))
-                .toList();
+                .collect(Collectors.toList()));
         return node.asArray()
                 .stream()
                 .filter(arrayNode -> evaluationItems.stream().noneMatch(a -> a.getInstanceLocation().startsWith(arrayNode.getJsonPointer())))
@@ -395,9 +397,9 @@ class UnevaluatedPropertiesEvaluator implements Applicator {
             return true;
         }
 
-        List<EvaluationItem> evaluationItems = ctx.getEvaluationItems().stream()
+        List<EvaluationItem> evaluationItems = unmodifiableList(ctx.getEvaluationItems().stream()
                 .filter(a -> getSchemaPath(a).startsWith(parentPath))
-                .toList();
+                .collect(Collectors.toList()));
         return node.asObject()
                 .values()
                 .stream()
@@ -430,7 +432,7 @@ class RefEvaluator implements Evaluator {
         try {
             return ctx.resolveRefAndValidate(ref, node) ? Result.success() : Result.failure();
         } catch (SchemaNotFoundException e) {
-            return Result.failure("Resolution of $ref [%s] failed".formatted(ref));
+            return Result.failure(String.format("Resolution of $ref [%s] failed", ref));
         }
     }
 }
@@ -450,7 +452,7 @@ class DynamicRefEvaluator implements Evaluator {
         try {
             return ctx.resolveDynamicRefAndValidate(ref, node) ? Result.success() : Result.failure();
         } catch (SchemaNotFoundException e) {
-            return Result.failure("Resolution of $ref [%s] failed".formatted(ref));
+            return Result.failure(String.format("Resolution of $ref [%s] failed", ref));
         }
     }
 }

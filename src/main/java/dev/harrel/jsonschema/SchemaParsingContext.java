@@ -3,6 +3,8 @@ package dev.harrel.jsonschema;
 import java.net.URI;
 import java.util.*;
 
+import static java.util.Collections.*;
+
 /**
  * {@code SchemaParsingContext} class represents state of current schema parsing process.
  * {@link EvaluatorFactory} can use this class for evaluator creation process.
@@ -22,7 +24,7 @@ public final class SchemaParsingContext {
     }
 
     SchemaParsingContext(SchemaRegistry schemaRegistry, String baseUri) {
-        this(URI.create(baseUri), URI.create(baseUri), schemaRegistry, Map.of());
+        this(URI.create(baseUri), URI.create(baseUri), schemaRegistry, emptyMap());
     }
 
     SchemaParsingContext withParentUri(URI parentUri) {
@@ -30,7 +32,7 @@ public final class SchemaParsingContext {
     }
 
     SchemaParsingContext withCurrentSchemaContext(Map<String, JsonNode> currentSchemaObject) {
-        return new SchemaParsingContext(baseUri, parentUri, schemaRegistry, Collections.unmodifiableMap(currentSchemaObject));
+        return new SchemaParsingContext(baseUri, parentUri, schemaRegistry, unmodifiableMap(currentSchemaObject));
     }
 
     /**
@@ -69,6 +71,6 @@ public final class SchemaParsingContext {
      * @return unmodifiable map representing schema object
      */
     public Map<String, JsonNode> getCurrentSchemaObject() {
-        return Collections.unmodifiableMap(currentSchemaObject);
+        return unmodifiableMap(currentSchemaObject);
     }
 }

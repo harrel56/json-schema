@@ -13,6 +13,7 @@ targetCompatibility JavaVersion.VERSION_17
 compileJava {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
+    options.compilerArgs.addAll(['--release', '8'])
 }
 
 java {

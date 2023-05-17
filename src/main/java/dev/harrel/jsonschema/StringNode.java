@@ -5,6 +5,9 @@ import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
+
 final class StringNode implements JsonNode {
     private final String value;
     private final String jsonPointer;
@@ -46,11 +49,11 @@ final class StringNode implements JsonNode {
 
     @Override
     public List<JsonNode> asArray() {
-        return List.of();
+        return emptyList();
     }
 
     @Override
     public Map<String, JsonNode> asObject() {
-        return Map.of();
+        return emptyMap();
     }
 }

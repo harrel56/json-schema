@@ -1,10 +1,10 @@
 package dev.harrel.jsonschema;
 
 import java.net.URI;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.util.Collections.*;
 
 public final class Validator {
     private final JsonNodeFactory jsonNodeFactory;
@@ -62,7 +62,7 @@ public final class Validator {
     private Schema getRootSchema(String uri) {
         Schema schema = schemaRegistry.get(uri);
         if (schema == null) {
-            throw new IllegalArgumentException("Couldn't find schema with uri [%s]".formatted(uri));
+            throw new IllegalArgumentException(String.format("Couldn't find schema with uri [%s]", uri));
         }
         return schema;
     }
@@ -90,7 +90,7 @@ public final class Validator {
         }
 
         static Result fromEvaluationContext(boolean valid, EvaluationContext ctx) {
-            return new Result(valid, List.copyOf(ctx.getEvaluationItems()), List.copyOf(ctx.getValidationItems()));
+            return new Result(valid, unmodifiableList(new ArrayList<>(ctx.getEvaluationItems())), unmodifiableList(new ArrayList<>(ctx.getValidationItems())));
         }
 
         /**
@@ -105,9 +105,9 @@ public final class Validator {
          * @return unmodifiable list of {@link Annotation}s
          */
         public List<Annotation> getAnnotations() {
-            return evaluationItems.stream()
+            return unmodifiableList(evaluationItems.stream()
                     .filter(a -> a.getAnnotation() != null)
-                    .collect(Collectors.toUnmodifiableList());
+                    .collect(Collectors.toList()));
         }
 
         /**
@@ -116,12 +116,12 @@ public final class Validator {
          */
         public List<Error> getErrors() {
             if (isValid()) {
-                return List.of();
+                return emptyList();
             } else {
-                return validationItems.stream()
+                return unmodifiableList(validationItems.stream()
                         .filter(a -> !a.isValid())
                         .filter(a -> a.getError() != null)
-                        .collect(Collectors.toUnmodifiableList());
+                        .collect(Collectors.toList()));
             }
         }
     }

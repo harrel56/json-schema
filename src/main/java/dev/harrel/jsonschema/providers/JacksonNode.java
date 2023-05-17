@@ -14,14 +14,17 @@ import java.util.*;
 
 public final class JacksonNode implements JsonNode {
 
-    private static final Map<JsonNodeType, SimpleType> TYPE_MAP = Map.of(
-            JsonNodeType.NULL, SimpleType.NULL,
-            JsonNodeType.BOOLEAN, SimpleType.BOOLEAN,
-            JsonNodeType.STRING, SimpleType.STRING,
-            JsonNodeType.NUMBER, SimpleType.NUMBER,
-            JsonNodeType.ARRAY, SimpleType.ARRAY,
-            JsonNodeType.OBJECT, SimpleType.OBJECT
-    );
+    private static final Map<JsonNodeType, SimpleType> TYPE_MAP;
+    static {
+        Map<JsonNodeType, SimpleType> typeMap = new EnumMap<>(JsonNodeType.class);
+        typeMap.put(JsonNodeType.NULL, SimpleType.NULL);
+        typeMap.put(JsonNodeType.BOOLEAN, SimpleType.BOOLEAN);
+        typeMap.put(JsonNodeType.STRING, SimpleType.STRING);
+        typeMap.put(JsonNodeType.NUMBER, SimpleType.NUMBER);
+        typeMap.put(JsonNodeType.ARRAY, SimpleType.ARRAY);
+        typeMap.put(JsonNodeType.OBJECT, SimpleType.OBJECT);
+        TYPE_MAP = Collections.unmodifiableMap(typeMap);
+    }
 
     private final com.fasterxml.jackson.databind.JsonNode node;
     private final String jsonPointer;

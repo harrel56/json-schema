@@ -9,7 +9,8 @@ import static dev.harrel.jsonschema.Keyword.*;
  * {@code EvaluatorFactory} implementation that supports <a href="https://json-schema.org/draft/2020-12/schema">2020 draft</a> specification.
  */
 public class Draft2020EvaluatorFactory implements EvaluatorFactory {
-    private static final Set<String> IGNORED_KEYWORDS = Set.of(ID, SCHEMA, ANCHOR, DYNAMIC_ANCHOR, VOCABULARY, COMMENT, DEFS, THEN, ELSE);
+    private static final Set<String> IGNORED_KEYWORDS = Collections.unmodifiableSet(new HashSet<>(
+            Arrays.asList(ID, SCHEMA, ANCHOR, DYNAMIC_ANCHOR, VOCABULARY, COMMENT, DEFS, THEN, ELSE)));
 
     protected final Map<String, BiFunction<SchemaParsingContext, JsonNode, Evaluator>> evaluatorsMap;
 

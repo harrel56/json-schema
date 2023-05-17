@@ -24,21 +24,22 @@ final class MetaSchemaValidator {
         Schema schema = resolveMetaSchema(jsonParser, metaSchemaUri);
         EvaluationContext ctx = new EvaluationContext(jsonNodeFactory, jsonParser, schemaRegistry, schemaResolver);
         if (!ctx.validateAgainstSchema(schema, node)) {
-            throw new InvalidSchemaException("Schema [%s] failed to validate against meta-schema [%s]".formatted(schemaUri, metaSchemaUri),
+            throw new InvalidSchemaException(String.format("Schema [%s] failed to validate against meta-schema [%s]", schemaUri, metaSchemaUri),
                     Validator.Result.fromEvaluationContext(false, ctx).getErrors());
         }
     }
 
     private Schema resolveMetaSchema(JsonParser jsonParser, String uri) {
-        return Optional.ofNullable(schemaRegistry.get(uri))
-                .or(() -> Optional.ofNullable(schemaRegistry.getDynamic(uri)))
-                .orElseGet(() -> resolveExternalSchema(jsonParser, uri));
+        return OptionalUtil.firstPresent(
+                () -> Optional.ofNullable(schemaRegistry.get(uri)),
+                () -> Optional.ofNullable(schemaRegistry.getDynamic(uri))
+        ).orElseGet(() -> resolveExternalSchema(jsonParser, uri));
     }
 
     private Schema resolveExternalSchema(JsonParser jsonParser, String uri) {
         String baseUri = UriUtil.getUriWithoutFragment(uri);
         if (schemaRegistry.get(baseUri) != null) {
-            throw new MetaSchemaResolvingException(RESOLVING_ERROR_MSG.formatted(uri));
+            throw new MetaSchemaResolvingException(String.format(RESOLVING_ERROR_MSG, uri));
         }
         return schemaResolver.resolve(baseUri)
                 .toJsonNode(jsonNodeFactory)
@@ -47,10 +48,10 @@ final class MetaSchemaValidator {
                         jsonParser.parseRootSchema(URI.create(baseUri), node);
                         return resolveMetaSchema(jsonParser, uri);
                     } catch (Exception e) {
-                        throw new MetaSchemaResolvingException("Parsing meta-schema [%s] failed".formatted(uri), e);
+                        throw new MetaSchemaResolvingException(String.format("Parsing meta-schema [%s] failed", uri), e);
                     }
                 })
-                .orElseThrow(() -> new MetaSchemaResolvingException(RESOLVING_ERROR_MSG.formatted(uri)));
+                .orElseThrow(() -> new MetaSchemaResolvingException(String.format(RESOLVING_ERROR_MSG, uri)));
 
     }
 }
