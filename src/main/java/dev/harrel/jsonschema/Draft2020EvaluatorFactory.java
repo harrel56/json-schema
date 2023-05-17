@@ -29,8 +29,8 @@ public class Draft2020EvaluatorFactory implements EvaluatorFactory {
         map.put(MAX_ITEMS, (ctx, node) -> new MaxItemsEvaluator(node));
         map.put(MIN_ITEMS, (ctx, node) -> new MinItemsEvaluator(node));
         map.put(UNIQUE_ITEMS, (ctx, node) -> new UniqueItemsEvaluator(node));
-        map.put(MAX_CONTAINS, MaxContainsEvaluator::new);
-        map.put(MIN_CONTAINS, MinContainsEvaluator::new);
+        map.put(MAX_CONTAINS, (ctx, node) -> new MaxContainsEvaluator(node));
+        map.put(MIN_CONTAINS, (ctx, node) -> new MinContainsEvaluator(node));
         map.put(MAX_PROPERTIES, (ctx, node) -> new MaxPropertiesEvaluator(node));
         map.put(MIN_PROPERTIES, (ctx, node) -> new MinPropertiesEvaluator(node));
         map.put(REQUIRED, (ctx, node) -> new RequiredEvaluator(node));

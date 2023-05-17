@@ -92,6 +92,17 @@ public final class EvaluationContext {
         return Collections.unmodifiableList(validationItems);
     }
 
+    <T> Optional<T> getSiblingAnnotation(String sibling, Class<T> annotationType) {
+        String parentPath = UriUtil.getJsonPointerParent(evaluationStack.peek());
+        return evaluationItems.stream()
+                .filter(item -> sibling.equals(item.getKeyword()))
+                .filter(item -> parentPath.equals(UriUtil.getJsonPointerParent(item.evaluationPath())))
+                .map(EvaluationItem::getAnnotation)
+                .filter(annotationType::isInstance)
+                .map(annotationType::cast)
+                .findAny();
+    }
+
     boolean validateAgainstSchema(Schema schema, JsonNode node) {
         boolean outOfDynamicScope = isOutOfDynamicScope(schema.getParentUri());
         if (outOfDynamicScope) {

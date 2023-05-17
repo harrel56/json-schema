@@ -339,29 +339,25 @@ class UniqueItemsEvaluator implements Evaluator {
 }
 
 class MaxContainsEvaluator implements Evaluator {
-    private final String containsPath;
     private final int max;
 
-    MaxContainsEvaluator(SchemaParsingContext ctx, JsonNode node) {
+    MaxContainsEvaluator(JsonNode node) {
         if (!node.isInteger()) {
             throw new IllegalArgumentException();
         }
-        this.containsPath = Optional.ofNullable(ctx.getCurrentSchemaObject().get(Keyword.CONTAINS))
-                .map(ctx::getAbsoluteUri)
-                .orElse(null);
         this.max = node.asInteger().intValueExact();
     }
 
     @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
-        if (!node.isArray() || containsPath == null) {
+        if (!node.isArray()) {
             return Result.success();
         }
 
-        long count = ctx.getEvaluationItems().stream()
-                .filter(a -> a.schemaLocation().equals(containsPath))
-                .count();
-        if (count <= max) {
+        int containsCount = ctx.getSiblingAnnotation(Keyword.CONTAINS, List.class)
+                .map(Collection::size)
+                .orElse(0);
+        if (containsCount <= max) {
             return Result.success();
         } else {
             return Result.failure("Array contains more than %d matching items".formatted(max));
@@ -375,29 +371,25 @@ class MaxContainsEvaluator implements Evaluator {
 }
 
 class MinContainsEvaluator implements Evaluator {
-    private final String containsPath;
     private final int min;
 
-    MinContainsEvaluator(SchemaParsingContext ctx, JsonNode node) {
+    MinContainsEvaluator(JsonNode node) {
         if (!node.isInteger()) {
             throw new IllegalArgumentException();
         }
-        this.containsPath = Optional.ofNullable(ctx.getCurrentSchemaObject().get(Keyword.CONTAINS))
-                .map(ctx::getAbsoluteUri)
-                .orElse(null);
         this.min = node.asInteger().intValueExact();
     }
 
     @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
-        if (!node.isArray() || containsPath == null) {
+        if (!node.isArray()) {
             return Result.success();
         }
 
-        long count = ctx.getEvaluationItems().stream()
-                .filter(a -> a.schemaLocation().equals(containsPath))
-                .count();
-        if (count >= min) {
+        int containsCount = ctx.getSiblingAnnotation(Keyword.CONTAINS, List.class)
+                .map(Collection::size)
+                .orElse(Integer.MAX_VALUE);
+        if (containsCount >= min) {
             return Result.success();
         } else {
             return Result.failure("Array contains less than %d matching items".formatted(min));

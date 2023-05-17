@@ -32,6 +32,10 @@ final class UriUtil {
         }
     }
 
+    static String getJsonPointerParent(String pointer) {
+        return pointer.substring(0, pointer.lastIndexOf('/'));
+    }
+
     static boolean isJsonPointerOrAnchor(String uri) {
         return uri.startsWith("#") && uri.length() > 1;
     }
