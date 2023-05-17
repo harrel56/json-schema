@@ -73,7 +73,7 @@ public final class JacksonNode implements JsonNode {
     @Override
     public List<JsonNode> asArray() {
         List<JsonNode> elements = new ArrayList<>();
-        for (var iterator = node.elements(); iterator.hasNext(); ) {
+        for (Iterator<com.fasterxml.jackson.databind.JsonNode> iterator = node.elements(); iterator.hasNext(); ) {
             elements.add(new JacksonNode(iterator.next(), jsonPointer + "/" + elements.size()));
         }
         return elements;
@@ -82,8 +82,8 @@ public final class JacksonNode implements JsonNode {
     @Override
     public Map<String, JsonNode> asObject() {
         Map<String, JsonNode> map = new HashMap<>();
-        for (var iterator = node.fields(); iterator.hasNext(); ) {
-            var entry = iterator.next();
+        for (Iterator<Map.Entry<String, com.fasterxml.jackson.databind.JsonNode>> iterator = node.fields(); iterator.hasNext(); ) {
+            Map.Entry<String, com.fasterxml.jackson.databind.JsonNode> entry = iterator.next();
             map.put(entry.getKey(), new JacksonNode(entry.getValue(), jsonPointer + "/" + entry.getKey()));
         }
         return map;

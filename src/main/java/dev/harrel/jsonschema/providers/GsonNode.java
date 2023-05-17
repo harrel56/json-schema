@@ -80,7 +80,7 @@ public final class GsonNode implements JsonNode {
     public Map<String, JsonNode> asObject() {
         Set<Map.Entry<String, JsonElement>> objectMap = node.getAsJsonObject().entrySet();
         Map<String, JsonNode> result = new HashMap<>(objectMap.size());
-        for (var entry : objectMap) {
+        for (Map.Entry<String, JsonElement> entry : objectMap) {
             result.put(entry.getKey(), new GsonNode(entry.getValue(), jsonPointer + "/" + entry.getKey()));
         }
         return result;

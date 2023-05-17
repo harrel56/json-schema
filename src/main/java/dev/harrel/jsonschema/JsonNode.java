@@ -4,6 +4,10 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
+
+import static dev.harrel.jsonschema.ComparatorHelper.*;
+import static dev.harrel.jsonschema.ComparatorHelper.compareObjects;
+
 /**
  * {@code JsonNode} interface is the main abstraction for provider-agnostic JSON node.
  */
@@ -130,8 +134,10 @@ public interface JsonNode {
             return false;
         }
     }
+}
 
-    private static boolean compareArrays(List<JsonNode> arr1, List<JsonNode> arr2) {
+class ComparatorHelper {
+    static boolean compareArrays(List<JsonNode> arr1, List<JsonNode> arr2) {
         if (arr1.size() != arr2.size()) {
             return false;
         }
@@ -143,7 +149,7 @@ public interface JsonNode {
         return true;
     }
 
-    private static boolean compareObjects(Map<String, JsonNode> object1, Map<String, JsonNode> object2) {
+    static boolean compareObjects(Map<String, JsonNode> object1, Map<String, JsonNode> object2) {
         if (object1.size() != object2.size()) {
             return false;
         }
