@@ -41,17 +41,17 @@ final class MetaSchemaValidator {
         if (schemaRegistry.get(baseUri) != null) {
             throw new MetaSchemaResolvingException(String.format(RESOLVING_ERROR_MSG, uri));
         }
-        return schemaResolver.resolve(baseUri)
-                .toJsonNode(jsonNodeFactory)
-                .map(node -> {
-                    try {
-                        jsonParser.parseRootSchema(URI.create(baseUri), node);
-                        return resolveMetaSchema(jsonParser, uri);
-                    } catch (Exception e) {
-                        throw new MetaSchemaResolvingException(String.format("Parsing meta-schema [%s] failed", uri), e);
-                    }
-                })
-                .orElseThrow(() -> new MetaSchemaResolvingException(String.format(RESOLVING_ERROR_MSG, uri)));
 
+        try {
+            JsonNode schemaNode = schemaResolver.resolve(baseUri)
+                    .toJsonNode(jsonNodeFactory)
+                    .orElseThrow(() -> new MetaSchemaResolvingException(String.format(RESOLVING_ERROR_MSG, uri)));
+            jsonParser.parseRootSchema(URI.create(baseUri), schemaNode);
+        } catch (MetaSchemaResolvingException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new MetaSchemaResolvingException(String.format("Parsing meta-schema [%s] failed", uri), e);
+        }
+        return resolveMetaSchema(jsonParser, uri);
     }
 }
