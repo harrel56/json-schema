@@ -93,7 +93,7 @@ public final class EvaluationContext {
     }
 
     <T> Optional<T> getSiblingAnnotation(String sibling, Class<T> annotationType) {
-        String parentPath = UriUtil.getJsonPointerParent(evaluationStack.peek());
+        String parentPath = UriUtil.getJsonPointerParent(evaluationStack.element());
         return evaluationItems.stream()
                 .filter(item -> sibling.equals(item.getKeyword()))
                 .filter(item -> parentPath.equals(UriUtil.getJsonPointerParent(item.getEvaluationPath())))
@@ -141,7 +141,7 @@ public final class EvaluationContext {
     }
 
     private Optional<Schema> resolveSchema(String ref) {
-        String resolvedUri = UriUtil.resolveUri(dynamicScope.peek(), ref);
+        String resolvedUri = UriUtil.resolveUri(dynamicScope.element(), ref);
         return OptionalUtil.firstPresent(
                 () -> Optional.ofNullable(schemaRegistry.get(resolvedUri)),
                 () -> Optional.ofNullable(schemaRegistry.getDynamic(resolvedUri)),
@@ -150,7 +150,7 @@ public final class EvaluationContext {
     }
 
     private Optional<Schema> resolveDynamicSchema(String ref) {
-        String resolvedUri = UriUtil.resolveUri(dynamicScope.peek(), ref);
+        String resolvedUri = UriUtil.resolveUri(dynamicScope.element(), ref);
         if (schemaRegistry.get(resolvedUri) != null) {
             return Optional.of(schemaRegistry.get(resolvedUri));
         }
