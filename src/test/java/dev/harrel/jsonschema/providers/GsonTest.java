@@ -23,6 +23,15 @@ class GsonTest {
     }
 
     @Test
+    void shouldWrapForJsonNode() {
+        GsonNode.Factory factory = new GsonNode.Factory();
+        var jsonNode = factory.wrap(JsonParser.parseString("{}"));
+        JsonNode wrap = factory.wrap(jsonNode);
+        assertThat(wrap).isNotNull();
+        assertThat(wrap.getNodeType()).isEqualTo(SimpleType.OBJECT);
+    }
+
+    @Test
     void shouldFailWrapForInvalidArgument() throws JsonProcessingException {
         com.fasterxml.jackson.databind.JsonNode object = new ObjectMapper().readTree("{}");
         GsonNode.Factory factory = new GsonNode.Factory();

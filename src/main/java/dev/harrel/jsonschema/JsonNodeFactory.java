@@ -7,6 +7,7 @@ public interface JsonNodeFactory {
     /**
      * Wraps provider specific JSON node into {@link JsonNode}.
      * Main purpose of this method is to avoid additional JSON parsing.
+     * If passed object is already {@link JsonNode} it should be returned directly.
      * @param node provider specific representation of JSON node
      * @return wrapped node
      * @throws RuntimeException when provided node is of invalid type

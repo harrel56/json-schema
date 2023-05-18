@@ -21,6 +21,15 @@ class JacksonTest {
     }
 
     @Test
+    void shouldWrapForJsonNode() throws JsonProcessingException {
+        JacksonNode.Factory factory = new JacksonNode.Factory();
+        var jsonNode = factory.wrap(new ObjectMapper().readTree("{}"));
+        JacksonNode wrap = factory.wrap(jsonNode);
+        assertThat(wrap).isNotNull();
+        assertThat(wrap.getNodeType()).isEqualTo(SimpleType.OBJECT);
+    }
+
+    @Test
     void shouldFailWrapForInvalidArgument() throws JsonProcessingException {
         Integer object = new ObjectMapper().readValue("1", Integer.class);
         JacksonNode.Factory factory = new JacksonNode.Factory();

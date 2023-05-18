@@ -122,7 +122,9 @@ public final class GsonNode implements JsonNode {
     public static final class Factory implements JsonNodeFactory {
         @Override
         public GsonNode wrap(Object node) {
-            if (node instanceof JsonElement) {
+            if (node instanceof GsonNode) {
+                return (GsonNode) node;
+            } else if (node instanceof JsonElement) {
                 return new GsonNode((JsonElement) node);
             } else {
                 throw new IllegalArgumentException("Cannot wrap object which is not an instance of com.google.gson.JsonElement");
