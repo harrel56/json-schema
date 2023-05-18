@@ -193,12 +193,8 @@ public final class EvaluationContext {
         return schemaResolver.resolve(baseUri)
                 .toJsonNode(jsonNodeFactory)
                 .flatMap(node -> {
-                    try {
-                        jsonParser.parseRootSchema(URI.create(baseUri), node);
-                        return resolveSchema(uri);
-                    } catch (Exception e) {
-                        return Optional.empty();
-                    }
+                    jsonParser.parseRootSchema(URI.create(baseUri), node);
+                    return resolveSchema(uri);
                 });
     }
 
