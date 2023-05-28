@@ -1,13 +1,15 @@
 package dev.harrel.jsonschema;
 
 import java.net.URI;
-import java.util.*;
+import java.util.Map;
 
-import static java.util.Collections.*;
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.unmodifiableMap;
 
 /**
  * {@code SchemaParsingContext} class represents state of current schema parsing process.
  * {@link EvaluatorFactory} can use this class for evaluator creation process.
+ *
  * @see EvaluatorFactory
  */
 public final class SchemaParsingContext {
@@ -45,6 +47,7 @@ public final class SchemaParsingContext {
 
     /**
      * Calculates absolute URI to the provided {@code JsonNode}.
+     *
      * @see SchemaParsingContext#getAbsoluteUri(String)
      */
     public String getAbsoluteUri(JsonNode node) {
@@ -53,21 +56,17 @@ public final class SchemaParsingContext {
 
     /**
      * Calculates absolute URI for the corresponding JSON pointer.
-     * @param jsonPointer JSON pointer string, can be prefixed with "#"
+     *
+     * @param jsonPointer JSON pointer string
      * @return absolute URI
      */
     public String getAbsoluteUri(String jsonPointer) {
-        if (jsonPointer.isEmpty()) {
-            return baseUri + "#";
-        } else if (jsonPointer.startsWith("#")) {
-            return baseUri + jsonPointer;
-        } else {
-            return baseUri + "#" + jsonPointer;
-        }
+        return baseUri + "#" + jsonPointer;
     }
 
     /**
      * Returns JSON object which is currently being parsed in form of map.
+     *
      * @return unmodifiable map representing schema object
      */
     public Map<String, JsonNode> getCurrentSchemaObject() {
