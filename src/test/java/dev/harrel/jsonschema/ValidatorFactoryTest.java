@@ -9,8 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static dev.harrel.jsonschema.TestUtil.readResource;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 
 class ValidatorFactoryTest {
     private static final String RAW_SCHEMA = "{\"type\":\"boolean\"}";
@@ -44,10 +43,43 @@ class ValidatorFactoryTest {
                   "$schema": "urn:meta"
                 }""";
         Validator validator = new ValidatorFactory()
+                .withDefaultMetaSchemaUri(null)
                 .withSchemaResolver(uri -> SchemaResolver.Result.fromString("invalid json"))
                 .createValidator();
         assertThatThrownBy(() -> validator.registerSchema(schema))
                 .isInstanceOf(MetaSchemaResolvingException.class);
+    }
+
+    @Test
+    void shouldFailWhenSchemaValidationFails() {
+        String schema = """
+                {
+                  "$schema": "urn:meta"
+                }""";
+        Validator validator = new ValidatorFactory()
+                .withDefaultMetaSchemaUri(null)
+                .withSchemaResolver(uri -> SchemaResolver.Result.fromString(RAW_SCHEMA))
+                .createValidator();
+        InvalidSchemaException e = catchThrowableOfType(() -> validator.registerSchema(schema), InvalidSchemaException.class);
+        assertThat(e.getErrors()).hasSize(1);
+        assertThat(e.getErrors().get(0).getKeyword()).isEqualTo("type");
+        assertThat(e.getErrors().get(0).getEvaluationPath()).isEqualTo("/type");
+        assertThat(e.getErrors().get(0).getInstanceLocation()).isEmpty();
+        assertThat(e.getErrors().get(0).getSchemaLocation()).isEqualTo("urn:meta#");
+        assertThat(e.getErrors().get(0).getError()).isEqualTo("Value is [object] but should be [boolean]");
+    }
+
+    @Test
+    void shouldFailForUnresolvableRef() {
+        String schema = """
+                {
+                  "$ref": "urn:missing"
+                }""";
+        boolean valid = new ValidatorFactory()
+                .withDefaultMetaSchemaUri(null)
+                .validate(schema, RAW_INSTANCE)
+                .isValid();
+        assertThat(valid).isFalse();
     }
 
     @Test
