@@ -1,11 +1,25 @@
 package dev.harrel.jsonschema;
 
+import dev.harrel.jsonschema.providers.JacksonNode;
+
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.unmodifiableList;
 
+/**
+ * Main class for performing JSON schema validation. It can be created via {@link ValidatorFactory}.
+ * Configuration of {@code Validator} is immutable. It uses <i>schema registry</i> to keep track of all the registered schemas,
+ * which are registered either by {@link Validator#registerSchema(String)} method (and its overloads) or by {@link SchemaResolver} resolution.
+ *
+ * @see ValidatorFactory
+ * @see Validator.Result
+ */
 public final class Validator {
     private final JsonNodeFactory jsonNodeFactory;
     private final SchemaResolver schemaResolver;
@@ -20,38 +34,101 @@ public final class Validator {
         this.jsonParser = new JsonParser(defaultMetaSchemaUri, evaluatorFactory, this.schemaRegistry, metaSchemaValidator);
     }
 
+    /**
+     * Registers schema and generates URI for it.
+     *
+     * @param rawSchema string representation of schema JSON
+     * @return automatically generated URI for the registered schema <b>OR</b> value of <i>$id</i> keyword in <i>root</i> schema if present
+     */
     public URI registerSchema(String rawSchema) {
         return registerSchema(jsonNodeFactory.create(rawSchema));
     }
 
+    /**
+     * Registers schema and generates URI for it.
+     *
+     * @param schemaProviderNode object representing schema JSON for currently set {@link JsonNodeFactory}.
+     *                           E.g. {@code com.fasterxml.jackson.databind.JsonNode} for default {@link JsonNodeFactory} ({@link JacksonNode.Factory})
+     * @return automatically generated URI for the registered schema <b>OR</b> value of <i>$id</i> keyword in <i>root</i> schema if present
+     */
     public URI registerSchema(Object schemaProviderNode) {
         return registerSchema(jsonNodeFactory.wrap(schemaProviderNode));
     }
 
+    /**
+     * Registers schema and generates URI for it.
+     *
+     * @param schemaNode {@link JsonNode} schema JSON, which could be created via {@link JsonNodeFactory}
+     * @return automatically generated URI for the registered schema <b>OR</b> value of <i>$id</i> keyword in <i>root</i> schema if present
+     */
     public URI registerSchema(JsonNode schemaNode) {
         return jsonParser.parseRootSchema(generateSchemaUri(), schemaNode);
     }
 
+    /**
+     * Registers schema at specified URI.
+     *
+     * @param uri       schema URI
+     * @param rawSchema string representation of schema JSON
+     * @return URI provided by user <b>OR</b> value of <i>$id</i> keyword in <i>root</i> schema if present
+     */
     public URI registerSchema(URI uri, String rawSchema) {
         return registerSchema(uri, jsonNodeFactory.create(rawSchema));
     }
 
+    /**
+     * Registers schema at specified URI.
+     *
+     * @param uri                schema URI
+     * @param schemaProviderNode object representing schema JSON for currently set {@link JsonNodeFactory}.
+     *                           E.g. {@code com.fasterxml.jackson.databind.JsonNode} for default {@link JsonNodeFactory} ({@link JacksonNode.Factory})
+     * @return URI provided by user <b>OR</b> value of <i>$id</i> keyword in <i>root</i> schema if present
+     */
     public URI registerSchema(URI uri, Object schemaProviderNode) {
         return registerSchema(uri, jsonNodeFactory.wrap(schemaProviderNode));
     }
 
+    /**
+     * Registers schema at specified URI.
+     *
+     * @param uri        schema URI
+     * @param schemaNode {@link JsonNode} schema JSON, which could be created via {@link JsonNodeFactory}
+     * @return URI provided by user <b>OR</b> value of <i>$id</i> keyword in <i>root</i> schema if present
+     */
     public URI registerSchema(URI uri, JsonNode schemaNode) {
         return jsonParser.parseRootSchema(uri, schemaNode);
     }
 
+    /**
+     * Validates instance JSON against schema resolved from provided URI.
+     *
+     * @param schemaUri   URI of schema to use for validation
+     * @param rawInstance string representation of instance JSON
+     * @return validation result
+     */
     public Result validate(URI schemaUri, String rawInstance) {
         return validate(schemaUri, jsonNodeFactory.create(rawInstance));
     }
 
+    /**
+     * Validates instance JSON against schema resolved from provided URI.
+     *
+     * @param schemaUri            URI of schema to use for validation
+     * @param instanceProviderNode object representing instance JSON for currently set {@link JsonNodeFactory}.
+     *                             E.g. {@code com.fasterxml.jackson.databind.JsonNode} for default {@link JsonNodeFactory} ({@link JacksonNode.Factory})
+     * @return validation result
+     */
     public Result validate(URI schemaUri, Object instanceProviderNode) {
         return validate(schemaUri, jsonNodeFactory.wrap(instanceProviderNode));
     }
 
+    /**
+     * Validates instance JSON against schema resolved from provided URI.
+     *
+     * @param schemaUri    URI of schema to use for validation
+     * @param instanceNode {@link JsonNode} instance JSON, which could be created via {@link JsonNodeFactory}
+     * @return validation result
+     */
     public Result validate(URI schemaUri, JsonNode instanceNode) {
         Schema schema = getRootSchema(schemaUri.toString());
         EvaluationContext ctx = createNewEvaluationContext();
@@ -102,6 +179,7 @@ public final class Validator {
 
         /**
          * Returns collected annotation during schema validation.
+         *
          * @return unmodifiable list of {@link Annotation}s
          */
         public List<Annotation> getAnnotations() {
@@ -112,6 +190,7 @@ public final class Validator {
 
         /**
          * Returns validation errors.
+         *
          * @return unmodifiable list of {@link Error}s
          */
         public List<Error> getErrors() {
