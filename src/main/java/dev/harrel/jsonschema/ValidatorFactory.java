@@ -33,7 +33,7 @@ public final class ValidatorFactory {
     /**
      * Sets {@link EvaluatorFactory}. Provided default is {@link Draft2020EvaluatorFactory}.
      *
-     * @param evaluatorFactory
+     * @param evaluatorFactory {@code EvaluatorFactory} to be used
      * @return self
      */
     public ValidatorFactory withEvaluatorFactory(EvaluatorFactory evaluatorFactory) {
@@ -44,7 +44,7 @@ public final class ValidatorFactory {
     /**
      * Sets {@link JsonNodeFactory}. Provided default is {@link JacksonNode.Factory}.
      *
-     * @param jsonNodeFactory
+     * @param jsonNodeFactory {@code JsonNodeFactory} to be used
      * @return self
      */
     public ValidatorFactory withJsonNodeFactory(JsonNodeFactory jsonNodeFactory) {
@@ -57,7 +57,7 @@ public final class ValidatorFactory {
      * Composes {@link SchemaResolver} with default schema resolver.
      * The default schema resolver resolves only <a href="https://json-schema.org/draft/2020-12/schema">draft 2020-12</a> schema. It is loaded from classpath.
      *
-     * @param schemaResolver
+     * @param schemaResolver {@code SchemaResolver} to be used
      * @return self
      */
     public ValidatorFactory withSchemaResolver(SchemaResolver schemaResolver) {
