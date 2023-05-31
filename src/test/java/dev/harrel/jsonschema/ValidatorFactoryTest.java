@@ -3,10 +3,14 @@ package dev.harrel.jsonschema;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.harrel.jsonschema.providers.JacksonNode;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
 import static dev.harrel.jsonschema.TestUtil.readResource;
 import static org.assertj.core.api.Assertions.*;
@@ -146,5 +150,94 @@ class ValidatorFactoryTest {
         JsonNode jsonNodeInstance = new JacksonNode.Factory().create(RAW_INSTANCE);
         boolean valid = new ValidatorFactory().validate(jsonNodeSchema, jsonNodeInstance).isValid();
         assertThat(valid).isFalse();
+    }
+
+    @Test
+    void refToExternalSubSchemaPasses() {
+        String schema = """
+                {
+                  "$ref": "urn:x#/nope"
+                }""";
+        String refSchema = """
+                {
+                  "nope": {
+                    "const": true
+                  }
+                }""";
+        Validator.Result result = new ValidatorFactory()
+                .withDefaultMetaSchemaUri(null)
+                .withSchemaResolver(uri -> SchemaResolver.Result.fromString(refSchema))
+                .validate(schema, "true");
+        assertThat(result.isValid()).isTrue();
+    }
+
+    @Test
+    void refToExternalMissingSubSchemaFails() {
+        String schema = """
+                {
+                  "$ref": "urn:x#/nope"
+                }""";
+        Validator.Result result = new ValidatorFactory()
+                .withDefaultMetaSchemaUri(null)
+                .withSchemaResolver(uri -> SchemaResolver.Result.fromString("{}"))
+                .validate(schema, "true");
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(1);
+        assertThat(errors.get(0).getKeyword()).isEqualTo("$ref");
+        assertThat(errors.get(0).getEvaluationPath()).isEqualTo("/$ref");
+        assertThat(errors.get(0).getInstanceLocation()).isEmpty();
+        assertThat(errors.get(0).getError()).isEqualTo("Resolution of $ref [urn:x#/nope] failed");
+    }
+
+    @Test
+    void metaRefToExternalSubSchemaPasses() {
+        String schema = """
+                {
+                  "$schema": "urn:x#/nope"
+                }""";
+        String refSchema = """
+                {
+                  "nope": {
+                    "type": "object"
+                  }
+                }""";
+        Validator validator = new ValidatorFactory()
+                .withDefaultMetaSchemaUri(null)
+                .withSchemaResolver(uri -> SchemaResolver.Result.fromString(refSchema))
+                .createValidator();
+        URI uri = validator.registerSchema(schema);
+        assertThat(validator.validate(uri, "true").isValid()).isTrue();
+    }
+
+    @Test
+    void metaRefToExternalMissingSubSchemaPasses() {
+        String schema = """
+                {
+                  "$schema": "urn:x#/nope"
+                }""";
+        Validator validator = new ValidatorFactory()
+                .withDefaultMetaSchemaUri(null)
+                .withSchemaResolver(uri -> SchemaResolver.Result.fromString("{}"))
+                .createValidator();
+        assertThatThrownBy(() -> validator.registerSchema(schema))
+                .isInstanceOf(MetaSchemaResolvingException.class)
+                .hasMessage("Cannot resolve meta-schema [urn:x#/nope]");
+    }
+
+    @Disabled("To be enabled when thread safety issues are taken care of")
+    @RepeatedTest(500)
+    void threadSafetyRegistrationTest() {
+        String schema = """
+                {
+                  "$schema": "urn:meta"
+                }""";
+        Validator validator = new ValidatorFactory()
+                .withDefaultMetaSchemaUri(null)
+                .withSchemaResolver(uri -> SchemaResolver.Result.fromString("true"))
+                .createValidator();
+        IntStream.range(0, 100).parallel().forEach(i -> validator.registerSchema(schema));
+        URI uri = validator.registerSchema(schema);
+        assertThat(validator.validate(uri, "true").isValid()).isTrue();
     }
 }
