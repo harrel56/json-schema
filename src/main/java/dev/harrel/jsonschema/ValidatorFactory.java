@@ -221,13 +221,18 @@ public final class ValidatorFactory {
     }
 
     static class DefaultMetaSchemaResolver implements SchemaResolver {
+        private String rawSchema;
+
         @Override
         public Result resolve(String uri) {
             if (DEFAULT_META_SCHEMA.equals(uri)) {
+                if (rawSchema != null) {
+                    return Result.fromString(rawSchema);
+                }
                 try (InputStream is = getClass().getResourceAsStream("/draft2020-12.json")) {
                     if (is != null) {
-                        String content = new BufferedReader(new InputStreamReader(is)).lines().collect(Collectors.joining());
-                        return Result.fromString(content);
+                        rawSchema = new BufferedReader(new InputStreamReader(is)).lines().collect(Collectors.joining());
+                        return Result.fromString(rawSchema);
                     }
                 } catch (IOException e) {
                     throw new UncheckedIOException(e);
