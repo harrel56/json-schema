@@ -90,7 +90,7 @@ new ValidatorFactory().withJsonNodeFactory(new GsonNode.Factory());
 ```
 
 ## Advanced configuration
-### <a href="schema-resolver"></a> Resolving external schemas
+### <a name="schema-resolver"></a> Resolving external schemas
 By default, the only schema that is resolved externally, is specification meta-schema for *draft 2020-12* which is used for validating schemas during registration process. The meta-schema file is fetched from the classpath and is packaged with jar.
 
 **There is no mechanism to pull schemas via HTTP requests**. If such behaviour is required it should be implemented by the user.
@@ -123,7 +123,7 @@ By default, upon registration of each schema, it gets validated against meta-sch
 
 For each specific schema this behaviour can be overridden by providing *$schema* keyword with desired meta-schema URI. Resolution of meta-schema follows the same [rules](#schema-resolver) as for a regular schema.
 
-If you want to change default meta-schema, configure `ValidatorVaftory` like this:
+If you want to change default meta-schema, configure `ValidatorVactory` like this:
 ```java
 new ValidatorFactory().withDefaultMetaSchema("your-meta-schema-uri");
 ```
