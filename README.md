@@ -43,7 +43,7 @@ boolean valid = result.isValid(); // Boolean flag indicating if validation succe
 List<Error> errors = result.getErrors(); // Details where validation exactly failed
 List<Annotation> annotations = result.getAnnotations(); // Collected annotation during validation process
 ```
-`Error` and `Annotation` classes contain specific information where the event occurred, along with error message or annotation value. For specific structure details please refer to [documentation](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/ResultItem.html).
+`Error` and `Annotation` classes contain specific information where the event occurred, along with error message or annotation value. For specific structure details please refer to the [documentation](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/ResultItem.html).
 
 ### Reusing schema
 Probably most common case is to validate multiple JSON objects against one specific schema. Approach listed above parses schema for each validation request. To avoid this performance hit, it is better to use [Validator](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/Validator.html) class directly.
@@ -73,10 +73,17 @@ Specific version of provider dependencies which were tested can be found in proj
 All adapter classes for JSON provider libs can be found in this [package](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/package-summary.html). Anyone is free to add new adapter classes for any JSON lib of their choice, but keep in mind that it is not trivial. If you do so, ensure that test suites for providers pass.
 
 ### Changing JSON provider
+
+| Provider                                    | Tested version | Factory class                            | Provider node class                     |
+|---------------------------------------------|----------------|------------------------------------------|-----------------------------------------|
+| com.fasterxml.jackson.core:jackson-databind | 2.15.1+        | dev.harrel.providers.JacksonNode.Factory | com.fasterxml.jackson.databind.JsonNode |
+| com.google.code.gson:gson                   | 2.10.1+        | dev.harrel.providers.GsonNode.Factory    | com.google.gson.JsonElement             |
+
 #### com.fasterxml.jackson.core:jackson-databind
 ```java
 new ValidatorFactory().withJsonNodeFactory(new JacksonNode.Factory());
 ```
+
 #### com.google.code.gson:gson
 ```java
 new ValidatorFactory().withJsonNodeFactory(new GsonNode.Factory());
@@ -109,7 +116,7 @@ Then it just needs to be attached to `ValidatorFactory`:
 ```java
 new ValidatorFactory().withSchemaResolver(resolver);
 ```
-For more information about return type please refer to the [docs](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/SchemaResolver.Result.html).
+For more information about return type please refer to the [documentation](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/SchemaResolver.Result.html).
 
 ### Default meta-schema
 
