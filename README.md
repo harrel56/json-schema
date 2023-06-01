@@ -90,10 +90,10 @@ new ValidatorFactory().withJsonNodeFactory(new GsonNode.Factory());
 ```
 
 ## Advanced configuration
-### Resolving external schemas
+### <a href="schema-resolver"></a> Resolving external schemas
 By default, the only schema that is resolved externally, is specification meta-schema for *draft 2020-12* which is used for validating schemas during registration process. The meta-schema file is fetched from the classpath and is packaged with jar.
 
-Certainly, **there is no mechanism to pull schemas via HTTP requests**. If such behaviour is required it should be implemented by the user.
+**There is no mechanism to pull schemas via HTTP requests**. If such behaviour is required it should be implemented by the user.
 
 Providing custom `SchemaResolver` would look like this:
 ```java
@@ -119,5 +119,45 @@ new ValidatorFactory().withSchemaResolver(resolver);
 For more information about return type please refer to the [documentation](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/SchemaResolver.Result.html).
 
 ### Default meta-schema
+By default, upon registration of each schema, it gets validated against meta-schema (*https://json-schema.org/draft/2020-12/schema*). If validation fails [InvalidSchemaException](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/InvalidSchemaException.html) is thrown.
+
+For each specific schema this behaviour can be overridden by providing *$schema* keyword with desired meta-schema URI. Resolution of meta-schema follows the same [rules](#schema-resolver) as for a regular schema.
+
+If you want to change default meta-schema, configure `ValidatorVaftory` like this:
+```java
+new ValidatorFactory().withDefaultMetaSchema("your-meta-schema-uri");
+```
+
+If you don't want to validate schemas by default, set default meta-schema to null:
+```java
+new ValidatorFactory().withDefaultMetaSchema(null);
+```
 
 ### Adding custom keywords
+Customizing specific keywords behaviour can be achieved by providing custom [EvaluatorFactory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/EvaluatorFactory.html) implementation.
+
+If you only want to add additional keywords on top of those supported in *draft 2020-12*, please extend [Draft2020EvaluatorFactory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/Draft2020EvaluatorFactory.html) class.
+
+This example shows an implementation that adds `customKeyword` keyword handling which fails validation if JSON node is not an empty array:
+```java
+class CustomEvaluatorFactory extends Draft2020EvaluatorFactory {
+    @Override
+    public Optional<Evaluator> create(SchemaParsingContext ctx, String fieldName, JsonNode node) {
+        if ("customKeyword".equals(fieldName)) {
+            return Optional.of((evaluationContext, instanceNode) -> {
+                if (instanceNode.isArray() && instanceNode.asArray().isEmpty()) {
+                    return Evaluator.Result.success(); // Optionally, you could also pass annotation
+                } else {
+                    return Evaluator.Result.failure(); // Optionally, you could also pass error message
+                }
+            });
+        }
+        return super.create(ctx, fieldName, node);
+    }
+}
+```
+
+Then it just needs to be attached to `ValidatorFactory`:
+```java
+new ValidatorFactory().withEvaluatorFactory(new CustomEvaluatorFactory());
+```
