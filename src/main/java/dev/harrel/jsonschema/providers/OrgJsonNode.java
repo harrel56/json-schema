@@ -17,7 +17,7 @@ public final class OrgJsonNode implements JsonNode {
     private final SimpleType nodeType;
 
     private OrgJsonNode(Object node, String jsonPointer) {
-        this.node = node;
+        this.node = Objects.requireNonNull(node);
         this.jsonPointer = Objects.requireNonNull(jsonPointer);
         this.nodeType = computeNodeType(node);
     }
@@ -43,18 +43,31 @@ public final class OrgJsonNode implements JsonNode {
 
     @Override
     public String asString() {
-        String stringNode = (String) node;
-        return stringNode.substring(1, stringNode.length() - 1);
+        return node.toString();
     }
 
     @Override
     public BigInteger asInteger() {
-        return null;
+        if (node instanceof BigInteger) {
+            return (BigInteger) node;
+        } else if (node instanceof BigDecimal) {
+            return ((BigDecimal) node).toBigInteger();
+        } else {
+            return BigInteger.valueOf(((Number) node).longValue());
+        }
     }
 
     @Override
     public BigDecimal asNumber() {
-        return null;
+        if (node instanceof BigDecimal) {
+            return (BigDecimal) node;
+        } else if (node instanceof BigInteger) {
+            return new BigDecimal((BigInteger) node);
+        } else if (node instanceof Double) {
+            return BigDecimal.valueOf((Double) node);
+        } else {
+            return BigDecimal.valueOf(((Number) node).longValue());
+        }
     }
 
     @Override
@@ -68,20 +81,12 @@ public final class OrgJsonNode implements JsonNode {
 
     @Override
     public Map<String, JsonNode> asObject() {
-        return null;
-    }
-
-    @Override
-    public String toPrintableString() {
-        if (isObject()) {
-            return "specific object";
-        } else if (isArray()) {
-            return "specific array";
-        } else if (isString()) {
-            return asString();
-        } else {
-            return node.toString();
+        Map<String, JsonNode> map = new HashMap<>();
+        JSONObject jsonObject = (JSONObject) node;
+        for (String key : jsonObject.keySet()) {
+            map.put(key, new OrgJsonNode(jsonObject.get(key), jsonPointer + "/" + key));
         }
+        return map;
     }
 
     private static SimpleType computeNodeType(Object node) {
@@ -91,19 +96,24 @@ public final class OrgJsonNode implements JsonNode {
             return SimpleType.BOOLEAN;
         } else if (Factory.isString(node)) {
             return SimpleType.STRING;
+        } else if (Factory.isDecimal(node)) {
+            if (node instanceof BigDecimal && ((BigDecimal) node).stripTrailingZeros().scale() <= 0) {
+                return SimpleType.INTEGER;
+            } else if (node instanceof Double && ((Number) node).doubleValue() == Math.rint(((Number) node).doubleValue())) {
+                return SimpleType.INTEGER;
+            } else {
+                return SimpleType.NUMBER;
+            }
         } else if (Factory.isInteger(node)) {
             return SimpleType.INTEGER;
-        } else if (Factory.isDecimal(node)) {
-            return SimpleType.NUMBER;
         } else if (Factory.isArray(node)) {
             return SimpleType.ARRAY;
         } else if (Factory.isObject(node)) {
             return SimpleType.OBJECT;
         }
-        throw new IllegalArgumentException("Couldn't assign type to node of class=" + node.getClass().getName());
+        throw new IllegalArgumentException("Cannot assign type to node of class=" + node.getClass().getName());
     }
 
-    // TODO handle JSONString + don't allow POJOs?
     public static final class Factory implements JsonNodeFactory {
         @Override
         public JsonNode wrap(Object node) {
@@ -118,17 +128,7 @@ public final class OrgJsonNode implements JsonNode {
 
         @Override
         public JsonNode create(String rawJson) {
-            JSONTokener tokener = new JSONTokener(rawJson);
-            char firstChar = tokener.nextClean();
-            if (firstChar == '{') {
-                tokener.back();
-                return new OrgJsonNode(new JSONObject(tokener));
-            } else if (firstChar == '[') {
-                tokener.back();
-                return new OrgJsonNode(new JSONArray(tokener));
-            } else {
-                return new OrgJsonNode(JSONObject.stringToValue(rawJson));
-            }
+            return new OrgJsonNode(new JSONTokener(rawJson).nextValue());
         }
 
         private static boolean isLiteral(Object node) {
@@ -148,11 +148,11 @@ public final class OrgJsonNode implements JsonNode {
         }
 
         private static boolean isInteger(Object node) {
-            return node instanceof Byte || node instanceof Short || node instanceof Integer || node instanceof Long || node instanceof BigInteger;
+            return node instanceof Integer || node instanceof Long || node instanceof BigInteger;
         }
 
         private static boolean isDecimal(Object node) {
-            return node instanceof Float || node instanceof Double || node instanceof BigDecimal;
+            return node instanceof Double || node instanceof BigDecimal;
         }
 
         private static boolean isArray(Object node) {
