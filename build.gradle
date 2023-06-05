@@ -26,6 +26,9 @@ java {
     registerFeature('gson') {
         usingSourceSet(sourceSets.main)
     }
+    registerFeature('orgJson') {
+        usingSourceSet(sourceSets.main)
+    }
 }
 
 repositories {
@@ -34,13 +37,16 @@ repositories {
 
 def JACKSON_VERSION = '2.15.2'
 def GSON_VERSION = '2.10.1'
+def ORG_JSON_VERSION = '20230227'
 
 setupProviderTest('jackson', "com.fasterxml.jackson.core:jackson-databind:$JACKSON_VERSION")
 setupProviderTest('gson', "com.google.code.gson:gson:$GSON_VERSION")
+setupProviderTest('orgJson', "org.json:json:$ORG_JSON_VERSION")
 
 dependencies {
     jacksonImplementation "com.fasterxml.jackson.core:jackson-databind:$JACKSON_VERSION"
     gsonImplementation "com.google.code.gson:gson:$GSON_VERSION"
+    orgJsonImplementation "org.json:json:$ORG_JSON_VERSION"
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.3'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
