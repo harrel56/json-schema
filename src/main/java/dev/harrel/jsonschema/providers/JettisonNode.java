@@ -3,26 +3,27 @@ package dev.harrel.jsonschema.providers;
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.json.JSONTokener;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONTokener;
+import org.codehaus.jettison.json.JSONObject;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 
-public final class OrgJsonNode implements JsonNode {
+public final class JettisonNode implements JsonNode {
     private final Object node;
     private final String jsonPointer;
     private final SimpleType nodeType;
 
-    private OrgJsonNode(Object node, String jsonPointer) {
+    private JettisonNode(Object node, String jsonPointer) {
         this.node = Objects.requireNonNull(node);
         this.jsonPointer = Objects.requireNonNull(jsonPointer);
         this.nodeType = computeNodeType(node);
     }
 
-    public OrgJsonNode(Object node) {
+    public JettisonNode(Object node) {
         this(node, "");
     }
 
@@ -43,7 +44,11 @@ public final class OrgJsonNode implements JsonNode {
 
     @Override
     public String asString() {
-        return node.toString();
+        if (Factory.isNull(node)) {
+            return "null";
+        } else {
+            return node.toString();
+        }
     }
 
     @Override
@@ -73,18 +78,21 @@ public final class OrgJsonNode implements JsonNode {
     @Override
     public List<JsonNode> asArray() {
         List<JsonNode> elements = new ArrayList<>();
-        for (Object o : (JSONArray) node) {
-            elements.add(new OrgJsonNode(o, jsonPointer + "/" + elements.size()));
+        JSONArray arrayNode = (JSONArray) node;
+        for (int i = 0; i < arrayNode.length(); ++i) {
+            elements.add(new JettisonNode(arrayNode.opt(i), jsonPointer + "/" + elements.size()));
         }
         return elements;
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Map<String, JsonNode> asObject() {
         Map<String, JsonNode> map = new HashMap<>();
         JSONObject jsonObject = (JSONObject) node;
-        for (String key : jsonObject.keySet()) {
-            map.put(key, new OrgJsonNode(jsonObject.get(key), jsonPointer + "/" + key));
+        for (Object object : jsonObject.toMap().entrySet()) {
+            Map.Entry<Object, Object> entry = (Map.Entry<Object, Object>) object;
+            map.put(entry.getKey().toString(), new JettisonNode(entry.getValue(), jsonPointer + "/" + entry.getKey()));
         }
         return map;
     }
@@ -117,18 +125,24 @@ public final class OrgJsonNode implements JsonNode {
     public static final class Factory implements JsonNodeFactory {
         @Override
         public JsonNode wrap(Object node) {
+            JSONArray tmp = new JSONArray();
+            tmp.put(node);
             if (isLiteral(node) || isArray(node) || isObject(node)) {
-                return new OrgJsonNode(node);
+                return new JettisonNode(node);
             } else if (node instanceof JsonNode) {
                 return (JsonNode) node;
             } else {
-                throw new IllegalArgumentException("Cannot wrap object which is not an instance of org.json.JSONObject, org.json.JSONArray or simple literal");
+                throw new IllegalArgumentException("Cannot wrap object which is not an instance of org.codehaus.jettison.json.JSONObject, org.codehaus.jettison.json.JSONArray or simple literal");
             }
         }
 
         @Override
         public JsonNode create(String rawJson) {
-            return new OrgJsonNode(new JSONTokener(rawJson).nextValue());
+            try {
+                return new JettisonNode(new JSONTokener(rawJson).nextValue());
+            } catch (JSONException e) {
+                throw new IllegalArgumentException(e);
+            }
         }
 
         private static boolean isLiteral(Object node) {
@@ -136,7 +150,7 @@ public final class OrgJsonNode implements JsonNode {
         }
 
         private static boolean isNull(Object node) {
-            return JSONObject.NULL.equals(node);
+            return JSONObject.NULL.equals(node) || JSONObject.EXPLICIT_NULL.equals(node);
         }
 
         private static boolean isBoolean(Object node) {
