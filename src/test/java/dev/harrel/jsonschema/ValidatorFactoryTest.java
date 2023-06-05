@@ -3,10 +3,6 @@ package dev.harrel.jsonschema;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.harrel.jsonschema.providers.JacksonNode;
-import org.json.JSONObject;
-import org.json.JSONStringer;
-import org.json.JSONTokener;
-import org.json.JSONWriter;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
@@ -25,13 +21,11 @@ class ValidatorFactoryTest {
 
     @Test
     void name() {
-//        String schema = readResource("/schema.json");
-//        String instance = readResource("/instance.json");
-//        Validator.Result result = new ValidatorFactory().withDefaultMetaSchemaUri(null).validate(schema, instance);
-//        List<Error> errors = result.getErrors();
-
-        Object val = JSONObject.stringToValue("123");
-        System.out.println(val);
+        String schema = readResource("/schema.json");
+        String instance = readResource("/instance.json");
+        Validator.Result result = new ValidatorFactory().withDefaultMetaSchemaUri(null).validate(schema, instance);
+        List<Error> errors = result.getErrors();
+        System.out.println(errors);
     }
 
     @Test
