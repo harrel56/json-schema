@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'maven-publish'
     id 'signing'
+    id 'jacoco'
 }
 
 group 'dev.harrel'
@@ -141,6 +142,11 @@ signing {
         useInMemoryPgpKeys(decodedKey, findProperty('signingPassword'))
     }
     sign publishing.publications.sonatype
+}
+
+jacocoTestReport {
+    reports.html.required = false
+    reports.csv.required = true
 }
 
 def setupProviderTest(String provider, String dependency) {
