@@ -10,14 +10,14 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import static net.minidev.json.parser.JSONParser.MODE_STRICTEST;
+import static net.minidev.json.parser.JSONParser.MODE_JSON_SIMPLE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class JsonSmartTest {
     @Test
     void shouldWrapForValidArgument() throws ParseException {
-        Object object = new JSONParser(MODE_STRICTEST).parse("{}");
+        Object object = new JSONParser(MODE_JSON_SIMPLE).parse("{}");
         JsonNode wrap = new JsonSmartNode.Factory().wrap(object);
         assertThat(wrap).isNotNull();
         assertThat(wrap.getNodeType()).isEqualTo(SimpleType.OBJECT);
@@ -26,7 +26,7 @@ class JsonSmartTest {
     @Test
     void shouldWrapForJsonNode() throws ParseException {
         JsonSmartNode.Factory factory = new JsonSmartNode.Factory();
-        var jsonNode = factory.wrap(new JSONParser(MODE_STRICTEST).parse("{}"));
+        var jsonNode = factory.wrap(new JSONParser(MODE_JSON_SIMPLE).parse("{}"));
         JsonNode wrap = factory.wrap(jsonNode);
         assertThat(wrap).isNotNull();
         assertThat(wrap.getNodeType()).isEqualTo(SimpleType.OBJECT);
