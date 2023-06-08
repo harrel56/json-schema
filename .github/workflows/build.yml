@@ -48,7 +48,7 @@ jobs:
       - name: Upload GH pages
         uses: actions/upload-pages-artifact@v1
         with:
-          path: './.github/badges/jacoco.svg'
+          path: './.github/badges'
 
   upload-gh-pages:
     runs-on: ubuntu-latest
