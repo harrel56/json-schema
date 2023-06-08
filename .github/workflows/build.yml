@@ -51,6 +51,7 @@ jobs:
           path: './.github/badges'
 
   upload-gh-pages:
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     needs: build-gradle
 

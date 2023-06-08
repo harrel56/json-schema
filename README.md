@@ -2,6 +2,8 @@
 
 [![build](https://github.com/harrel56/json-schema/actions/workflows/build.yml/badge.svg)](https://github.com/harrel56/json-schema/actions/workflows/build.yml)
 [![javadoc](https://javadoc.io/badge2/dev.harrel/json-schema/javadoc.svg)](https://javadoc.io/doc/dev.harrel/json-schema)
+[![Coverage](https://harrel56.github.io/json-schema/jacoco.svg)](https://github.com/harrel56/json-schema/actions/workflows/build.yml)
+
 
 Java library implementing [JSON schema specification](https://json-schema.org/specification.html):
 - compatible with Java 8,
