@@ -32,6 +32,9 @@ java {
     registerFeature('jettison') {
         usingSourceSet(sourceSets.main)
     }
+    registerFeature('jakartaJson') {
+        usingSourceSet(sourceSets.main)
+    }
 }
 
 repositories {
@@ -42,18 +45,25 @@ def JACKSON_VERSION = '2.15.2'
 def GSON_VERSION = '2.10.1'
 def ORG_JSON_VERSION = '20230227'
 def JETTISON_VERSION = '1.5.4'
+def JAKARTA_JSON_VERSION = '2.1.2'
+
+def JAKARTA_JSON_IMPL = 'org.eclipse.parsson:parsson:1.1.2'
 
 setupProviderTest('jackson', "com.fasterxml.jackson.core:jackson-databind:$JACKSON_VERSION")
 setupProviderTest('gson', "com.google.code.gson:gson:$GSON_VERSION")
 setupProviderTest('orgJson', "org.json:json:$ORG_JSON_VERSION")
 setupProviderTest('jettison', "org.codehaus.jettison:jettison:$JETTISON_VERSION")
+setupProviderTest('jakartaJson', "jakarta.json:jakarta.json-api:$JAKARTA_JSON_VERSION")
 
 dependencies {
     jacksonImplementation "com.fasterxml.jackson.core:jackson-databind:$JACKSON_VERSION"
     gsonImplementation "com.google.code.gson:gson:$GSON_VERSION"
     orgJsonImplementation "org.json:json:$ORG_JSON_VERSION"
     jettisonImplementation "org.codehaus.jettison:jettison:$JETTISON_VERSION"
+    jakartaJsonImplementation "jakarta.json:jakarta.json-api:$JAKARTA_JSON_VERSION"
+    jakartaJsonTestImplementation JAKARTA_JSON_IMPL
 
+    testImplementation JAKARTA_JSON_IMPL
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.3'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
     testImplementation 'org.assertj:assertj-core:3.24.2'
