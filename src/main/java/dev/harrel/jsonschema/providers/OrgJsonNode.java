@@ -119,8 +119,8 @@ public final class OrgJsonNode implements JsonNode {
         public JsonNode wrap(Object node) {
             if (isLiteral(node) || isArray(node) || isObject(node)) {
                 return new OrgJsonNode(node);
-            } else if (node instanceof JsonNode) {
-                return (JsonNode) node;
+            } else if (node instanceof OrgJsonNode) {
+                return (OrgJsonNode) node;
             } else {
                 throw new IllegalArgumentException("Cannot wrap object which is not an instance of org.json.JSONObject, org.json.JSONArray or simple literal");
             }

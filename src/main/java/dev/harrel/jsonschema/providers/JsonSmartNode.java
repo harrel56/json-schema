@@ -3,27 +3,29 @@ package dev.harrel.jsonschema.providers;
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONTokener;
-import org.codehaus.jettison.json.JSONObject;
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
+import net.minidev.json.parser.JSONParser;
+import net.minidev.json.parser.ParseException;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 
-public final class JettisonNode implements JsonNode {
+import static net.minidev.json.parser.JSONParser.MODE_JSON_SIMPLE;
+
+public final class JsonSmartNode implements JsonNode {
     private final Object node;
     private final String jsonPointer;
     private final SimpleType nodeType;
 
-    private JettisonNode(Object node, String jsonPointer) {
-        this.node = Objects.requireNonNull(node);
+    private JsonSmartNode(Object node, String jsonPointer) {
+        this.node = node;
         this.jsonPointer = Objects.requireNonNull(jsonPointer);
-        this.nodeType = computeNodeType(node);
+        this.nodeType = computeNodeType(this.node);
     }
 
-    public JettisonNode(Object node) {
+    public JsonSmartNode(Object node) {
         this(node, "");
     }
 
@@ -44,11 +46,7 @@ public final class JettisonNode implements JsonNode {
 
     @Override
     public String asString() {
-        if (Factory.isNull(node)) {
-            return "null";
-        } else {
-            return node.toString();
-        }
+        return String.valueOf(node);
     }
 
     @Override
@@ -77,24 +75,22 @@ public final class JettisonNode implements JsonNode {
 
     @Override
     public List<JsonNode> asArray() {
-        List<JsonNode> elements = new ArrayList<>();
-        JSONArray arrayNode = (JSONArray) node;
-        for (int i = 0; i < arrayNode.length(); ++i) {
-            elements.add(new JettisonNode(arrayNode.opt(i), jsonPointer + "/" + elements.size()));
+        JSONArray jsonArray = (JSONArray) node;
+        List<JsonNode> result = new ArrayList<>(jsonArray.size());
+        for (int i = 0; i < jsonArray.size(); i++) {
+            result.add(new JsonSmartNode(jsonArray.get(i), jsonPointer + "/" + i));
         }
-        return elements;
+        return result;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public Map<String, JsonNode> asObject() {
-        Map<String, JsonNode> map = new HashMap<>();
-        JSONObject jsonObject = (JSONObject) node;
-        for (Object object : jsonObject.toMap().entrySet()) {
-            Map.Entry<Object, Object> entry = (Map.Entry<Object, Object>) object;
-            map.put(entry.getKey().toString(), new JettisonNode(entry.getValue(), jsonPointer + "/" + entry.getKey()));
+        Set<Map.Entry<String, Object>> objectMap = ((JSONObject) node).entrySet();
+        Map<String, JsonNode> result = new HashMap<>(objectMap.size());
+        for (Map.Entry<String, Object> entry : objectMap) {
+            result.put(entry.getKey(), new JsonSmartNode(entry.getValue(), jsonPointer + "/" + entry.getKey()));
         }
-        return map;
+        return result;
     }
 
     private static SimpleType computeNodeType(Object node) {
@@ -123,24 +119,32 @@ public final class JettisonNode implements JsonNode {
     }
 
     public static final class Factory implements JsonNodeFactory {
+        private final JSONParser parser;
+
+        public Factory() {
+            this(new JSONParser(MODE_JSON_SIMPLE));
+        }
+
+        public Factory(JSONParser parser) {
+            this.parser = parser;
+        }
+
         @Override
-        public JsonNode wrap(Object node) {
-            JSONArray tmp = new JSONArray();
-            tmp.put(node);
+        public JsonSmartNode wrap(Object node) {
             if (isLiteral(node) || isArray(node) || isObject(node)) {
-                return new JettisonNode(node);
-            } else if (node instanceof JettisonNode) {
-                return (JettisonNode) node;
+                return new JsonSmartNode(node);
+            } else if (node instanceof JsonSmartNode) {
+                return (JsonSmartNode) node;
             } else {
-                throw new IllegalArgumentException("Cannot wrap object which is not an instance of org.codehaus.jettison.json.JSONObject, org.codehaus.jettison.json.JSONArray or simple literal");
+                throw new IllegalArgumentException("Cannot wrap object which is not an instance of net.minidev.json.JSONObject, net.minidev.json.JSONArray or simple literal");
             }
         }
 
         @Override
-        public JsonNode create(String rawJson) {
+        public JsonSmartNode create(String rawJson) {
             try {
-                return new JettisonNode(new JSONTokener(rawJson).nextValue());
-            } catch (JSONException e) {
+                return new JsonSmartNode(parser.parse(rawJson));
+            } catch (ParseException e) {
                 throw new IllegalArgumentException(e);
             }
         }
@@ -150,7 +154,7 @@ public final class JettisonNode implements JsonNode {
         }
 
         private static boolean isNull(Object node) {
-            return JSONObject.NULL.equals(node) || JSONObject.EXPLICIT_NULL.equals(node);
+            return node == null;
         }
 
         private static boolean isBoolean(Object node) {
