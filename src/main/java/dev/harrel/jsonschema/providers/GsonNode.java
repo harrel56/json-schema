@@ -37,16 +37,6 @@ public final class GsonNode implements JsonNode {
     }
 
     @Override
-    public boolean isInteger() {
-        return JsonNode.super.isInteger();
-    }
-
-    @Override
-    public boolean isNumber() {
-        return JsonNode.super.isNumber();
-    }
-
-    @Override
     public boolean asBoolean() {
         return node.getAsBoolean();
     }
