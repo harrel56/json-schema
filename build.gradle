@@ -51,8 +51,6 @@ def JETTISON_VERSION = '1.5.4'
 def JAKARTA_JSON_VERSION = '2.1.2'
 def JSON_SMART_VERSION = '2.4.11'
 
-def JAKARTA_JSON_IMPL = 'org.eclipse.parsson:parsson:1.1.2'
-
 setupProviderTest('jackson', "com.fasterxml.jackson.core:jackson-databind:$JACKSON_VERSION")
 setupProviderTest('gson', "com.google.code.gson:gson:$GSON_VERSION")
 setupProviderTest('orgJson', "org.json:json:$ORG_JSON_VERSION")
@@ -66,10 +64,9 @@ dependencies {
     orgJsonImplementation "org.json:json:$ORG_JSON_VERSION"
     jettisonImplementation "org.codehaus.jettison:jettison:$JETTISON_VERSION"
     jakartaJsonImplementation "jakarta.json:jakarta.json-api:$JAKARTA_JSON_VERSION"
-    jakartaJsonImplementation JAKARTA_JSON_IMPL
     jsonSmartImplementation "net.minidev:json-smart:$JSON_SMART_VERSION"
 
-    testImplementation JAKARTA_JSON_IMPL
+    testImplementation 'org.eclipse.parsson:parsson:1.1.2'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.3'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
     testImplementation 'org.assertj:assertj-core:3.24.2'
