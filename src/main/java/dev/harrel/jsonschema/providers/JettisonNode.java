@@ -1,30 +1,31 @@
 package dev.harrel.jsonschema.providers;
 
 import dev.harrel.jsonschema.JsonNode;
-import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONTokener;
 import org.codehaus.jettison.json.JSONObject;
+import org.codehaus.jettison.json.JSONTokener;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 
 public final class JettisonNode implements JsonNode {
+    private final Factory factory;
     private final Object node;
     private final String jsonPointer;
     private final SimpleType nodeType;
 
-    private JettisonNode(Object node, String jsonPointer) {
+    private JettisonNode(Factory factory, Object node, String jsonPointer) {
+        this.factory = Objects.requireNonNull(factory);
         this.node = Objects.requireNonNull(node);
         this.jsonPointer = Objects.requireNonNull(jsonPointer);
-        this.nodeType = computeNodeType(node);
+        this.nodeType = factory.computeNodeType(node);
     }
 
-    public JettisonNode(Object node) {
-        this(node, "");
+    public JettisonNode(Factory factory, Object node) {
+        this(factory, node, "");
     }
 
     @Override
@@ -44,7 +45,7 @@ public final class JettisonNode implements JsonNode {
 
     @Override
     public String asString() {
-        if (Factory.isNull(node)) {
+        if (factory.isNull(node)) {
             return "null";
         } else {
             return node.toString();
@@ -80,7 +81,7 @@ public final class JettisonNode implements JsonNode {
         List<JsonNode> elements = new ArrayList<>();
         JSONArray arrayNode = (JSONArray) node;
         for (int i = 0; i < arrayNode.length(); ++i) {
-            elements.add(new JettisonNode(arrayNode.opt(i), jsonPointer + "/" + elements.size()));
+            elements.add(new JettisonNode(factory, arrayNode.opt(i), jsonPointer + "/" + elements.size()));
         }
         return elements;
     }
@@ -92,41 +93,16 @@ public final class JettisonNode implements JsonNode {
         JSONObject jsonObject = (JSONObject) node;
         for (Object object : jsonObject.toMap().entrySet()) {
             Map.Entry<Object, Object> entry = (Map.Entry<Object, Object>) object;
-            map.put(entry.getKey().toString(), new JettisonNode(entry.getValue(), jsonPointer + "/" + entry.getKey()));
+            map.put(entry.getKey().toString(), new JettisonNode(factory, entry.getValue(), jsonPointer + "/" + entry.getKey()));
         }
         return map;
     }
 
-    private static SimpleType computeNodeType(Object node) {
-        if (Factory.isNull(node)) {
-            return SimpleType.NULL;
-        } else if (Factory.isBoolean(node)) {
-            return SimpleType.BOOLEAN;
-        } else if (Factory.isString(node)) {
-            return SimpleType.STRING;
-        } else if (Factory.isDecimal(node)) {
-            if (node instanceof BigDecimal && ((BigDecimal) node).stripTrailingZeros().scale() <= 0) {
-                return SimpleType.INTEGER;
-            } else if (node instanceof Double && ((Number) node).doubleValue() == Math.rint(((Number) node).doubleValue())) {
-                return SimpleType.INTEGER;
-            } else {
-                return SimpleType.NUMBER;
-            }
-        } else if (Factory.isInteger(node)) {
-            return SimpleType.INTEGER;
-        } else if (Factory.isArray(node)) {
-            return SimpleType.ARRAY;
-        } else if (Factory.isObject(node)) {
-            return SimpleType.OBJECT;
-        }
-        throw new IllegalArgumentException("Cannot assign type to node of class=" + node.getClass().getName());
-    }
-
-    public static final class Factory implements JsonNodeFactory {
+    public static final class Factory extends SimpleJsonNodeFactory {
         @Override
         public JsonNode wrap(Object node) {
             if (isLiteral(node) || isArray(node) || isObject(node)) {
-                return new JettisonNode(node);
+                return new JettisonNode(this, node);
             } else if (node instanceof JettisonNode) {
                 return (JettisonNode) node;
             } else {
@@ -137,41 +113,24 @@ public final class JettisonNode implements JsonNode {
         @Override
         public JsonNode create(String rawJson) {
             try {
-                return new JettisonNode(new JSONTokener(rawJson).nextValue());
+                return new JettisonNode(this, new JSONTokener(rawJson).nextValue());
             } catch (JSONException e) {
                 throw new IllegalArgumentException(e);
             }
         }
 
-        private static boolean isLiteral(Object node) {
-            return isNull(node) || isBoolean(node) || isString(node) || isInteger(node) || isDecimal(node);
-        }
-
-        private static boolean isNull(Object node) {
+        @Override
+        boolean isNull(Object node) {
             return JSONObject.NULL.equals(node) || JSONObject.EXPLICIT_NULL.equals(node);
         }
 
-        private static boolean isBoolean(Object node) {
-            return node instanceof Boolean;
-        }
-
-        private static boolean isString(Object node) {
-            return node instanceof Character || node instanceof String || node instanceof Enum;
-        }
-
-        private static boolean isInteger(Object node) {
-            return node instanceof Integer || node instanceof Long || node instanceof BigInteger;
-        }
-
-        private static boolean isDecimal(Object node) {
-            return node instanceof Double || node instanceof BigDecimal;
-        }
-
-        private static boolean isArray(Object node) {
+        @Override
+        boolean isArray(Object node) {
             return node instanceof JSONArray;
         }
 
-        private static boolean isObject(Object node) {
+        @Override
+        boolean isObject(Object node) {
             return node instanceof JSONObject;
         }
     }
