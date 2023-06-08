@@ -2,28 +2,31 @@ package dev.harrel.jsonschema.providers;
 
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.SimpleType;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.json.JSONTokener;
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
+import net.minidev.json.parser.JSONParser;
+import net.minidev.json.parser.ParseException;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 
-public final class OrgJsonNode implements JsonNode {
+import static net.minidev.json.parser.JSONParser.MODE_JSON_SIMPLE;
+
+public final class JsonSmartNode implements JsonNode {
     private final Factory factory;
     private final Object node;
     private final String jsonPointer;
     private final SimpleType nodeType;
 
-    private OrgJsonNode(Factory factory, Object node, String jsonPointer) {
+    private JsonSmartNode(Factory factory, Object node, String jsonPointer) {
         this.factory = Objects.requireNonNull(factory);
-        this.node = Objects.requireNonNull(node);
+        this.node = node;
         this.jsonPointer = Objects.requireNonNull(jsonPointer);
-        this.nodeType = factory.computeNodeType(node);
+        this.nodeType = factory.computeNodeType(this.node);
     }
 
-    public OrgJsonNode(Factory factory, Object node) {
+    public JsonSmartNode(Factory factory, Object node) {
         this(factory, node, "");
     }
 
@@ -44,7 +47,7 @@ public final class OrgJsonNode implements JsonNode {
 
     @Override
     public String asString() {
-        return node.toString();
+        return String.valueOf(node);
     }
 
     @Override
@@ -73,43 +76,58 @@ public final class OrgJsonNode implements JsonNode {
 
     @Override
     public List<JsonNode> asArray() {
-        List<JsonNode> elements = new ArrayList<>();
-        for (Object o : (JSONArray) node) {
-            elements.add(new OrgJsonNode(factory, o, jsonPointer + "/" + elements.size()));
+        JSONArray jsonArray = (JSONArray) node;
+        List<JsonNode> result = new ArrayList<>(jsonArray.size());
+        for (int i = 0; i < jsonArray.size(); i++) {
+            result.add(new JsonSmartNode(factory, jsonArray.get(i), jsonPointer + "/" + i));
         }
-        return elements;
+        return result;
     }
 
     @Override
     public Map<String, JsonNode> asObject() {
-        Map<String, JsonNode> map = new HashMap<>();
-        JSONObject jsonObject = (JSONObject) node;
-        for (String key : jsonObject.keySet()) {
-            map.put(key, new OrgJsonNode(factory, jsonObject.get(key), jsonPointer + "/" + key));
+        Set<Map.Entry<String, Object>> objectMap = ((JSONObject) node).entrySet();
+        Map<String, JsonNode> result = new HashMap<>(objectMap.size());
+        for (Map.Entry<String, Object> entry : objectMap) {
+            result.put(entry.getKey(), new JsonSmartNode(factory, entry.getValue(), jsonPointer + "/" + entry.getKey()));
         }
-        return map;
+        return result;
     }
 
     public static final class Factory extends SimpleJsonNodeFactory {
+        private final JSONParser parser;
+
+        public Factory() {
+            this(new JSONParser(MODE_JSON_SIMPLE));
+        }
+
+        public Factory(JSONParser parser) {
+            this.parser = parser;
+        }
+
         @Override
-        public JsonNode wrap(Object node) {
+        public JsonSmartNode wrap(Object node) {
             if (isLiteral(node) || isArray(node) || isObject(node)) {
-                return new OrgJsonNode(this, node);
-            } else if (node instanceof OrgJsonNode) {
-                return (OrgJsonNode) node;
+                return new JsonSmartNode(this, node);
+            } else if (node instanceof JsonSmartNode) {
+                return (JsonSmartNode) node;
             } else {
-                throw new IllegalArgumentException("Cannot wrap object which is not an instance of org.json.JSONObject, org.json.JSONArray or simple literal");
+                throw new IllegalArgumentException("Cannot wrap object which is not an instance of net.minidev.json.JSONObject, net.minidev.json.JSONArray or simple literal");
             }
         }
 
         @Override
-        public JsonNode create(String rawJson) {
-            return new OrgJsonNode(this, new JSONTokener(rawJson).nextValue());
+        public JsonSmartNode create(String rawJson) {
+            try {
+                return new JsonSmartNode(this, parser.parse(rawJson));
+            } catch (ParseException e) {
+                throw new IllegalArgumentException(e);
+            }
         }
 
         @Override
         boolean isNull(Object node) {
-            return JSONObject.NULL.equals(node);
+            return node == null;
         }
 
         @Override
