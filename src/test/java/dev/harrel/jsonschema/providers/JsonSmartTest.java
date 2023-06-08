@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.SimpleType;
-import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 import org.junit.jupiter.api.BeforeAll;
@@ -64,6 +63,7 @@ class JsonSmartTest {
             nodeFactory = new JsonSmartNode.Factory();
         }
     }
+
     @Nested
     class MetaSchemaTest extends dev.harrel.jsonschema.MetaSchemaTest {
         @BeforeAll
