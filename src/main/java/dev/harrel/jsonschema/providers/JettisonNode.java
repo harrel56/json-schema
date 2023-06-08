@@ -125,8 +125,6 @@ public final class JettisonNode implements JsonNode {
     public static final class Factory implements JsonNodeFactory {
         @Override
         public JsonNode wrap(Object node) {
-            JSONArray tmp = new JSONArray();
-            tmp.put(node);
             if (isLiteral(node) || isArray(node) || isObject(node)) {
                 return new JettisonNode(node);
             } else if (node instanceof JettisonNode) {
