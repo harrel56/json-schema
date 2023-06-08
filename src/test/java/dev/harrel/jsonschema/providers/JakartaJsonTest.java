@@ -2,8 +2,6 @@ package dev.harrel.jsonschema.providers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.SimpleType;
 import jakarta.json.Json;
@@ -66,6 +64,7 @@ class JakartaJsonTest {
             nodeFactory = new JakartaJsonNode.Factory();
         }
     }
+
     @Nested
     class MetaSchemaTest extends dev.harrel.jsonschema.MetaSchemaTest {
         @BeforeAll
