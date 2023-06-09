@@ -62,7 +62,7 @@ Features that are not supported yet:
 - `$vocabulary` keyword - all vocabularies' related semantics are not yet there.
 - `format` keyword - the specification doesn't require `format` to perform any validations. Support for official format validation might be added in future versions. Meanwhile, the implementation could be provided by user (see [adding custom keywords](#adding-custom-keywords)).
 
-## <a name="json-providers"></a> JSON providers
+## JSON providers
 Supported providers:
 - `com.fasterxml.jackson.core:jackson-databind` (default),
 - `com.google.code.gson:gson`,
@@ -81,14 +81,14 @@ All adapter classes for JSON provider libs can be found in this [package](https:
 
 ### Changing JSON provider
 
-| Provider                                    | Tested version                                   | Factory class                                | Provider node class                                                                                                                             |
-|---------------------------------------------|--------------------------------------------------|----------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|
-| com.fasterxml.jackson.core:jackson-databind | 2.15.2                                           | dev.harrel.providers.JacksonNode.Factory     | com.fasterxml.jackson.databind.JsonNode                                                                                                         |
-| com.google.code.gson:gson                   | 2.10.1                                           | dev.harrel.providers.GsonNode.Factory        | com.google.gson.JsonElement                                                                                                                     |
-| jakarta.json:jakarta.json-api               | 2.1.2 *(with org.eclipse.parsson:parsson:1.1.2)* | dev.harrel.providers.JakartaJsonNode.Factory | jakarta.json.JsonValue                                                                                                                          |
-| org.json:json                               | 20230227                                         | dev.harrel.providers.OrgJsonNode.Factory     | <ul><li>org.json.JSONObject,</li><li>org.json.JSONArray,</li><li>[literal types](#literal-types).</li></ul>                                     |
-| new.minidev:json-smart                      | 2.4.11                                           | dev.harrel.providers.JsonSmartNode.Factory   | <ul><li>net.minidev.json.JSONObject,</li><li>net.minidev.json.JSONArray,</li><li>[literal types](#literal-types).</li></ul>                     |
-| org.codehouse.jettison:jettison             | 1.5.4                                            | dev.harrel.providers.JettisonNode.Factory    | <ul><li>org.codehaus.jettison.json.JSONObject,</li><li>org.codehaus.jettison.json.JSONArray,</li><li>[literal types](#literal-types).</li></ul> |
+| Provider                                    | Tested version                                   | Factory class                                | Provider node class                                                                                                                                      |
+|---------------------------------------------|--------------------------------------------------|----------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| com.fasterxml.jackson.core:jackson-databind | 2.15.2                                           | dev.harrel.providers.JacksonNode.Factory     | com.fasterxml.jackson.databind.JsonNode                                                                                                                  |
+| com.google.code.gson:gson                   | 2.10.1                                           | dev.harrel.providers.GsonNode.Factory        | com.google.gson.JsonElement                                                                                                                              |
+| jakarta.json:jakarta.json-api               | 2.1.2 *(with org.eclipse.parsson:parsson:1.1.2)* | dev.harrel.providers.JakartaJsonNode.Factory | jakarta.json.JsonValue                                                                                                                                   |
+| org.json:json                               | 20230227                                         | dev.harrel.providers.OrgJsonNode.Factory     | <ul><li>org.json.JSONObject,</li><li>org.json.JSONArray,</li><li>[literal types](#provider-literal-types).</li></ul>                                     |
+| new.minidev:json-smart                      | 2.4.11                                           | dev.harrel.providers.JsonSmartNode.Factory   | <ul><li>net.minidev.json.JSONObject,</li><li>net.minidev.json.JSONArray,</li><li>[literal types](#provider-literal-types).</li></ul>                     |
+| org.codehouse.jettison:jettison             | 1.5.4                                            | dev.harrel.providers.JettisonNode.Factory    | <ul><li>org.codehaus.jettison.json.JSONObject,</li><li>org.codehaus.jettison.json.JSONArray,</li><li>[literal types](#provider-literal-types).</li></ul> |
 
 #### com.fasterxml.jackson.core:jackson-databind
 ```java
@@ -122,7 +122,7 @@ new ValidatorFactory().withJsonNodeFactory(new JsonSmartNode.Factory());
 new ValidatorFactory().withJsonNodeFactory(new JettisonNode.Factory());
 ```
 
-### <a name="literal-types"></a> Provider literal types
+### Provider literal types
 Some providers don't have single wrapper class for their JSON node representation:
 - `org.json:json`,
 - `new.minidev:json-smart`,
@@ -140,7 +140,7 @@ and they represent literal nodes with these classes:
 - `java.math.BigDecimal`.
 
 ## Advanced configuration
-### <a name="schema-resolver"></a> Resolving external schemas
+### Resolving external schemas
 By default, the only schema that is resolved externally, is specification meta-schema for *draft 2020-12* which is used for validating schemas during registration process. The meta-schema file is fetched from the classpath and is packaged with jar.
 
 **There is no mechanism to pull schemas via HTTP requests**. If such behaviour is required it should be implemented by the user.
@@ -171,7 +171,7 @@ For more information about return type please refer to the [documentation](https
 ### Default meta-schema
 By default, upon registration of each schema, it gets validated against meta-schema (*https://json-schema.org/draft/2020-12/schema*). If validation fails [InvalidSchemaException](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/InvalidSchemaException.html) is thrown.
 
-For each specific schema this behaviour can be overridden by providing *$schema* keyword with desired meta-schema URI. Resolution of meta-schema follows the same [rules](#schema-resolver) as for a regular schema.
+For each specific schema this behaviour can be overridden by providing *$schema* keyword with desired meta-schema URI. Resolution of meta-schema follows the same [rules](#resolving-external-schemas) as for a regular schema.
 
 If you want to change default meta-schema, configure `ValidatorVactory` like this:
 ```java
