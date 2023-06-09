@@ -5,7 +5,6 @@
 [![javadoc](https://javadoc.io/badge2/dev.harrel/json-schema/javadoc.svg)](https://javadoc.io/doc/dev.harrel/json-schema)
 [![coverage](https://harrel56.github.io/json-schema/jacoco.svg)](https://github.com/harrel56/json-schema/actions/workflows/build.yml)
 
-
 Java library implementing [JSON schema specification](https://json-schema.org/specification.html):
 - compatible with Java 8,
 - support for the newest specification draft (*2020-12*) [![Supported spec](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie-json-schema.github.io%2Fbowtie%2Fbadges%2Fjava-json-schema%2Fsupported_versions.json)](https://bowtie-json-schema.github.io/bowtie/) [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie-json-schema.github.io%2Fbowtie%2Fbadges%2Fjava-json-schema%2Fcompliance%2FDraft_2020-12.json)](https://bowtie-json-schema.github.io/bowtie/),
@@ -58,15 +57,20 @@ Validator.Result result2 = validator.validate(schemaUri, instance2);
 ```
 This way, schema is parsed only once. You could also register multiple schemas this way and refer to them independently. Keep in mind that the "registration space" for schemas is common for one `Validator` - this can be used to refer dynamically between schemas.
 
+## Limitations
+Features that are not supported yet:
+- `$vocabulary` keyword - all vocabularies' related semantics are not yet there.
+- `format` keyword - the specification doesn't require `format` to perform any validations. Support for official format validation might be added in future versions. Meanwhile, the implementation could be provided by user (see [adding custom keywords](#adding-custom-keywords)).
+
 ## <a name="json-providers"></a> JSON providers
 Supported providers:
 - `com.fasterxml.jackson.core:jackson-databind` (default),
 - `com.google.code.gson:gson`,
-- `new.minidev:json-smart` - planned,
-- `org.json:json` - planned,
+- `jakarta.json:jakarta.json-api`,
+- `org.json:json`,
+- `new.minidev:json-smart`,
+- `org.codehouse.jettison:jettison`,
 - `org.apache.tapestry:tapestry-json` - planned,
-- `org.codehouse.jettison:jettison` - planned,
-- `jakarta.json:jakarta.json-api` - planned,
 - `javax.json:javax.json-api` - planned.
 
 The default provider is `com.fasterxml.jackson.core:jackson-databind`, so if you are not planning on changing the `ValidatorFactory` configuration, **you need to have this dependency present in your project**.
@@ -77,10 +81,14 @@ All adapter classes for JSON provider libs can be found in this [package](https:
 
 ### Changing JSON provider
 
-| Provider                                    | Tested version | Factory class                            | Provider node class                     |
-|---------------------------------------------|----------------|------------------------------------------|-----------------------------------------|
-| com.fasterxml.jackson.core:jackson-databind | 2.15.1+        | dev.harrel.providers.JacksonNode.Factory | com.fasterxml.jackson.databind.JsonNode |
-| com.google.code.gson:gson                   | 2.10.1+        | dev.harrel.providers.GsonNode.Factory    | com.google.gson.JsonElement             |
+| Provider                                    | Tested version                                   | Factory class                                | Provider node class                                                                                                                             |
+|---------------------------------------------|--------------------------------------------------|----------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|
+| com.fasterxml.jackson.core:jackson-databind | 2.15.2                                           | dev.harrel.providers.JacksonNode.Factory     | com.fasterxml.jackson.databind.JsonNode                                                                                                         |
+| com.google.code.gson:gson                   | 2.10.1                                           | dev.harrel.providers.GsonNode.Factory        | com.google.gson.JsonElement                                                                                                                     |
+| jakarta.json:jakarta.json-api               | 2.1.2 *(with org.eclipse.parsson:parsson:1.1.2)* | dev.harrel.providers.JakartaJsonNode.Factory | jakarta.json.JsonValue                                                                                                                          |
+| org.json:json                               | 20230227                                         | dev.harrel.providers.OrgJsonNode.Factory     | <ul><li>org.json.JSONObject,</li><li>org.json.JSONArray,</li><li>[literal types](#literal-types).</li></ul>                                     |
+| new.minidev:json-smart                      | 2.4.11                                           | dev.harrel.providers.JsonSmartNode.Factory   | <ul><li>net.minidev.json.JSONObject,</li><li>net.minidev.json.JSONArray,</li><li>[literal types](#literal-types).</li></ul>                     |
+| org.codehouse.jettison:jettison             | 1.5.4                                            | dev.harrel.providers.JettisonNode.Factory    | <ul><li>org.codehaus.jettison.json.JSONObject,</li><li>org.codehaus.jettison.json.JSONArray,</li><li>[literal types](#literal-types).</li></ul> |
 
 #### com.fasterxml.jackson.core:jackson-databind
 ```java
@@ -91,6 +99,45 @@ new ValidatorFactory().withJsonNodeFactory(new JacksonNode.Factory());
 ```java
 new ValidatorFactory().withJsonNodeFactory(new GsonNode.Factory());
 ```
+#### jakarta.json:jakarta.json-api
+Keep in mind that this library contains only interfaces without concrete implementation.
+It would be required to also have e.g. `org.glassfish:jakarta.json` dependency in your classpath.
+Although, it was tested with newest `jakarta.json-api` version, it should be compatible down to `1.1` version.
+```java
+new ValidatorFactory().withJsonNodeFactory(new JakartaJsonNode.Factory());
+```
+
+#### org.json:json
+```java
+new ValidatorFactory().withJsonNodeFactory(new OrgJsonNode.Factory());
+```
+
+#### new.minidev:json-smart
+```java
+new ValidatorFactory().withJsonNodeFactory(new JsonSmartNode.Factory());
+```
+
+#### org.codehouse.jettison:jettison
+```java
+new ValidatorFactory().withJsonNodeFactory(new JettisonNode.Factory());
+```
+
+### <a name="literal-types"></a> Provider literal types
+Some providers don't have single wrapper class for their JSON node representation:
+- `org.json:json`,
+- `new.minidev:json-smart`,
+- `org.codehouse.jettison:jettison`,
+
+and they represent literal nodes with these classes:
+- `java.lang.String`,
+- `java.lang.Boolean`,
+- `java.lang.Character`,
+- `java.lang.Enum`,
+- `java.lang.Integer`,
+- `java.lang.Long`,
+- `java.lang.Double`,
+- `java.math.BigInteger`,
+- `java.math.BigDecimal`.
 
 ## Advanced configuration
 ### <a name="schema-resolver"></a> Resolving external schemas
