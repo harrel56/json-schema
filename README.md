@@ -123,7 +123,7 @@ new ValidatorFactory().withJsonNodeFactory(new JettisonNode.Factory());
 ```
 
 ### Provider literal types
-Some providers don't have single wrapper class for their JSON node representation:
+Some providers don't have a single wrapper class for their JSON node representation:
 - `org.json:json`,
 - `new.minidev:json-smart`,
 - `org.codehouse.jettison:jettison`,
