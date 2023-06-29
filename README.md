@@ -13,6 +13,8 @@ Java library implementing [JSON schema specification](https://json-schema.org/sp
 - multiple JSON providers to choose from ([supported JSON libraries](#json-providers))
 - and no additional dependencies on top of that.
 
+## Demo
+You can check out how it works [here](https://harrel.dev/json-schema).
 ## Installation
 Please note that you will also need to include at least one of the supported JSON provider libraries (see [JSON provider setup](#json-providers)).
 ### Maven
