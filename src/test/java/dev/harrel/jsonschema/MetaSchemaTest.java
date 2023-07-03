@@ -2,7 +2,7 @@ package dev.harrel.jsonschema;
 
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 
 public abstract class MetaSchemaTest {
 
@@ -45,8 +45,8 @@ public abstract class MetaSchemaTest {
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(nodeFactory)
                 .createValidator();
-        assertThatThrownBy(() -> validator.registerSchema(rawSchema))
-                .isInstanceOf(InvalidSchemaException.class);
+        InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawSchema), InvalidSchemaException.class);
+        assertThat(exception.getErrors()).isNotEmpty();
     }
 
     @Test
@@ -75,8 +75,8 @@ public abstract class MetaSchemaTest {
                 .withDefaultMetaSchemaUri("custom")
                 .withSchemaResolver(resolver)
                 .createValidator();
-        assertThatThrownBy(() -> validator.registerSchema(rawSchema))
-                .isInstanceOf(InvalidSchemaException.class);
+        InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawSchema), InvalidSchemaException.class);
+        assertThat(exception.getErrors()).isNotEmpty();
     }
 
     @Test
@@ -153,8 +153,8 @@ public abstract class MetaSchemaTest {
                 .withJsonNodeFactory(nodeFactory)
                 .withSchemaResolver(resolver)
                 .createValidator();
-        assertThatThrownBy(() -> validator.registerSchema(rawSchema))
-                .isInstanceOf(InvalidSchemaException.class);
+        InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawSchema), InvalidSchemaException.class);
+        assertThat(exception.getErrors()).isNotEmpty();
     }
 
     @Test
@@ -182,7 +182,34 @@ public abstract class MetaSchemaTest {
                 .withJsonNodeFactory(nodeFactory)
                 .withSchemaResolver(resolver)
                 .createValidator();
+        InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawSchema), InvalidSchemaException.class);
+        assertThat(exception.getErrors()).isNotEmpty();
+    }
+
+    @Test
+    void shouldFailForInvalidTopSchemaElement() {
+        String rawSchema = "[]";
+        Validator validator = new ValidatorFactory()
+                .withJsonNodeFactory(nodeFactory)
+                .withSchemaResolver(resolver)
+                .createValidator();
+        InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawSchema), InvalidSchemaException.class);
+        assertThat(exception.getErrors()).isNotEmpty();
+    }
+
+    @Test
+    void shouldContainProvidedSchemaIdInException() {
+        String rawSchema = """
+                {
+                    "$id": "urn:my-schema",
+                    "maxLength": "not a number"
+                }""";
+        Validator validator = new ValidatorFactory()
+                .withJsonNodeFactory(nodeFactory)
+                .withSchemaResolver(resolver)
+                .createValidator();
         assertThatThrownBy(() -> validator.registerSchema(rawSchema))
-                .isInstanceOf(InvalidSchemaException.class);
+                .isInstanceOf(InvalidSchemaException.class)
+                .hasMessageContaining("urn:my-schema");
     }
 }
