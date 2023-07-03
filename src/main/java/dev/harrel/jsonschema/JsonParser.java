@@ -3,7 +3,8 @@ package dev.harrel.jsonschema;
 import java.net.URI;
 import java.util.*;
 
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 
 final class JsonParser {
     private final String defaultMetaSchemaUri;
@@ -22,42 +23,46 @@ final class JsonParser {
     }
 
     URI parseRootSchema(URI baseUri, JsonNode node) {
+        Optional<Map<String, JsonNode>> objectMapOptional = getAsObject(node);
+        String metaSchemaUri = objectMapOptional
+                .map(obj -> obj.get(Keyword.SCHEMA))
+                .filter(JsonNode::isString)
+                .map(JsonNode::asString)
+                .orElse(defaultMetaSchemaUri);
+        Optional<String> providedSchemaId = objectMapOptional
+                .map(obj -> obj.get(Keyword.ID))
+                .filter(JsonNode::isString)
+                .map(JsonNode::asString)
+                .filter(id -> !baseUri.toString().equals(id));
+        metaSchemaValidator.validateMetaSchema(this, metaSchemaUri, providedSchemaId.orElse(baseUri.toString()), node);
+
         if (node.isBoolean()) {
-            metaSchemaValidator.validateMetaSchema(this, defaultMetaSchemaUri, baseUri.toString(), node);
             SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, baseUri.toString());
             boolean schemaValue = node.asBoolean();
             schemaRegistry.registerIdentifiableSchema(ctx, baseUri, node, singletonList(new EvaluatorWrapper(null, node, Schema.getBooleanEvaluator(schemaValue))));
             return baseUri;
-        } else if (node.isObject()) {
-            Map<String, JsonNode> objectMap = node.asObject();
-            String metaSchemaUri = Optional.ofNullable(objectMap.get(Keyword.SCHEMA))
-                    .filter(JsonNode::isString)
-                    .map(JsonNode::asString)
-                    .orElse(defaultMetaSchemaUri);
-            JsonNode idNode = objectMap.get(Keyword.ID);
-            if (idNode != null && idNode.isString()) {
-                String idString = idNode.asString();
-                metaSchemaValidator.validateMetaSchema(this, metaSchemaUri, idString, node);
-                if (!baseUri.toString().equals(idString)) {
-                    SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, idString);
-                    List<EvaluatorWrapper> evaluators = parseEvaluators(ctx, objectMap, node.getJsonPointer());
-                    schemaRegistry.registerIdentifiableSchema(ctx, URI.create(idString), node, evaluators);
-                }
-            } else {
-                metaSchemaValidator.validateMetaSchema(this, metaSchemaUri, baseUri.toString(), node);
+        } else if (objectMapOptional.isPresent()) {
+            Map<String, JsonNode> objectMap = objectMapOptional.get();
+            if (providedSchemaId.isPresent()) {
+                String idString = providedSchemaId.get();
+                SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, idString);
+                List<EvaluatorWrapper> evaluators = parseEvaluators(ctx, objectMap, node.getJsonPointer());
+                schemaRegistry.registerIdentifiableSchema(ctx, URI.create(idString), node, evaluators);
             }
             SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, baseUri.toString());
             List<EvaluatorWrapper> evaluators = parseEvaluators(ctx, objectMap, node.getJsonPointer());
             schemaRegistry.registerIdentifiableSchema(ctx, baseUri, node, evaluators);
 
-            return Optional.ofNullable(objectMap.get(Keyword.ID))
-                    .filter(JsonNode::isString)
-                    .map(JsonNode::asString)
+            return providedSchemaId
                     .map(URI::create)
                     .orElse(baseUri);
         } else {
             throw new InvalidSchemaException(String.format("Schema [%s] was of invalid type [%s]", baseUri, node.getNodeType()), emptyList());
         }
+    }
+
+    private Optional<Map<String, JsonNode>> getAsObject(JsonNode node) {
+        return node.isObject() ? Optional.of(node.asObject()) : Optional.empty();
     }
 
     private void parseNode(SchemaParsingContext ctx, JsonNode node) {
