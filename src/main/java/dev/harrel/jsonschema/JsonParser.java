@@ -3,7 +3,6 @@ package dev.harrel.jsonschema;
 import java.net.URI;
 import java.util.*;
 
-import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
 final class JsonParser {
@@ -40,7 +39,6 @@ final class JsonParser {
             SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, baseUri.toString());
             boolean schemaValue = node.asBoolean();
             schemaRegistry.registerIdentifiableSchema(ctx, baseUri, node, singletonList(new EvaluatorWrapper(null, node, Schema.getBooleanEvaluator(schemaValue))));
-            return baseUri;
         } else if (objectMapOptional.isPresent()) {
             Map<String, JsonNode> objectMap = objectMapOptional.get();
             if (providedSchemaId.isPresent()) {
@@ -52,13 +50,8 @@ final class JsonParser {
             SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, baseUri.toString());
             List<EvaluatorWrapper> evaluators = parseEvaluators(ctx, objectMap, node.getJsonPointer());
             schemaRegistry.registerIdentifiableSchema(ctx, baseUri, node, evaluators);
-
-            return providedSchemaId
-                    .map(URI::create)
-                    .orElse(baseUri);
-        } else {
-            throw new InvalidSchemaException(String.format("Schema [%s] was of invalid type [%s]", baseUri, node.getNodeType()), emptyList());
         }
+        return providedSchemaId.map(URI::create).orElse(baseUri);
     }
 
     private Optional<Map<String, JsonNode>> getAsObject(JsonNode node) {
