@@ -18,9 +18,7 @@ final class MetaSchemaValidator {
     }
 
     void validateMetaSchema(JsonParser jsonParser, String metaSchemaUri, String schemaUri, JsonNode node) {
-        if (metaSchemaUri == null || metaSchemaUri.equals(schemaUri)) {
-            return;
-        }
+        Objects.requireNonNull(metaSchemaUri);
         Schema schema = resolveMetaSchema(jsonParser, metaSchemaUri);
         EvaluationContext ctx = new EvaluationContext(jsonNodeFactory, jsonParser, schemaRegistry, schemaResolver);
         if (!ctx.validateAgainstSchema(schema, node)) {
