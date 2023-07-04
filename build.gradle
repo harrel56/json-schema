@@ -6,6 +6,9 @@ plugins {
     id "org.sonarqube" version "4.2.1.3168"
 }
 
+apply from: 'setup/publishing.gradle'
+apply from: 'setup/reporting.gradle'
+
 group 'dev.harrel'
 version '1.1.0'
 
@@ -46,28 +49,21 @@ repositories {
     mavenCentral()
 }
 
-def JACKSON_VERSION = '2.15.2'
-def GSON_VERSION = '2.10.1'
-def ORG_JSON_VERSION = '20230618'
-def JETTISON_VERSION = '1.5.4'
-def JAKARTA_JSON_VERSION = '2.1.2'
-def JSON_SMART_VERSION = '2.4.11'
+def jsonProviders = [
+        jackson    : 'com.fasterxml.jackson.core:jackson-databind:2.15.2',
+        gson       : 'com.google.code.gson:gson:2.10.1',
+        orgJson    : 'org.json:json:20230618',
+        jettison   : 'org.codehaus.jettison:jettison:1.5.4',
+        jakartaJson: 'jakarta.json:jakarta.json-api:2.1.2',
+        jsonSmart  : 'net.minidev:json-smart:2.4.11'
+]
 
-setupProviderTest('jackson', "com.fasterxml.jackson.core:jackson-databind:$JACKSON_VERSION")
-setupProviderTest('gson', "com.google.code.gson:gson:$GSON_VERSION")
-setupProviderTest('orgJson', "org.json:json:$ORG_JSON_VERSION")
-setupProviderTest('jettison', "org.codehaus.jettison:jettison:$JETTISON_VERSION")
-setupProviderTest('jakartaJson', "jakarta.json:jakarta.json-api:$JAKARTA_JSON_VERSION")
-setupProviderTest('jsonSmart', "net.minidev:json-smart:$JSON_SMART_VERSION")
+jsonProviders.entrySet().forEach {
+    dependencies.add("${it.key}Implementation", it.value)
+    setupProviderTest(it.key, it.value)
+}
 
 dependencies {
-    jacksonImplementation "com.fasterxml.jackson.core:jackson-databind:$JACKSON_VERSION"
-    gsonImplementation "com.google.code.gson:gson:$GSON_VERSION"
-    orgJsonImplementation "org.json:json:$ORG_JSON_VERSION"
-    jettisonImplementation "org.codehaus.jettison:jettison:$JETTISON_VERSION"
-    jakartaJsonImplementation "jakarta.json:jakarta.json-api:$JAKARTA_JSON_VERSION"
-    jsonSmartImplementation "net.minidev:json-smart:$JSON_SMART_VERSION"
-
     testImplementation 'org.eclipse.parsson:parsson:1.1.2'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.3'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
@@ -78,88 +74,6 @@ dependencies {
 
 test {
     useJUnitPlatform()
-}
-
-publishing {
-    repositories {
-        maven {
-            name = 'reposilite'
-            url = findProperty('reposiliteSnapshots')
-            credentials {
-                username = findProperty('reposiliteUsername')
-                password = findProperty('reposilitePassword')
-            }
-        }
-        maven {
-            name = 'sonatype'
-            url = findProperty('sonatypeRepo')
-            credentials {
-                username = findProperty('sonatypeUsername')
-                password = findProperty('sonatypePassword')
-            }
-        }
-    }
-    publications {
-        local(MavenPublication) {
-            from components.java
-        }
-        sonatype(MavenPublication) {
-            from components.java
-            pom {
-                name = 'json-schema'
-                description = 'Library for JSON schema validation'
-                url = 'https://github.com/harrel56/json-schema'
-                licenses {
-                    license {
-                        name = 'MIT'
-                        url = 'https://github.com/harrel56/json-schema/blob/master/LICENSE'
-                        distribution = 'repo'
-                    }
-                }
-                developers {
-                    developer {
-                        id = 'harrel56'
-                        name = 'Harrel'
-                        url = 'https://harrel.dev'
-                    }
-                }
-                scm {
-                    url = 'https://github.com/harrel56/json-schema'
-                    connection = 'scm:git:git://github.com/harrel56/json-schema.git'
-                    developerConnection = 'scm:git:git://github.com/harrel56/json-schema.git'
-                }
-                issueManagement {
-                    system = 'GitHub'
-                    url = 'https://github.com/harrel56/json-schema/issues'
-                }
-            }
-        }
-    }
-}
-
-signing {
-    if (findProperty('signingKey') != null) {
-        def decodedKey = new String(findProperty('signingKey').decodeBase64())
-        useInMemoryPgpKeys(decodedKey, findProperty('signingPassword'))
-    }
-    sign publishing.publications.sonatype
-}
-
-jacocoTestReport {
-    reports.html.required = false
-    reports.csv.required = true
-    reports.xml.required = true
-}
-
-sonar {
-    properties {
-        property 'sonar.projectKey', 'harrel56_json-schema'
-        property 'sonar.organization', 'harrel56'
-        property 'sonar.host.url', 'https://sonarcloud.io'
-
-        property 'sonar.java.source', '8'
-        property 'sonar.java.target', '8'
-    }
 }
 
 def setupProviderTest(String provider, String dependency) {
