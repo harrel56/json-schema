@@ -29,6 +29,12 @@ jobs:
       - name: Gradle check
         run: ./gradlew check jacocoTestReport
 
+      - name: SonarCloud analyze
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: ./gradlew sonar --info
+
       - name: Generate coverage badge
         uses: cicirello/jacoco-badge-generator@v2
         with:
