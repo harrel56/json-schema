@@ -3,6 +3,7 @@ plugins {
     id 'maven-publish'
     id 'signing'
     id 'jacoco'
+    id "org.sonarqube" version "4.2.1.3168"
 }
 
 group 'dev.harrel'
@@ -148,6 +149,14 @@ jacocoTestReport {
     reports.html.required = false
     reports.csv.required = true
     reports.xml.required = true
+}
+
+sonar {
+    properties {
+        property "sonar.projectKey", "harrel56_json-schema"
+        property "sonar.organization", "harrel56"
+        property "sonar.host", "https://sonarcloud.io"
+    }
 }
 
 def setupProviderTest(String provider, String dependency) {
