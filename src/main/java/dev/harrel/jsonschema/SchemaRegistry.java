@@ -65,7 +65,7 @@ final class SchemaRegistry {
         }
     }
 
-    static class State {
+    static final class State {
         private final Map<String, Schema> schemas;
         private final Map<String, Schema> additionalSchemas;
         private final Map<String, Schema> dynamicSchemas;
