@@ -153,9 +153,9 @@ jacocoTestReport {
 
 sonar {
     properties {
-        property "sonar.projectKey", "harrel56_json-schema"
-        property "sonar.organization", "harrel56"
-        property "sonar.host.url", "https://sonarcloud.io"
+        property 'sonar.projectKey', 'harrel56_json-schema'
+        property 'sonar.organization', 'harrel56'
+        property 'sonar.host.url', 'https://sonarcloud.io'
     }
 }
 
