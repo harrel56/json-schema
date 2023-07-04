@@ -146,7 +146,6 @@ signing {
 }
 
 jacocoTestReport {
-    println "${sourceSets.test.allSource.srcDirs}"
     reports.html.required = false
     reports.csv.required = true
     reports.xml.required = true
@@ -173,6 +172,10 @@ def setupProviderTest(String provider, String dependency) {
             runtimeClasspath += sourceSets.main.output
         }
     }
+    tasks.getByName("compile${taskName.capitalize()}Java") {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
     configurations.getByName(configName).extendsFrom configurations.getByName('testImplementation')
     dependencies.add(configName, dependency)
     tasks.register(taskName, Test) {
@@ -180,6 +183,9 @@ def setupProviderTest(String provider, String dependency) {
         group = 'verification'
         testClassesDirs = sourceSets.getByName(taskName).output.classesDirs
         classpath = sourceSets.getByName(taskName).runtimeClasspath
+        javaLauncher = javaToolchains.launcherFor {
+            languageVersion = JavaLanguageVersion.of(8)
+        }
     }
     tasks.check.dependsOn taskName
 }
