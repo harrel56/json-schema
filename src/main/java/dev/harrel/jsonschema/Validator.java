@@ -139,7 +139,7 @@ public final class Validator {
     private Schema getRootSchema(String uri) {
         Schema schema = schemaRegistry.get(uri);
         if (schema == null) {
-            throw new IllegalArgumentException(String.format("Couldn't find schema with uri [%s]", uri));
+            throw new SchemaNotFoundException(uri);
         }
         return schema;
     }

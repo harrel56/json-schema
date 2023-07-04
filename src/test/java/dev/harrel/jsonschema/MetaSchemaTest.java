@@ -2,6 +2,8 @@ package dev.harrel.jsonschema;
 
 import org.junit.jupiter.api.Test;
 
+import java.net.URI;
+
 import static org.assertj.core.api.Assertions.*;
 
 public abstract class MetaSchemaTest {
@@ -208,8 +210,109 @@ public abstract class MetaSchemaTest {
                 .withJsonNodeFactory(nodeFactory)
                 .withSchemaResolver(resolver)
                 .createValidator();
-        assertThatThrownBy(() -> validator.registerSchema(rawSchema))
-                .isInstanceOf(InvalidSchemaException.class)
-                .hasMessageContaining("urn:my-schema");
+
+        InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawSchema), InvalidSchemaException.class);
+        assertThat(exception.getErrors()).isNotEmpty();
+        assertThat(exception.getMessage()).contains("urn:my-schema");
+    }
+
+    @Test
+    void shouldPassForValidRecursiveSchema() {
+        String rawSchema = """
+                {
+                    "$schema": "urn:recursive-schema",
+                    "$id": "urn:recursive-schema",
+                    "type": "object"
+                }""";
+        new ValidatorFactory()
+                .withJsonNodeFactory(nodeFactory)
+                .withSchemaResolver(resolver)
+                .validate(rawSchema, "{}");
+    }
+
+    @Test
+    void shouldFailForInvalidRecursiveSchema() {
+        String rawSchema = """
+                {
+                    "$schema": "urn:recursive-schema",
+                    "$id": "urn:recursive-schema",
+                    "type": "null"
+                }""";
+        Validator validator = new ValidatorFactory()
+                .withJsonNodeFactory(nodeFactory)
+                .withSchemaResolver(resolver)
+                .createValidator();
+        InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawSchema), InvalidSchemaException.class);
+        assertThat(exception.getErrors()).isNotEmpty();
+    }
+
+    @Test
+    void shouldPassForValidRecursiveEmbeddedSchema() {
+        String rawSchema = """
+                {
+                    "properties": {
+                      "prop": {
+                        "$schema": "urn:recursive-schema",
+                        "$id": "urn:recursive-schema",
+                        "type": "object"
+                      }
+                    }
+                }""";
+        new ValidatorFactory()
+                .withJsonNodeFactory(nodeFactory)
+                .withSchemaResolver(resolver)
+                .validate(rawSchema, "{}");
+    }
+
+    @Test
+    void shouldFailForInvalidRecursiveEmbeddedSchema() {
+        String rawSchema = """
+                {
+                    "properties": {
+                      "prop": {
+                        "$schema": "urn:recursive-schema",
+                        "$id": "urn:recursive-schema",
+                        "type": "null"
+                      }
+                    }
+                }""";
+        Validator validator = new ValidatorFactory()
+                .withJsonNodeFactory(nodeFactory)
+                .withSchemaResolver(resolver)
+                .createValidator();
+        InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawSchema), InvalidSchemaException.class);
+        assertThat(exception.getErrors()).isNotEmpty();
+    }
+
+    @Test
+    void shouldRestoreRegistryStateForInvalidRecursiveSchema() {
+        String rawPassingSchema = """
+                {
+                  "$id": "urn:passing"
+                }""";
+        String rawFailingSchema = """
+                {
+                    "$schema": "urn:recursive-schema",
+                    "$id": "urn:recursive-schema",
+                    "type": "null"
+                }""";
+        Validator validator = new ValidatorFactory()
+                .withJsonNodeFactory(nodeFactory)
+                .withSchemaResolver(resolver)
+                .createValidator();
+
+        validator.registerSchema(URI.create("urn:schema1"), rawPassingSchema);
+        assertThat(validator.validate(URI.create("urn:schema1"), "{}").isValid()).isTrue();
+        assertThat(validator.validate(URI.create("urn:passing"), "{}").isValid()).isTrue();
+
+        InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawFailingSchema), InvalidSchemaException.class);
+        assertThat(exception.getErrors()).isNotEmpty();
+        URI failingUri = URI.create("urn:recursive-schema");
+
+        SchemaNotFoundException notFoundException = catchThrowableOfType(() -> validator.validate(failingUri, "null"), SchemaNotFoundException.class);
+        assertThat(notFoundException).hasMessage("Couldn't find schema with uri [urn:recursive-schema]");
+        assertThat(notFoundException.getRef()).isEqualTo("urn:recursive-schema");
+        assertThat(validator.validate(URI.create("urn:schema1"), "{}").isValid()).isTrue();
+        assertThat(validator.validate(URI.create("urn:passing"), "{}").isValid()).isTrue();
     }
 }

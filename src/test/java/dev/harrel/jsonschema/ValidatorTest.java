@@ -24,7 +24,7 @@ class ValidatorTest {
         validator.registerSchema(SCHEMA_URI, RAW_SCHEMA);
         URI invalidUri = URI.create("urn:test2");
         assertThatThrownBy(() -> validator.validate(invalidUri, RAW_INSTANCE))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(SchemaNotFoundException.class)
                 .hasMessageContaining(invalidUri.toString());
     }
 

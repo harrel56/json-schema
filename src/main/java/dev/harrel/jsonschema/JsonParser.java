@@ -33,7 +33,8 @@ final class JsonParser {
                 .filter(JsonNode::isString)
                 .map(JsonNode::asString)
                 .filter(id -> !baseUri.toString().equals(id));
-        metaSchemaValidator.validateMetaSchema(this, metaSchemaUri, providedSchemaId.orElse(baseUri.toString()), node);
+
+        Optional<SchemaRegistry.State> registryPreviousState = validateSchemaOrPostpone(node, metaSchemaUri, baseUri.toString(), providedSchemaId);
 
         if (node.isBoolean()) {
             SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, baseUri.toString());
@@ -51,6 +52,9 @@ final class JsonParser {
             List<EvaluatorWrapper> evaluators = parseEvaluators(ctx, objectMap, node.getJsonPointer());
             schemaRegistry.registerIdentifiableSchema(ctx, baseUri, node, evaluators);
         }
+
+        registryPreviousState.ifPresent(state -> performPostponedSchemaValidation(state, node, metaSchemaUri, baseUri.toString(), providedSchemaId));
+
         return providedSchemaId.map(URI::create).orElse(baseUri);
     }
 
@@ -82,21 +86,27 @@ final class JsonParser {
 
     private void parseObject(SchemaParsingContext ctx, JsonNode node) {
         Map<String, JsonNode> objectMap = node.asObject();
-        Optional<String> metaSchemaUri = Optional.ofNullable(objectMap.get(Keyword.SCHEMA))
+        String metaSchemaUri = Optional.ofNullable(objectMap.get(Keyword.SCHEMA))
+                .filter(JsonNode::isString)
+                .map(JsonNode::asString)
+                .orElse(null);
+        Optional<String> providedSchemaId = Optional.ofNullable(objectMap.get(Keyword.ID))
                 .filter(JsonNode::isString)
                 .map(JsonNode::asString);
-        JsonNode idNode = objectMap.get(Keyword.ID);
-        if (idNode != null && idNode.isString()) {
-            String idString = idNode.asString();
-            metaSchemaUri.ifPresent(uri -> metaSchemaValidator.validateMetaSchema(this, uri, idString, node));
+        String absoluteUri = ctx.getAbsoluteUri(node);
+        Optional<SchemaRegistry.State> registryPreviousState = validateSchemaOrPostpone(node, metaSchemaUri, absoluteUri, providedSchemaId);
+
+        if (providedSchemaId.isPresent()) {
+            String idString = providedSchemaId.get();
             URI uri = ctx.getParentUri().resolve(idString);
             SchemaParsingContext newCtx = ctx.withParentUri(uri);
             List<EvaluatorWrapper> evaluators = parseEvaluators(newCtx, objectMap, node.getJsonPointer());
             schemaRegistry.registerIdentifiableSchema(newCtx, uri, node, evaluators);
         } else {
-            metaSchemaUri.ifPresent(uri -> metaSchemaValidator.validateMetaSchema(this, uri, ctx.getAbsoluteUri(node), node));
             schemaRegistry.registerSchema(ctx, node, parseEvaluators(ctx, objectMap, node.getJsonPointer()));
         }
+
+        registryPreviousState.ifPresent(state -> performPostponedSchemaValidation(state, node, metaSchemaUri, absoluteUri, providedSchemaId));
     }
 
     private List<EvaluatorWrapper> parseEvaluators(SchemaParsingContext ctx, Map<String, JsonNode> object, String objectPath) {
@@ -112,6 +122,31 @@ final class JsonParser {
             evaluators.add(new EvaluatorWrapper(null, objectPath, Schema.getBooleanEvaluator(true)));
         }
         return evaluators;
+    }
+
+    /* If meta-schema is the same as schema, its validation needs to be postponed */
+    private Optional<SchemaRegistry.State> validateSchemaOrPostpone(JsonNode node, String metaSchemaUri, String baseUri, Optional<String> providedSchemaId) {
+        if (metaSchemaUri == null) {
+            return Optional.empty();
+        } else if (!baseUri.equals(metaSchemaUri) && providedSchemaId.map(id -> !id.equals(metaSchemaUri)).orElse(true)) {
+            metaSchemaValidator.validateMetaSchema(this, metaSchemaUri, providedSchemaId.orElse(baseUri), node);
+            return Optional.empty();
+        } else {
+            return Optional.of(schemaRegistry.createSnapshot());
+        }
+    }
+
+    private void performPostponedSchemaValidation(SchemaRegistry.State previousState,
+                                                  JsonNode node,
+                                                  String metaSchemaUri,
+                                                  String baseUri,
+                                                  Optional<String> providedSchemaId) {
+        try {
+            metaSchemaValidator.validateMetaSchema(this, metaSchemaUri, providedSchemaId.orElse(baseUri), node);
+        } catch (JsonSchemaException e) {
+            schemaRegistry.restoreSnapshot(previousState);
+            throw e;
+        }
     }
 }
 
