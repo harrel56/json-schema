@@ -20,6 +20,7 @@ public final class ValidatorFactory {
     private Supplier<JsonNodeFactory> jsonNodeFactory = JacksonNode.Factory::new;
     private SchemaResolver schemaResolver = new DefaultMetaSchemaResolver();
     private String defaultMetaSchemaUri = DEFAULT_META_SCHEMA;
+    private String test = ":)";
 
     /**
      * Creates new instance of {@link Validator} using current configuration.
