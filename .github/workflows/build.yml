@@ -27,7 +27,7 @@ jobs:
         run: ./gradlew build testClasses -x check
 
       - name: Gradle check
-        run: ./gradlew check jacocoTestReport
+        run: ./gradlew check jacocoTestReport sonarqube
 
       - name: Generate coverage badge
         uses: cicirello/jacoco-badge-generator@v2
