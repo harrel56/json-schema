@@ -8,6 +8,7 @@ plugins {
 
 apply from: 'setup/publishing.gradle'
 apply from: 'setup/reporting.gradle'
+apply from: 'setup/testing.gradle'
 
 group 'dev.harrel'
 version '1.1.0'
@@ -74,32 +75,4 @@ dependencies {
 
 test {
     useJUnitPlatform()
-}
-
-def setupProviderTest(String provider, String dependency) {
-    def taskName = "${provider}Test"
-    def configName = "${taskName}Implementation"
-    sourceSets.create(taskName) {
-        java {
-            srcDir file("src/provider-test/$provider")
-            compileClasspath += sourceSets.main.output
-            runtimeClasspath += sourceSets.main.output
-        }
-    }
-    tasks.getByName("compile${taskName.capitalize()}Java") {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-    configurations.getByName(configName).extendsFrom configurations.getByName('testImplementation')
-    dependencies.add(configName, dependency)
-    tasks.register(taskName, Test) {
-        useJUnitPlatform()
-        group = 'verification'
-        testClassesDirs = sourceSets.getByName(taskName).output.classesDirs
-        classpath = sourceSets.getByName(taskName).runtimeClasspath
-        javaLauncher = javaToolchains.launcherFor {
-            languageVersion = JavaLanguageVersion.of(8)
-        }
-    }
-    tasks.check.dependsOn taskName
 }
