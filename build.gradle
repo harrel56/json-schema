@@ -26,24 +26,6 @@ java {
     withSourcesJar()
     withJavadocJar()
     javadoc.options.addStringOption('Xdoclint:none', '-quiet')
-    registerFeature('jackson') {
-        usingSourceSet(sourceSets.main)
-    }
-    registerFeature('gson') {
-        usingSourceSet(sourceSets.main)
-    }
-    registerFeature('orgJson') {
-        usingSourceSet(sourceSets.main)
-    }
-    registerFeature('jettison') {
-        usingSourceSet(sourceSets.main)
-    }
-    registerFeature('jakartaJson') {
-        usingSourceSet(sourceSets.main)
-    }
-    registerFeature('jsonSmart') {
-        usingSourceSet(sourceSets.main)
-    }
 }
 
 repositories {
@@ -60,6 +42,9 @@ def jsonProviders = [
 ]
 
 jsonProviders.entrySet().forEach {
+    java.registerFeature(it.key, {
+        usingSourceSet(sourceSets.main)
+    })
     dependencies.add("${it.key}Implementation", it.value)
     setupProviderTest(it.key, it.value)
 }
