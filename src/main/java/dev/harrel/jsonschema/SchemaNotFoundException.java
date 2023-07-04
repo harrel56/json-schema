@@ -7,6 +7,7 @@ public class SchemaNotFoundException extends JsonSchemaException {
     private final String ref;
 
     SchemaNotFoundException(String ref) {
+        super(String.format("Couldn't find schema with uri [%s]", ref));
         this.ref = ref;
     }
 
