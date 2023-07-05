@@ -1,8 +1,8 @@
 package dev.harrel.jsonschema;
 
 import java.net.URI;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 final class MetaSchemaValidator {
     private static final String RESOLVING_ERROR_MSG = "Cannot resolve meta-schema [%s]";
@@ -17,14 +17,28 @@ final class MetaSchemaValidator {
         this.schemaResolver = Objects.requireNonNull(schemaResolver);
     }
 
-    void validateMetaSchema(JsonParser jsonParser, String metaSchemaUri, String schemaUri, JsonNode node) {
+    Set<String> validateSchema(JsonParser jsonParser, String metaSchemaUri, String schemaUri, JsonNode node) {
         Objects.requireNonNull(metaSchemaUri);
         Schema schema = resolveMetaSchema(jsonParser, metaSchemaUri);
-        EvaluationContext ctx = new EvaluationContext(jsonNodeFactory, jsonParser, schemaRegistry, schemaResolver);
+        EvaluationContext ctx = new EvaluationContext(jsonNodeFactory, jsonParser, schemaRegistry, schemaResolver, schema.getActiveVocabularies());
         if (!ctx.validateAgainstSchema(schema, node)) {
             throw new InvalidSchemaException(String.format("Schema [%s] failed to validate against meta-schema [%s]", schemaUri, metaSchemaUri),
                     Validator.Result.fromEvaluationContext(false, ctx).getErrors());
         }
+        return determineActiveVocabularies(schema.getVocabulariesObject());
+    }
+
+    Set<String> determineActiveVocabularies(Map<String, Boolean> vocabulariesObject) {
+        Set<String> supportedVocabularies = Vocabulary.DEFAULT_VOCABULARIES_OBJECT.keySet(); // TODO as field
+        List<String> unsupportedRequiredVocabularies = vocabulariesObject.entrySet().stream()
+                .filter(Map.Entry::getValue)
+                .map(Map.Entry::getKey)
+                .filter(vocab -> !supportedVocabularies.contains(vocab))
+                .collect(Collectors.toList());
+        if (!unsupportedRequiredVocabularies.isEmpty()) {
+            throw new IllegalArgumentException(String.format("Following vocabularies [%s] are required but not supported", unsupportedRequiredVocabularies)); // TODO new exception class?
+        }
+        return vocabulariesObject.keySet();
     }
 
     private Schema resolveMetaSchema(JsonParser jsonParser, String uri) {

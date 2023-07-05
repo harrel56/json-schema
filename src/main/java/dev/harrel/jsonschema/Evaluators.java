@@ -5,9 +5,18 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static java.util.Collections.*;
+import static dev.harrel.jsonschema.Vocabulary.VALIDATION_VOCABULARY;
+import static java.util.Collections.singleton;
+import static java.util.Collections.unmodifiableList;
 
-class TypeEvaluator implements Evaluator {
+interface ValidatingEvaluator extends Evaluator {
+    @Override
+    default Set<String> getVocabularies() {
+        return VALIDATION_VOCABULARY;
+    }
+}
+
+class TypeEvaluator implements ValidatingEvaluator {
     private final Set<SimpleType> types;
 
     TypeEvaluator(JsonNode node) {
@@ -36,7 +45,7 @@ class TypeEvaluator implements Evaluator {
     }
 }
 
-class ConstEvaluator implements Evaluator {
+class ConstEvaluator implements ValidatingEvaluator {
     private final JsonNode constNode;
 
     ConstEvaluator(JsonNode node) {
@@ -49,7 +58,7 @@ class ConstEvaluator implements Evaluator {
     }
 }
 
-class EnumEvaluator implements Evaluator {
+class EnumEvaluator implements ValidatingEvaluator {
     private final List<JsonNode> enumNodes;
 
     EnumEvaluator(JsonNode node) {
@@ -70,7 +79,7 @@ class EnumEvaluator implements Evaluator {
     }
 }
 
-class MultipleOfEvaluator implements Evaluator {
+class MultipleOfEvaluator implements ValidatingEvaluator {
     private final BigDecimal factor;
 
     MultipleOfEvaluator(JsonNode node) {
@@ -94,7 +103,7 @@ class MultipleOfEvaluator implements Evaluator {
     }
 }
 
-class MaximumEvaluator implements Evaluator {
+class MaximumEvaluator implements ValidatingEvaluator {
     private final BigDecimal max;
 
     MaximumEvaluator(JsonNode node) {
@@ -118,7 +127,7 @@ class MaximumEvaluator implements Evaluator {
     }
 }
 
-class ExclusiveMaximumEvaluator implements Evaluator {
+class ExclusiveMaximumEvaluator implements ValidatingEvaluator {
     private final BigDecimal max;
 
     ExclusiveMaximumEvaluator(JsonNode node) {
@@ -142,7 +151,7 @@ class ExclusiveMaximumEvaluator implements Evaluator {
     }
 }
 
-class MinimumEvaluator implements Evaluator {
+class MinimumEvaluator implements ValidatingEvaluator {
     private final BigDecimal min;
 
     MinimumEvaluator(JsonNode node) {
@@ -166,7 +175,7 @@ class MinimumEvaluator implements Evaluator {
     }
 }
 
-class ExclusiveMinimumEvaluator implements Evaluator {
+class ExclusiveMinimumEvaluator implements ValidatingEvaluator {
     private final BigDecimal min;
 
     ExclusiveMinimumEvaluator(JsonNode node) {
@@ -190,7 +199,7 @@ class ExclusiveMinimumEvaluator implements Evaluator {
     }
 }
 
-class MaxLengthEvaluator implements Evaluator {
+class MaxLengthEvaluator implements ValidatingEvaluator {
     private final int maxLength;
 
     MaxLengthEvaluator(JsonNode node) {
@@ -215,7 +224,7 @@ class MaxLengthEvaluator implements Evaluator {
     }
 }
 
-class MinLengthEvaluator implements Evaluator {
+class MinLengthEvaluator implements ValidatingEvaluator {
     private final int minLength;
 
     MinLengthEvaluator(JsonNode node) {
@@ -240,7 +249,7 @@ class MinLengthEvaluator implements Evaluator {
     }
 }
 
-class PatternEvaluator implements Evaluator {
+class PatternEvaluator implements ValidatingEvaluator {
     private final Pattern pattern;
 
     PatternEvaluator(JsonNode node) {
@@ -264,7 +273,7 @@ class PatternEvaluator implements Evaluator {
     }
 }
 
-class MaxItemsEvaluator implements Evaluator {
+class MaxItemsEvaluator implements ValidatingEvaluator {
     private final int maxItems;
 
     MaxItemsEvaluator(JsonNode node) {
@@ -288,7 +297,7 @@ class MaxItemsEvaluator implements Evaluator {
     }
 }
 
-class MinItemsEvaluator implements Evaluator {
+class MinItemsEvaluator implements ValidatingEvaluator {
     private final int minItems;
 
     MinItemsEvaluator(JsonNode node) {
@@ -312,7 +321,7 @@ class MinItemsEvaluator implements Evaluator {
     }
 }
 
-class UniqueItemsEvaluator implements Evaluator {
+class UniqueItemsEvaluator implements ValidatingEvaluator {
     private final boolean unique;
 
     UniqueItemsEvaluator(JsonNode node) {
@@ -341,7 +350,7 @@ class UniqueItemsEvaluator implements Evaluator {
     }
 }
 
-class MaxContainsEvaluator implements Evaluator {
+class MaxContainsEvaluator implements ValidatingEvaluator {
     private final int max;
 
     MaxContainsEvaluator(JsonNode node) {
@@ -373,7 +382,7 @@ class MaxContainsEvaluator implements Evaluator {
     }
 }
 
-class MinContainsEvaluator implements Evaluator {
+class MinContainsEvaluator implements ValidatingEvaluator {
     private final int min;
 
     MinContainsEvaluator(JsonNode node) {
@@ -405,7 +414,7 @@ class MinContainsEvaluator implements Evaluator {
     }
 }
 
-class MaxPropertiesEvaluator implements Evaluator {
+class MaxPropertiesEvaluator implements ValidatingEvaluator {
     private final int max;
 
     MaxPropertiesEvaluator(JsonNode node) {
@@ -429,7 +438,7 @@ class MaxPropertiesEvaluator implements Evaluator {
     }
 }
 
-class MinPropertiesEvaluator implements Evaluator {
+class MinPropertiesEvaluator implements ValidatingEvaluator {
     private final int min;
 
     MinPropertiesEvaluator(JsonNode node) {
@@ -453,7 +462,7 @@ class MinPropertiesEvaluator implements Evaluator {
     }
 }
 
-class RequiredEvaluator implements Evaluator {
+class RequiredEvaluator implements ValidatingEvaluator {
     private final List<String> requiredProperties;
 
     RequiredEvaluator(JsonNode node) {
@@ -480,7 +489,7 @@ class RequiredEvaluator implements Evaluator {
     }
 }
 
-class DependentRequiredEvaluator implements Evaluator {
+class DependentRequiredEvaluator implements ValidatingEvaluator {
     private final Map<String, List<String>> requiredProperties;
 
     DependentRequiredEvaluator(JsonNode node) {

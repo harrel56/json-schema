@@ -1,5 +1,8 @@
 package dev.harrel.jsonschema;
 
+import java.util.Collections;
+import java.util.Set;
+
 /**
  * {@code Evaluator} interface is the main abstraction for the keyword evaluation logic.
  */
@@ -23,6 +26,10 @@ public interface Evaluator {
      */
     default int getOrder() {
         return 0;
+    }
+
+    default Set<String> getVocabularies() {
+        return Collections.emptySet();
     }
 
     /**

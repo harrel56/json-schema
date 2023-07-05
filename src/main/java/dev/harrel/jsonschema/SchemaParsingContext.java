@@ -37,6 +37,10 @@ public final class SchemaParsingContext {
         return new SchemaParsingContext(baseUri, parentUri, schemaRegistry, unmodifiableMap(currentSchemaObject));
     }
 
+    Map<String, Boolean> getVocabulariesObject() {
+        return JsonParser.getVocabulariesObject(currentSchemaObject);
+    }
+
     /**
      * Returns URI of the closest parent schema that contains <i>$id</i> keyword.
      * If there is no such parent, then the URI of root schema is returned.

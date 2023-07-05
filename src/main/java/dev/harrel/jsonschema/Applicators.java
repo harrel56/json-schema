@@ -6,6 +6,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static dev.harrel.jsonschema.Vocabulary.APPLICATOR_VOCABULARY;
+import static dev.harrel.jsonschema.Vocabulary.UNEVALUATED_VOCABULARY;
 import static java.util.Collections.*;
 
 class PrefixItemsEvaluator implements Evaluator {
@@ -18,6 +20,11 @@ class PrefixItemsEvaluator implements Evaluator {
         this.prefixRefs = unmodifiableList(node.asArray().stream()
                 .map(ctx::getAbsoluteUri)
                 .collect(Collectors.toList()));
+    }
+
+    @Override
+    public Set<String> getVocabularies() {
+        return APPLICATOR_VOCABULARY;
     }
 
     @Override
@@ -43,6 +50,11 @@ class ItemsEvaluator implements Evaluator {
             throw new IllegalArgumentException();
         }
         this.schemaRef = ctx.getAbsoluteUri(node);
+    }
+
+    @Override
+    public Set<String> getVocabularies() {
+        return APPLICATOR_VOCABULARY;
     }
 
     @Override
@@ -80,6 +92,11 @@ class ContainsEvaluator implements Evaluator {
     }
 
     @Override
+    public Set<String> getVocabularies() {
+        return APPLICATOR_VOCABULARY;
+    }
+
+    @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isArray()) {
             return Result.success();
@@ -103,6 +120,11 @@ class AdditionalPropertiesEvaluator implements Evaluator {
             throw new IllegalArgumentException();
         }
         this.schemaRef = ctx.getAbsoluteUri(node);
+    }
+
+    @Override
+    public Set<String> getVocabularies() {
+        return APPLICATOR_VOCABULARY;
     }
 
     @Override
@@ -142,6 +164,11 @@ class PropertiesEvaluator implements Evaluator {
     }
 
     @Override
+    public Set<String> getVocabularies() {
+        return APPLICATOR_VOCABULARY;
+    }
+
+    @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isObject()) {
             return Result.success();
@@ -170,6 +197,11 @@ class PatternPropertiesEvaluator implements Evaluator {
         }
         this.schemasByPatterns = node.asObject().entrySet().stream()
                 .collect(Collectors.toMap(e -> Pattern.compile(e.getKey()), e -> ctx.getAbsoluteUri(e.getValue())));
+    }
+
+    @Override
+    public Set<String> getVocabularies() {
+        return APPLICATOR_VOCABULARY;
     }
 
     @Override
@@ -354,6 +386,11 @@ class UnevaluatedItemsEvaluator implements Applicator {
     }
 
     @Override
+    public Set<String> getVocabularies() {
+        return UNEVALUATED_VOCABULARY;
+    }
+
+    @Override
     public boolean apply(EvaluationContext ctx, JsonNode node) {
         if (!node.isArray()) {
             return true;
@@ -389,6 +426,11 @@ class UnevaluatedPropertiesEvaluator implements Applicator {
         String schemaPointer = node.getJsonPointer();
         this.schemaRef = ctx.getAbsoluteUri(schemaPointer);
         this.parentPath = UriUtil.getJsonPointerParent(schemaPointer);
+    }
+
+    @Override
+    public Set<String> getVocabularies() {
+        return UNEVALUATED_VOCABULARY;
     }
 
     @Override

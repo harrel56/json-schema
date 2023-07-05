@@ -131,7 +131,7 @@ public final class Validator {
      */
     public Result validate(URI schemaUri, JsonNode instanceNode) {
         Schema schema = getRootSchema(schemaUri.toString());
-        EvaluationContext ctx = createNewEvaluationContext();
+        EvaluationContext ctx = createNewEvaluationContext(schema);
         boolean valid = ctx.validateAgainstSchema(schema, instanceNode);
         return Result.fromEvaluationContext(valid, ctx);
     }
@@ -148,8 +148,8 @@ public final class Validator {
         return URI.create("https://harrel.dev/" + UUID.randomUUID().toString().substring(0, 8));
     }
 
-    private EvaluationContext createNewEvaluationContext() {
-        return new EvaluationContext(jsonNodeFactory, jsonParser, schemaRegistry, schemaResolver);
+    private EvaluationContext createNewEvaluationContext(Schema schema) {
+        return new EvaluationContext(jsonNodeFactory, jsonParser, schemaRegistry, schemaResolver, schema.getActiveVocabularies());
     }
 
     /**

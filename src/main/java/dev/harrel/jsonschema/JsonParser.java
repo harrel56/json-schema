@@ -2,6 +2,7 @@ package dev.harrel.jsonschema;
 
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.Collections.singletonList;
 
@@ -34,26 +35,26 @@ final class JsonParser {
                 .map(JsonNode::asString)
                 .filter(id -> !baseUri.toString().equals(id));
 
-        Optional<SchemaRegistry.State> registryPreviousState = validateSchemaOrPostpone(node, metaSchemaUri, baseUri.toString(), providedSchemaId);
+        MetaValidationResult metaValidationResult = validateSchemaOrPostpone(node, metaSchemaUri, baseUri.toString(), providedSchemaId);
 
         if (node.isBoolean()) {
             SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, baseUri.toString());
-            boolean schemaValue = node.asBoolean();
-            schemaRegistry.registerIdentifiableSchema(ctx, baseUri, node, singletonList(new EvaluatorWrapper(null, node, Schema.getBooleanEvaluator(schemaValue))));
+            List<EvaluatorWrapper> evaluators = singletonList(new EvaluatorWrapper(null, node, Schema.getBooleanEvaluator(node.asBoolean())));
+            schemaRegistry.registerIdentifiableSchema(ctx, baseUri, node, evaluators, metaValidationResult.activeVocabularies);
         } else if (objectMapOptional.isPresent()) {
             Map<String, JsonNode> objectMap = objectMapOptional.get();
             if (providedSchemaId.isPresent()) {
                 String idString = providedSchemaId.get();
                 SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, idString);
                 List<EvaluatorWrapper> evaluators = parseEvaluators(ctx, objectMap, node.getJsonPointer());
-                schemaRegistry.registerIdentifiableSchema(ctx, URI.create(idString), node, evaluators);
+                schemaRegistry.registerIdentifiableSchema(ctx, URI.create(idString), node, evaluators, metaValidationResult.activeVocabularies);
             }
             SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, baseUri.toString());
             List<EvaluatorWrapper> evaluators = parseEvaluators(ctx, objectMap, node.getJsonPointer());
-            schemaRegistry.registerIdentifiableSchema(ctx, baseUri, node, evaluators);
+            schemaRegistry.registerIdentifiableSchema(ctx, baseUri, node, evaluators, metaValidationResult.activeVocabularies);
         }
 
-        registryPreviousState.ifPresent(state -> performPostponedSchemaValidation(state, node, metaSchemaUri, baseUri.toString(), providedSchemaId));
+        metaValidationResult.performPostponedSchemaValidation(node, metaSchemaUri, baseUri.toString(), providedSchemaId);
 
         return providedSchemaId.map(URI::create).orElse(baseUri);
     }
@@ -75,7 +76,8 @@ final class JsonParser {
     private void parseBoolean(SchemaParsingContext ctx, JsonNode node) {
         boolean schemaValue = node.asBoolean();
         Evaluator booleanEvaluator = Schema.getBooleanEvaluator(schemaValue);
-        schemaRegistry.registerSchema(ctx, node, singletonList(new EvaluatorWrapper(null, node, booleanEvaluator)));
+        List<EvaluatorWrapper> evaluators = singletonList(new EvaluatorWrapper(null, node, booleanEvaluator));
+        schemaRegistry.registerSchema(ctx, node, evaluators, Vocabulary.DEFAULT_VOCABULARIES_OBJECT.keySet());
     }
 
     private void parseArray(SchemaParsingContext ctx, JsonNode node) {
@@ -94,19 +96,19 @@ final class JsonParser {
                 .filter(JsonNode::isString)
                 .map(JsonNode::asString);
         String absoluteUri = ctx.getAbsoluteUri(node);
-        Optional<SchemaRegistry.State> registryPreviousState = validateSchemaOrPostpone(node, metaSchemaUri, absoluteUri, providedSchemaId);
+        MetaValidationResult metaValidationResult = validateSchemaOrPostpone(node, metaSchemaUri, absoluteUri, providedSchemaId);
 
         if (providedSchemaId.isPresent()) {
             String idString = providedSchemaId.get();
             URI uri = ctx.getParentUri().resolve(idString);
             SchemaParsingContext newCtx = ctx.withParentUri(uri);
             List<EvaluatorWrapper> evaluators = parseEvaluators(newCtx, objectMap, node.getJsonPointer());
-            schemaRegistry.registerIdentifiableSchema(newCtx, uri, node, evaluators);
+            schemaRegistry.registerIdentifiableSchema(newCtx, uri, node, evaluators, metaValidationResult.activeVocabularies);
         } else {
-            schemaRegistry.registerSchema(ctx, node, parseEvaluators(ctx, objectMap, node.getJsonPointer()));
+            schemaRegistry.registerSchema(ctx, node, parseEvaluators(ctx, objectMap, node.getJsonPointer()), metaValidationResult.activeVocabularies);
         }
 
-        registryPreviousState.ifPresent(state -> performPostponedSchemaValidation(state, node, metaSchemaUri, absoluteUri, providedSchemaId));
+        metaValidationResult.performPostponedSchemaValidation(node, metaSchemaUri, absoluteUri, providedSchemaId);
     }
 
     private List<EvaluatorWrapper> parseEvaluators(SchemaParsingContext ctx, Map<String, JsonNode> object, String objectPath) {
@@ -124,28 +126,62 @@ final class JsonParser {
         return evaluators;
     }
 
+    static Map<String, Boolean> getVocabulariesObject(JsonNode node) {
+        return Optional.of(node)
+                .filter(JsonNode::isObject)
+                .map(JsonNode::asObject)
+                .map(JsonParser::getVocabulariesObject)
+                .orElse(Vocabulary.DEFAULT_VOCABULARIES_OBJECT);
+    }
+
+    static Map<String, Boolean> getVocabulariesObject(Map<String, JsonNode> objectNode) {
+        return Optional.of(objectNode)
+                .map(obj -> obj.get(Keyword.VOCABULARY))
+                .filter(JsonNode::isObject)
+                .map(JsonNode::asObject)
+                .map(obj -> obj.entrySet().stream()
+                        .filter(entry -> entry.getValue().isBoolean())
+                        .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().asBoolean())))
+                .map(Collections::unmodifiableMap)
+                .orElse(Vocabulary.DEFAULT_VOCABULARIES_OBJECT);
+    }
+
     /* If meta-schema is the same as schema, its validation needs to be postponed */
-    private Optional<SchemaRegistry.State> validateSchemaOrPostpone(JsonNode node, String metaSchemaUri, String baseUri, Optional<String> providedSchemaId) {
+    private MetaValidationResult validateSchemaOrPostpone(JsonNode node, String metaSchemaUri, String baseUri, Optional<String> providedSchemaId) {
         if (metaSchemaUri == null) {
-            return Optional.empty();
+            return new MetaValidationResult(Vocabulary.DEFAULT_VOCABULARIES_OBJECT.keySet(), null);
         } else if (!baseUri.equals(metaSchemaUri) && providedSchemaId.map(id -> !id.equals(metaSchemaUri)).orElse(true)) {
-            metaSchemaValidator.validateMetaSchema(this, metaSchemaUri, providedSchemaId.orElse(baseUri), node);
-            return Optional.empty();
+            Set<String> activeVocabularies = metaSchemaValidator.validateSchema(this, metaSchemaUri, providedSchemaId.orElse(baseUri), node);
+            return new MetaValidationResult(activeVocabularies, null);
         } else {
-            return Optional.of(schemaRegistry.createSnapshot());
+            Set<String> activeVocabularies = metaSchemaValidator.determineActiveVocabularies(getVocabulariesObject(node));
+            return new MetaValidationResult(activeVocabularies, schemaRegistry.createSnapshot());
         }
     }
 
-    private void performPostponedSchemaValidation(SchemaRegistry.State previousState,
-                                                  JsonNode node,
-                                                  String metaSchemaUri,
-                                                  String baseUri,
-                                                  Optional<String> providedSchemaId) {
-        try {
-            metaSchemaValidator.validateMetaSchema(this, metaSchemaUri, providedSchemaId.orElse(baseUri), node);
-        } catch (JsonSchemaException e) {
-            schemaRegistry.restoreSnapshot(previousState);
-            throw e;
+    private final class MetaValidationResult {
+        private final Set<String> activeVocabularies;
+        private final SchemaRegistry.State recoveryState;
+
+        private MetaValidationResult(Set<String> activeVocabularies, SchemaRegistry.State recoveryState) {
+            this.activeVocabularies = Objects.requireNonNull(activeVocabularies);
+            this.recoveryState = recoveryState;
+        }
+
+        private void performPostponedSchemaValidation(JsonNode node,
+                                                      String metaSchemaUri,
+                                                      String baseUri,
+                                                      Optional<String> providedSchemaId) {
+            if (recoveryState == null) {
+                return;
+            }
+
+            try {
+                metaSchemaValidator.validateSchema(JsonParser.this, metaSchemaUri, providedSchemaId.orElse(baseUri), node);
+            } catch (JsonSchemaException e) {
+                schemaRegistry.restoreSnapshot(recoveryState);
+                throw e;
+            }
         }
     }
 }
