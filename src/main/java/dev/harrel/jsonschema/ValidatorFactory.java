@@ -4,7 +4,7 @@ import dev.harrel.jsonschema.providers.JacksonNode;
 
 import java.io.*;
 import java.net.URI;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -20,6 +20,7 @@ public final class ValidatorFactory {
     private Supplier<JsonNodeFactory> jsonNodeFactory = JacksonNode.Factory::new;
     private SchemaResolver schemaResolver = new DefaultMetaSchemaResolver();
     private String defaultMetaSchemaUri = DEFAULT_META_SCHEMA;
+    private Set<String> supportedVocabularies = Vocabulary.DEFAULT_VOCABULARIES_OBJECT.keySet();
 
     /**
      * Creates new instance of {@link Validator} using current configuration.
@@ -27,7 +28,7 @@ public final class ValidatorFactory {
      * @return new {@link Validator} instance
      */
     public Validator createValidator() {
-        return new Validator(evaluatorFactory, jsonNodeFactory.get(), schemaResolver, defaultMetaSchemaUri);
+        return new Validator(evaluatorFactory, jsonNodeFactory.get(), schemaResolver, defaultMetaSchemaUri, supportedVocabularies);
     }
 
     /**
@@ -75,6 +76,22 @@ public final class ValidatorFactory {
      */
     public ValidatorFactory withDefaultMetaSchemaUri(String defaultMetaSchemaUri) {
         this.defaultMetaSchemaUri = defaultMetaSchemaUri;
+        return this;
+    }
+
+    /**
+     * Adds support for additional vocabularies. It does not affect vocabularies provided by default
+     * (see {@link Vocabulary.Draft2020}).
+     * Note that it only makes sense when also providing custom {@link EvaluatorFactory} which <strong>actually</strong>
+     * implements logic required by custom vocabularies.
+     *
+     * @param vocabularyUri vocabulary URIs that are to be considered as supported
+     * @return self
+     */
+    public ValidatorFactory withAdditionalSupportedVocabularies(String... vocabularyUri) {
+        Set<String> vocabs = new HashSet<>(Vocabulary.DEFAULT_VOCABULARIES_OBJECT.keySet());
+        vocabs.addAll(Arrays.asList(vocabularyUri));
+        this.supportedVocabularies = Collections.unmodifiableSet(vocabs);
         return this;
     }
 

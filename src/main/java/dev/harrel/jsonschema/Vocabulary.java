@@ -4,7 +4,10 @@ import java.util.*;
 
 import static dev.harrel.jsonschema.Vocabulary.Draft2020.*;
 
-public class Vocabulary {
+/**
+ * {@code Vocabulary} class exposes constants related to vocabularies.
+ */
+public final class Vocabulary {
     private Vocabulary() {}
 
     static final Set<String> APPLICATOR_VOCABULARY = Collections.singleton(APPLICATOR);
@@ -23,7 +26,10 @@ public class Vocabulary {
         DEFAULT_VOCABULARIES_OBJECT = Collections.unmodifiableMap(vocabs);
     }
 
-    public static class Draft2020 {
+    /**
+     * {@code Vocabulary.Draft2020} class exposes vocabulary URIs that are part of a draft2020-12 specification.
+     */
+    public static final class Draft2020 {
         private Draft2020() {}
 
         public static final String CORE = "https://json-schema.org/draft/2020-12/vocab/core";

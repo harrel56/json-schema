@@ -10,11 +10,13 @@ final class MetaSchemaValidator {
     private final JsonNodeFactory jsonNodeFactory;
     private final SchemaRegistry schemaRegistry;
     private final SchemaResolver schemaResolver;
+    private final Set<String> supportedVocabularies;
 
-    MetaSchemaValidator(JsonNodeFactory jsonNodeFactory, SchemaRegistry schemaRegistry, SchemaResolver schemaResolver) {
+    MetaSchemaValidator(JsonNodeFactory jsonNodeFactory, SchemaRegistry schemaRegistry, SchemaResolver schemaResolver, Set<String> supportedVocabularies) {
         this.jsonNodeFactory = Objects.requireNonNull(jsonNodeFactory);
         this.schemaRegistry = Objects.requireNonNull(schemaRegistry);
         this.schemaResolver = Objects.requireNonNull(schemaResolver);
+        this.supportedVocabularies = supportedVocabularies;
     }
 
     Set<String> validateSchema(JsonParser jsonParser, String metaSchemaUri, String schemaUri, JsonNode node) {
@@ -29,7 +31,6 @@ final class MetaSchemaValidator {
     }
 
     Set<String> determineActiveVocabularies(Map<String, Boolean> vocabulariesObject) {
-        Set<String> supportedVocabularies = Vocabulary.DEFAULT_VOCABULARIES_OBJECT.keySet(); // TODO as field
         List<String> unsupportedRequiredVocabularies = vocabulariesObject.entrySet().stream()
                 .filter(Map.Entry::getValue)
                 .map(Map.Entry::getKey)
