@@ -49,7 +49,6 @@ public abstract class SpecificationTest {
         testValidation(bundle, name, schema, json, valid);
     }
 
-    @Disabled("Vocabularies are not supported yet")
     @SuiteTest("/draft2020-12/vocabulary.json")
     void vocabularyTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
         testValidation(bundle, name, schema, json, valid);
@@ -272,6 +271,8 @@ public abstract class SpecificationTest {
                 Map.entry("http://localhost:1234/draft2020-12/extendible-dynamic-ref.json", readResource("/schemas/extendible-dynamic-ref.json")),
                 Map.entry("http://localhost:1234/draft2020-12/integer.json", readResource("/schemas/integer.json")),
                 Map.entry("http://localhost:1234/draft2020-12/locationIndependentIdentifier.json", readResource("/schemas/locationIndependentIdentifier.json")),
+                Map.entry("http://localhost:1234/draft2020-12/metaschema-no-validation.json", readResource("/schemas/metaschema-no-validation.json")),
+                Map.entry("http://localhost:1234/draft2020-12/metaschema-optional-vocabulary.json", readResource("/schemas/metaschema-optional-vocabulary.json")),
                 Map.entry("http://localhost:1234/draft2020-12/name-defs.json", readResource("/schemas/name-defs.json")),
                 Map.entry("http://localhost:1234/draft2020-12/ref-and-defs.json", readResource("/schemas/ref-and-defs.json")),
                 Map.entry("http://localhost:1234/draft2020-12/subSchemas-defs.json", readResource("/schemas/subSchemas-defs.json")),

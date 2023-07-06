@@ -35,6 +35,7 @@ final class MetaSchemaValidator {
                 .map(Map.Entry::getKey)
                 .filter(vocab -> !supportedVocabularies.contains(vocab))
                 .collect(Collectors.toList());
+        // todo throw if core is not enabled
         if (!unsupportedRequiredVocabularies.isEmpty()) {
             throw new IllegalArgumentException(String.format("Following vocabularies [%s] are required but not supported", unsupportedRequiredVocabularies)); // TODO new exception class?
         }

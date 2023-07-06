@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Set;
 
+import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class SchemaRegistryTest {
@@ -13,7 +14,7 @@ class SchemaRegistryTest {
     @Test
     void shouldRestoreStateProperly() {
         SchemaRegistry schemaRegistry = new SchemaRegistry();
-        SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, "urn:test");
+        SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, "urn:test", emptyMap());
         JacksonNode.Factory factory = new JacksonNode.Factory();
         JacksonNode rootSchemaNode = factory.create("""
                 {

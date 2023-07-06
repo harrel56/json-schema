@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 
 final class JsonParser {
@@ -38,18 +39,18 @@ final class JsonParser {
         MetaValidationResult metaValidationResult = validateSchemaOrPostpone(node, metaSchemaUri, baseUri.toString(), providedSchemaId);
 
         if (node.isBoolean()) {
-            SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, baseUri.toString());
+            SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, baseUri.toString(), emptyMap());
             List<EvaluatorWrapper> evaluators = singletonList(new EvaluatorWrapper(null, node, Schema.getBooleanEvaluator(node.asBoolean())));
             schemaRegistry.registerIdentifiableSchema(ctx, baseUri, node, evaluators, metaValidationResult.activeVocabularies);
         } else if (objectMapOptional.isPresent()) {
             Map<String, JsonNode> objectMap = objectMapOptional.get();
             if (providedSchemaId.isPresent()) {
                 String idString = providedSchemaId.get();
-                SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, idString);
+                SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, idString, objectMap);
                 List<EvaluatorWrapper> evaluators = parseEvaluators(ctx, objectMap, node.getJsonPointer());
                 schemaRegistry.registerIdentifiableSchema(ctx, URI.create(idString), node, evaluators, metaValidationResult.activeVocabularies);
             }
-            SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, baseUri.toString());
+            SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, baseUri.toString(), objectMap);
             List<EvaluatorWrapper> evaluators = parseEvaluators(ctx, objectMap, node.getJsonPointer());
             schemaRegistry.registerIdentifiableSchema(ctx, baseUri, node, evaluators, metaValidationResult.activeVocabularies);
         }

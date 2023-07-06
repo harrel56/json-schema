@@ -3,7 +3,6 @@ package dev.harrel.jsonschema;
 import java.net.URI;
 import java.util.Map;
 
-import static java.util.Collections.emptyMap;
 import static java.util.Collections.unmodifiableMap;
 
 /**
@@ -25,8 +24,8 @@ public final class SchemaParsingContext {
         this.currentSchemaObject = currentSchemaObject;
     }
 
-    SchemaParsingContext(SchemaRegistry schemaRegistry, String baseUri) {
-        this(URI.create(baseUri), URI.create(baseUri), schemaRegistry, emptyMap());
+    SchemaParsingContext(SchemaRegistry schemaRegistry, String baseUri, Map<String, JsonNode> currentSchemaObject) {
+        this(URI.create(baseUri), URI.create(baseUri), schemaRegistry, currentSchemaObject);
     }
 
     SchemaParsingContext withParentUri(URI parentUri) {
