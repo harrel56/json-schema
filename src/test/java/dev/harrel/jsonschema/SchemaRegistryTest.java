@@ -14,7 +14,7 @@ class SchemaRegistryTest {
     @Test
     void shouldRestoreStateProperly() {
         SchemaRegistry schemaRegistry = new SchemaRegistry();
-        SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, "urn:test", emptyMap());
+        SchemaParsingContext ctx = new SchemaParsingContext(new Dialects.Draft2020Dialect(), schemaRegistry, "urn:test", emptyMap());
         JacksonNode.Factory factory = new JacksonNode.Factory();
         JacksonNode rootSchemaNode = factory.create("""
                 {

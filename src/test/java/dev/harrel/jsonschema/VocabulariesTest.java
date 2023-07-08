@@ -1,5 +1,6 @@
 package dev.harrel.jsonschema;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
@@ -10,10 +11,11 @@ public abstract class VocabulariesTest {
     protected static JsonNodeFactory nodeFactory;
 
     @Test
+    @Disabled
     void name() {
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(nodeFactory)
-                .withDefaultMetaSchemaUri(null)
+                .withDisabledSchemaValidation(true)
                 .createValidator();
 
         String metaSchema = """

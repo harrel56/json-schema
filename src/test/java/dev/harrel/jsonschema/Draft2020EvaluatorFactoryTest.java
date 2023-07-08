@@ -29,8 +29,9 @@ public abstract class Draft2020EvaluatorFactoryTest {
     @ParameterizedTest
     @MethodSource("getKeywords")
     void shouldCreateEvaluatorOnlyForSupportedTypes(String keyword, Set<SimpleType> supportedTypes) {
-        Draft2020EvaluatorFactory evaluatorFactory = new Draft2020EvaluatorFactory();
-        SchemaParsingContext ctx = new SchemaParsingContext(new SchemaRegistry(), "CoreEvaluatorFactoryTest", emptyMap());
+        Dialects.Draft2020Dialect dialect = new Dialects.Draft2020Dialect();
+        EvaluatorFactory evaluatorFactory = dialect.getEvaluatorFactory();
+        SchemaParsingContext ctx = new SchemaParsingContext(dialect, new SchemaRegistry(), "CoreEvaluatorFactoryTest", emptyMap());
 
         for (var entry : TYPE_MAP.entrySet()) {
             JsonNode wrappedNode = nodeFactory.create("{\"%s\": %s}".formatted(keyword, entry.getValue()));
