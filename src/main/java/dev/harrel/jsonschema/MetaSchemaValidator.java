@@ -31,14 +31,16 @@ final class MetaSchemaValidator {
     }
 
     Set<String> determineActiveVocabularies(Map<String, Boolean> vocabulariesObject) {
+        if (Boolean.FALSE.equals(vocabulariesObject.getOrDefault(Vocabulary.Draft2020.CORE, false))) {
+            throw new VocabularyException(String.format("Vocabulary [%s] was missing or marked optional in $vocabulary object", Vocabulary.Draft2020.CORE));
+        }
         List<String> unsupportedRequiredVocabularies = vocabulariesObject.entrySet().stream()
                 .filter(Map.Entry::getValue)
                 .map(Map.Entry::getKey)
                 .filter(vocab -> !supportedVocabularies.contains(vocab))
                 .collect(Collectors.toList());
-        // todo throw if core is not enabled
         if (!unsupportedRequiredVocabularies.isEmpty()) {
-            throw new IllegalArgumentException(String.format("Following vocabularies [%s] are required but not supported", unsupportedRequiredVocabularies)); // TODO new exception class?
+            throw new VocabularyException(String.format("Following vocabularies [%s] are required but not supported", unsupportedRequiredVocabularies));
         }
         return vocabulariesObject.keySet();
     }
