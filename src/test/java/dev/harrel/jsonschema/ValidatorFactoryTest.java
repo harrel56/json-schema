@@ -65,7 +65,7 @@ class ValidatorFactoryTest {
                   "$schema": "urn:meta"
                 }""";
         Validator validator = new ValidatorFactory()
-                .withDialect(new Dialects.Draft2020Dialect(){
+                .withDialect(new Dialects.Draft2020Dialect() {
                     @Override
                     public String getMetaSchema() {
                         return null;
