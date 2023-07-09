@@ -70,4 +70,11 @@ class JettisonTest {
         }
     }
 
+    @Nested
+    class VocabulariesTest extends dev.harrel.jsonschema.VocabulariesTest {
+        @BeforeAll
+        static void beforeAll() {
+            nodeFactory = new JettisonNode.Factory();
+        }
+    }
 }

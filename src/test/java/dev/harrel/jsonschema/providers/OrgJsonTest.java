@@ -2,8 +2,6 @@ package dev.harrel.jsonschema.providers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.SimpleType;
 import org.json.JSONObject;
@@ -63,6 +61,7 @@ class OrgJsonTest {
             nodeFactory = new OrgJsonNode.Factory();
         }
     }
+
     @Nested
     class MetaSchemaTest extends dev.harrel.jsonschema.MetaSchemaTest {
         @BeforeAll
@@ -71,4 +70,11 @@ class OrgJsonTest {
         }
     }
 
+    @Nested
+    class VocabulariesTest extends dev.harrel.jsonschema.VocabulariesTest {
+        @BeforeAll
+        static void beforeAll() {
+            nodeFactory = new OrgJsonNode.Factory();
+        }
+    }
 }

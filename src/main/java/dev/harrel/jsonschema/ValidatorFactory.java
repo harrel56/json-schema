@@ -17,7 +17,7 @@ public final class ValidatorFactory {
     private Dialect dialect = new Dialects.Draft2020Dialect();
     private EvaluatorFactory evaluatorFactory;
     private Supplier<JsonNodeFactory> jsonNodeFactory = JacksonNode.Factory::new;
-    private SchemaResolver schemaResolver = new DefaultMetaSchemaResolver();
+    private SchemaResolver schemaResolver = new DefaultSchemaResolver();
     private boolean disabledSchemaValidation = false;
 
     /**
@@ -82,7 +82,7 @@ public final class ValidatorFactory {
      * @see SpecificationVersion
      */
     public ValidatorFactory withSchemaResolver(SchemaResolver schemaResolver) {
-        this.schemaResolver = CompositeSchemaResolver.of(Objects.requireNonNull(schemaResolver), new DefaultMetaSchemaResolver());
+        this.schemaResolver = CompositeSchemaResolver.of(Objects.requireNonNull(schemaResolver), new DefaultSchemaResolver());
         return this;
     }
 
@@ -240,7 +240,7 @@ public final class ValidatorFactory {
         return validator.validate(uri, instanceNode);
     }
 
-    static class DefaultMetaSchemaResolver implements SchemaResolver {
+    static class DefaultSchemaResolver implements SchemaResolver {
         private final Map<String, String> schemaCache = new HashMap<>();
 
         @Override

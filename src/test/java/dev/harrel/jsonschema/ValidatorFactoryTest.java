@@ -233,6 +233,42 @@ class ValidatorFactoryTest {
                 .hasMessage("Cannot resolve meta-schema [urn:x#/nope]");
     }
 
+    @Test
+    void shouldCombineUserProvidedEvaluatorFactory() {
+        Evaluator customEvaluator = new Evaluator() {
+            @Override
+            public Result evaluate(EvaluationContext ctx, JsonNode node) {
+                return Evaluator.Result.failure("custom error");
+            }
+
+            @Override
+            public int getOrder() {
+                return 10;
+            }
+        };
+        EvaluatorFactory customFactory = (ctx, fieldName, fieldNode) -> {
+            if ("type".equals(fieldName)) {
+                return Optional.of(customEvaluator);
+            } else {
+                return Optional.empty();
+            }
+        };
+        String schema = """
+                {
+                  "type": "string",
+                  "minLength": 2
+                }""";
+        Validator.Result result = new ValidatorFactory()
+                .withDisabledSchemaValidation(true)
+                .withEvaluatorFactory(customFactory)
+                .validate(schema, "\"x\"");
+
+        assertThat(result.isValid()).isFalse();
+        assertThat(result.getErrors()).hasSize(2);
+        assertThat(result.getErrors().get(0).getError()).isEqualTo("\"x\" is shorter than 2 characters");
+        assertThat(result.getErrors().get(1).getError()).isEqualTo("custom error");
+    }
+
     @Disabled("To be enabled when thread safety issues are taken care of")
     @RepeatedTest(500)
     void threadSafetyRegistrationTest() {
