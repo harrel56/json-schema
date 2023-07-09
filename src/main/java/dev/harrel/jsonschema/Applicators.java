@@ -477,6 +477,11 @@ class RefEvaluator implements Evaluator {
             return Result.failure(String.format("Resolution of $ref [%s] failed", ref));
         }
     }
+
+    @Override
+    public Set<String> getVocabularies() {
+        return Vocabulary.CORE_VOCABULARY;
+    }
 }
 
 class DynamicRefEvaluator implements Evaluator {
@@ -496,5 +501,10 @@ class DynamicRefEvaluator implements Evaluator {
         } catch (SchemaNotFoundException e) {
             return Result.failure(String.format("Resolution of $dynamicRef [%s] failed", ref));
         }
+    }
+
+    @Override
+    public Set<String> getVocabularies() {
+        return Vocabulary.CORE_VOCABULARY;
     }
 }

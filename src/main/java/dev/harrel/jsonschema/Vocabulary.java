@@ -10,6 +10,7 @@ import static dev.harrel.jsonschema.Vocabulary.Draft2020.*;
 public final class Vocabulary {
     private Vocabulary() {}
 
+    static final Set<String> CORE_VOCABULARY = Collections.singleton(CORE);
     static final Set<String> APPLICATOR_VOCABULARY = Collections.singleton(APPLICATOR);
     static final Set<String> UNEVALUATED_VOCABULARY = Collections.singleton(UNEVALUATED);
     static final Set<String> VALIDATION_VOCABULARY = Collections.singleton(VALIDATION);

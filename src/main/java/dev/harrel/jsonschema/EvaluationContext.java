@@ -116,7 +116,7 @@ public final class EvaluationContext {
         int annotationsBefore = getEvaluationItems().size();
         boolean valid = true;
         List<EvaluatorWrapper> filteredEvaluators = schema.getEvaluators().stream()
-                .filter(ev -> ev.getVocabularies().stream().anyMatch(activeVocabularies::contains))
+                .filter(ev -> ev.getVocabularies().stream().anyMatch(activeVocabularies::contains) || ev.getVocabularies().isEmpty())
                 .collect(Collectors.toList());
         for (EvaluatorWrapper evaluator : filteredEvaluators) {
             String evaluationPath = resolveEvaluationPath(evaluator);
