@@ -33,7 +33,7 @@ public final class ValidatorFactory {
         if (disabledSchemaValidation) {
             metaSchemaValidator = new MetaSchemaValidator.NoOpMetaSchemaValidator(dialect.getSupportedVocabularies());
         } else {
-            metaSchemaValidator = new MetaSchemaValidator.DefaultMetaSchemaValidator(nodeFactory, schemaRegistry, schemaResolver, dialect.getSupportedVocabularies());
+            metaSchemaValidator = new MetaSchemaValidator.DefaultMetaSchemaValidator(dialect, nodeFactory, schemaRegistry, schemaResolver);
         }
         return new Validator(dialect, compositeFactory, nodeFactory, schemaResolver, schemaRegistry, metaSchemaValidator);
     }

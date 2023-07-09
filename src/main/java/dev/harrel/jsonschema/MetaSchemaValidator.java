@@ -29,16 +29,16 @@ interface MetaSchemaValidator {
     final class DefaultMetaSchemaValidator implements MetaSchemaValidator {
         private static final String RESOLVING_ERROR_MSG = "Cannot resolve meta-schema [%s]";
 
+        private final Dialect dialect;
         private final JsonNodeFactory jsonNodeFactory;
         private final SchemaRegistry schemaRegistry;
         private final SchemaResolver schemaResolver;
-        private final Set<String> supportedVocabularies;
 
-        DefaultMetaSchemaValidator(JsonNodeFactory jsonNodeFactory, SchemaRegistry schemaRegistry, SchemaResolver schemaResolver, Set<String> supportedVocabularies) {
+        DefaultMetaSchemaValidator(Dialect dialect, JsonNodeFactory jsonNodeFactory, SchemaRegistry schemaRegistry, SchemaResolver schemaResolver) {
+            this.dialect = Objects.requireNonNull(dialect);
             this.jsonNodeFactory = Objects.requireNonNull(jsonNodeFactory);
             this.schemaRegistry = Objects.requireNonNull(schemaRegistry);
             this.schemaResolver = Objects.requireNonNull(schemaResolver);
-            this.supportedVocabularies = supportedVocabularies;
         }
 
         @Override
@@ -55,13 +55,16 @@ interface MetaSchemaValidator {
 
         @Override
         public Set<String> determineActiveVocabularies(Map<String, Boolean> vocabulariesObject) {
-            if (Boolean.FALSE.equals(vocabulariesObject.getOrDefault(Vocabulary.Draft2020.CORE, false))) {
-                throw new VocabularyException(String.format("Vocabulary [%s] was missing or marked optional in $vocabulary object", Vocabulary.Draft2020.CORE));
+            List<String> missingRequiredVocabularies = dialect.getRequiredVocabularies().stream()
+                    .filter(vocab -> !vocabulariesObject.getOrDefault(vocab, false))
+                    .collect(Collectors.toList());
+            if (!missingRequiredVocabularies.isEmpty()) {
+                throw new VocabularyException(String.format("Required vocabularies [%s] were missing or marked optional in $vocabulary object", missingRequiredVocabularies));
             }
             List<String> unsupportedRequiredVocabularies = vocabulariesObject.entrySet().stream()
                     .filter(Map.Entry::getValue)
                     .map(Map.Entry::getKey)
-                    .filter(vocab -> !supportedVocabularies.contains(vocab))
+                    .filter(vocab -> !dialect.getSupportedVocabularies().contains(vocab))
                     .collect(Collectors.toList());
             if (!unsupportedRequiredVocabularies.isEmpty()) {
                 throw new VocabularyException(String.format("Following vocabularies [%s] are required but not supported", unsupportedRequiredVocabularies));
