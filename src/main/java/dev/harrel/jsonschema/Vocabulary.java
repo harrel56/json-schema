@@ -15,7 +15,7 @@ public final class Vocabulary {
     static final Set<String> VALIDATION_VOCABULARY = Collections.singleton(VALIDATION);
 
     /**
-     * {@code Vocabulary.Draft2020} class exposes vocabulary URIs that are part of a draft2020-12 specification.
+     * {@code Vocabulary.Draft2020} class exposes vocabulary URIs that are part of a <i>draft2020-12</i> specification.
      */
     public static final class Draft2020 {
         private Draft2020() {}

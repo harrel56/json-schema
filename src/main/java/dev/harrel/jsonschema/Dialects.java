@@ -8,9 +8,15 @@ import static dev.harrel.jsonschema.Vocabulary.Draft2020.*;
 import static java.util.Collections.singleton;
 import static java.util.Collections.unmodifiableMap;
 
+/**
+ * Static container class for all officially supported dialects.
+ */
 public class Dialects {
     private Dialects() {}
 
+    /**
+     * Dialect corresponding to <i>draft2020-12</i> specification.
+     */
     public static class Draft2020Dialect implements Dialect {
         private final EvaluatorFactory evaluatorFactory;
         private final Set<String> requiredVocabularies;
