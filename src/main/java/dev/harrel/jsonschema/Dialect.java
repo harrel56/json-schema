@@ -49,7 +49,8 @@ public interface Dialect {
     /**
      * Default <i>$vocabulary</i> keyword contents for this dialect. If meta-schema does not include
      * <i>$vocabulary</i> keyword this default will be used.
-     * @return
+     *
+     * @return default vocabulary object
      */
     Map<String, Boolean> getDefaultVocabularyObject();
 }
