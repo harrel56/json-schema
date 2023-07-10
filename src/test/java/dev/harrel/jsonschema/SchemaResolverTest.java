@@ -22,7 +22,7 @@ class SchemaResolverTest {
     void shouldFailAlongWithResolver() {
         var error = new RuntimeException();
         ValidatorFactory validatorFactory = new ValidatorFactory()
-                .withDefaultMetaSchemaUri(null)
+                .withDisabledSchemaValidation(true)
                 .withSchemaResolver(uri -> {
                     throw error;
                 });
@@ -33,7 +33,7 @@ class SchemaResolverTest {
     @Test
     void shouldResolveFromStringAndBeValid() {
         ValidatorFactory validatorFactory = new ValidatorFactory()
-                .withDefaultMetaSchemaUri(null)
+                .withDisabledSchemaValidation(true)
                 .withSchemaResolver(uri -> Result.fromString("true"));
 
         var result = validatorFactory.validate(SCHEMA, "{}");
@@ -43,7 +43,7 @@ class SchemaResolverTest {
     @Test
     void shouldResolveFromStringAndBeInvalid() {
         ValidatorFactory validatorFactory = new ValidatorFactory()
-                .withDefaultMetaSchemaUri(null)
+                .withDisabledSchemaValidation(true)
                 .withSchemaResolver(uri -> Result.fromString("false"));
 
         var result = validatorFactory.validate(SCHEMA, "{}");
@@ -54,7 +54,7 @@ class SchemaResolverTest {
     void shouldResolveFromJacksonNodeAndBeValid() throws JsonProcessingException {
         var providerNode = new ObjectMapper().readTree("{}");
         ValidatorFactory validatorFactory = new ValidatorFactory()
-                .withDefaultMetaSchemaUri(null)
+                .withDisabledSchemaValidation(true)
                 .withSchemaResolver(uri -> Result.fromProviderNode(providerNode));
 
         var result = validatorFactory.validate(SCHEMA, "{}");
@@ -65,7 +65,7 @@ class SchemaResolverTest {
     void shouldResolveFromJacksonNodeAndBeInvalid() throws JsonProcessingException {
         var providerNode = new ObjectMapper().readTree("{\"type\": \"null\"}");
         ValidatorFactory validatorFactory = new ValidatorFactory()
-                .withDefaultMetaSchemaUri(null)
+                .withDisabledSchemaValidation(true)
                 .withSchemaResolver(uri -> Result.fromProviderNode(providerNode));
 
         var result = validatorFactory.validate(SCHEMA, "{}");
@@ -77,7 +77,7 @@ class SchemaResolverTest {
         var providerNode = new Gson().fromJson("true", JsonElement.class);
         ValidatorFactory validatorFactory = new ValidatorFactory()
                 .withJsonNodeFactory(new GsonNode.Factory())
-                .withDefaultMetaSchemaUri(null)
+                .withDisabledSchemaValidation(true)
                 .withSchemaResolver(uri -> Result.fromProviderNode(providerNode));
 
         var result = validatorFactory.validate(SCHEMA, "{}");
@@ -89,7 +89,7 @@ class SchemaResolverTest {
         var providerNode = new Gson().fromJson("false", JsonElement.class);
         ValidatorFactory validatorFactory = new ValidatorFactory()
                 .withJsonNodeFactory(new GsonNode.Factory())
-                .withDefaultMetaSchemaUri(null)
+                .withDisabledSchemaValidation(true)
                 .withSchemaResolver(uri -> Result.fromProviderNode(providerNode));
 
         var result = validatorFactory.validate(SCHEMA, "{}");
@@ -100,7 +100,7 @@ class SchemaResolverTest {
     void shouldResolveFromJsonNodeAndBeValid() {
         var jsonNode = new JacksonNode.Factory().create("true");
         ValidatorFactory validatorFactory = new ValidatorFactory()
-                .withDefaultMetaSchemaUri(null)
+                .withDisabledSchemaValidation(true)
                 .withSchemaResolver(uri -> Result.fromJsonNode(jsonNode));
 
         var result = validatorFactory.validate(SCHEMA, "{}");
@@ -111,7 +111,7 @@ class SchemaResolverTest {
     void shouldResolveFromJsonNodeAndBeInvalid() {
         var jsonNode = new JacksonNode.Factory().create("false");
         ValidatorFactory validatorFactory = new ValidatorFactory()
-                .withDefaultMetaSchemaUri(null)
+                .withDisabledSchemaValidation(true)
                 .withSchemaResolver(uri -> Result.fromJsonNode(jsonNode));
 
         var result = validatorFactory.validate(SCHEMA, "{}");

@@ -4,7 +4,9 @@ import dev.harrel.jsonschema.providers.JacksonNode;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Set;
 
+import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class SchemaRegistryTest {
@@ -12,7 +14,7 @@ class SchemaRegistryTest {
     @Test
     void shouldRestoreStateProperly() {
         SchemaRegistry schemaRegistry = new SchemaRegistry();
-        SchemaParsingContext ctx = new SchemaParsingContext(schemaRegistry, "urn:test");
+        SchemaParsingContext ctx = new SchemaParsingContext(new Dialects.Draft2020Dialect(), schemaRegistry, "urn:test", emptyMap());
         JacksonNode.Factory factory = new JacksonNode.Factory();
         JacksonNode rootSchemaNode = factory.create("""
                 {
@@ -22,11 +24,11 @@ class SchemaRegistryTest {
                 }""");
         JsonNode subSchemaNode = rootSchemaNode.asObject().get("properties").asObject().get("field");
 
-        schemaRegistry.registerSchema(ctx, subSchemaNode, List.of());
+        schemaRegistry.registerSchema(ctx, subSchemaNode, List.of(), Set.of());
         assertThat(schemaRegistry.get("urn:test#/properties/field")).isNotNull();
 
         SchemaRegistry.State snapshot = schemaRegistry.createSnapshot();
-        schemaRegistry.registerSchema(ctx, rootSchemaNode, List.of());
+        schemaRegistry.registerSchema(ctx, rootSchemaNode, List.of(), Set.of());
         assertThat(schemaRegistry.get("urn:test#")).isNotNull();
         SchemaRegistry.State nextSnapshot = schemaRegistry.createSnapshot();
 

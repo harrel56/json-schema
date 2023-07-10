@@ -26,12 +26,16 @@ public final class Validator {
     private final SchemaRegistry schemaRegistry;
     private final JsonParser jsonParser;
 
-    Validator(EvaluatorFactory evaluatorFactory, JsonNodeFactory jsonNodeFactory, SchemaResolver schemaResolver, String defaultMetaSchemaUri) {
+    Validator(Dialect dialect,
+              EvaluatorFactory evaluatorFactory,
+              JsonNodeFactory jsonNodeFactory,
+              SchemaResolver schemaResolver,
+              SchemaRegistry schemaRegistry,
+              MetaSchemaValidator metaSchemaValidator) {
         this.jsonNodeFactory = Objects.requireNonNull(jsonNodeFactory);
         this.schemaResolver = Objects.requireNonNull(schemaResolver);
-        this.schemaRegistry = new SchemaRegistry();
-        MetaSchemaValidator metaSchemaValidator = new MetaSchemaValidator(this.jsonNodeFactory, this.schemaRegistry, this.schemaResolver);
-        this.jsonParser = new JsonParser(defaultMetaSchemaUri, evaluatorFactory, this.schemaRegistry, metaSchemaValidator);
+        this.schemaRegistry = schemaRegistry;
+        this.jsonParser = new JsonParser(dialect, evaluatorFactory, this.schemaRegistry, metaSchemaValidator);
     }
 
     /**
@@ -131,7 +135,7 @@ public final class Validator {
      */
     public Result validate(URI schemaUri, JsonNode instanceNode) {
         Schema schema = getRootSchema(schemaUri.toString());
-        EvaluationContext ctx = createNewEvaluationContext();
+        EvaluationContext ctx = createNewEvaluationContext(schema);
         boolean valid = ctx.validateAgainstSchema(schema, instanceNode);
         return Result.fromEvaluationContext(valid, ctx);
     }
@@ -148,8 +152,8 @@ public final class Validator {
         return URI.create("https://harrel.dev/" + UUID.randomUUID().toString().substring(0, 8));
     }
 
-    private EvaluationContext createNewEvaluationContext() {
-        return new EvaluationContext(jsonNodeFactory, jsonParser, schemaRegistry, schemaResolver);
+    private EvaluationContext createNewEvaluationContext(Schema schema) {
+        return new EvaluationContext(jsonNodeFactory, jsonParser, schemaRegistry, schemaResolver, schema.getActiveVocabularies());
     }
 
     /**

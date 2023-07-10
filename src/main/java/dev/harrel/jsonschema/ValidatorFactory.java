@@ -4,7 +4,7 @@ import dev.harrel.jsonschema.providers.JacksonNode;
 
 import java.io.*;
 import java.net.URI;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -14,12 +14,11 @@ import java.util.stream.Collectors;
  * @see Validator
  */
 public final class ValidatorFactory {
-    private static final String DEFAULT_META_SCHEMA = "https://json-schema.org/draft/2020-12/schema";
-
-    private EvaluatorFactory evaluatorFactory = new Draft2020EvaluatorFactory();
+    private Dialect dialect = new Dialects.Draft2020Dialect();
+    private EvaluatorFactory evaluatorFactory;
     private Supplier<JsonNodeFactory> jsonNodeFactory = JacksonNode.Factory::new;
-    private SchemaResolver schemaResolver = new DefaultMetaSchemaResolver();
-    private String defaultMetaSchemaUri = DEFAULT_META_SCHEMA;
+    private SchemaResolver schemaResolver = new DefaultSchemaResolver();
+    private boolean disabledSchemaValidation = false;
 
     /**
      * Creates new instance of {@link Validator} using current configuration.
@@ -27,11 +26,32 @@ public final class ValidatorFactory {
      * @return new {@link Validator} instance
      */
     public Validator createValidator() {
-        return new Validator(evaluatorFactory, jsonNodeFactory.get(), schemaResolver, defaultMetaSchemaUri);
+        EvaluatorFactory compositeFactory = evaluatorFactory == null ? dialect.getEvaluatorFactory() : CompositeEvaluatorFactory.of(evaluatorFactory, dialect.getEvaluatorFactory());
+        JsonNodeFactory nodeFactory = jsonNodeFactory.get();
+        SchemaRegistry schemaRegistry = new SchemaRegistry();
+        MetaSchemaValidator metaSchemaValidator;
+        if (disabledSchemaValidation) {
+            metaSchemaValidator = new MetaSchemaValidator.NoOpMetaSchemaValidator(dialect.getSupportedVocabularies());
+        } else {
+            metaSchemaValidator = new MetaSchemaValidator.DefaultMetaSchemaValidator(dialect, nodeFactory, schemaRegistry, schemaResolver);
+        }
+        return new Validator(dialect, compositeFactory, nodeFactory, schemaResolver, schemaRegistry, metaSchemaValidator);
     }
 
     /**
-     * Sets {@link EvaluatorFactory}. Provided default is {@link Draft2020EvaluatorFactory}.
+     * Sets {@link Dialect}. Provided default is {@link Dialects.Draft2020Dialect}.
+     *
+     * @param dialect {@code Dialect} to be used
+     * @return self
+     */
+    public ValidatorFactory withDialect(Dialect dialect) {
+        this.dialect = Objects.requireNonNull(dialect);
+        return this;
+    }
+
+    /**
+     * Sets additional {@link EvaluatorFactory} to be used alongside with the core {@code EvaluatorFactory} provided by {@code Dialect}.
+     * This is the best way to provide custom keyword support.
      *
      * @param evaluatorFactory {@code EvaluatorFactory} to be used
      * @return self
@@ -55,26 +75,26 @@ public final class ValidatorFactory {
 
     /**
      * Composes {@link SchemaResolver} with default schema resolver.
-     * The default schema resolver resolves only <a href="https://json-schema.org/draft/2020-12/schema">draft 2020-12</a> schema. It is loaded from classpath.
+     * The default schema resolver resolves only official specification meta-schemas. Meta-schemas are loaded from classpath.
      *
      * @param schemaResolver {@code SchemaResolver} to be used
      * @return self
+     * @see SpecificationVersion
      */
     public ValidatorFactory withSchemaResolver(SchemaResolver schemaResolver) {
-        this.schemaResolver = CompositeSchemaResolver.of(Objects.requireNonNull(schemaResolver), new DefaultMetaSchemaResolver());
+        this.schemaResolver = CompositeSchemaResolver.of(Objects.requireNonNull(schemaResolver), new DefaultSchemaResolver());
         return this;
     }
 
     /**
-     * Sets default meta-schema URI. Provided default is <i>https://json-schema.org/draft/2020-12/schema</i>.
-     * Each schema that does not have <i>$schema</i> keyword will be validated against meta-schema resolved from this default URI.
-     * Passing null will disable default validation against meta-schema, only schemas with <i>$schema</i> keyword will be validated then.
+     * Disables schema validation against meta-schemas. This also disables vocabulary specific semantics.
+     * <i>$schema</i> keyword will be ignored.
      *
-     * @param defaultMetaSchemaUri default meta-schema URI or null
+     * @param disabledSchemaValidation if schema validation should be disabled
      * @return self
      */
-    public ValidatorFactory withDefaultMetaSchemaUri(String defaultMetaSchemaUri) {
-        this.defaultMetaSchemaUri = defaultMetaSchemaUri;
+    public ValidatorFactory withDisabledSchemaValidation(boolean disabledSchemaValidation) {
+        this.disabledSchemaValidation = disabledSchemaValidation;
         return this;
     }
 
@@ -220,25 +240,34 @@ public final class ValidatorFactory {
         return validator.validate(uri, instanceNode);
     }
 
-    static class DefaultMetaSchemaResolver implements SchemaResolver {
-        private String rawSchema;
+    static class DefaultSchemaResolver implements SchemaResolver {
+        private final Map<String, String> schemaCache = new HashMap<>();
 
         @Override
         public Result resolve(String uri) {
-            if (DEFAULT_META_SCHEMA.equals(uri)) {
-                if (rawSchema != null) {
-                    return Result.fromString(rawSchema);
-                }
-                try (InputStream is = getClass().getResourceAsStream("/draft2020-12.json")) {
-                    if (is != null) {
-                        rawSchema = new BufferedReader(new InputStreamReader(is)).lines().collect(Collectors.joining());
-                        return Result.fromString(rawSchema);
-                    }
-                } catch (IOException e) {
-                    throw new UncheckedIOException(e);
-                }
+            if (schemaCache.containsKey(uri)) {
+                return Result.fromString(schemaCache.get(uri));
             }
-            return Result.empty();
+
+            Optional<String> rawSchema = Arrays.stream(SpecificationVersion.values())
+                    .filter(spec -> spec.getId().equals(uri))
+                    .map(SpecificationVersion::getResourcePath)
+                    .map(path -> {
+                        try (InputStream is = getClass().getResourceAsStream(path)) {
+                            if (is == null) {
+                                return null;
+                            }
+                            return new BufferedReader(new InputStreamReader(is)).lines().collect(Collectors.joining());
+                        } catch (IOException e) {
+                            throw new UncheckedIOException(e);
+                        }
+                    })
+                    .findFirst();
+
+            rawSchema.ifPresent(s -> schemaCache.put(uri, s));
+            return rawSchema
+                    .map(Result::fromString)
+                    .orElse(Result.empty());
         }
     }
 }

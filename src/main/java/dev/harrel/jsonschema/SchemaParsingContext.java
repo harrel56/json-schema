@@ -3,7 +3,6 @@ package dev.harrel.jsonschema;
 import java.net.URI;
 import java.util.Map;
 
-import static java.util.Collections.emptyMap;
 import static java.util.Collections.unmodifiableMap;
 
 /**
@@ -13,28 +12,34 @@ import static java.util.Collections.unmodifiableMap;
  * @see EvaluatorFactory
  */
 public final class SchemaParsingContext {
+    private final Dialect dialect;
     private final URI baseUri;
     private final URI parentUri;
     private final SchemaRegistry schemaRegistry;
     private final Map<String, JsonNode> currentSchemaObject;
 
-    private SchemaParsingContext(URI baseUri, URI parentUri, SchemaRegistry schemaRegistry, Map<String, JsonNode> currentSchemaObject) {
+    private SchemaParsingContext(Dialect dialect, URI baseUri, URI parentUri, SchemaRegistry schemaRegistry, Map<String, JsonNode> currentSchemaObject) {
+        this.dialect = dialect;
         this.baseUri = baseUri;
         this.parentUri = parentUri;
         this.schemaRegistry = schemaRegistry;
         this.currentSchemaObject = currentSchemaObject;
     }
 
-    SchemaParsingContext(SchemaRegistry schemaRegistry, String baseUri) {
-        this(URI.create(baseUri), URI.create(baseUri), schemaRegistry, emptyMap());
+    SchemaParsingContext(Dialect dialect, SchemaRegistry schemaRegistry, String baseUri, Map<String, JsonNode> currentSchemaObject) {
+        this(dialect, URI.create(baseUri), URI.create(baseUri), schemaRegistry, currentSchemaObject);
     }
 
     SchemaParsingContext withParentUri(URI parentUri) {
-        return new SchemaParsingContext(baseUri, parentUri, schemaRegistry, currentSchemaObject);
+        return new SchemaParsingContext(dialect, baseUri, parentUri, schemaRegistry, currentSchemaObject);
     }
 
     SchemaParsingContext withCurrentSchemaContext(Map<String, JsonNode> currentSchemaObject) {
-        return new SchemaParsingContext(baseUri, parentUri, schemaRegistry, unmodifiableMap(currentSchemaObject));
+        return new SchemaParsingContext(dialect, baseUri, parentUri, schemaRegistry, unmodifiableMap(currentSchemaObject));
+    }
+
+    Map<String, Boolean> getVocabulariesObject() {
+        return JsonParser.getVocabulariesObject(currentSchemaObject).orElse(dialect.getDefaultVocabularyObject());
     }
 
     /**

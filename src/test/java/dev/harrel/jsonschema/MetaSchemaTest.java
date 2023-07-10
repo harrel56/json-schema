@@ -16,6 +16,20 @@ public abstract class MetaSchemaTest {
             }""";
     private static final String INVALID_META_SCHEMA = "{";
 
+    static class CustomDialect extends Dialects.Draft2020Dialect {
+        @Override
+        public String getMetaSchema() {
+            return "custom";
+        }
+    }
+
+    static class InvalidCustomDialect extends Dialects.Draft2020Dialect {
+        @Override
+        public String getMetaSchema() {
+            return "invalid";
+        }
+    }
+
 
     private final SchemaResolver resolver = uri -> {
         if ("custom".equals(uri)) {
@@ -59,7 +73,7 @@ public abstract class MetaSchemaTest {
                 }""";
         new ValidatorFactory()
                 .withJsonNodeFactory(nodeFactory)
-                .withDefaultMetaSchemaUri("custom")
+                .withDialect(new CustomDialect())
                 .withSchemaResolver(resolver)
                 .validate(rawSchema, "null");
     }
@@ -74,7 +88,7 @@ public abstract class MetaSchemaTest {
                 }""";
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(nodeFactory)
-                .withDefaultMetaSchemaUri("custom")
+                .withDialect(new CustomDialect())
                 .withSchemaResolver(resolver)
                 .createValidator();
         InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawSchema), InvalidSchemaException.class);
@@ -82,14 +96,14 @@ public abstract class MetaSchemaTest {
     }
 
     @Test
-    void shouldPassForValidSchemaWhenNullMetaSchema() {
+    void shouldPassForValidSchemaWhenDisabledSchemaValidation() {
         String rawSchema = """
                 {
                     "type": 1
                 }""";
         new ValidatorFactory()
                 .withJsonNodeFactory(nodeFactory)
-                .withDefaultMetaSchemaUri(null)
+                .withDisabledSchemaValidation(true)
                 .validate(rawSchema, "null");
     }
 
@@ -101,7 +115,7 @@ public abstract class MetaSchemaTest {
                 }""";
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(nodeFactory)
-                .withDefaultMetaSchemaUri("custom")
+                .withDialect(new CustomDialect())
                 .createValidator();
         assertThatThrownBy(() -> validator.registerSchema(rawSchema))
                 .isInstanceOf(MetaSchemaResolvingException.class);
@@ -115,7 +129,7 @@ public abstract class MetaSchemaTest {
                 }""";
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(nodeFactory)
-                .withDefaultMetaSchemaUri("invalid")
+                .withDialect(new InvalidCustomDialect())
                 .createValidator();
         assertThatThrownBy(() -> validator.registerSchema(rawSchema))
                 .isInstanceOf(MetaSchemaResolvingException.class);

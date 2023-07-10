@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 final class SchemaRegistry {
     private State state = State.empty();
@@ -24,13 +25,17 @@ final class SchemaRegistry {
         return state.dynamicSchemas.get(anchor);
     }
 
-    void registerSchema(SchemaParsingContext ctx, JsonNode schemaNode, List<EvaluatorWrapper> evaluators) {
-        Schema schema = new Schema(ctx.getParentUri(), ctx.getAbsoluteUri(schemaNode), evaluators);
+    void registerSchema(SchemaParsingContext ctx, JsonNode schemaNode, List<EvaluatorWrapper> evaluators, Set<String> activeVocabularies) {
+        Schema schema = new Schema(ctx.getParentUri(), ctx.getAbsoluteUri(schemaNode), evaluators, activeVocabularies, ctx.getVocabulariesObject());
         state.schemas.put(ctx.getAbsoluteUri(schemaNode), schema);
         registerAnchorsIfPresent(ctx, schemaNode, schema);
     }
 
-    void registerIdentifiableSchema(SchemaParsingContext ctx, URI id, JsonNode schemaNode, List<EvaluatorWrapper> evaluators) {
+    void registerIdentifiableSchema(SchemaParsingContext ctx,
+                                    URI id,
+                                    JsonNode schemaNode,
+                                    List<EvaluatorWrapper> evaluators,
+                                    Set<String> activeVocabularies ) {
         String absoluteUri = ctx.getAbsoluteUri(schemaNode);
         state.schemas.entrySet().stream()
                 .filter(e -> e.getKey().startsWith(absoluteUri))
@@ -41,7 +46,7 @@ final class SchemaRegistry {
                     String newUri = id.toString() + "#" + newJsonPointer;
                     state.additionalSchemas.put(newUri, e.getValue());
                 });
-        Schema identifiableSchema = new Schema(ctx.getParentUri(), absoluteUri, evaluators);
+        Schema identifiableSchema = new Schema(ctx.getParentUri(), absoluteUri, evaluators, activeVocabularies, ctx.getVocabulariesObject());
         state.schemas.put(id.toString(), identifiableSchema);
         state.schemas.put(absoluteUri, identifiableSchema);
         registerAnchorsIfPresent(ctx, schemaNode, identifiableSchema);

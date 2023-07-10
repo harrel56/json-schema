@@ -3,6 +3,7 @@ package dev.harrel.jsonschema;
 import org.junit.jupiter.api.Test;
 
 import java.util.Objects;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -35,6 +36,22 @@ class EvaluatorWrapperTest {
         };
         EvaluatorWrapper wrapper = new EvaluatorWrapper("keyword", "keywordPath", evaluator);
         assertThat(wrapper.getOrder()).isEqualTo(123);
+    }
+
+    @Test
+    void shouldDelegateEvaluatorVocabularies() {
+        Evaluator evaluator = new Evaluator() {
+            @Override
+            public Result evaluate(EvaluationContext ctx, JsonNode node) {
+                return Result.success();
+            }
+            @Override
+            public Set<String> getVocabularies() {
+                return Set.of("a", "b", "c");
+            }
+        };
+        EvaluatorWrapper wrapper = new EvaluatorWrapper("keyword", "keywordPath", evaluator);
+        assertThat(wrapper.getVocabularies()).containsExactlyInAnyOrder("a", "b", "c");
     }
 
     @Test

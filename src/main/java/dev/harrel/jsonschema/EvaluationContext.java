@@ -2,6 +2,7 @@ package dev.harrel.jsonschema;
 
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * {@code EvaluationContext} class represents state of current evaluation (instance validation against schema).
@@ -14,6 +15,7 @@ public final class EvaluationContext {
     private final JsonParser jsonParser;
     private final SchemaRegistry schemaRegistry;
     private final SchemaResolver schemaResolver;
+    private final Set<String> activeVocabularies;
     private final Deque<URI> dynamicScope = new LinkedList<>();
     private final Deque<RefStackItem> refStack = new LinkedList<>();
     private final Deque<String> evaluationStack = new LinkedList<>();
@@ -23,11 +25,13 @@ public final class EvaluationContext {
     EvaluationContext(JsonNodeFactory jsonNodeFactory,
                       JsonParser jsonParser,
                       SchemaRegistry schemaRegistry,
-                      SchemaResolver schemaResolver) {
+                      SchemaResolver schemaResolver,
+                      Set<String> activeVocabularies) {
         this.jsonNodeFactory = Objects.requireNonNull(jsonNodeFactory);
         this.jsonParser = Objects.requireNonNull(jsonParser);
         this.schemaRegistry = Objects.requireNonNull(schemaRegistry);
         this.schemaResolver = Objects.requireNonNull(schemaResolver);
+        this.activeVocabularies = Objects.requireNonNull(activeVocabularies);
     }
 
     /**
@@ -111,7 +115,10 @@ public final class EvaluationContext {
 
         int annotationsBefore = getEvaluationItems().size();
         boolean valid = true;
-        for (EvaluatorWrapper evaluator : schema.getEvaluators()) {
+        List<EvaluatorWrapper> filteredEvaluators = schema.getEvaluators().stream()
+                .filter(ev -> ev.getVocabularies().stream().anyMatch(activeVocabularies::contains) || ev.getVocabularies().isEmpty())
+                .collect(Collectors.toList());
+        for (EvaluatorWrapper evaluator : filteredEvaluators) {
             String evaluationPath = resolveEvaluationPath(evaluator);
             evaluationStack.push(evaluationPath);
             Evaluator.Result result = evaluator.evaluate(this, node);

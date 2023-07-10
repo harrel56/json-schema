@@ -19,7 +19,7 @@ public interface JsonNode {
     String getJsonPointer();
     /**
      * Node type getter
-     * @return type of a node
+     * @return type of node
      */
     SimpleType getNodeType();
 
@@ -137,6 +137,8 @@ public interface JsonNode {
 }
 
 class ComparatorHelper {
+    private ComparatorHelper() {}
+
     static boolean compareArrays(List<JsonNode> arr1, List<JsonNode> arr2) {
         if (arr1.size() != arr2.size()) {
             return false;

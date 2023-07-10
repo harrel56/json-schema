@@ -61,7 +61,7 @@ This way, schema is parsed only once. You could also register multiple schemas t
 
 ## Limitations
 Features that are not supported yet:
-- `$vocabulary` keyword - all vocabularies' related semantics are not yet there.
+- ~~`$vocabulary` keyword - all vocabularies' related semantics are not yet there.~~ Vocabularies are supported from version 1.2.0 - [see more](#custom-dialects).
 - `format` keyword - the specification doesn't require `format` to perform any validations. Support for official format validation might be added in future versions. Meanwhile, the implementation could be provided by user (see [adding custom keywords](#adding-custom-keywords)).
 
 ## JSON providers
@@ -143,7 +143,7 @@ and they represent literal nodes with these classes:
 
 ## Advanced configuration
 ### Resolving external schemas
-By default, the only schema that is resolved externally, is specification meta-schema for *draft 2020-12* which is used for validating schemas during registration process. The meta-schema file is fetched from the classpath and is packaged with jar.
+By default, the only schemas that are resolved externally, are specification meta-schemas (e.g. *https://json-schema.org/draft/2020-12/schema*) which are used for validating schemas during registration process. The meta-schema files are fetched from the classpath and are packaged with jar.
 
 **There is no mechanism to pull schemas via HTTP requests**. If such behaviour is required it should be implemented by the user.
 
@@ -170,29 +170,33 @@ new ValidatorFactory().withSchemaResolver(resolver);
 ```
 For more information about return type please refer to the [documentation](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/SchemaResolver.Result.html).
 
-### Default meta-schema
-By default, upon registration of each schema, it gets validated against meta-schema (*https://json-schema.org/draft/2020-12/schema*). If validation fails [InvalidSchemaException](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/InvalidSchemaException.html) is thrown.
+### Dialects
+By default, [draft 2020-12 dialect](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/Dialects.Draft2020Dialect.html) is used,
+but it can be changed with:
+```java
+new ValidatorFactory().withDialect(new Dialects.Draft2020Dialect()); // or any other dialect
+```
+Custom dialects are also supported, see more [here](#custom-dialects).
+
+### Meta-schemas
+Dialects come with their meta-schemas. Each schema will be validated by meta-schema provided by used *dialect*.
+If validation fails [InvalidSchemaException](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/InvalidSchemaException.html) is thrown.
 
 For each specific schema this behaviour can be overridden by providing *$schema* keyword with desired meta-schema URI. Resolution of meta-schema follows the same [rules](#resolving-external-schemas) as for a regular schema.
 
-If you want to change default meta-schema, configure `ValidatorVactory` like this:
+There is a configuration option that disables all schema validations (affects *$schema* and vocabularies semantics too):
 ```java
-new ValidatorFactory().withDefaultMetaSchema("your-meta-schema-uri");
-```
-
-If you don't want to validate schemas by default, set default meta-schema to null:
-```java
-new ValidatorFactory().withDefaultMetaSchema(null);
+new ValidatorFactory().withDisabledSchemaValidation(true);
 ```
 
 ### Adding custom keywords
 Customizing specific keywords behaviour can be achieved by providing custom [EvaluatorFactory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/EvaluatorFactory.html) implementation.
-
-If you only want to add additional keywords on top of those supported in *draft 2020-12*, please extend [Draft2020EvaluatorFactory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/Draft2020EvaluatorFactory.html) class.
+Each dialect comes with its core *EvaluatorFactory* which will always be used, but additional *EvaluatorFactory* implementation can be provided on top of that.
+If you want to completely alter how schemas are validated, please refer to [custom dialects](#custom-dialects).
 
 This example shows an implementation that adds `customKeyword` keyword handling which fails validation if JSON node is not an empty array:
 ```java
-class CustomEvaluatorFactory extends Draft2020EvaluatorFactory {
+class CustomEvaluatorFactory implements EvaluatorFactory {
     @Override
     public Optional<Evaluator> create(SchemaParsingContext ctx, String fieldName, JsonNode node) {
         if ("customKeyword".equals(fieldName)) {
@@ -204,7 +208,7 @@ class CustomEvaluatorFactory extends Draft2020EvaluatorFactory {
                 }
             });
         }
-        return super.create(ctx, fieldName, node);
+        return Optional.empty();
     }
 }
 ```
@@ -213,3 +217,42 @@ Then it just needs to be attached to `ValidatorFactory`:
 ```java
 new ValidatorFactory().withEvaluatorFactory(new CustomEvaluatorFactory());
 ```
+
+### Custom dialects
+If you want you could provide your custom dialect configuration:
+```java
+Dialect customDialect = new Dialect() {
+    @Override
+    public SpecificationVersion getSpecificationVersion() {
+        return SpecificationVersion.DRAFT2020_12;
+    }
+    
+    @Override
+    public String getMetaSchema() {
+        return "https://example.com/custom/schema";
+    }
+    
+    @Override
+    public EvaluatorFactory getEvaluatorFactory() {
+        return new Draft2020EvaluatorFactory();
+    }
+    
+    @Override
+    public Set<String> getSupportedVocabularies() {
+        return Collections.singleton("custom-vocabulary");
+    }
+    
+    @Override
+    public Set<String> getRequiredVocabularies() {
+        return Collections.emptySet();
+    }
+    
+    @Override
+    public Map<String, Boolean> getDefaultVocabularyObject() {
+        return Collections.singletonMap("custom-vocabulary", true);
+    }
+};
+new ValidatorFactory().withDialect(customDialect);
+```
+See the [documentation](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/Dialect.html) for more details.
+

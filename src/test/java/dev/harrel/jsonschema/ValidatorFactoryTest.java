@@ -23,7 +23,7 @@ class ValidatorFactoryTest {
     void name() {
         String schema = readResource("/schema.json");
         String instance = readResource("/instance.json");
-        Validator.Result result = new ValidatorFactory().withDefaultMetaSchemaUri(null).validate(schema, instance);
+        Validator.Result result = new ValidatorFactory().withDisabledSchemaValidation(true).validate(schema, instance);
         List<Error> errors = result.getErrors();
         System.out.println(errors);
     }
@@ -35,7 +35,12 @@ class ValidatorFactoryTest {
                   "type": "number"
                 }""";
         Validator.Result result = new ValidatorFactory()
-                .withEvaluatorFactory(((ctx, fieldName, fieldNode) -> Optional.empty()))
+                .withDialect(new Dialects.Draft2020Dialect() {
+                    @Override
+                    public EvaluatorFactory getEvaluatorFactory() {
+                        return (ctx, fieldName, fieldNode) -> Optional.empty();
+                    }
+                })
                 .validate(schema, "null");
         assertThat(result.isValid()).isTrue();
     }
@@ -47,7 +52,6 @@ class ValidatorFactoryTest {
                   "$schema": "urn:meta"
                 }""";
         Validator validator = new ValidatorFactory()
-                .withDefaultMetaSchemaUri(null)
                 .withSchemaResolver(uri -> SchemaResolver.Result.fromString("invalid json"))
                 .createValidator();
         assertThatThrownBy(() -> validator.registerSchema(schema))
@@ -61,7 +65,12 @@ class ValidatorFactoryTest {
                   "$schema": "urn:meta"
                 }""";
         Validator validator = new ValidatorFactory()
-                .withDefaultMetaSchemaUri(null)
+                .withDialect(new Dialects.Draft2020Dialect() {
+                    @Override
+                    public String getMetaSchema() {
+                        return null;
+                    }
+                })
                 .withSchemaResolver(uri -> SchemaResolver.Result.fromString(RAW_SCHEMA))
                 .createValidator();
         InvalidSchemaException e = catchThrowableOfType(() -> validator.registerSchema(schema), InvalidSchemaException.class);
@@ -80,7 +89,7 @@ class ValidatorFactoryTest {
                   "$ref": "urn:missing"
                 }""";
         boolean valid = new ValidatorFactory()
-                .withDefaultMetaSchemaUri(null)
+                .withDisabledSchemaValidation(true)
                 .validate(schema, RAW_INSTANCE)
                 .isValid();
         assertThat(valid).isFalse();
@@ -165,7 +174,7 @@ class ValidatorFactoryTest {
                   }
                 }""";
         Validator.Result result = new ValidatorFactory()
-                .withDefaultMetaSchemaUri(null)
+                .withDisabledSchemaValidation(true)
                 .withSchemaResolver(uri -> SchemaResolver.Result.fromString(refSchema))
                 .validate(schema, "true");
         assertThat(result.isValid()).isTrue();
@@ -178,7 +187,7 @@ class ValidatorFactoryTest {
                   "$ref": "urn:x#/nope"
                 }""";
         Validator.Result result = new ValidatorFactory()
-                .withDefaultMetaSchemaUri(null)
+                .withDisabledSchemaValidation(true)
                 .withSchemaResolver(uri -> SchemaResolver.Result.fromString("{}"))
                 .validate(schema, "true");
         assertThat(result.isValid()).isFalse();
@@ -203,7 +212,7 @@ class ValidatorFactoryTest {
                   }
                 }""";
         Validator validator = new ValidatorFactory()
-                .withDefaultMetaSchemaUri(null)
+                .withDisabledSchemaValidation(true)
                 .withSchemaResolver(uri -> SchemaResolver.Result.fromString(refSchema))
                 .createValidator();
         URI uri = validator.registerSchema(schema);
@@ -217,12 +226,47 @@ class ValidatorFactoryTest {
                   "$schema": "urn:x#/nope"
                 }""";
         Validator validator = new ValidatorFactory()
-                .withDefaultMetaSchemaUri(null)
                 .withSchemaResolver(uri -> SchemaResolver.Result.fromString("{}"))
                 .createValidator();
         assertThatThrownBy(() -> validator.registerSchema(schema))
                 .isInstanceOf(MetaSchemaResolvingException.class)
                 .hasMessage("Cannot resolve meta-schema [urn:x#/nope]");
+    }
+
+    @Test
+    void shouldCombineUserProvidedEvaluatorFactory() {
+        Evaluator customEvaluator = new Evaluator() {
+            @Override
+            public Result evaluate(EvaluationContext ctx, JsonNode node) {
+                return Evaluator.Result.failure("custom error");
+            }
+
+            @Override
+            public int getOrder() {
+                return 10;
+            }
+        };
+        EvaluatorFactory customFactory = (ctx, fieldName, fieldNode) -> {
+            if ("type".equals(fieldName)) {
+                return Optional.of(customEvaluator);
+            } else {
+                return Optional.empty();
+            }
+        };
+        String schema = """
+                {
+                  "type": "string",
+                  "minLength": 2
+                }""";
+        Validator.Result result = new ValidatorFactory()
+                .withDisabledSchemaValidation(true)
+                .withEvaluatorFactory(customFactory)
+                .validate(schema, "\"x\"");
+
+        assertThat(result.isValid()).isFalse();
+        assertThat(result.getErrors()).hasSize(2);
+        assertThat(result.getErrors().get(0).getError()).isEqualTo("\"x\" is shorter than 2 characters");
+        assertThat(result.getErrors().get(1).getError()).isEqualTo("custom error");
     }
 
     @Disabled("To be enabled when thread safety issues are taken care of")
@@ -233,7 +277,7 @@ class ValidatorFactoryTest {
                   "$schema": "urn:meta"
                 }""";
         Validator validator = new ValidatorFactory()
-                .withDefaultMetaSchemaUri(null)
+                .withDisabledSchemaValidation(true)
                 .withSchemaResolver(uri -> SchemaResolver.Result.fromString("true"))
                 .createValidator();
         IntStream.range(0, 100).parallel().forEach(i -> validator.registerSchema(schema));

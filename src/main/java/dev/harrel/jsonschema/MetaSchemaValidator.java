@@ -1,53 +1,99 @@
 package dev.harrel.jsonschema;
 
 import java.net.URI;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
-final class MetaSchemaValidator {
-    private static final String RESOLVING_ERROR_MSG = "Cannot resolve meta-schema [%s]";
+interface MetaSchemaValidator {
+    Set<String> validateSchema(JsonParser jsonParser, String metaSchemaUri, String schemaUri, JsonNode node);
 
-    private final JsonNodeFactory jsonNodeFactory;
-    private final SchemaRegistry schemaRegistry;
-    private final SchemaResolver schemaResolver;
+    Set<String> determineActiveVocabularies(Map<String, Boolean> vocabulariesObject);
 
-    MetaSchemaValidator(JsonNodeFactory jsonNodeFactory, SchemaRegistry schemaRegistry, SchemaResolver schemaResolver) {
-        this.jsonNodeFactory = Objects.requireNonNull(jsonNodeFactory);
-        this.schemaRegistry = Objects.requireNonNull(schemaRegistry);
-        this.schemaResolver = Objects.requireNonNull(schemaResolver);
-    }
+    final class NoOpMetaSchemaValidator implements MetaSchemaValidator {
+        private final Set<String> activeVocabularies;
 
-    void validateMetaSchema(JsonParser jsonParser, String metaSchemaUri, String schemaUri, JsonNode node) {
-        Objects.requireNonNull(metaSchemaUri);
-        Schema schema = resolveMetaSchema(jsonParser, metaSchemaUri);
-        EvaluationContext ctx = new EvaluationContext(jsonNodeFactory, jsonParser, schemaRegistry, schemaResolver);
-        if (!ctx.validateAgainstSchema(schema, node)) {
-            throw new InvalidSchemaException(String.format("Schema [%s] failed to validate against meta-schema [%s]", schemaUri, metaSchemaUri),
-                    Validator.Result.fromEvaluationContext(false, ctx).getErrors());
+        public NoOpMetaSchemaValidator(Set<String> activeVocabularies) {
+            this.activeVocabularies = activeVocabularies;
+        }
+
+        @Override
+        public Set<String> validateSchema(JsonParser jsonParser, String metaSchemaUri, String schemaUri, JsonNode node) {
+            return activeVocabularies;
+        }
+
+        @Override
+        public Set<String> determineActiveVocabularies(Map<String, Boolean> vocabulariesObject) {
+            return activeVocabularies;
         }
     }
+    final class DefaultMetaSchemaValidator implements MetaSchemaValidator {
+        private static final String RESOLVING_ERROR_MSG = "Cannot resolve meta-schema [%s]";
 
-    private Schema resolveMetaSchema(JsonParser jsonParser, String uri) {
-        return OptionalUtil.firstPresent(
-                () -> Optional.ofNullable(schemaRegistry.get(uri)),
-                () -> Optional.ofNullable(schemaRegistry.getDynamic(uri))
-        ).orElseGet(() -> resolveExternalSchema(jsonParser, uri));
-    }
+        private final Dialect dialect;
+        private final JsonNodeFactory jsonNodeFactory;
+        private final SchemaRegistry schemaRegistry;
+        private final SchemaResolver schemaResolver;
 
-    private Schema resolveExternalSchema(JsonParser jsonParser, String uri) {
-        String baseUri = UriUtil.getUriWithoutFragment(uri);
-        if (schemaRegistry.get(baseUri) != null) {
-            throw new MetaSchemaResolvingException(String.format(RESOLVING_ERROR_MSG, uri));
+        DefaultMetaSchemaValidator(Dialect dialect, JsonNodeFactory jsonNodeFactory, SchemaRegistry schemaRegistry, SchemaResolver schemaResolver) {
+            this.dialect = Objects.requireNonNull(dialect);
+            this.jsonNodeFactory = Objects.requireNonNull(jsonNodeFactory);
+            this.schemaRegistry = Objects.requireNonNull(schemaRegistry);
+            this.schemaResolver = Objects.requireNonNull(schemaResolver);
         }
-        SchemaResolver.Result result = schemaResolver.resolve(baseUri);
-        if (result.isEmpty()) {
-            throw new MetaSchemaResolvingException(String.format(RESOLVING_ERROR_MSG, uri));
+
+        @Override
+        public Set<String> validateSchema(JsonParser jsonParser, String metaSchemaUri, String schemaUri, JsonNode node) {
+            Objects.requireNonNull(metaSchemaUri);
+            Schema schema = resolveMetaSchema(jsonParser, metaSchemaUri);
+            EvaluationContext ctx = new EvaluationContext(jsonNodeFactory, jsonParser, schemaRegistry, schemaResolver, schema.getActiveVocabularies());
+            if (!ctx.validateAgainstSchema(schema, node)) {
+                throw new InvalidSchemaException(String.format("Schema [%s] failed to validate against meta-schema [%s]", schemaUri, metaSchemaUri),
+                        Validator.Result.fromEvaluationContext(false, ctx).getErrors());
+            }
+            return determineActiveVocabularies(schema.getVocabulariesObject());
         }
-        try {
-            result.toJsonNode(jsonNodeFactory).ifPresent(node -> jsonParser.parseRootSchema(URI.create(baseUri), node));
-        } catch (Exception e) {
-            throw new MetaSchemaResolvingException(String.format("Parsing meta-schema [%s] failed", uri), e);
+
+        @Override
+        public Set<String> determineActiveVocabularies(Map<String, Boolean> vocabulariesObject) {
+            List<String> missingRequiredVocabularies = dialect.getRequiredVocabularies().stream()
+                    .filter(vocab -> !vocabulariesObject.getOrDefault(vocab, false))
+                    .collect(Collectors.toList());
+            if (!missingRequiredVocabularies.isEmpty()) {
+                throw new VocabularyException(String.format("Required vocabularies [%s] were missing or marked optional in $vocabulary object", missingRequiredVocabularies));
+            }
+            List<String> unsupportedRequiredVocabularies = vocabulariesObject.entrySet().stream()
+                    .filter(Map.Entry::getValue)
+                    .map(Map.Entry::getKey)
+                    .filter(vocab -> !dialect.getSupportedVocabularies().contains(vocab))
+                    .collect(Collectors.toList());
+            if (!unsupportedRequiredVocabularies.isEmpty()) {
+                throw new VocabularyException(String.format("Following vocabularies [%s] are required but not supported", unsupportedRequiredVocabularies));
+            }
+            return vocabulariesObject.keySet();
         }
-        return resolveMetaSchema(jsonParser, uri);
+
+        private Schema resolveMetaSchema(JsonParser jsonParser, String uri) {
+            return OptionalUtil.firstPresent(
+                    () -> Optional.ofNullable(schemaRegistry.get(uri)),
+                    () -> Optional.ofNullable(schemaRegistry.getDynamic(uri))
+            ).orElseGet(() -> resolveExternalSchema(jsonParser, uri));
+        }
+
+        private Schema resolveExternalSchema(JsonParser jsonParser, String uri) {
+            String baseUri = UriUtil.getUriWithoutFragment(uri);
+            if (schemaRegistry.get(baseUri) != null) {
+                throw new MetaSchemaResolvingException(String.format(RESOLVING_ERROR_MSG, uri));
+            }
+            SchemaResolver.Result result = schemaResolver.resolve(baseUri);
+            if (result.isEmpty()) {
+                throw new MetaSchemaResolvingException(String.format(RESOLVING_ERROR_MSG, uri));
+            }
+            try {
+                result.toJsonNode(jsonNodeFactory).ifPresent(node -> jsonParser.parseRootSchema(URI.create(baseUri), node));
+            } catch (Exception e) {
+                throw new MetaSchemaResolvingException(String.format("Parsing meta-schema [%s] failed", uri), e);
+            }
+            return resolveMetaSchema(jsonParser, uri);
+        }
     }
 }

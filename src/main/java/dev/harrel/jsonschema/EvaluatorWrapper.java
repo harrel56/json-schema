@@ -1,6 +1,7 @@
 package dev.harrel.jsonschema;
 
 import java.util.Objects;
+import java.util.Set;
 
 final class EvaluatorWrapper implements Evaluator {
     private final String keyword;
@@ -25,6 +26,11 @@ final class EvaluatorWrapper implements Evaluator {
     @Override
     public int getOrder() {
         return evaluator.getOrder();
+    }
+
+    @Override
+    public Set<String> getVocabularies() {
+        return evaluator.getVocabularies();
     }
 
     String getKeyword() {

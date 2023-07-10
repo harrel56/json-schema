@@ -68,4 +68,12 @@ class JacksonTest {
             nodeFactory = new JacksonNode.Factory();
         }
     }
+
+    @Nested
+    class VocabulariesTest extends dev.harrel.jsonschema.VocabulariesTest {
+        @BeforeAll
+        static void beforeAll() {
+            nodeFactory = new JacksonNode.Factory();
+        }
+    }
 }

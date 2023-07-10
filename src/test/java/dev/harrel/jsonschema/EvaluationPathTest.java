@@ -16,7 +16,7 @@ class EvaluationPathTest {
 
     @BeforeEach
     void setUp() {
-        validator = new ValidatorFactory().withDefaultMetaSchemaUri(null).createValidator();
+        validator = new ValidatorFactory().withDisabledSchemaValidation(true).createValidator();
         uri = URI.create("urn:test");
     }
 

@@ -11,6 +11,4 @@ public abstract class JsonSchemaException extends RuntimeException {
     JsonSchemaException(String message) {
         super(message);
     }
-
-    JsonSchemaException() {}
 }

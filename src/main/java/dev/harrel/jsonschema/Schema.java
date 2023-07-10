@@ -12,12 +12,19 @@ final class Schema {
     private final URI parentUri;
     private final String schemaLocation;
     private final List<EvaluatorWrapper> evaluators;
+    private final Set<String> activeVocabularies;
+    private final Map<String, Boolean> vocabulariesObject;
 
-    Schema(URI parentUri, String schemaLocation, List<EvaluatorWrapper> evaluators) {
+    Schema(URI parentUri,
+           String schemaLocation,
+           List<EvaluatorWrapper> evaluators,
+           Set<String> activeVocabularies,
+           Map<String, Boolean> vocabulariesObject) {
         this.parentUri = parentUri;
         this.schemaLocation = Objects.requireNonNull(schemaLocation);
-        Objects.requireNonNull(evaluators);
-        List<EvaluatorWrapper> unsortedEvaluators = new ArrayList<>(evaluators);
+        this.activeVocabularies = Objects.requireNonNull(activeVocabularies);
+        this.vocabulariesObject = Objects.requireNonNull(vocabulariesObject);
+        List<EvaluatorWrapper> unsortedEvaluators = new ArrayList<>(Objects.requireNonNull(evaluators));
         unsortedEvaluators.sort(Comparator.comparingInt(Evaluator::getOrder));
         this.evaluators = Collections.unmodifiableList(unsortedEvaluators);
     }
@@ -36,5 +43,13 @@ final class Schema {
 
     List<EvaluatorWrapper> getEvaluators() {
         return evaluators;
+    }
+
+    Set<String> getActiveVocabularies() {
+        return activeVocabularies;
+    }
+
+    Map<String, Boolean> getVocabulariesObject() {
+        return vocabulariesObject;
     }
 }
