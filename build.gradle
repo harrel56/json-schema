@@ -13,9 +13,6 @@ apply from: 'setup/testing.gradle'
 group 'dev.harrel'
 version '1.2.0'
 
-sourceCompatibility JavaVersion.VERSION_17
-targetCompatibility JavaVersion.VERSION_17
-
 compileJava {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
@@ -23,6 +20,8 @@ compileJava {
 }
 
 java {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
     withSourcesJar()
     withJavadocJar()
     javadoc.options.addStringOption('Xdoclint:none', '-quiet')
