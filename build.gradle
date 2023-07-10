@@ -11,7 +11,7 @@ apply from: 'setup/reporting.gradle'
 apply from: 'setup/testing.gradle'
 
 group 'dev.harrel'
-version '1.1.0'
+version '1.2.0'
 
 sourceCompatibility JavaVersion.VERSION_17
 targetCompatibility JavaVersion.VERSION_17
