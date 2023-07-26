@@ -53,9 +53,7 @@ jobs:
   sonar-cloud:
     runs-on: ubuntu-latest
     needs: build-gradle
-    env:
-      sonar_token: ${{ secrets.SONAR_TOKEN }}
-    if: ${{ env.sonar_token != '' }}
+    if: ${{ secrets.SONAR_TOKEN != '' }}
 
     steps:
       - name: Git checkout
