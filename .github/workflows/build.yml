@@ -58,6 +58,9 @@ jobs:
       - name: Git checkout
         uses: actions/checkout@v3
 
+      - name: Setup master branch locally without switching current branch
+        run: git fetch origin master:master
+
       - uses: actions/download-artifact@v3
         with:
           name: build-output
