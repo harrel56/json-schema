@@ -46,7 +46,7 @@ jobs:
           echo "test-classes=$CLASSES" >> "$GITHUB_OUTPUT"
 
   matr:
-    needs: provider-list
+    needs: [ build-gradle, provider-list ]
     runs-on: ubuntu-latest
 
     strategy:
