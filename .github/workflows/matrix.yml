@@ -42,4 +42,4 @@ jobs:
           gradle-version: 8.2.1
 
       - name: Gradle provider tests
-        run: ./gradlew test --tests ${{ matrix }}
+        run: ./gradlew test --tests ${{ matrix.test-class }}
