@@ -25,7 +25,7 @@ jobs:
 
     strategy:
       matrix:
-        test-class: ${{ needs.provider-list.outputs.test-classes }}
+        test-class: ${{ fromJSON(needs.provider-list.outputs.test-classes) }}
 
     steps:
       - uses: actions/checkout@v3
