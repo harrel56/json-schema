@@ -9,13 +9,15 @@ jobs:
   provider-list:
     runs-on: ubuntu-latest
     outputs:
-      test-classes: ${{ steps.images-matrix.outputs.images }}
+      test-classes: ${{ steps.test-classes.outputs.test-classes }}
     steps:
       - name: Git checkout
         uses: actions/checkout@v3
       - name: List provider test classes
         id: test-classes
-        run: ls src/test/java/dev/harrel/jsonschema/providers/ | sed 's/\.java$//' | jq -R -s -c 'split("\n")[:-1]'
+        run: |
+          CLASSES = ls src/test/java/dev/harrel/jsonschema/providers/ | sed 's/\.java$//' | jq -R -s -c 'split("\n")[:-1]'
+          echo "test-classes=$CLASSES" >> "$GITHUB_OUTPUT"
 
   matr:
     needs: provider-list
