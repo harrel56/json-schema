@@ -6,7 +6,7 @@ on:
     branches: [ master ]
 
 jobs:
-  build-gradle:
+  generic-tests:
     runs-on: ubuntu-latest
     steps:
       - name: Git checkout
@@ -23,14 +23,20 @@ jobs:
         with:
           gradle-version: 8.2.1
 
-      - name: Gradle build
-        run: ./gradlew build testClasses -x check --no-daemon
+      - name: Run generic tests
+        run: ./gradlew check -x test --no-daemon
+
+      - name: Upload test execution data
+        uses: actions/upload-artifact@v3
+        with:
+          name: generic-tests-exec
+          path: build/jacoco
 
       - name: Upload build
         uses: actions/upload-artifact@v3
         with:
           name: build-output
-          path: build
+          path: build/lib
 
   provider-list:
     runs-on: ubuntu-latest
@@ -45,8 +51,8 @@ jobs:
           CLASSES=$(ls src/test/java/dev/harrel/jsonschema/providers/ | sed 's/\.java$//' | jq -R -s -c 'split("\n")[:-1]')
           echo "test-classes=$CLASSES" >> "$GITHUB_OUTPUT"
 
-  matr:
-    needs: [ build-gradle, provider-list ]
+  provider-tests:
+    needs: provider-list
     runs-on: ubuntu-latest
 
     strategy:
@@ -66,9 +72,54 @@ jobs:
         with:
           gradle-version: 8.2.1
 
-      - uses: actions/download-artifact@v3
-        with:
-          name: build-output
-
       - name: Gradle provider tests
         run: ./gradlew test --tests ${{ matrix.test-class }} --no-daemon
+
+      - name: Rename test execution data
+        run: mv build/jacoco/test.exec build/jacoco/${{ matrix.test-class }}.exec
+
+      - name: Upload test execution data
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.test-class }}-tests-exec
+          path: build/jacoco
+
+  report:
+    needs: [generic-tests, provider-tests]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup java
+        uses: actions/setup-java@v3
+        with:
+          distribution: corretto
+          java-version: 17
+
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: 8.2.1
+
+      - name: Download test execution data
+        uses: actions/download-artifact@v3
+        with:
+          path: build/jacoco
+
+      - name: Gradle jacoco report
+        run: ./gradlew jacocoTestReport --no-daemon
+
+      - name: Generate coverage badge
+        uses: cicirello/jacoco-badge-generator@v2
+        with:
+          jacoco-csv-file: build/reports/jacoco/test/jacocoTestReport.csv
+          generate-coverage-badge: true
+          generate-coverage-endpoint: true
+
+      - name: Upload report
+        uses: actions/upload-artifact@v3
+        with:
+          name: report-output
+          path: |
+            build/reports
+            .github/badges/jacoco.svg
