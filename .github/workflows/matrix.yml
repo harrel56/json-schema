@@ -32,12 +32,6 @@ jobs:
           name: generic-tests-exec
           path: build/jacoco
 
-      - name: Upload build
-        uses: actions/upload-artifact@v3
-        with:
-          name: build-output
-          path: build/lib
-
   provider-list:
     runs-on: ubuntu-latest
     outputs:
@@ -105,6 +99,9 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           path: build/jacoco
+
+      - name: Get exec data up one level
+        run: find build/jacoco -path 'build/jacoco/*/*' -execdir mv -t ../ {} +
 
       - name: Gradle jacoco report
         run: ./gradlew jacocoTestReport --no-daemon
