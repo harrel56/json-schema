@@ -1,5 +1,5 @@
 jacocoTestReport {
-    executionData fileTree(project.buildDir).include("jacoco/*.exec")
+    executionData fileTree(project.rootDir.absolutePath).include("build/jacoco/*.exec")
 
     reports.html.required = false
     reports.csv.required = true
