@@ -1,4 +1,4 @@
-name: deploy-sonatype
+name: deploy-release
 
 on:
   workflow_dispatch:

@@ -1,3 +1,14 @@
+tasks.register('genericTests', Test) {
+    description = 'Runs all tests that are not related to specific JSON providers (no specification tests)'
+    useJUnitPlatform()
+    group = 'verification'
+
+    filter {
+        excludeTestsMatching 'dev.harrel.jsonschema.providers.*'
+    }
+}
+tasks.check.dependsOn genericTests
+
 ext.setupProviderTest = (String provider, String dependency) -> {
     def taskName = "${provider}Test"
     def configName = "${taskName}Implementation"
