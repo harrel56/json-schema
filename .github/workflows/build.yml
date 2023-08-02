@@ -11,7 +11,7 @@ jobs:
 
   sonar-cloud:
     runs-on: ubuntu-latest
-    needs: build-gradle
+    needs: tests
 
     steps:
       - name: Git checkout
@@ -43,7 +43,7 @@ jobs:
   deploy-gh-pages:
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
-    needs: build-gradle
+    needs: tests
 
     permissions:
       pages: write
