@@ -1,6 +1,7 @@
-name: matrix_test
+name: tests
 
 on:
+  workflow_call:
   pull_request:
   push:
     branches: [ master ]
@@ -117,6 +118,9 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: report-output
-          path: |
-            build/reports
-            .github/badges/jacoco.svg
+          path: build/reports
+
+      - name: Upload badge
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: './.github/badges'
