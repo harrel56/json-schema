@@ -33,7 +33,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
         with:
-          gradle-version: 8.2.1
+          gradle-version: wrapper
 
       - name: SonarCloud analyze
         env:

@@ -19,7 +19,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
         with:
-          gradle-version: 8.2.1
+          gradle-version: wrapper
 
       - name: Run generic tests
         run: ./gradlew check -x test --no-daemon
@@ -62,7 +62,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
         with:
-          gradle-version: 8.2.1
+          gradle-version: wrapper
 
       - name: Gradle provider tests
         run: ./gradlew test --tests ${{ matrix.test-class }} --no-daemon
@@ -91,7 +91,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
         with:
-          gradle-version: 8.2.1
+          gradle-version: wrapper
 
       - name: Download test execution data
         uses: actions/download-artifact@v3
