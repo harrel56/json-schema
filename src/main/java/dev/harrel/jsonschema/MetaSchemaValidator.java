@@ -27,8 +27,6 @@ interface MetaSchemaValidator {
         }
     }
     final class DefaultMetaSchemaValidator implements MetaSchemaValidator {
-        private static final String RESOLVING_ERROR_MSG = "Cannot resolve meta-schema [%s]";
-
         private final Dialect dialect;
         private final JsonNodeFactory jsonNodeFactory;
         private final SchemaRegistry schemaRegistry;
@@ -82,16 +80,16 @@ interface MetaSchemaValidator {
         private Schema resolveExternalSchema(JsonParser jsonParser, String uri) {
             String baseUri = UriUtil.getUriWithoutFragment(uri);
             if (schemaRegistry.get(baseUri) != null) {
-                throw new MetaSchemaResolvingException(String.format(RESOLVING_ERROR_MSG, uri));
+                throw MetaSchemaResolvingException.resolvingFailure(uri);
             }
             SchemaResolver.Result result = schemaResolver.resolve(baseUri);
             if (result.isEmpty()) {
-                throw new MetaSchemaResolvingException(String.format(RESOLVING_ERROR_MSG, uri));
+                throw MetaSchemaResolvingException.resolvingFailure(uri);
             }
             try {
                 result.toJsonNode(jsonNodeFactory).ifPresent(node -> jsonParser.parseRootSchema(URI.create(baseUri), node));
             } catch (Exception e) {
-                throw new MetaSchemaResolvingException(String.format("Parsing meta-schema [%s] failed", uri), e);
+                throw MetaSchemaResolvingException.parsingFailure(uri, e);
             }
             return resolveMetaSchema(jsonParser, uri);
         }
