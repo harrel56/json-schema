@@ -26,7 +26,7 @@ public final class ValidatorFactory {
      * @return new {@link Validator} instance
      */
     public Validator createValidator() {
-        EvaluatorFactory compositeFactory = evaluatorFactory == null ? dialect.getEvaluatorFactory() : CompositeEvaluatorFactory.of(evaluatorFactory, dialect.getEvaluatorFactory());
+        EvaluatorFactory compositeFactory = evaluatorFactory == null ? dialect.getEvaluatorFactory() : EvaluatorFactory.compose(evaluatorFactory, dialect.getEvaluatorFactory());
         JsonNodeFactory nodeFactory = jsonNodeFactory.get();
         SchemaRegistry schemaRegistry = new SchemaRegistry();
         MetaSchemaValidator metaSchemaValidator;

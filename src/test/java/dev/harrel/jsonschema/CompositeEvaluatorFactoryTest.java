@@ -13,7 +13,7 @@ class CompositeEvaluatorFactoryTest {
 
     @Test
     void shouldReturnEmptyForNoEvaluatorFactories() {
-        CompositeEvaluatorFactory compositeFactory = CompositeEvaluatorFactory.of();
+        EvaluatorFactory compositeFactory = EvaluatorFactory.compose();
         assertThat(compositeFactory.create(ctx, "x", node)).isEmpty();
     }
 
@@ -44,7 +44,7 @@ class CompositeEvaluatorFactoryTest {
             }
         };
 
-        CompositeEvaluatorFactory compositeFactory = CompositeEvaluatorFactory.of(factory1, factory2, factory3);
+        EvaluatorFactory compositeFactory = EvaluatorFactory.compose(factory1, factory2, factory3);
         assertThat(compositeFactory.create(ctx, "x", node)).hasValue(evaluator1);
         assertThat(compositeFactory.create(ctx, "y", node)).hasValue(evaluator2);
         assertThat(compositeFactory.create(ctx, "z", node)).hasValue(evaluator3);
@@ -78,7 +78,7 @@ class CompositeEvaluatorFactoryTest {
             }
         };
 
-        CompositeEvaluatorFactory compositeFactory = CompositeEvaluatorFactory.of(factory1, factory2, factory3);
+        EvaluatorFactory compositeFactory = EvaluatorFactory.compose(factory1, factory2, factory3);
         assertThat(compositeFactory.create(ctx, "x", node)).hasValue(evaluator1);
     }
 }
