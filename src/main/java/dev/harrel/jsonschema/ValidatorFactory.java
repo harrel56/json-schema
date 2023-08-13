@@ -82,7 +82,7 @@ public final class ValidatorFactory {
      * @see SpecificationVersion
      */
     public ValidatorFactory withSchemaResolver(SchemaResolver schemaResolver) {
-        this.schemaResolver = CompositeSchemaResolver.of(Objects.requireNonNull(schemaResolver), new DefaultSchemaResolver());
+        this.schemaResolver = SchemaResolver.compose(Objects.requireNonNull(schemaResolver), new DefaultSchemaResolver());
         return this;
     }
 

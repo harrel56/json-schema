@@ -16,6 +16,16 @@ public interface SchemaResolver {
     Result resolve(String uri);
 
     /**
+     * Composes multiple {@link SchemaResolver}s into one.
+     * First non-empty resolution from the composed {@link SchemaResolver}s will be returned.
+     * @param resolvers SchemaResolvers to be composed
+     * @return composed SchemaResolver
+     */
+    static SchemaResolver compose(SchemaResolver... resolvers) {
+        return CompositeSchemaResolver.of(resolvers);
+    }
+
+    /**
      * {@code Result} class represents schema resolution outcome.
      * It can be in one of the following states:
      * <ul>
