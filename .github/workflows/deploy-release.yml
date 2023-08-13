@@ -1,22 +1,12 @@
 name: deploy-release
 
 on:
-  workflow_dispatch:
-    inputs:
-      username:
-        description: username
-        required: true
-      password:
-        description: password
-        required: true
+  release:
 
 jobs:
   build-gradle:
     runs-on: ubuntu-latest
     steps:
-      - name: Mask workflow inputs
-        uses: levibostian/action-hide-sensitive-inputs@v1
-
       - name: Git checkout
         uses: actions/checkout@v3
 
@@ -50,6 +40,6 @@ jobs:
           ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_KEY }}
           ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_PASSWORD }}
           ORG_GRADLE_PROJECT_sonatypeRepo: ${{ secrets.SONATYPE_REPO }}
-          ORG_GRADLE_PROJECT_sonatypeUsername: ${{ inputs.username }}
-          ORG_GRADLE_PROJECT_sonatypePassword: ${{ inputs.password }}
+          ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.SONATYPE_USERNAME }}
+          ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.SONATYPE_PASSWORD }}
         run: ./gradlew publishSonatypePublicationToSonatypeRepository
