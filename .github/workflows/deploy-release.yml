@@ -5,7 +5,7 @@ on:
     types: [published]
 
 jobs:
-  build-gradle:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Git checkout
