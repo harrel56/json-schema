@@ -2,6 +2,7 @@ name: deploy-release
 
 on:
   release:
+    types: [published]
 
 jobs:
   build-gradle:
