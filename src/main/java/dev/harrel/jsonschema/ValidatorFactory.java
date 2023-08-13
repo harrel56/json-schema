@@ -251,6 +251,7 @@ public final class ValidatorFactory {
 
             Optional<String> rawSchema = Arrays.stream(SpecificationVersion.values())
                     .filter(spec -> spec.getId().equals(uri))
+                    .findFirst()
                     .map(SpecificationVersion::getResourcePath)
                     .map(path -> {
                         try (InputStream is = getClass().getResourceAsStream(path)) {
@@ -261,8 +262,7 @@ public final class ValidatorFactory {
                         } catch (IOException e) {
                             throw new UncheckedIOException(e);
                         }
-                    })
-                    .findFirst();
+                    });
 
             rawSchema.ifPresent(s -> schemaCache.put(uri, s));
             return rawSchema
