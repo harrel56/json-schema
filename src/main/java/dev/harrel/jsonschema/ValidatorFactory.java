@@ -26,7 +26,7 @@ public final class ValidatorFactory {
      * @return new {@link Validator} instance
      */
     public Validator createValidator() {
-        EvaluatorFactory compositeFactory = evaluatorFactory == null ? dialect.getEvaluatorFactory() : CompositeEvaluatorFactory.of(evaluatorFactory, dialect.getEvaluatorFactory());
+        EvaluatorFactory compositeFactory = evaluatorFactory == null ? dialect.getEvaluatorFactory() : EvaluatorFactory.compose(evaluatorFactory, dialect.getEvaluatorFactory());
         JsonNodeFactory nodeFactory = jsonNodeFactory.get();
         SchemaRegistry schemaRegistry = new SchemaRegistry();
         MetaSchemaValidator metaSchemaValidator;
@@ -82,7 +82,7 @@ public final class ValidatorFactory {
      * @see SpecificationVersion
      */
     public ValidatorFactory withSchemaResolver(SchemaResolver schemaResolver) {
-        this.schemaResolver = CompositeSchemaResolver.of(Objects.requireNonNull(schemaResolver), new DefaultSchemaResolver());
+        this.schemaResolver = SchemaResolver.compose(Objects.requireNonNull(schemaResolver), new DefaultSchemaResolver());
         return this;
     }
 
@@ -251,6 +251,7 @@ public final class ValidatorFactory {
 
             Optional<String> rawSchema = Arrays.stream(SpecificationVersion.values())
                     .filter(spec -> spec.getId().equals(uri))
+                    .findFirst()
                     .map(SpecificationVersion::getResourcePath)
                     .map(path -> {
                         try (InputStream is = getClass().getResourceAsStream(path)) {
@@ -261,8 +262,7 @@ public final class ValidatorFactory {
                         } catch (IOException e) {
                             throw new UncheckedIOException(e);
                         }
-                    })
-                    .findFirst();
+                    });
 
             rawSchema.ifPresent(s -> schemaCache.put(uri, s));
             return rawSchema
