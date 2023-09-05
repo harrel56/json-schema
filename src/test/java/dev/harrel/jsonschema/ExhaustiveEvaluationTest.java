@@ -130,4 +130,60 @@ class ExhaustiveEvaluationTest {
                 "Value is [string] but should be [number]"
         );
     }
+
+    @Test
+    void properties() {
+        String schema = """
+                {
+                  "properties": {
+                    "a": {
+                      "type": "boolean"
+                    },
+                    "b": {
+                      "type": "boolean"
+                    },
+                    "c": {
+                      "type": "boolean"
+                    },
+                    "d": {
+                      "type": "boolean"
+                    }
+                  }
+                }""";
+        String instance = """
+                {
+                  "a": true,
+                  "b": null,
+                  "c": "prop",
+                  "d": 0
+                }""";
+        Validator.Result result = new ValidatorFactory().validate(schema, instance);
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(3);
+        assertError(
+                errors.get(0),
+                "/properties/b/type",
+                "https://harrel.dev/",
+                "/b",
+                "type",
+                "Value is [null] but should be [boolean]"
+        );
+        assertError(
+                errors.get(1),
+                "/properties/c/type",
+                "https://harrel.dev/",
+                "/c",
+                "type",
+                "Value is [string] but should be [boolean]"
+        );
+        assertError(
+                errors.get(2),
+                "/properties/d/type",
+                "https://harrel.dev/",
+                "/d",
+                "type",
+                "Value is [integer] but should be [boolean]"
+        );
+    }
 }

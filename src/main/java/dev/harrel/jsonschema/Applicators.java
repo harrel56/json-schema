@@ -189,7 +189,8 @@ class PropertiesEvaluator implements Evaluator {
                 .entrySet()
                 .stream()
                 .map(e -> new AbstractMap.SimpleEntry<>(schemaRefs.get(e.getKey()), e.getValue()))
-                .allMatch(e -> ctx.resolveInternalRefAndValidate(e.getKey(), e.getValue()));
+                .filter(e -> ctx.resolveInternalRefAndValidate(e.getKey(), e.getValue()))
+                .count() == filtered.size();
         return valid ? Result.success(unmodifiableSet(filtered.keySet())) : Result.failure();
     }
 }
