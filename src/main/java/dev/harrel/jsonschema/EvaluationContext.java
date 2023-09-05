@@ -124,7 +124,7 @@ public final class EvaluationContext {
             int errorsBefore = errors.size();
             Evaluator.Result result = evaluator.evaluate(this, node);
             if (result.isValid()) {
-                /* Discarding valid sub-schema errors */
+                /* Discarding errors that were produced by keywords evaluated to true */
                 errors.subList(errorsBefore, errors.size()).clear();
                 annotations.add(new Annotation(evaluationPath, schema.getSchemaLocation(), node.getJsonPointer(), evaluator.getKeyword(), result.getAnnotation()));
             } else {
