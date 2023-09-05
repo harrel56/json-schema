@@ -257,4 +257,44 @@ class ExhaustiveEvaluationTest {
                 "Value is [boolean] but should be [string]"
         );
     }
+
+    @Test
+    void dependentSchemas() {
+        String schema = """
+                {
+                  "dependentSchemas": {
+                    "a": {
+                      "type": "string"
+                    },
+                    "b": {
+                      "type": "string"
+                    }
+                  }
+                }""";
+        String instance = """
+                {
+                  "a": true,
+                  "b": null
+                }""";
+        Validator.Result result = new ValidatorFactory().validate(schema, instance);
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(2);
+        assertError(
+                errors.get(0),
+                "/dependentSchemas/a/type",
+                "https://harrel.dev/",
+                "",
+                "type",
+                "Value is [object] but should be [string]"
+        );
+        assertError(
+                errors.get(1),
+                "/dependentSchemas/b/type",
+                "https://harrel.dev/",
+                "",
+                "type",
+                "Value is [object] but should be [string]"
+        );
+    }
 }

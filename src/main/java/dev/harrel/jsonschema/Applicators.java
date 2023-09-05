@@ -253,11 +253,15 @@ class DependentSchemasEvaluator implements Applicator {
             return true;
         }
 
-        return node.asObject().keySet()
+
+        List<String> fields = node.asObject().keySet()
                 .stream()
                 .filter(dependentSchemas::containsKey)
+                .collect(Collectors.toList());
+        return fields.stream()
                 .map(dependentSchemas::get)
-                .allMatch(ref -> ctx.resolveInternalRefAndValidate(ref, node));
+                .filter(ref -> ctx.resolveInternalRefAndValidate(ref, node))
+                .count() == fields.size();
     }
 }
 
