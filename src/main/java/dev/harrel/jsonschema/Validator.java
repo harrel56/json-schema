@@ -3,13 +3,11 @@ package dev.harrel.jsonschema;
 import dev.harrel.jsonschema.providers.JacksonNode;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 
 /**
@@ -137,7 +135,7 @@ public final class Validator {
         Schema schema = getRootSchema(schemaUri.toString());
         EvaluationContext ctx = createNewEvaluationContext(schema);
         boolean valid = ctx.validateAgainstSchema(schema, instanceNode);
-        return Result.fromEvaluationContext(valid, ctx);
+        return new Result(valid, ctx);
     }
 
     private Schema getRootSchema(String uri) {
@@ -161,17 +159,17 @@ public final class Validator {
      */
     public static final class Result {
         private final boolean valid;
-        private final List<EvaluationItem> evaluationItems;
-        private final List<EvaluationItem> validationItems;
+        private final List<Annotation> annotations;
+        private final List<Error> errors;
 
-        Result(boolean valid, List<EvaluationItem> evaluationItems, List<EvaluationItem> validationItems) {
+        Result(boolean valid, EvaluationContext ctx) {
             this.valid = valid;
-            this.evaluationItems = Objects.requireNonNull(evaluationItems);
-            this.validationItems = Objects.requireNonNull(validationItems);
-        }
-
-        static Result fromEvaluationContext(boolean valid, EvaluationContext ctx) {
-            return new Result(valid, unmodifiableList(new ArrayList<>(ctx.getEvaluationItems())), unmodifiableList(new ArrayList<>(ctx.getValidationItems())));
+            this.annotations = unmodifiableList(ctx.getAnnotations().stream()
+                    .filter(a -> a.getAnnotation() != null)
+                    .collect(Collectors.toList()));
+            this.errors = unmodifiableList(ctx.getErrors().stream()
+                    .filter(e -> e.getError() != null)
+                    .collect(Collectors.toList()));
         }
 
         /**
@@ -187,9 +185,7 @@ public final class Validator {
          * @return unmodifiable list of {@link Annotation}s
          */
         public List<Annotation> getAnnotations() {
-            return unmodifiableList(evaluationItems.stream()
-                    .filter(a -> a.getAnnotation() != null)
-                    .collect(Collectors.toList()));
+            return annotations;
         }
 
         /**
@@ -198,14 +194,7 @@ public final class Validator {
          * @return unmodifiable list of {@link Error}s
          */
         public List<Error> getErrors() {
-            if (isValid()) {
-                return emptyList();
-            } else {
-                return unmodifiableList(validationItems.stream()
-                        .filter(a -> !a.isValid())
-                        .filter(a -> a.getError() != null)
-                        .collect(Collectors.toList()));
-            }
+            return errors;
         }
     }
 }

@@ -1,11 +1,20 @@
 package dev.harrel.jsonschema;
 
 /**
- * {@code Annotation} interface represents collected annotation.
+ * {@code Annotation} class represents collected annotation.
  */
-public interface Annotation extends ResultItem {
+public class Annotation extends EvaluationItem {
+    private final Object annotation;
+
+    Annotation(String evaluationPath, String schemaLocation, String instanceLocation, String keyword, Object annotation) {
+        super(evaluationPath, schemaLocation, instanceLocation, keyword);
+        this.annotation = annotation;
+    }
+
     /**
      * Returns collected annotation.
      */
-    Object getAnnotation();
+    public Object getAnnotation() {
+        return annotation;
+    }
 }

@@ -46,7 +46,7 @@ interface MetaSchemaValidator {
             EvaluationContext ctx = new EvaluationContext(jsonNodeFactory, jsonParser, schemaRegistry, schemaResolver, schema.getActiveVocabularies());
             if (!ctx.validateAgainstSchema(schema, node)) {
                 throw new InvalidSchemaException(String.format("Schema [%s] failed to validate against meta-schema [%s]", schemaUri, metaSchemaUri),
-                        Validator.Result.fromEvaluationContext(false, ctx).getErrors());
+                        new Validator.Result(false, ctx).getErrors());
             }
             return determineActiveVocabularies(schema.getVocabulariesObject());
         }

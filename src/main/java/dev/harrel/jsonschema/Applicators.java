@@ -315,7 +315,9 @@ class AllOfEvaluator implements Applicator {
 
     @Override
     public boolean apply(EvaluationContext ctx, JsonNode node) {
-        return refs.stream().allMatch(pointer -> ctx.resolveInternalRefAndValidate(pointer, node));
+        return refs.stream()
+                .filter(pointer -> ctx.resolveInternalRefAndValidate(pointer, node))
+                .count() == refs.size();
     }
 }
 
@@ -396,7 +398,7 @@ class UnevaluatedItemsEvaluator implements Applicator {
             return true;
         }
 
-        List<EvaluationItem> evaluationItems = unmodifiableList(ctx.getEvaluationItems().stream()
+        List<EvaluationItem> evaluationItems = unmodifiableList(ctx.getAnnotations().stream()
                 .filter(a -> getSchemaPath(a).startsWith(parentPath))
                 .collect(Collectors.toList()));
         return node.asArray()
@@ -439,7 +441,7 @@ class UnevaluatedPropertiesEvaluator implements Applicator {
             return true;
         }
 
-        List<EvaluationItem> evaluationItems = unmodifiableList(ctx.getEvaluationItems().stream()
+        List<EvaluationItem> evaluationItems = unmodifiableList(ctx.getAnnotations().stream()
                 .filter(a -> getSchemaPath(a).startsWith(parentPath))
                 .collect(Collectors.toList()));
         return node.asObject()

@@ -99,7 +99,7 @@ public interface Evaluator {
             return valid;
         }
 
-        public Object getAnnotation() {
+        Object getAnnotation() {
             return annotation;
         }
 
