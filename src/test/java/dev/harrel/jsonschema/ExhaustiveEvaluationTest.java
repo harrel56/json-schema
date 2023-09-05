@@ -186,4 +186,75 @@ class ExhaustiveEvaluationTest {
                 "Value is [integer] but should be [boolean]"
         );
     }
+
+    @Test
+    void patternProperties() {
+        String schema = """
+                {
+                  "patternProperties": {
+                    "^a.*z$": {
+                      "type": "string"
+                    },
+                     "^az$": {
+                      "type": "string"
+                    },
+                    "^z.*a$": {
+                      "type": "number"
+                    }
+                  }
+                }""";
+        String instance = """
+                {
+                  "a---z": true,
+                  "az": true,
+                  "a---b": null,
+                  "z---a": "prop",
+                  "zxa": null,
+                  "zxxxxa": 0
+                }""";
+        Validator.Result result = new ValidatorFactory().validate(schema, instance);
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(5);
+        assertError(
+                errors.get(0),
+                "/patternProperties/^a.*z$/type",
+                "https://harrel.dev/",
+                "/a---z",
+                "type",
+                "Value is [boolean] but should be [string]"
+        );
+        assertError(
+                errors.get(1),
+                "/patternProperties/^z.*a$/type",
+                "https://harrel.dev/",
+                "/z---a",
+                "type",
+                "Value is [string] but should be [number]"
+        );
+        assertError(
+                errors.get(2),
+                "/patternProperties/^z.*a$/type",
+                "https://harrel.dev/",
+                "/zxa",
+                "type",
+                "Value is [null] but should be [number]"
+        );
+        assertError(
+                errors.get(3),
+                "/patternProperties/^a.*z$/type",
+                "https://harrel.dev/",
+                "/az",
+                "type",
+                "Value is [boolean] but should be [string]"
+        );
+        assertError(
+                errors.get(4),
+                "/patternProperties/^az$/type",
+                "https://harrel.dev/",
+                "/az",
+                "type",
+                "Value is [boolean] but should be [string]"
+        );
+    }
 }

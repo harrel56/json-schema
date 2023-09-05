@@ -227,7 +227,9 @@ class PatternPropertiesEvaluator implements Evaluator {
             if (!schemaRefs.isEmpty()) {
                 processed.add(entry.getKey());
             }
-            valid = schemaRefs.stream().allMatch(ref -> ctx.resolveInternalRefAndValidate(ref, entry.getValue())) && valid;
+            valid = schemaRefs.stream()
+                    .filter(ref -> ctx.resolveInternalRefAndValidate(ref, entry.getValue()))
+                    .count() == schemaRefs.size() && valid;
         }
         return valid ? Result.success(unmodifiableSet(processed)) : Result.failure();
     }
