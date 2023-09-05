@@ -1,61 +1,46 @@
 package dev.harrel.jsonschema;
 
-class EvaluationItem implements Annotation, Error {
+abstract class EvaluationItem {
     private final String evaluationPath;
     private final String schemaLocation;
     private final String instanceLocation;
     private final String keyword;
-    private final boolean valid;
-    private final Object annotation;
-    private final String error;
 
-    public EvaluationItem(String evaluationPath,
+    EvaluationItem(String evaluationPath,
                           String schemaLocation,
                           String instanceLocation,
-                          String keyword,
-                          boolean valid,
-                          Object annotation,
-                          String error) {
+                          String keyword) {
         this.evaluationPath = evaluationPath;
         this.schemaLocation = schemaLocation;
         this.instanceLocation = instanceLocation;
         this.keyword = keyword;
-        this.valid = valid;
-        this.annotation = annotation;
-        this.error = error;
     }
 
-    @Override
+    /**
+     * Returns JSON pointer like path representing evaluation point in schema JSON.
+     */
     public String getEvaluationPath() {
         return evaluationPath;
     }
 
-    @Override
+    /**
+     * Returns absolute schema location which uniquely identifies given schema.
+     */
     public String getSchemaLocation() {
         return schemaLocation;
     }
 
-    @Override
+    /**
+     * Returns JSON pointer like path representing evaluation point in instance JSON.
+     */
     public String getInstanceLocation() {
         return instanceLocation;
     }
 
-    @Override
+    /**
+     * Returns keyword name associated with given evaluation point. Might be null.
+     */
     public String getKeyword() {
         return keyword;
-    }
-
-    @Override
-    public Object getAnnotation() {
-        return annotation;
-    }
-
-    @Override
-    public String getError() {
-        return error;
-    }
-
-    public boolean isValid() {
-        return valid;
     }
 }

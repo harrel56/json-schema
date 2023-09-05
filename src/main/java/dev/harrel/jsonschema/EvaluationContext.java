@@ -19,8 +19,8 @@ public final class EvaluationContext {
     private final Deque<URI> dynamicScope = new LinkedList<>();
     private final Deque<RefStackItem> refStack = new LinkedList<>();
     private final Deque<String> evaluationStack = new LinkedList<>();
-    private final List<EvaluationItem> evaluationItems = new ArrayList<>();
-    private final List<EvaluationItem> validationItems = new ArrayList<>();
+    private final List<Annotation> annotations = new ArrayList<>();
+    private final List<Error> errors = new ArrayList<>();
 
     EvaluationContext(JsonNodeFactory jsonNodeFactory,
                       JsonParser jsonParser,
@@ -32,16 +32,6 @@ public final class EvaluationContext {
         this.schemaRegistry = Objects.requireNonNull(schemaRegistry);
         this.schemaResolver = Objects.requireNonNull(schemaResolver);
         this.activeVocabularies = Objects.requireNonNull(activeVocabularies);
-    }
-
-    /**
-     * Returns collected annotations up to this point.
-     * Discarded annotations are not included.
-     *
-     * @return unmodifiable list of annotations
-     */
-    public List<EvaluationItem> getEvaluationItems() {
-        return Collections.unmodifiableList(evaluationItems);
     }
 
     /**
@@ -92,19 +82,29 @@ public final class EvaluationContext {
                 .orElseThrow(() -> new SchemaNotFoundException(schemaRef));
     }
 
-    List<EvaluationItem> getValidationItems() {
-        return Collections.unmodifiableList(validationItems);
+    List<Error> getErrors() {
+        return Collections.unmodifiableList(errors);
     }
 
     <T> Optional<T> getSiblingAnnotation(String sibling, Class<T> annotationType) {
         String parentPath = UriUtil.getJsonPointerParent(evaluationStack.element());
-        return evaluationItems.stream()
+        return annotations.stream()
                 .filter(item -> sibling.equals(item.getKeyword()))
                 .filter(item -> parentPath.equals(UriUtil.getJsonPointerParent(item.getEvaluationPath())))
-                .map(EvaluationItem::getAnnotation)
+                .map(Annotation::getAnnotation)
                 .filter(annotationType::isInstance)
                 .map(annotationType::cast)
                 .findAny();
+    }
+
+    /**
+     * Returns collected annotations up to this point.
+     * Discarded annotations are not included.
+     *
+     * @return unmodifiable list of annotations
+     */
+    List<Annotation> getAnnotations() {
+        return Collections.unmodifiableList(annotations);
     }
 
     boolean validateAgainstSchema(Schema schema, JsonNode node) {
@@ -113,7 +113,8 @@ public final class EvaluationContext {
             dynamicScope.push(schema.getParentUri());
         }
 
-        int annotationsBefore = getEvaluationItems().size();
+        int annotationsBefore = annotations.size();
+        int errorsBefore = errors.size();
         boolean valid = true;
         List<EvaluatorWrapper> filteredEvaluators = schema.getEvaluators().stream()
                 .filter(ev -> ev.getVocabularies().stream().anyMatch(activeVocabularies::contains) || ev.getVocabularies().isEmpty())
@@ -122,17 +123,19 @@ public final class EvaluationContext {
             String evaluationPath = resolveEvaluationPath(evaluator);
             evaluationStack.push(evaluationPath);
             Evaluator.Result result = evaluator.evaluate(this, node);
-            EvaluationItem evaluationItem = new EvaluationItem(
-                    evaluationPath, schema.getSchemaLocation(), node.getJsonPointer(),
-                    evaluator.getKeyword(), result.isValid(), result.getAnnotation(), result.getError());
-            evaluationItems.add(evaluationItem);
-            validationItems.add(evaluationItem);
+            if (result.isValid()) {
+                Annotation annotation = new Annotation(evaluationPath, schema.getSchemaLocation(), node.getJsonPointer(), evaluator.getKeyword(), result.getAnnotation());
+                annotations.add(annotation);
+            } else {
+                Error error = new Error(evaluationPath, schema.getSchemaLocation(), node.getJsonPointer(), evaluator.getKeyword(), result.getError());
+                errors.add(error);
+            }
             valid = valid && result.isValid();
             evaluationStack.pop();
         }
         if (!valid) {
             /* Discarding annotations */
-            evaluationItems.subList(annotationsBefore, evaluationItems.size()).clear();
+            annotations.subList(annotationsBefore, annotations.size()).clear();
         }
         if (outOfDynamicScope) {
             dynamicScope.pop();

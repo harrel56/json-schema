@@ -1,11 +1,20 @@
 package dev.harrel.jsonschema;
 
 /**
- * {@code Error} interface represents validation error.
+ * {@code Error} class represents validation error.
  */
-public interface Error extends ResultItem {
+public class Error extends EvaluationItem {
+    private final String error;
+
+    Error(String evaluationPath, String schemaLocation, String instanceLocation, String keyword, String error) {
+        super(evaluationPath, schemaLocation, instanceLocation, keyword);
+        this.error = error;
+    }
+
     /**
      * Returns validation error.
      */
-    String getError();
+    public String getError() {
+        return error;
+    }
 }
