@@ -114,7 +114,6 @@ public final class EvaluationContext {
         }
 
         int annotationsBefore = annotations.size();
-        int errorsBefore = errors.size();
         boolean valid = true;
         List<EvaluatorWrapper> filteredEvaluators = schema.getEvaluators().stream()
                 .filter(ev -> ev.getVocabularies().stream().anyMatch(activeVocabularies::contains) || ev.getVocabularies().isEmpty())
@@ -122,13 +121,14 @@ public final class EvaluationContext {
         for (EvaluatorWrapper evaluator : filteredEvaluators) {
             String evaluationPath = resolveEvaluationPath(evaluator);
             evaluationStack.push(evaluationPath);
+            int errorsBefore = errors.size();
             Evaluator.Result result = evaluator.evaluate(this, node);
             if (result.isValid()) {
-                Annotation annotation = new Annotation(evaluationPath, schema.getSchemaLocation(), node.getJsonPointer(), evaluator.getKeyword(), result.getAnnotation());
-                annotations.add(annotation);
+                /* Discarding valid sub-schema errors */
+                errors.subList(errorsBefore, errors.size()).clear();
+                annotations.add(new Annotation(evaluationPath, schema.getSchemaLocation(), node.getJsonPointer(), evaluator.getKeyword(), result.getAnnotation()));
             } else {
-                Error error = new Error(evaluationPath, schema.getSchemaLocation(), node.getJsonPointer(), evaluator.getKeyword(), result.getError());
-                errors.add(error);
+                errors.add(new Error(evaluationPath, schema.getSchemaLocation(), node.getJsonPointer(), evaluator.getKeyword(), result.getError()));
             }
             valid = valid && result.isValid();
             evaluationStack.pop();
