@@ -121,7 +121,7 @@ class EvaluationPathTest {
                 "urn:test#/properties/baz",
                 "/foo/bar/baz",
                 null,
-                "False schema always fails."
+                "False schema always fails"
         );
     }
 
@@ -139,7 +139,7 @@ class EvaluationPathTest {
                 "urn:test#/custom/2/0/1",
                 "/0/0",
                 null,
-                "False schema always fails."
+                "False schema always fails"
         );
     }
 }
