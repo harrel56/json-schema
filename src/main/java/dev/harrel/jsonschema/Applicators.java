@@ -315,7 +315,9 @@ class AllOfEvaluator implements Applicator {
 
     @Override
     public boolean apply(EvaluationContext ctx, JsonNode node) {
-        return refs.stream().allMatch(pointer -> ctx.resolveInternalRefAndValidate(pointer, node));
+        return refs.stream()
+                .filter(pointer -> ctx.resolveInternalRefAndValidate(pointer, node))
+                .count() == refs.size();
     }
 }
 
