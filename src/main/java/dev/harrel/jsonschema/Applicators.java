@@ -63,10 +63,13 @@ class ItemsEvaluator implements Evaluator {
         if (!node.isArray()) {
             return Result.success();
         }
-        Integer prefixItemsSize = ctx.getSiblingAnnotation(Keyword.PREFIX_ITEMS, Integer.class).orElse(0);
-        boolean valid = node.asArray().stream()
+        List<JsonNode> array = node.asArray();
+        int prefixItemsSize = ctx.getSiblingAnnotation(Keyword.PREFIX_ITEMS, Integer.class).orElse(0);
+        int size = Math.max(array.size() - prefixItemsSize, 0);
+        boolean valid = array.stream()
                 .skip(prefixItemsSize)
-                .allMatch(element -> ctx.resolveInternalRefAndValidate(schemaRef, element));
+                .filter(element -> ctx.resolveInternalRefAndValidate(schemaRef, element))
+                .count() == size;
         return valid ? Result.success(true) : Result.failure();
     }
 

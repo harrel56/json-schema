@@ -49,4 +49,43 @@ class ExhaustiveEvaluationTest {
                 "Expected d"
         );
     }
+
+    @Test
+    void items() {
+        String schema = """
+                {
+                  "items": {
+                    "type": "number"
+                  }
+                }""";
+        String instance = "[null, 0, \"a\", true]";
+        Validator.Result result = new ValidatorFactory().validate(schema, instance);
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(3);
+        assertError(
+                errors.get(0),
+                "/items/type",
+                "https://harrel.dev/",
+                "/0",
+                "type",
+                "Value is [null] but should be [number]"
+        );
+        assertError(
+                errors.get(1),
+                "/items/type",
+                "https://harrel.dev/",
+                "/2",
+                "type",
+                "Value is [string] but should be [number]"
+        );
+        assertError(
+                errors.get(2),
+                "/items/type",
+                "https://harrel.dev/",
+                "/3",
+                "type",
+                "Value is [boolean] but should be [number]"
+        );
+    }
 }
