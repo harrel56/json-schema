@@ -144,7 +144,9 @@ class AdditionalPropertiesEvaluator implements Evaluator {
                 .filter(e -> !props.contains(e.getKey()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        boolean valid = filtered.values().stream().allMatch(prop -> ctx.resolveInternalRefAndValidate(schemaRef, prop));
+        boolean valid = filtered.values().stream()
+                .filter(prop -> ctx.resolveInternalRefAndValidate(schemaRef, prop))
+                .count() == filtered.size();
         return valid ? Result.success(unmodifiableSet(filtered.keySet())) : Result.failure();
     }
     @Override

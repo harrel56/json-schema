@@ -88,4 +88,46 @@ class ExhaustiveEvaluationTest {
                 "Value is [boolean] but should be [number]"
         );
     }
+
+    @Test
+    void additionalProperties() {
+        String schema = """
+                {
+                  "properties": {
+                    "b": {
+                      "type": "boolean"
+                    }
+                  },
+                  "additionalProperties": {
+                    "type": "number"
+                  }
+                }""";
+        String instance = """
+                {
+                  "a": null,
+                  "b": true,
+                  "c": "prop",
+                  "d": 0
+                }""";
+        Validator.Result result = new ValidatorFactory().validate(schema, instance);
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(2);
+        assertError(
+                errors.get(0),
+                "/additionalProperties/type",
+                "https://harrel.dev/",
+                "/a",
+                "type",
+                "Value is [null] but should be [number]"
+        );
+        assertError(
+                errors.get(1),
+                "/additionalProperties/type",
+                "https://harrel.dev/",
+                "/c",
+                "type",
+                "Value is [string] but should be [number]"
+        );
+    }
 }
