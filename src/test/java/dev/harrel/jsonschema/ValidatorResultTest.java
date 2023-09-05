@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static dev.harrel.jsonschema.TestUtil.assertAnnotation;
+import static dev.harrel.jsonschema.TestUtil.assertError;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ValidatorResultTest {
@@ -19,11 +21,14 @@ class ValidatorResultTest {
         assertThat(result.getAnnotations()).isEmpty();
         List<Error> errors = result.getErrors();
         assertThat(errors).hasSize(1);
-        assertThat(errors.get(0).getError()).isEqualTo("Expected hello");
-        assertThat(errors.get(0).getEvaluationPath()).isEqualTo("/const");
-        assertThat(errors.get(0).getSchemaLocation()).startsWith("https://harrel.dev/");
-        assertThat(errors.get(0).getInstanceLocation()).isEmpty();
-        assertThat(errors.get(0).getKeyword()).isEqualTo("const");
+        assertError(
+                errors.get(0),
+                "/const",
+                "https://harrel.dev/",
+                "",
+                "const",
+                "Expected hello"
+        );
     }
 
     @Test
@@ -41,10 +46,13 @@ class ValidatorResultTest {
         assertThat(result.isValid()).isTrue();
         List<Annotation> annotations = result.getAnnotations();
         assertThat(annotations).hasSize(1);
-        assertThat(annotations.get(0).getAnnotation()).isEqualTo("should be retained");
-        assertThat(annotations.get(0).getEvaluationPath()).isEqualTo("/title");
-        assertThat(annotations.get(0).getSchemaLocation()).startsWith("https://harrel.dev/");
-        assertThat(annotations.get(0).getInstanceLocation()).isEmpty();
-        assertThat(annotations.get(0).getKeyword()).isEqualTo("title");
+        assertAnnotation(
+                annotations.get(0),
+                "/title",
+                "https://harrel.dev/",
+                "",
+                "title",
+                "should be retained"
+        );
     }
 }

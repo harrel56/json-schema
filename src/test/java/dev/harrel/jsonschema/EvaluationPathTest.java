@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import java.net.URI;
 import java.util.List;
 
+import static dev.harrel.jsonschema.TestUtil.assertError;
 import static dev.harrel.jsonschema.TestUtil.readResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -28,11 +29,13 @@ class EvaluationPathTest {
         assertThat(result.isValid()).isFalse();
         List<Error> errors = result.getErrors();
         assertThat(errors).hasSize(1);
-        assertThat(errors.get(0).getEvaluationPath()).isEqualTo("/properties/foo/$ref/properties/bar/$ref/type");
-        assertThat(errors.get(0).getSchemaLocation()).isEqualTo("urn:test#/$defs/reffed2");
-        assertThat(errors.get(0).getInstanceLocation()).isEqualTo("/foo/bar");
-        assertThat(errors.get(0).getKeyword()).isEqualTo("type");
-        assertThat(errors.get(0).getError()).isNotNull();
+        assertError(
+                errors.get(0),
+                "/properties/foo/$ref/properties/bar/$ref/type",
+                "urn:test#/$defs/reffed2",
+                "/foo/bar",
+                "type"
+        );
     }
 
     @Test
@@ -43,11 +46,13 @@ class EvaluationPathTest {
         assertThat(result.isValid()).isFalse();
         List<Error> errors = result.getErrors();
         assertThat(errors).hasSize(1);
-        assertThat(errors.get(0).getEvaluationPath()).isEqualTo("/properties/foo/$ref/properties/bar/$ref/type");
-        assertThat(errors.get(0).getSchemaLocation()).isEqualTo("urn:test#/$defs/reffed2");
-        assertThat(errors.get(0).getInstanceLocation()).isEqualTo("/foo/bar");
-        assertThat(errors.get(0).getKeyword()).isEqualTo("type");
-        assertThat(errors.get(0).getError()).isNotNull();
+        assertError(
+                errors.get(0),
+                "/properties/foo/$ref/properties/bar/$ref/type",
+                "urn:test#/$defs/reffed2",
+                "/foo/bar",
+                "type"
+        );
     }
 
     @Test
@@ -58,11 +63,13 @@ class EvaluationPathTest {
         assertThat(result.isValid()).isFalse();
         List<Error> errors = result.getErrors();
         assertThat(errors).hasSize(1);
-        assertThat(errors.get(0).getEvaluationPath()).isEqualTo("/properties/foo/$ref/properties/bar/$ref/type");
-        assertThat(errors.get(0).getSchemaLocation()).isEqualTo("urn:test#/$defs/reffed2");
-        assertThat(errors.get(0).getInstanceLocation()).isEqualTo("/foo/bar");
-        assertThat(errors.get(0).getKeyword()).isEqualTo("type");
-        assertThat(errors.get(0).getError()).isNotNull();
+        assertError(
+                errors.get(0),
+                "/properties/foo/$ref/properties/bar/$ref/type",
+                "urn:test#/$defs/reffed2",
+                "/foo/bar",
+                "type"
+        );
     }
 
     @Test
@@ -73,11 +80,13 @@ class EvaluationPathTest {
         assertThat(result.isValid()).isFalse();
         List<Error> errors = result.getErrors();
         assertThat(errors).hasSize(1);
-        assertThat(errors.get(0).getEvaluationPath()).isEqualTo("/properties/foo/$ref/properties/bar/$ref/type");
-        assertThat(errors.get(0).getSchemaLocation()).isEqualTo("urn:test#/$defs/reffed2");
-        assertThat(errors.get(0).getInstanceLocation()).isEqualTo("/foo/bar");
-        assertThat(errors.get(0).getKeyword()).isEqualTo("type");
-        assertThat(errors.get(0).getError()).isNotNull();
+        assertError(
+                errors.get(0),
+                "/properties/foo/$ref/properties/bar/$ref/type",
+                "urn:test#/$defs/reffed2",
+                "/foo/bar",
+                "type"
+        );
     }
 
     @Test
@@ -89,11 +98,13 @@ class EvaluationPathTest {
         assertThat(result.isValid()).isFalse();
         List<Error> errors = result.getErrors();
         assertThat(errors).hasSize(1);
-        assertThat(errors.get(0).getEvaluationPath()).isEqualTo("/properties/foo/$ref/properties/bar/$ref/type");
-        assertThat(errors.get(0).getSchemaLocation()).isEqualTo("urn:anchor#/$defs/reffed2");
-        assertThat(errors.get(0).getInstanceLocation()).isEqualTo("/foo/bar");
-        assertThat(errors.get(0).getKeyword()).isEqualTo("type");
-        assertThat(errors.get(0).getError()).isNotNull();
+        assertError(
+                errors.get(0),
+                "/properties/foo/$ref/properties/bar/$ref/type",
+                "urn:anchor#/$defs/reffed2",
+                "/foo/bar",
+                "type"
+        );
     }
 
     @Test
@@ -104,11 +115,14 @@ class EvaluationPathTest {
         assertThat(result.isValid()).isFalse();
         List<Error> errors = result.getErrors();
         assertThat(errors).hasSize(1);
-        assertThat(errors.get(0).getEvaluationPath()).isEqualTo("/properties/foo/$ref/properties/bar/$ref/properties/baz");
-        assertThat(errors.get(0).getSchemaLocation()).isEqualTo("urn:test#/properties/baz");
-        assertThat(errors.get(0).getInstanceLocation()).isEqualTo("/foo/bar/baz");
-        assertThat(errors.get(0).getKeyword()).isNull();
-        assertThat(errors.get(0).getError()).isEqualTo("False schema always fails.");
+        assertError(
+                errors.get(0),
+                "/properties/foo/$ref/properties/bar/$ref/properties/baz",
+                "urn:test#/properties/baz",
+                "/foo/bar/baz",
+                null,
+                "False schema always fails."
+        );
     }
 
     @Test
@@ -119,10 +133,13 @@ class EvaluationPathTest {
         assertThat(result.isValid()).isFalse();
         List<Error> errors = result.getErrors();
         assertThat(errors).hasSize(1);
-        assertThat(errors.get(0).getEvaluationPath()).isEqualTo("/items/$ref/items/$ref");
-        assertThat(errors.get(0).getSchemaLocation()).isEqualTo("urn:test#/custom/2/0/1");
-        assertThat(errors.get(0).getInstanceLocation()).isEqualTo("/0/0");
-        assertThat(errors.get(0).getKeyword()).isNull();
-        assertThat(errors.get(0).getError()).isEqualTo("False schema always fails.");
+        assertError(
+                errors.get(0),
+                "/items/$ref/items/$ref",
+                "urn:test#/custom/2/0/1",
+                "/0/0",
+                null,
+                "False schema always fails."
+        );
     }
 }
