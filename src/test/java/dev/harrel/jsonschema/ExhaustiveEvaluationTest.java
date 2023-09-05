@@ -2,6 +2,8 @@ package dev.harrel.jsonschema;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import static dev.harrel.jsonschema.TestUtil.assertError;
@@ -214,7 +216,9 @@ class ExhaustiveEvaluationTest {
                 }""";
         Validator.Result result = new ValidatorFactory().validate(schema, instance);
         assertThat(result.isValid()).isFalse();
-        List<Error> errors = result.getErrors();
+        List<Error> errors = result.getErrors().stream()
+                .sorted(Comparator.comparing(Error::getEvaluationPath).thenComparing(Error::getInstanceLocation))
+                .toList();
         assertThat(errors).hasSize(5);
         assertError(
                 errors.get(0),
@@ -226,22 +230,6 @@ class ExhaustiveEvaluationTest {
         );
         assertError(
                 errors.get(1),
-                "/patternProperties/^z.*a$/type",
-                "https://harrel.dev/",
-                "/z---a",
-                "type",
-                "Value is [string] but should be [number]"
-        );
-        assertError(
-                errors.get(2),
-                "/patternProperties/^z.*a$/type",
-                "https://harrel.dev/",
-                "/zxa",
-                "type",
-                "Value is [null] but should be [number]"
-        );
-        assertError(
-                errors.get(3),
                 "/patternProperties/^a.*z$/type",
                 "https://harrel.dev/",
                 "/az",
@@ -249,13 +237,30 @@ class ExhaustiveEvaluationTest {
                 "Value is [boolean] but should be [string]"
         );
         assertError(
-                errors.get(4),
+                errors.get(2),
                 "/patternProperties/^az$/type",
                 "https://harrel.dev/",
                 "/az",
                 "type",
                 "Value is [boolean] but should be [string]"
         );
+        assertError(
+                errors.get(3),
+                "/patternProperties/^z.*a$/type",
+                "https://harrel.dev/",
+                "/z---a",
+                "type",
+                "Value is [string] but should be [number]"
+        );
+        assertError(
+                errors.get(4),
+                "/patternProperties/^z.*a$/type",
+                "https://harrel.dev/",
+                "/zxa",
+                "type",
+                "Value is [null] but should be [number]"
+        );
+
     }
 
     @Test
@@ -295,6 +300,43 @@ class ExhaustiveEvaluationTest {
                 "",
                 "type",
                 "Value is [object] but should be [string]"
+        );
+    }
+
+    @Test
+    void propertyNames() {
+        String schema = """
+                {
+                  "propertyNames": {
+                    "maxLength": 2
+                  }
+                }""";
+        String instance = """
+                {
+                  "a": true,
+                  "aa": null,
+                  "aaa": 1,
+                  "aaaa": 2
+                }""";
+        Validator.Result result = new ValidatorFactory().validate(schema, instance);
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(2);
+        assertError(
+                errors.get(0),
+                "/propertyNames/maxLength",
+                "https://harrel.dev/",
+                "",
+                "maxLength",
+                "\"aaa\" is longer than 2 characters"
+        );
+        assertError(
+                errors.get(1),
+                "/propertyNames/maxLength",
+                "https://harrel.dev/",
+                "",
+                "maxLength",
+                "\"aaaa\" is longer than 2 characters"
         );
     }
 }

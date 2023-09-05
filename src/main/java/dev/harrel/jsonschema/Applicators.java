@@ -281,8 +281,10 @@ class PropertyNamesEvaluator implements Applicator {
             return true;
         }
 
-        return node.asObject().keySet().stream()
-                .allMatch(propName -> ctx.resolveInternalRefAndValidate(schemaRef, new StringNode(propName, node.getJsonPointer())));
+        Map<String, JsonNode> object = node.asObject();
+        return object.keySet().stream()
+                .filter(propName -> ctx.resolveInternalRefAndValidate(schemaRef, new StringNode(propName, node.getJsonPointer())))
+                .count() == object.size();
     }
 }
 
