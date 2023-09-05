@@ -416,10 +416,13 @@ class UnevaluatedItemsEvaluator implements Applicator {
         List<EvaluationItem> evaluationItems = unmodifiableList(ctx.getAnnotations().stream()
                 .filter(a -> getSchemaPath(a).startsWith(parentPath))
                 .collect(Collectors.toList()));
-        return node.asArray()
+        List<JsonNode> array = node.asArray()
                 .stream()
                 .filter(arrayNode -> evaluationItems.stream().noneMatch(a -> a.getInstanceLocation().startsWith(arrayNode.getJsonPointer())))
-                .allMatch(arrayNode -> ctx.resolveInternalRefAndValidate(schemaRef, arrayNode));
+                .collect(Collectors.toList());
+        return array.stream()
+                .filter(arrayNode -> ctx.resolveInternalRefAndValidate(schemaRef, arrayNode))
+                .count() == array.size();
     }
 
     @Override
@@ -459,11 +462,14 @@ class UnevaluatedPropertiesEvaluator implements Applicator {
         List<EvaluationItem> evaluationItems = unmodifiableList(ctx.getAnnotations().stream()
                 .filter(a -> getSchemaPath(a).startsWith(parentPath))
                 .collect(Collectors.toList()));
-        return node.asObject()
+        List<JsonNode> array = node.asObject()
                 .values()
                 .stream()
                 .filter(propertyNode -> evaluationItems.stream().noneMatch(a -> a.getInstanceLocation().startsWith(propertyNode.getJsonPointer())))
-                .allMatch(propertyNode -> ctx.resolveInternalRefAndValidate(schemaRef, propertyNode));
+                .collect(Collectors.toList());
+        return array.stream()
+                .filter(propertyNode -> ctx.resolveInternalRefAndValidate(schemaRef, propertyNode))
+                .count() == array.size();
     }
 
     @Override

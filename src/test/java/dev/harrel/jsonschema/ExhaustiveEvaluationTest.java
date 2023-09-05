@@ -339,4 +339,87 @@ class ExhaustiveEvaluationTest {
                 "\"aaaa\" is longer than 2 characters"
         );
     }
+
+    @Test
+    void unevaluatedProperties() {
+        String schema = """
+                {
+                  "properties": {
+                    "a": true,
+                    "b": true
+                  },
+                  "unevaluatedProperties": {
+                    "type": "number",
+                    "maximum": 10
+                  }
+                }""";
+        String instance = """
+                {
+                  "a": 11,
+                  "b": 12,
+                  "c": 13,
+                  "d": 14,
+                  "e": null
+                }""";
+        Validator.Result result = new ValidatorFactory().validate(schema, instance);
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(3);
+        assertError(
+                errors.get(0),
+                "/unevaluatedProperties/maximum",
+                "https://harrel.dev/",
+                "/c",
+                "maximum",
+                "13 is greater than 10"
+        );
+        assertError(
+                errors.get(1),
+                "/unevaluatedProperties/maximum",
+                "https://harrel.dev/",
+                "/d",
+                "maximum",
+                "14 is greater than 10"
+        );
+        assertError(
+                errors.get(2),
+                "/unevaluatedProperties/type",
+                "https://harrel.dev/",
+                "/e",
+                "type",
+                "Value is [null] but should be [number]"
+        );
+    }
+
+    @Test
+    void unevaluatedItems() {
+        String schema = """
+                {
+                  "prefixItems": [true, true],
+                  "unevaluatedItems": {
+                    "minLength": 2
+                  }
+                }""";
+        String instance = "[0, \"a\", \"a\", \"a\"]";
+        Validator.Result result = new ValidatorFactory().validate(schema, instance);
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(2);
+        assertError(
+                errors.get(0),
+                "/unevaluatedItems/minLength",
+                "https://harrel.dev/",
+                "/2",
+                "minLength",
+                "\"a\" is shorter than 2 characters"
+        );
+        assertError(
+                errors.get(1),
+                "/unevaluatedItems/minLength",
+                "https://harrel.dev/",
+                "/3",
+                "minLength",
+                "\"a\" is shorter than 2 characters"
+        );
+    }
 }
