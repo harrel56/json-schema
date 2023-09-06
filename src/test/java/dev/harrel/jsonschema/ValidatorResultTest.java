@@ -9,6 +9,31 @@ import static dev.harrel.jsonschema.TestUtil.assertError;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ValidatorResultTest {
+
+    @Test
+    void returnsErrorMessageWhenIncorrect() {
+        String schema = """
+                {
+                  "oneOf": [true, true]
+                }
+                """;
+
+        Validator.Result result = new ValidatorFactory().validate(schema, "null");
+
+        assertThat(result.isValid()).isFalse();
+        assertThat(result.getAnnotations()).isEmpty();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(1);
+        assertError(
+                errors.get(0),
+                "/oneOf",
+                "https://harrel.dev/",
+                "",
+                "oneOf",
+                "Must be only valid against one of the subschemas"
+        );
+    }
+
     @Test
     void returnsOnlyDirectErrors() {
         String schema = """
