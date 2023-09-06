@@ -111,7 +111,7 @@ class ContainsEvaluator implements Evaluator {
                 .filter(i -> ctx.resolveInternalRefAndValidate(schemaRef, array.get(i)))
                 .boxed()
                 .collect(Collectors.toList()));
-        return minContainsZero || !indices.isEmpty() ? Result.success(indices) : Result.failure();
+        return minContainsZero || !indices.isEmpty() ? Result.success(indices) : Result.failure("No items match contains");
     }
 }
 
