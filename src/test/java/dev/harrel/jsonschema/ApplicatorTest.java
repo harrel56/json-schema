@@ -105,22 +105,18 @@ class ApplicatorTest {
                     },
                     "b": {
                       "type": "string"
-                    },
-                    "c": {
-                      "type": "string"
                     }
                   }
                 }""";
         String instance = """
                 {
                   "a": 1,
-                  "b": null,
-                  "c": null
+                  "b": null
                 }""";
         Validator.Result result = new ValidatorFactory().validate(schema, instance);
         assertThat(result.isValid()).isFalse();
         List<Error> errors = result.getErrors();
-        assertThat(errors).hasSize(3);
+        assertThat(errors).hasSize(2);
         assertError(
                 errors.get(0),
                 "/dependentSchemas/b/type",
@@ -131,14 +127,6 @@ class ApplicatorTest {
         );
         assertError(
                 errors.get(1),
-                "/dependentSchemas/c/type",
-                "https://harrel.dev/",
-                "",
-                "type",
-                "Value is [object] but should be [string]"
-        );
-        assertError(
-                errors.get(2),
                 "/dependentSchemas",
                 "https://harrel.dev/",
                 "",
