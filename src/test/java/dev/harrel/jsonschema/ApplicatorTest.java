@@ -131,7 +131,7 @@ class ApplicatorTest {
                 "https://harrel.dev/",
                 "",
                 "dependentSchemas",
-                "Dependent schema validation failed for some properties [b, c]"
+                "Dependent schema validation failed for some properties [b]"
         );
     }
 }
