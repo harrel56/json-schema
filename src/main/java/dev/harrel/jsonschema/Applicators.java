@@ -34,10 +34,11 @@ class PrefixItemsEvaluator implements Evaluator {
         }
 
         List<JsonNode> elements = node.asArray();
-        boolean valid = IntStream.range(0, elements.size())
-                .limit(prefixRefs.size())
+        int size = Math.min(prefixRefs.size(), elements.size());
+        boolean valid = IntStream.range(0, size)
                 .boxed()
-                .allMatch(idx -> ctx.resolveInternalRefAndValidate(prefixRefs.get(idx), elements.get(idx)));
+                .filter(idx -> ctx.resolveInternalRefAndValidate(prefixRefs.get(idx), elements.get(idx)))
+                .count() == size;
         return valid ? Result.success(prefixRefs.size()) : Result.failure();
     }
 }
@@ -62,10 +63,13 @@ class ItemsEvaluator implements Evaluator {
         if (!node.isArray()) {
             return Result.success();
         }
-        Integer prefixItemsSize = ctx.getSiblingAnnotation(Keyword.PREFIX_ITEMS, Integer.class).orElse(0);
-        boolean valid = node.asArray().stream()
+        List<JsonNode> array = node.asArray();
+        int prefixItemsSize = ctx.getSiblingAnnotation(Keyword.PREFIX_ITEMS, Integer.class).orElse(0);
+        int size = Math.max(array.size() - prefixItemsSize, 0);
+        boolean valid = array.stream()
                 .skip(prefixItemsSize)
-                .allMatch(element -> ctx.resolveInternalRefAndValidate(schemaRef, element));
+                .filter(element -> ctx.resolveInternalRefAndValidate(schemaRef, element))
+                .count() == size;
         return valid ? Result.success(true) : Result.failure();
     }
 
@@ -140,7 +144,9 @@ class AdditionalPropertiesEvaluator implements Evaluator {
                 .filter(e -> !props.contains(e.getKey()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        boolean valid = filtered.values().stream().allMatch(prop -> ctx.resolveInternalRefAndValidate(schemaRef, prop));
+        boolean valid = filtered.values().stream()
+                .filter(prop -> ctx.resolveInternalRefAndValidate(schemaRef, prop))
+                .count() == filtered.size();
         return valid ? Result.success(unmodifiableSet(filtered.keySet())) : Result.failure();
     }
     @Override
@@ -183,7 +189,8 @@ class PropertiesEvaluator implements Evaluator {
                 .entrySet()
                 .stream()
                 .map(e -> new AbstractMap.SimpleEntry<>(schemaRefs.get(e.getKey()), e.getValue()))
-                .allMatch(e -> ctx.resolveInternalRefAndValidate(e.getKey(), e.getValue()));
+                .filter(e -> ctx.resolveInternalRefAndValidate(e.getKey(), e.getValue()))
+                .count() == filtered.size();
         return valid ? Result.success(unmodifiableSet(filtered.keySet())) : Result.failure();
     }
 }
@@ -220,7 +227,9 @@ class PatternPropertiesEvaluator implements Evaluator {
             if (!schemaRefs.isEmpty()) {
                 processed.add(entry.getKey());
             }
-            valid = schemaRefs.stream().allMatch(ref -> ctx.resolveInternalRefAndValidate(ref, entry.getValue())) && valid;
+            valid = schemaRefs.stream()
+                    .filter(ref -> ctx.resolveInternalRefAndValidate(ref, entry.getValue()))
+                    .count() == schemaRefs.size() && valid;
         }
         return valid ? Result.success(unmodifiableSet(processed)) : Result.failure();
     }
@@ -244,11 +253,15 @@ class DependentSchemasEvaluator implements Applicator {
             return true;
         }
 
-        return node.asObject().keySet()
+
+        List<String> fields = node.asObject().keySet()
                 .stream()
                 .filter(dependentSchemas::containsKey)
+                .collect(Collectors.toList());
+        return fields.stream()
                 .map(dependentSchemas::get)
-                .allMatch(ref -> ctx.resolveInternalRefAndValidate(ref, node));
+                .filter(ref -> ctx.resolveInternalRefAndValidate(ref, node))
+                .count() == fields.size();
     }
 }
 
@@ -268,8 +281,10 @@ class PropertyNamesEvaluator implements Applicator {
             return true;
         }
 
-        return node.asObject().keySet().stream()
-                .allMatch(propName -> ctx.resolveInternalRefAndValidate(schemaRef, new StringNode(propName, node.getJsonPointer())));
+        Map<String, JsonNode> object = node.asObject();
+        return object.keySet().stream()
+                .filter(propName -> ctx.resolveInternalRefAndValidate(schemaRef, new StringNode(propName, node.getJsonPointer())))
+                .count() == object.size();
     }
 }
 
@@ -401,10 +416,13 @@ class UnevaluatedItemsEvaluator implements Applicator {
         List<EvaluationItem> evaluationItems = unmodifiableList(ctx.getAnnotations().stream()
                 .filter(a -> getSchemaPath(a).startsWith(parentPath))
                 .collect(Collectors.toList()));
-        return node.asArray()
+        List<JsonNode> array = node.asArray()
                 .stream()
                 .filter(arrayNode -> evaluationItems.stream().noneMatch(a -> a.getInstanceLocation().startsWith(arrayNode.getJsonPointer())))
-                .allMatch(arrayNode -> ctx.resolveInternalRefAndValidate(schemaRef, arrayNode));
+                .collect(Collectors.toList());
+        return array.stream()
+                .filter(arrayNode -> ctx.resolveInternalRefAndValidate(schemaRef, arrayNode))
+                .count() == array.size();
     }
 
     @Override
@@ -444,11 +462,14 @@ class UnevaluatedPropertiesEvaluator implements Applicator {
         List<EvaluationItem> evaluationItems = unmodifiableList(ctx.getAnnotations().stream()
                 .filter(a -> getSchemaPath(a).startsWith(parentPath))
                 .collect(Collectors.toList()));
-        return node.asObject()
+        List<JsonNode> array = node.asObject()
                 .values()
                 .stream()
                 .filter(propertyNode -> evaluationItems.stream().noneMatch(a -> a.getInstanceLocation().startsWith(propertyNode.getJsonPointer())))
-                .allMatch(propertyNode -> ctx.resolveInternalRefAndValidate(schemaRef, propertyNode));
+                .collect(Collectors.toList());
+        return array.stream()
+                .filter(propertyNode -> ctx.resolveInternalRefAndValidate(schemaRef, propertyNode))
+                .count() == array.size();
     }
 
     @Override

@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
+import static dev.harrel.jsonschema.TestUtil.assertError;
 import static dev.harrel.jsonschema.TestUtil.readResource;
 import static org.assertj.core.api.Assertions.*;
 
@@ -75,11 +76,14 @@ class ValidatorFactoryTest {
                 .createValidator();
         InvalidSchemaException e = catchThrowableOfType(() -> validator.registerSchema(schema), InvalidSchemaException.class);
         assertThat(e.getErrors()).hasSize(1);
-        assertThat(e.getErrors().get(0).getKeyword()).isEqualTo("type");
-        assertThat(e.getErrors().get(0).getEvaluationPath()).isEqualTo("/type");
-        assertThat(e.getErrors().get(0).getInstanceLocation()).isEmpty();
-        assertThat(e.getErrors().get(0).getSchemaLocation()).isEqualTo("urn:meta#");
-        assertThat(e.getErrors().get(0).getError()).isEqualTo("Value is [object] but should be [boolean]");
+        assertError(
+                e.getErrors().get(0),
+                "/type",
+                "urn:meta#",
+                "",
+                "type",
+                "Value is [object] but should be [boolean]"
+        );
     }
 
     @Test
@@ -193,10 +197,14 @@ class ValidatorFactoryTest {
         assertThat(result.isValid()).isFalse();
         List<Error> errors = result.getErrors();
         assertThat(errors).hasSize(1);
-        assertThat(errors.get(0).getKeyword()).isEqualTo("$ref");
-        assertThat(errors.get(0).getEvaluationPath()).isEqualTo("/$ref");
-        assertThat(errors.get(0).getInstanceLocation()).isEmpty();
-        assertThat(errors.get(0).getError()).isEqualTo("Resolution of $ref [urn:x#/nope] failed");
+        assertError(
+                errors.get(0),
+                "/$ref",
+                "https://harrel.dev/",
+                "",
+                "$ref",
+                "Resolution of $ref [urn:x#/nope] failed"
+        );
     }
 
     @Test
