@@ -94,4 +94,56 @@ class ApplicatorTest {
                 "Array contains more than 2 matching items"
         );
     }
+
+    @Test
+    void dependentSchemas() {
+        String schema = """
+                {
+                  "dependentSchemas": {
+                    "a": {
+                      "type": "object"
+                    },
+                    "b": {
+                      "type": "string"
+                    },
+                    "c": {
+                      "type": "string"
+                    }
+                  }
+                }""";
+        String instance = """
+                {
+                  "a": 1,
+                  "b": null,
+                  "c": null
+                }""";
+        Validator.Result result = new ValidatorFactory().validate(schema, instance);
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(3);
+        assertError(
+                errors.get(0),
+                "/dependentSchemas/b/type",
+                "https://harrel.dev/",
+                "",
+                "type",
+                "Value is [object] but should be [string]"
+        );
+        assertError(
+                errors.get(1),
+                "/dependentSchemas/c/type",
+                "https://harrel.dev/",
+                "",
+                "type",
+                "Value is [object] but should be [string]"
+        );
+        assertError(
+                errors.get(2),
+                "/dependentSchemas",
+                "https://harrel.dev/",
+                "",
+                "dependentSchemas",
+                "Dependent schema validation failed for some properties [b, c]"
+        );
+    }
 }

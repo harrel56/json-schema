@@ -265,13 +265,14 @@ class DependentSchemasEvaluator implements Evaluator {
                 .stream()
                 .filter(dependentSchemas::containsKey)
                 .collect(Collectors.toList());
-
-        boolean result = fields.stream()
-                .map(dependentSchemas::get)
-                .filter(ref -> ctx.resolveInternalRefAndValidate(ref, node))
-                .count() == fields.size();
-
-        return result ? Result.success() : Result.failure();
+        List<String> failedFields = fields.stream()
+                .filter(field -> !ctx.resolveInternalRefAndValidate(dependentSchemas.get(field), node))
+                .collect(Collectors.toList());
+        if (failedFields.isEmpty()) {
+            return Result.success();
+        } else {
+            return Result.failure("Dependent schema validation failed for some properties " + failedFields);
+        }
     }
 }
 
