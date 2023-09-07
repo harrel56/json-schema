@@ -186,12 +186,14 @@ class PropertiesEvaluator implements Evaluator {
                 .stream()
                 .filter(e -> schemaRefs.containsKey(e.getKey()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
         boolean valid = filtered
                 .entrySet()
                 .stream()
                 .map(e -> new AbstractMap.SimpleEntry<>(schemaRefs.get(e.getKey()), e.getValue()))
                 .filter(e -> ctx.resolveInternalRefAndValidate(e.getKey(), e.getValue()))
                 .count() == filtered.size();
+
         return valid ? Result.success(unmodifiableSet(filtered.keySet())) : Result.failure();
     }
 }
@@ -236,7 +238,7 @@ class PatternPropertiesEvaluator implements Evaluator {
     }
 }
 
-class DependentSchemasEvaluator implements Applicator {
+class DependentSchemasEvaluator implements Evaluator {
     private final Map<String, String> dependentSchemas;
 
     DependentSchemasEvaluator(SchemaParsingContext ctx, JsonNode node) {
@@ -246,6 +248,11 @@ class DependentSchemasEvaluator implements Applicator {
         this.dependentSchemas = node.asObject().entrySet()
                 .stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> ctx.getAbsoluteUri(e.getValue())));
+    }
+
+    @Override
+    public Set<String> getVocabularies() {
+        return APPLICATOR_VOCABULARY;
     }
 
     @Override
@@ -268,7 +275,7 @@ class DependentSchemasEvaluator implements Applicator {
     }
 }
 
-class PropertyNamesEvaluator implements Applicator {
+class PropertyNamesEvaluator implements Evaluator {
     private final String schemaRef;
 
     PropertyNamesEvaluator(SchemaParsingContext ctx, JsonNode node) {
@@ -276,6 +283,11 @@ class PropertyNamesEvaluator implements Applicator {
             throw new IllegalArgumentException();
         }
         this.schemaRef = ctx.getAbsoluteUri(node);
+    }
+
+    @Override
+    public Set<String> getVocabularies() {
+        return APPLICATOR_VOCABULARY;
     }
 
     @Override
@@ -293,7 +305,7 @@ class PropertyNamesEvaluator implements Applicator {
     }
 }
 
-class IfThenElseEvaluator implements Applicator {
+class IfThenElseEvaluator implements Evaluator {
     private final String ifRef;
     private final Optional<String> thenRef;
     private final Optional<String> elseRef;
@@ -310,24 +322,29 @@ class IfThenElseEvaluator implements Applicator {
     }
 
     @Override
+    public Set<String> getVocabularies() {
+        return APPLICATOR_VOCABULARY;
+    }
+
+    @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (ctx.resolveInternalRefAndValidate(ifRef, node)) {
             boolean valid = thenRef
                     .map(ref -> ctx.resolveInternalRefAndValidate(ref, node))
                     .orElse(true);
 
-            return valid ? Result.success() : Result.failure();
+            return valid ? Result.success() : Result.failure("Must be valid against subschema in the If-Then branch");
         } else {
             boolean valid = elseRef
                     .map(ref -> ctx.resolveInternalRefAndValidate(ref, node))
                     .orElse(true);
 
-            return valid ? Result.success() : Result.failure();
+            return valid ? Result.success() : Result.failure("Must be valid against subschema in the If-Else branch");
         }
     }
 }
 
-class AllOfEvaluator implements Applicator {
+class AllOfEvaluator implements Evaluator {
     private final List<String> refs;
 
     AllOfEvaluator(SchemaParsingContext ctx, JsonNode node) {
@@ -338,16 +355,21 @@ class AllOfEvaluator implements Applicator {
     }
 
     @Override
+    public Set<String> getVocabularies() {
+        return APPLICATOR_VOCABULARY;
+    }
+
+    @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
         boolean valid = refs.stream()
                 .filter(pointer -> ctx.resolveInternalRefAndValidate(pointer, node))
                 .count() == refs.size();
 
-        return valid ? Result.success() : Result.failure();
+        return valid ? Result.success() : Result.failure("Must be valid against all of the given subschemas");
     }
 }
 
-class AnyOfEvaluator implements Applicator {
+class AnyOfEvaluator implements Evaluator {
     private final List<String> refs;
 
     AnyOfEvaluator(SchemaParsingContext ctx, JsonNode node) {
@@ -358,16 +380,21 @@ class AnyOfEvaluator implements Applicator {
     }
 
     @Override
+    public Set<String> getVocabularies() {
+        return APPLICATOR_VOCABULARY;
+    }
+
+    @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
         boolean valid = refs.stream()
                 .filter(pointer -> ctx.resolveInternalRefAndValidate(pointer, node))
                 .count() > 0;
 
-        return valid ? Result.success() : Result.failure();
+        return valid ? Result.success() : Result.failure("Must be valid against any (one or more) of the given subschemas");
     }
 }
 
-class OneOfEvaluator implements Applicator {
+class OneOfEvaluator implements Evaluator {
     private final List<String> refs;
 
     OneOfEvaluator(SchemaParsingContext ctx, JsonNode node) {
@@ -375,6 +402,11 @@ class OneOfEvaluator implements Applicator {
             throw new IllegalArgumentException();
         }
         this.refs = unmodifiableList(node.asArray().stream().map(ctx::getAbsoluteUri).collect(Collectors.toList()));
+    }
+
+    @Override
+    public Set<String> getVocabularies() {
+        return APPLICATOR_VOCABULARY;
     }
 
     @Override
@@ -387,9 +419,8 @@ class OneOfEvaluator implements Applicator {
     }
 }
 
-class NotEvaluator implements Applicator {
+class NotEvaluator implements Evaluator {
     private final String schemaUri;
-
 
     NotEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isObject() && !node.isBoolean()) {
@@ -399,13 +430,18 @@ class NotEvaluator implements Applicator {
     }
 
     @Override
+    public Set<String> getVocabularies() {
+        return APPLICATOR_VOCABULARY;
+    }
+
+    @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
         boolean valid = !ctx.resolveInternalRefAndValidate(schemaUri, node);
-        return valid ? Result.success() : Result.failure();
+        return valid ? Result.success() : Result.failure("Must not validate against the given subschema");
     }
 }
 
-class UnevaluatedItemsEvaluator implements Applicator {
+class UnevaluatedItemsEvaluator implements Evaluator {
     private final String schemaRef;
     private final String parentPath;
 
@@ -454,7 +490,7 @@ class UnevaluatedItemsEvaluator implements Applicator {
     }
 }
 
-class UnevaluatedPropertiesEvaluator implements Applicator {
+class UnevaluatedPropertiesEvaluator implements Evaluator {
     private final String schemaRef;
     private final String parentPath;
 
@@ -481,6 +517,7 @@ class UnevaluatedPropertiesEvaluator implements Applicator {
         List<EvaluationItem> evaluationItems = unmodifiableList(ctx.getAnnotations().stream()
                 .filter(a -> getSchemaPath(a).startsWith(parentPath))
                 .collect(Collectors.toList()));
+
         List<JsonNode> array = node.asObject()
                 .values()
                 .stream()
@@ -490,6 +527,7 @@ class UnevaluatedPropertiesEvaluator implements Applicator {
         boolean valid = array.stream()
                 .filter(propertyNode -> ctx.resolveInternalRefAndValidate(schemaRef, propertyNode))
                 .count() == array.size();
+
         return valid ? Result.success() : Result.failure();
     }
 
