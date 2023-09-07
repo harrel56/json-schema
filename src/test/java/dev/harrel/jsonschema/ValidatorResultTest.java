@@ -11,7 +11,80 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ValidatorResultTest {
 
     @Test
-    void returnsErrorMessageWhenIncorrect() {
+    void returnsErrorMessageWhenAnyOfFails() {
+        String schema = """
+                {
+                   "anyOf": [false, false]
+                }
+                """;
+
+        Validator.Result result = new ValidatorFactory().validate(schema, "null");
+
+        assertThat(result.isValid()).isFalse();
+        assertThat(result.getAnnotations()).isEmpty();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(3);
+        assertError(
+                errors.get(2),
+                "/anyOf",
+                "https://harrel.dev/",
+                "",
+                "anyOf",
+                "Expected object to match at least against one schema. None matched"
+        );
+    }
+
+
+    @Test
+    void returnsErrorMessageWhenAllOfFails() {
+        String schema = """
+                {
+                   "allOf": [true, false, false, true]
+                }
+                """;
+
+        Validator.Result result = new ValidatorFactory().validate(schema, "null");
+
+        assertThat(result.isValid()).isFalse();
+        assertThat(result.getAnnotations()).isEmpty();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(3);
+        assertError(
+                errors.get(2),
+                "/allOf",
+                "https://harrel.dev/",
+                "",
+                "allOf",
+                "Object didn't match against all schemas. Unmatched schema indexes [1, 2]"
+        );
+    }
+
+    @Test
+    void returnsErrorMessageWhenNotFails() {
+        String schema = """
+                {
+                   "not": true
+                }
+                """;
+
+        Validator.Result result = new ValidatorFactory().validate(schema, "null");
+
+        assertThat(result.isValid()).isFalse();
+        assertThat(result.getAnnotations()).isEmpty();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(1);
+        assertError(
+                errors.get(0),
+                "/not",
+                "https://harrel.dev/",
+                "",
+                "not",
+                "Object matched against given schema but must not"
+        );
+    }
+
+    @Test
+    void returnsErrorMessageWhenOneOfFails() {
         String schema = """
                 {
                   "oneOf": [true, true]
@@ -30,7 +103,7 @@ class ValidatorResultTest {
                 "https://harrel.dev/",
                 "",
                 "oneOf",
-                "Must be only valid against one of the subschemas"
+                "Object matched against more than one schema. Matched schema indexes [0, 1]"
         );
     }
 

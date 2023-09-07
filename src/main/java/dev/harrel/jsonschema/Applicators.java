@@ -333,13 +333,13 @@ class IfThenElseEvaluator implements Evaluator {
                     .map(ref -> ctx.resolveInternalRefAndValidate(ref, node))
                     .orElse(true);
 
-            return valid ? Result.success() : Result.failure("Must be valid against subschema in the If-Then branch");
+            return valid ? Result.success() : Result.failure("Object matched against If but failed matching against Then schema");
         } else {
             boolean valid = elseRef
                     .map(ref -> ctx.resolveInternalRefAndValidate(ref, node))
                     .orElse(true);
 
-            return valid ? Result.success() : Result.failure("Must be valid against subschema in the If-Else branch");
+            return valid ? Result.success() : Result.failure("Object did not match against If but failed matching against Else schema");
         }
     }
 }
@@ -361,11 +361,16 @@ class AllOfEvaluator implements Evaluator {
 
     @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
-        boolean valid = refs.stream()
-                .filter(pointer -> ctx.resolveInternalRefAndValidate(pointer, node))
-                .count() == refs.size();
+        List<Integer> unmatchedIndexes = IntStream.range(0, refs.size())
+                .filter(i -> !ctx.resolveInternalRefAndValidate(refs.get(i), node))
+                .boxed()
+                .collect(Collectors.toList());
 
-        return valid ? Result.success() : Result.failure("Must be valid against all of the given subschemas");
+        if (unmatchedIndexes.isEmpty()) {
+            return Result.success();
+        }
+
+        return Result.failure(String.format("Object didn't match against all schemas. Unmatched schema indexes %s", unmatchedIndexes));
     }
 }
 
@@ -390,7 +395,7 @@ class AnyOfEvaluator implements Evaluator {
                 .filter(pointer -> ctx.resolveInternalRefAndValidate(pointer, node))
                 .count() > 0;
 
-        return valid ? Result.success() : Result.failure("Must be valid against any (one or more) of the given subschemas");
+        return valid ? Result.success() : Result.failure("Expected object to match at least against one schema. None matched");
     }
 }
 
@@ -411,11 +416,16 @@ class OneOfEvaluator implements Evaluator {
 
     @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
-        boolean valid = refs.stream()
-                .filter(uri -> ctx.resolveInternalRefAndValidate(uri, node))
-                .count() == 1;
+        List<Integer> matchedIndexes = IntStream.range(0, refs.size())
+                .filter(i -> ctx.resolveInternalRefAndValidate(refs.get(i), node))
+                .boxed()
+                .collect(Collectors.toList());
 
-        return valid ? Result.success() : Result.failure("Must be only valid against one of the subschemas");
+        if (matchedIndexes.size() == 1) {
+            return Result.success();
+        }
+
+        return Result.failure(String.format("Object matched against more than one schema. Matched schema indexes %s", matchedIndexes));
     }
 }
 
@@ -437,7 +447,7 @@ class NotEvaluator implements Evaluator {
     @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
         boolean valid = !ctx.resolveInternalRefAndValidate(schemaUri, node);
-        return valid ? Result.success() : Result.failure("Must not validate against the given subschema");
+        return valid ? Result.success() : Result.failure("Object matched against given schema but must not");
     }
 }
 
