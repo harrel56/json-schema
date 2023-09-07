@@ -10,6 +10,7 @@ jobs:
     uses: ./.github/workflows/tests.yml
 
   sonar-cloud:
+    if: '!github.event.pull_request.head.repo.fork'
     runs-on: ubuntu-latest
     needs: tests
 
@@ -37,7 +38,6 @@ jobs:
           gradle-version: wrapper
 
       - name: SonarCloud analyze
-        if: '!github.event.pull_request.head.repo.fork'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
