@@ -111,7 +111,7 @@ class ContainsEvaluator implements Evaluator {
                 .filter(i -> ctx.resolveInternalRefAndValidate(schemaRef, array.get(i)))
                 .boxed()
                 .collect(Collectors.toList()));
-        return minContainsZero || !indices.isEmpty() ? Result.success(indices) : Result.failure("No items match contains");
+        return minContainsZero || !indices.isEmpty() ? Result.success(indices) : Result.failure("Array contains no matching items");
     }
 }
 
@@ -271,7 +271,7 @@ class DependentSchemasEvaluator implements Evaluator {
         if (failedFields.isEmpty()) {
             return Result.success();
         } else {
-            return Result.failure("Dependent schema validation failed for some properties " + failedFields);
+            return Result.failure(String.format("Object does not match dependent schemas for some properties %s", failedFields));
         }
     }
 }

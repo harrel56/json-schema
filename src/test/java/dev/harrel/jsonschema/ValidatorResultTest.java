@@ -45,7 +45,7 @@ class ValidatorResultTest {
                 "https://harrel.dev/",
                 "",
                 "contains",
-                "No items match contains"
+                "Array contains no matching items"
         );
     }
 
@@ -133,7 +133,7 @@ class ValidatorResultTest {
                 "https://harrel.dev/",
                 "",
                 "dependentSchemas",
-                "Dependent schema validation failed for some properties [b]"
+                "Object does not match dependent schemas for some properties [b]"
         );
     }
 

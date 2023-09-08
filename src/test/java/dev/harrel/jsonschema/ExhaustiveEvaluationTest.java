@@ -311,7 +311,7 @@ class ExhaustiveEvaluationTest {
                 "https://harrel.dev/",
                 "",
                 "dependentSchemas",
-                "Dependent schema validation failed for some properties [b, c]"
+                "Object does not match dependent schemas for some properties [b, c]"
         );
     }
 
