@@ -149,6 +149,7 @@ class AdditionalPropertiesEvaluator implements Evaluator {
                 .count() == filtered.size();
         return valid ? Result.success(unmodifiableSet(filtered.keySet())) : Result.failure();
     }
+
     @Override
     public int getOrder() {
         return 10;
@@ -185,12 +186,14 @@ class PropertiesEvaluator implements Evaluator {
                 .stream()
                 .filter(e -> schemaRefs.containsKey(e.getKey()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
         boolean valid = filtered
                 .entrySet()
                 .stream()
                 .map(e -> new AbstractMap.SimpleEntry<>(schemaRefs.get(e.getKey()), e.getValue()))
                 .filter(e -> ctx.resolveInternalRefAndValidate(e.getKey(), e.getValue()))
                 .count() == filtered.size();
+
         return valid ? Result.success(unmodifiableSet(filtered.keySet())) : Result.failure();
     }
 }
@@ -235,7 +238,7 @@ class PatternPropertiesEvaluator implements Evaluator {
     }
 }
 
-class DependentSchemasEvaluator implements Applicator {
+class DependentSchemasEvaluator implements Evaluator {
     private final Map<String, String> dependentSchemas;
 
     DependentSchemasEvaluator(SchemaParsingContext ctx, JsonNode node) {
@@ -248,24 +251,31 @@ class DependentSchemasEvaluator implements Applicator {
     }
 
     @Override
-    public boolean apply(EvaluationContext ctx, JsonNode node) {
-        if (!node.isObject()) {
-            return true;
-        }
+    public Set<String> getVocabularies() {
+        return APPLICATOR_VOCABULARY;
+    }
 
+    @Override
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
+        if (!node.isObject()) {
+            return Result.success();
+        }
 
         List<String> fields = node.asObject().keySet()
                 .stream()
                 .filter(dependentSchemas::containsKey)
                 .collect(Collectors.toList());
-        return fields.stream()
+
+        boolean result = fields.stream()
                 .map(dependentSchemas::get)
                 .filter(ref -> ctx.resolveInternalRefAndValidate(ref, node))
                 .count() == fields.size();
+
+        return result ? Result.success() : Result.failure();
     }
 }
 
-class PropertyNamesEvaluator implements Applicator {
+class PropertyNamesEvaluator implements Evaluator {
     private final String schemaRef;
 
     PropertyNamesEvaluator(SchemaParsingContext ctx, JsonNode node) {
@@ -276,19 +286,26 @@ class PropertyNamesEvaluator implements Applicator {
     }
 
     @Override
-    public boolean apply(EvaluationContext ctx, JsonNode node) {
+    public Set<String> getVocabularies() {
+        return APPLICATOR_VOCABULARY;
+    }
+
+    @Override
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isObject()) {
-            return true;
+            return Result.success();
         }
 
         Map<String, JsonNode> object = node.asObject();
-        return object.keySet().stream()
+        boolean valid = object.keySet().stream()
                 .filter(propName -> ctx.resolveInternalRefAndValidate(schemaRef, new StringNode(propName, node.getJsonPointer())))
                 .count() == object.size();
+
+        return valid ? Result.success() : Result.failure();
     }
 }
 
-class IfThenElseEvaluator implements Applicator {
+class IfThenElseEvaluator implements Evaluator {
     private final String ifRef;
     private final Optional<String> thenRef;
     private final Optional<String> elseRef;
@@ -305,20 +322,29 @@ class IfThenElseEvaluator implements Applicator {
     }
 
     @Override
-    public boolean apply(EvaluationContext ctx, JsonNode node) {
+    public Set<String> getVocabularies() {
+        return APPLICATOR_VOCABULARY;
+    }
+
+    @Override
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (ctx.resolveInternalRefAndValidate(ifRef, node)) {
-            return thenRef
+            boolean valid = thenRef
                     .map(ref -> ctx.resolveInternalRefAndValidate(ref, node))
                     .orElse(true);
+
+            return valid ? Result.success() : Result.failure("Value matches against schema from 'if' but does not match against schema from 'then'");
         } else {
-            return elseRef
+            boolean valid = elseRef
                     .map(ref -> ctx.resolveInternalRefAndValidate(ref, node))
                     .orElse(true);
+
+            return valid ? Result.success() : Result.failure("Value does not match against schema from 'if' and 'else'");
         }
     }
 }
 
-class AllOfEvaluator implements Applicator {
+class AllOfEvaluator implements Evaluator {
     private final List<String> refs;
 
     AllOfEvaluator(SchemaParsingContext ctx, JsonNode node) {
@@ -329,14 +355,26 @@ class AllOfEvaluator implements Applicator {
     }
 
     @Override
-    public boolean apply(EvaluationContext ctx, JsonNode node) {
-        return refs.stream()
-                .filter(pointer -> ctx.resolveInternalRefAndValidate(pointer, node))
-                .count() == refs.size();
+    public Set<String> getVocabularies() {
+        return APPLICATOR_VOCABULARY;
+    }
+
+    @Override
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
+        List<Integer> unmatchedIndexes = IntStream.range(0, refs.size())
+                .filter(i -> !ctx.resolveInternalRefAndValidate(refs.get(i), node))
+                .boxed()
+                .collect(Collectors.toList());
+
+        if (unmatchedIndexes.isEmpty()) {
+            return Result.success();
+        }
+
+        return Result.failure(String.format("Value does not match against the schemas at indexes %s", unmatchedIndexes));
     }
 }
 
-class AnyOfEvaluator implements Applicator {
+class AnyOfEvaluator implements Evaluator {
     private final List<String> refs;
 
     AnyOfEvaluator(SchemaParsingContext ctx, JsonNode node) {
@@ -347,14 +385,21 @@ class AnyOfEvaluator implements Applicator {
     }
 
     @Override
-    public boolean apply(EvaluationContext ctx, JsonNode node) {
-        return refs.stream()
+    public Set<String> getVocabularies() {
+        return APPLICATOR_VOCABULARY;
+    }
+
+    @Override
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
+        boolean valid = refs.stream()
                 .filter(pointer -> ctx.resolveInternalRefAndValidate(pointer, node))
                 .count() > 0;
+
+        return valid ? Result.success() : Result.failure("Value does not match against any of the schemas");
     }
 }
 
-class OneOfEvaluator implements Applicator {
+class OneOfEvaluator implements Evaluator {
     private final List<String> refs;
 
     OneOfEvaluator(SchemaParsingContext ctx, JsonNode node) {
@@ -365,16 +410,31 @@ class OneOfEvaluator implements Applicator {
     }
 
     @Override
-    public boolean apply(EvaluationContext ctx, JsonNode node) {
-        return refs.stream()
-                .filter(uri -> ctx.resolveInternalRefAndValidate(uri, node))
-                .count() == 1;
+    public Set<String> getVocabularies() {
+        return APPLICATOR_VOCABULARY;
+    }
+
+    @Override
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
+        List<Integer> matchedIndexes = IntStream.range(0, refs.size())
+                .filter(i -> ctx.resolveInternalRefAndValidate(refs.get(i), node))
+                .boxed()
+                .collect(Collectors.toList());
+
+        if (matchedIndexes.size() == 1) {
+            return Result.success();
+        }
+
+        if (matchedIndexes.isEmpty()) {
+            return Result.failure("Value does not match against any of the schemas");
+        }
+
+        return Result.failure(String.format("Value matches against more than one schema. Matched schema indexes %s", matchedIndexes));
     }
 }
 
-class NotEvaluator implements Applicator {
+class NotEvaluator implements Evaluator {
     private final String schemaUri;
-
 
     NotEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isObject() && !node.isBoolean()) {
@@ -384,12 +444,18 @@ class NotEvaluator implements Applicator {
     }
 
     @Override
-    public boolean apply(EvaluationContext ctx, JsonNode node) {
-        return !ctx.resolveInternalRefAndValidate(schemaUri, node);
+    public Set<String> getVocabularies() {
+        return APPLICATOR_VOCABULARY;
+    }
+
+    @Override
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
+        boolean valid = !ctx.resolveInternalRefAndValidate(schemaUri, node);
+        return valid ? Result.success() : Result.failure("Value matches against given schema but it must not");
     }
 }
 
-class UnevaluatedItemsEvaluator implements Applicator {
+class UnevaluatedItemsEvaluator implements Evaluator {
     private final String schemaRef;
     private final String parentPath;
 
@@ -408,9 +474,9 @@ class UnevaluatedItemsEvaluator implements Applicator {
     }
 
     @Override
-    public boolean apply(EvaluationContext ctx, JsonNode node) {
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isArray()) {
-            return true;
+            return Result.success();
         }
 
         List<EvaluationItem> evaluationItems = unmodifiableList(ctx.getAnnotations().stream()
@@ -420,9 +486,12 @@ class UnevaluatedItemsEvaluator implements Applicator {
                 .stream()
                 .filter(arrayNode -> evaluationItems.stream().noneMatch(a -> a.getInstanceLocation().startsWith(arrayNode.getJsonPointer())))
                 .collect(Collectors.toList());
-        return array.stream()
+
+        boolean valid = array.stream()
                 .filter(arrayNode -> ctx.resolveInternalRefAndValidate(schemaRef, arrayNode))
                 .count() == array.size();
+
+        return valid ? Result.success() : Result.failure();
     }
 
     @Override
@@ -435,7 +504,7 @@ class UnevaluatedItemsEvaluator implements Applicator {
     }
 }
 
-class UnevaluatedPropertiesEvaluator implements Applicator {
+class UnevaluatedPropertiesEvaluator implements Evaluator {
     private final String schemaRef;
     private final String parentPath;
 
@@ -454,22 +523,26 @@ class UnevaluatedPropertiesEvaluator implements Applicator {
     }
 
     @Override
-    public boolean apply(EvaluationContext ctx, JsonNode node) {
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isObject()) {
-            return true;
+            return Result.success();
         }
 
         List<EvaluationItem> evaluationItems = unmodifiableList(ctx.getAnnotations().stream()
                 .filter(a -> getSchemaPath(a).startsWith(parentPath))
                 .collect(Collectors.toList()));
+
         List<JsonNode> array = node.asObject()
                 .values()
                 .stream()
                 .filter(propertyNode -> evaluationItems.stream().noneMatch(a -> a.getInstanceLocation().startsWith(propertyNode.getJsonPointer())))
                 .collect(Collectors.toList());
-        return array.stream()
+
+        boolean valid = array.stream()
                 .filter(propertyNode -> ctx.resolveInternalRefAndValidate(schemaRef, propertyNode))
                 .count() == array.size();
+
+        return valid ? Result.success() : Result.failure();
     }
 
     @Override
