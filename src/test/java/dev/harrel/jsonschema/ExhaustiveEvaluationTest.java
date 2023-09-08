@@ -2,7 +2,6 @@ package dev.harrel.jsonschema;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
