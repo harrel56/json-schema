@@ -333,13 +333,13 @@ class IfThenElseEvaluator implements Evaluator {
                     .map(ref -> ctx.resolveInternalRefAndValidate(ref, node))
                     .orElse(true);
 
-            return valid ? Result.success() : Result.failure("Object matched against If but failed matching against Then schema");
+            return valid ? Result.success() : Result.failure("Value matches against schema from 'if' but does not match against schema from 'then'");
         } else {
             boolean valid = elseRef
                     .map(ref -> ctx.resolveInternalRefAndValidate(ref, node))
                     .orElse(true);
 
-            return valid ? Result.success() : Result.failure("Object did not match against If but failed matching against Else schema");
+            return valid ? Result.success() : Result.failure("Value does not match against schema from 'if' and 'else'");
         }
     }
 }
@@ -370,7 +370,7 @@ class AllOfEvaluator implements Evaluator {
             return Result.success();
         }
 
-        return Result.failure(String.format("Object didn't match against all schemas. Unmatched schema indexes %s", unmatchedIndexes));
+        return Result.failure(String.format("Value does not match against the schemas at indexes %s", unmatchedIndexes));
     }
 }
 
@@ -395,7 +395,7 @@ class AnyOfEvaluator implements Evaluator {
                 .filter(pointer -> ctx.resolveInternalRefAndValidate(pointer, node))
                 .count() > 0;
 
-        return valid ? Result.success() : Result.failure("Expected object to match at least against one schema. None matched");
+        return valid ? Result.success() : Result.failure("Value does not match against any of the schemas");
     }
 }
 
@@ -425,7 +425,11 @@ class OneOfEvaluator implements Evaluator {
             return Result.success();
         }
 
-        return Result.failure(String.format("Object matched against more than one schema. Matched schema indexes %s", matchedIndexes));
+        if (matchedIndexes.isEmpty()) {
+            return Result.failure("Value does not match against any of the schemas");
+        }
+
+        return Result.failure(String.format("Value matches against more than one schema. Matched schema indexes %s", matchedIndexes));
     }
 }
 
@@ -447,7 +451,7 @@ class NotEvaluator implements Evaluator {
     @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
         boolean valid = !ctx.resolveInternalRefAndValidate(schemaUri, node);
-        return valid ? Result.success() : Result.failure("Object matched against given schema but must not");
+        return valid ? Result.success() : Result.failure("Value matches against given schema but it must not");
     }
 }
 

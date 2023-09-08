@@ -11,6 +11,59 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ValidatorResultTest {
 
     @Test
+    void returnsErrorMessageWhenIfThenFails() {
+        String schema = """
+                {
+                   "if": true,
+                   "then": false,
+                   "else": false
+                }
+                """;
+
+        Validator.Result result = new ValidatorFactory().validate(schema, "null");
+
+        assertThat(result.isValid()).isFalse();
+        assertThat(result.getAnnotations()).isEmpty();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(2);
+        assertError(
+                errors.get(1),
+                "/if",
+                "https://harrel.dev/",
+                "",
+                "if",
+                "Value matches against schema from 'if' but does not match against schema from 'then'"
+        );
+    }
+
+    @Test
+    void returnsErrorMessageWhenIfElseFails() {
+        String schema = """
+                {
+                   "if": false,
+                   "then": false,
+                   "else": false
+                }
+                """;
+
+        Validator.Result result = new ValidatorFactory().validate(schema, "null");
+
+        assertThat(result.isValid()).isFalse();
+        assertThat(result.getAnnotations()).isEmpty();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(3);
+        assertError(
+                errors.get(2),
+                "/if",
+                "https://harrel.dev/",
+                "",
+                "if",
+                "Value does not match against schema from 'if' and 'else'"
+        );
+    }
+
+
+    @Test
     void returnsErrorMessageWhenAnyOfFails() {
         String schema = """
                 {
@@ -30,7 +83,7 @@ class ValidatorResultTest {
                 "https://harrel.dev/",
                 "",
                 "anyOf",
-                "Expected object to match at least against one schema. None matched"
+                "Value does not match against any of the schemas"
         );
     }
 
@@ -55,7 +108,7 @@ class ValidatorResultTest {
                 "https://harrel.dev/",
                 "",
                 "allOf",
-                "Object didn't match against all schemas. Unmatched schema indexes [1, 2]"
+                "Value does not match against the schemas at indexes [1, 2]"
         );
     }
 
@@ -79,7 +132,7 @@ class ValidatorResultTest {
                 "https://harrel.dev/",
                 "",
                 "not",
-                "Object matched against given schema but must not"
+                "Value matches against given schema but it must not"
         );
     }
 
@@ -103,7 +156,7 @@ class ValidatorResultTest {
                 "https://harrel.dev/",
                 "",
                 "oneOf",
-                "Object matched against more than one schema. Matched schema indexes [0, 1]"
+                "Value matches against more than one schema. Matched schema indexes [0, 1]"
         );
     }
 
