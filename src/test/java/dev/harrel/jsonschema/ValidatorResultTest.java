@@ -11,6 +11,133 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ValidatorResultTest {
 
     @Test
+    void returnsErrorMessageWhenContainsFails() {
+        String schema = """
+                {
+                  "contains": {
+                    "type": "null"
+                  }
+                }""";
+        String instance = "[0, 1]";
+        Validator.Result result = new ValidatorFactory().validate(schema, instance);
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(3);
+        assertError(
+                errors.get(0),
+                "/contains/type",
+                "https://harrel.dev/",
+                "/0",
+                "type",
+                "Value is [integer] but should be [null]"
+        );
+        assertError(
+                errors.get(1),
+                "/contains/type",
+                "https://harrel.dev/",
+                "/1",
+                "type",
+                "Value is [integer] but should be [null]"
+        );
+        assertError(
+                errors.get(2),
+                "/contains",
+                "https://harrel.dev/",
+                "",
+                "contains",
+                "Array contains no matching items"
+        );
+    }
+
+    @Test
+    void returnsErrorMessageWhenMinContainsFails() {
+        String schema = """
+                {
+                  "contains": {
+                    "type": "null"
+                  },
+                  "minContains": 2
+                }""";
+        String instance = "[0, 1, null]";
+        Validator.Result result = new ValidatorFactory().validate(schema, instance);
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(1);
+        assertError(
+                errors.get(0),
+                "/minContains",
+                "https://harrel.dev/",
+                "",
+                "minContains",
+                "Array contains less than 2 matching items"
+        );
+    }
+
+    @Test
+    void returnsErrorMessageWhenMaxContainsFails() {
+        String schema = """
+                {
+                  "contains": {
+                    "type": "null"
+                  },
+                  "maxContains": 2
+                }""";
+        String instance = "[null, null, null]";
+        Validator.Result result = new ValidatorFactory().validate(schema, instance);
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(1);
+        assertError(
+                errors.get(0),
+                "/maxContains",
+                "https://harrel.dev/",
+                "",
+                "maxContains",
+                "Array contains more than 2 matching items"
+        );
+    }
+
+    @Test
+    void returnsErrorMessageWhenDependentSchemasFails() {
+        String schema = """
+                {
+                  "dependentSchemas": {
+                    "a": {
+                      "type": "object"
+                    },
+                    "b": {
+                      "type": "string"
+                    }
+                  }
+                }""";
+        String instance = """
+                {
+                  "a": 1,
+                  "b": null
+                }""";
+        Validator.Result result = new ValidatorFactory().validate(schema, instance);
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(2);
+        assertError(
+                errors.get(0),
+                "/dependentSchemas/b/type",
+                "https://harrel.dev/",
+                "",
+                "type",
+                "Value is [object] but should be [string]"
+        );
+        assertError(
+                errors.get(1),
+                "/dependentSchemas",
+                "https://harrel.dev/",
+                "",
+                "dependentSchemas",
+                "Object does not match dependent schemas for some properties [b]"
+        );
+    }
+
+    @Test
     void returnsErrorMessageWhenIfThenFails() {
         String schema = """
                 {
@@ -183,7 +310,7 @@ class ValidatorResultTest {
     }
 
     @Test
-    void discardAnnotationCorrectly() {
+    void discardsAnnotationCorrectly() {
         String schema = """
                 {
                   "anyOf": [true, {

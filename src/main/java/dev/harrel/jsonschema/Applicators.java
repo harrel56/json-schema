@@ -111,7 +111,7 @@ class ContainsEvaluator implements Evaluator {
                 .filter(i -> ctx.resolveInternalRefAndValidate(schemaRef, array.get(i)))
                 .boxed()
                 .collect(Collectors.toList()));
-        return minContainsZero || !indices.isEmpty() ? Result.success(indices) : Result.failure();
+        return minContainsZero || !indices.isEmpty() ? Result.success(indices) : Result.failure("Array contains no matching items");
     }
 }
 
@@ -265,13 +265,14 @@ class DependentSchemasEvaluator implements Evaluator {
                 .stream()
                 .filter(dependentSchemas::containsKey)
                 .collect(Collectors.toList());
-
-        boolean result = fields.stream()
-                .map(dependentSchemas::get)
-                .filter(ref -> ctx.resolveInternalRefAndValidate(ref, node))
-                .count() == fields.size();
-
-        return result ? Result.success() : Result.failure();
+        List<String> failedFields = fields.stream()
+                .filter(field -> !ctx.resolveInternalRefAndValidate(dependentSchemas.get(field), node))
+                .collect(Collectors.toList());
+        if (failedFields.isEmpty()) {
+            return Result.success();
+        } else {
+            return Result.failure(String.format("Object does not match dependent schemas for some properties %s", failedFields));
+        }
     }
 }
 

@@ -2,7 +2,6 @@ package dev.harrel.jsonschema;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -269,25 +268,29 @@ class ExhaustiveEvaluationTest {
                 {
                   "dependentSchemas": {
                     "a": {
-                      "type": "string"
+                      "type": "object"
                     },
                     "b": {
+                      "type": "string"
+                    },
+                    "c": {
                       "type": "string"
                     }
                   }
                 }""";
         String instance = """
                 {
-                  "a": true,
-                  "b": null
+                  "a": 1,
+                  "b": null,
+                  "c": null
                 }""";
         Validator.Result result = new ValidatorFactory().validate(schema, instance);
         assertThat(result.isValid()).isFalse();
         List<Error> errors = result.getErrors();
-        assertThat(errors).hasSize(2);
+        assertThat(errors).hasSize(3);
         assertError(
                 errors.get(0),
-                "/dependentSchemas/a/type",
+                "/dependentSchemas/b/type",
                 "https://harrel.dev/",
                 "",
                 "type",
@@ -295,11 +298,19 @@ class ExhaustiveEvaluationTest {
         );
         assertError(
                 errors.get(1),
-                "/dependentSchemas/b/type",
+                "/dependentSchemas/c/type",
                 "https://harrel.dev/",
                 "",
                 "type",
                 "Value is [object] but should be [string]"
+        );
+        assertError(
+                errors.get(2),
+                "/dependentSchemas",
+                "https://harrel.dev/",
+                "",
+                "dependentSchemas",
+                "Object does not match dependent schemas for some properties [b, c]"
         );
     }
 
