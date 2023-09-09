@@ -47,7 +47,7 @@ boolean valid = result.isValid(); // Boolean flag indicating if validation succe
 List<Error> errors = result.getErrors(); // Details where validation exactly failed
 List<Annotation> annotations = result.getAnnotations(); // Collected annotation during validation process
 ```
-`Error` and `Annotation` classes contain specific information where the event occurred, along with error message or annotation value. For specific structure details please refer to the [documentation](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/ResultItem.html).
+`Error` and `Annotation` classes contain specific information where the event occurred, along with error message or annotation value. For specific structure details please refer to the [documentation](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/Error.html).
 
 ### Reusing schema
 Probably most common case is to validate multiple JSON objects against one specific schema. Approach listed above parses schema for each validation request. To avoid this performance hit, it is better to use [Validator](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/Validator.html) class directly.
