@@ -3,7 +3,7 @@
 [![build](https://github.com/harrel56/json-schema/actions/workflows/build.yml/badge.svg)](https://github.com/harrel56/json-schema/actions/workflows/build.yml)
 [![maven](https://maven-badges.herokuapp.com/maven-central/dev.harrel/json-schema/badge.svg)](https://mvnrepository.com/artifact/dev.harrel/json-schema)
 [![javadoc](https://javadoc.io/badge2/dev.harrel/json-schema/javadoc.svg)](https://javadoc.io/doc/dev.harrel/json-schema)
-[![coverage](https://harrel56.github.io/json-schema/jacoco.svg)](https://github.com/harrel56/json-schema/actions/workflows/build.yml)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=harrel56_json-schema&metric=coverage)](https://sonarcloud.io/summary/new_code?id=harrel56_json-schema)
 
 Java library implementing [JSON schema specification](https://json-schema.org/specification.html):
 - compatible with Java 8,
