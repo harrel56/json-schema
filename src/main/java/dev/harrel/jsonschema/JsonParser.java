@@ -23,6 +23,11 @@ final class JsonParser {
         this.metaSchemaValidator = Objects.requireNonNull(metaSchemaValidator);
     }
 
+    void tmp() {
+        System.out.println("remove me");
+        throw new NullPointerException();
+    }
+
     URI parseRootSchema(URI baseUri, JsonNode node) {
         Optional<Map<String, JsonNode>> objectMapOptional = getAsObject(node);
         String metaSchemaUri = objectMapOptional
