@@ -22,20 +22,37 @@ jobs:
           name: report-output
           path: build/reports
 
-      - name: SonarCloud Scan
-        uses: sonarsource/sonarcloud-github-action@master
+      - name: Setup java
+        uses: actions/setup-java@v3
+        with:
+          distribution: ${{ vars.JAVA_VENDOR }}
+          java-version: ${{ vars.JAVA_VERSION }}
+
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: wrapper
+
+      - name: SonarCloud analyze
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args: >
-            -Dsonar.projectKey=harrel56_json-schema
-            -Dsonar.organization=harrel56
-            -Dsonar.host.url=https://sonarcloud.io
-            -Dsonar.java.source=8
-            -Dsonar.java.target=8
-            
-            -Dsonar.scm.revision=${{ github.event.workflow_run.head_sha }}
-            -Dsonar.pullrequest.key=${{ github.event.workflow_run.pull_requests[0].number }}
-            -Dsonar.pullrequest.branch=${{ github.event.workflow_run.pull_requests[0].head.ref }}
-            -Dsonar.pullrequest.base=${{ github.event.workflow_run.pull_requests[0].base.ref }}
+        run: ./gradlew sonar --info -Dsonar.scm.revision=${{ github.event.workflow_run.head_sha }} -Dsonar.pullrequest.key=${{ github.event.workflow_run.pull_requests[0].number }} -Dsonar.pullrequest.branch=${{ github.event.workflow_run.pull_requests[0].head.ref }} -Dsonar.pullrequest.base=${{ github.event.workflow_run.pull_requests[0].base.ref }}
+
+#      - name: SonarCloud Scan
+#        uses: sonarsource/sonarcloud-github-action@master
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#        with:
+#          args: >
+#            -Dsonar.projectKey=harrel56_json-schema
+#            -Dsonar.organization=harrel56
+#            -Dsonar.host.url=https://sonarcloud.io
+#            -Dsonar.java.source=8
+#            -Dsonar.java.target=8
+#
+#            -Dsonar.scm.revision=${{ github.event.workflow_run.head_sha }}
+#            -Dsonar.pullrequest.key=${{ github.event.workflow_run.pull_requests[0].number }}
+#            -Dsonar.pullrequest.branch=${{ github.event.workflow_run.pull_requests[0].head.ref }}
+#            -Dsonar.pullrequest.base=${{ github.event.workflow_run.pull_requests[0].base.ref }}
