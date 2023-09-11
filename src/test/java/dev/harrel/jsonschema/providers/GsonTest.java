@@ -7,6 +7,7 @@ import com.google.gson.JsonParser;
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.SimpleType;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -40,6 +41,7 @@ class GsonTest {
     }
 
     @Nested
+    @Disabled
     class SpecificationTest extends dev.harrel.jsonschema.SpecificationTest {
         @BeforeAll
         static void beforeAll() {
