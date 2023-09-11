@@ -1,7 +1,9 @@
 name: tests
 
 on:
-  workflow_call:
+  pull_request:
+  push:
+    branches: [ master ]
 
 jobs:
   generic-tests:
@@ -119,8 +121,3 @@ jobs:
         with:
           name: report-output
           path: build/reports
-
-      - name: Upload badge
-        uses: actions/upload-pages-artifact@v1
-        with:
-          path: './.github/badges'
