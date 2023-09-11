@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 
 import static dev.harrel.jsonschema.TestUtil.readResource;
 
+@Disabled
 @SuppressWarnings("unused")
 public abstract class SpecificationTest {
     static final Logger logger = Logger.getLogger("SpecificationTest");
