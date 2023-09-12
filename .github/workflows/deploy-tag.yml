@@ -38,8 +38,8 @@ jobs:
             build/reports
 
       - name: Gradle publish to Reposilite
-        run: |
-          ./gradlew publishLocalPublicationToReposiliteRepository \
-          -PreposiliteSnapshots=${{ secrets.REPOSILITE_SNAPSHOTS }} \
-          -PreposiliteUsername=${{ secrets.REPOSILITE_USERNAME }} \
-          -PreposilitePassword=${{ secrets.REPOSILITE_PASSWORD }} \
+        run: >
+          ./gradlew publishLocalPublicationToReposiliteRepository
+          -PreposiliteSnapshots=${{ secrets.REPOSILITE_SNAPSHOTS }}
+          -PreposiliteUsername=${{ secrets.REPOSILITE_USERNAME }}
+          -PreposilitePassword=${{ secrets.REPOSILITE_PASSWORD }}
