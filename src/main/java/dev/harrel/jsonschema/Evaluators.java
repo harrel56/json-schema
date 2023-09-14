@@ -170,7 +170,7 @@ class MinimumEvaluator implements ValidatingEvaluator {
         if (node.asNumber().compareTo(min) >= 0) {
             return Result.success();
         } else {
-            return Result.failure(String.format("%s is lesser than %s", node.asNumber(), min));
+            return Result.failure(String.format("%s is less than %s", node.asNumber(), min));
         }
     }
 }
@@ -194,7 +194,7 @@ class ExclusiveMinimumEvaluator implements ValidatingEvaluator {
         if (node.asNumber().compareTo(min) > 0) {
             return Result.success();
         } else {
-            return Result.failure(String.format("%s is lesser or equal to %s", node.asNumber(), min));
+            return Result.failure(String.format("%s is less than or equal to %s", node.asNumber(), min));
         }
     }
 }
