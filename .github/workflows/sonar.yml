@@ -71,7 +71,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: >
           ./gradlew sonar --info
-          -Dsonar.scm.revision=${{ github.event.workflow_run.head_sha }}
-          -Dsonar.pullrequest.key=${{ github.event.workflow_run.pull_requests[0].number }}
-          -Dsonar.pullrequest.branch=${{ github.event.workflow_run.pull_requests[0].head.ref }}
-          -Dsonar.pullrequest.base=${{ github.event.workflow_run.pull_requests[0].base.ref }}
+          -Dsonar.scm.revision=${{ needs.get-info.outputs.sourceHeadSha }}
+          -Dsonar.pullrequest.key=${{ needs.get-info.outputs.pullRequestNumber }}
+          -Dsonar.pullrequest.branch=${{ needs.get-info.outputs.sourceHeadBranch }}
+          -Dsonar.pullrequest.base=master
