@@ -27,6 +27,7 @@ final class JsonParser {
         System.out.println("test");
         System.out.println("test");
         System.out.println("test");
+        System.out.println("test");
     }
     
     URI parseRootSchema(URI baseUri, JsonNode node) {
