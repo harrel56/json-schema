@@ -49,7 +49,15 @@ jobs:
         with:
           gradle-version: wrapper
 
-      - name: SonarCloud analyze
+      - name: SonarCloud analyze master
+        if: needs.get-info.outputs.pullRequestNumber == ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: ./gradlew sonar --info
+
+      - name: SonarCloud analyze PR
+        if: needs.get-info.outputs.pullRequestNumber != ''
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
