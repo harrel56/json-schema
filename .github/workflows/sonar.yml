@@ -4,10 +4,42 @@ on:
     workflows: [tests]
     types: [completed]
 jobs:
+  get-info:
+    runs-on: ubuntu-latest
+    outputs:
+      sourceHeadRepo: ${{ steps.workflow-run-info.outputs.sourceHeadRepo }}
+      sourceHeadBranch: ${{ steps.workflow-run-info.outputs.sourceHeadBranch }}
+      sourceHeadSha: ${{ steps.workflow-run-info.outputs.sourceHeadSha }}
+      mergeCommitSha: ${{ steps.workflow-run-info.outputs.mergeCommitSha }}
+      targetCommitSha: ${{ steps.workflow-run-info.outputs.targetCommitSha }}
+      pullRequestNumber: ${{ steps.workflow-run-info.outputs.pullRequestNumber }}
+      pullRequestLabels: ${{ steps.workflow-run-info.outputs.pullRequestLabels }}
+      targetBranch: ${{ steps.source-run-info.outputs.targetBranch }}
+      sourceEvent: ${{ steps.workflow-run-info.outputs.sourceEvent }}
+    steps:
+      - name: Get information about the source workflow
+        uses: potiuk/get-workflow-origin@v1
+        id: workflow-run-info
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          sourceRunId: ${{ github.event.workflow_run.id }}
+
   sonar-cloud:
+    needs: get-info
     runs-on: ubuntu-latest
     if: github.event.workflow_run.conclusion == 'success'
     steps:
+      - run: >
+          echo
+          ${{ needs.get-info.outputs.sourceHeadRepo }}
+          ${{ needs.get-info.outputs.sourceHeadBranch }}
+          ${{ needs.get-info.outputs.sourceHeadSha }}
+          ${{ needs.get-info.outputs.mergeCommitSha }}
+          ${{ needs.get-info.outputs.targetCommitSha }}
+          ${{ needs.get-info.outputs.pullRequestNumber }}
+          ${{ needs.get-info.outputs.pullRequestLabels }}
+          ${{ needs.get-info.outputs.targetBranch }}
+          ${{ needs.get-info.outputs.sourceEvent }}
       - uses: actions/checkout@v3
         with:
           repository: ${{ github.event.workflow_run.head_repository.full_name }}
