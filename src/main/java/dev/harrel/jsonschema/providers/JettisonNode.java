@@ -54,9 +54,7 @@ public final class JettisonNode implements JsonNode {
 
     @Override
     public BigInteger asInteger() {
-        if (node instanceof BigInteger) {
-            return (BigInteger) node;
-        } else if (node instanceof BigDecimal) {
+        if (node instanceof BigDecimal) {
             return ((BigDecimal) node).toBigInteger();
         } else {
             return BigInteger.valueOf(((Number) node).longValue());
@@ -67,10 +65,6 @@ public final class JettisonNode implements JsonNode {
     public BigDecimal asNumber() {
         if (node instanceof BigDecimal) {
             return (BigDecimal) node;
-        } else if (node instanceof BigInteger) {
-            return new BigDecimal((BigInteger) node);
-        } else if (node instanceof Double) {
-            return BigDecimal.valueOf((Double) node);
         } else {
             return BigDecimal.valueOf(((Number) node).longValue());
         }
@@ -113,7 +107,7 @@ public final class JettisonNode implements JsonNode {
         @Override
         public JsonNode create(String rawJson) {
             try {
-                return new JettisonNode(this, new JSONTokener(rawJson).nextValue());
+                return new JettisonNode(this, new BigDecimalTokener(rawJson).nextValue());
             } catch (JSONException e) {
                 throw new IllegalArgumentException(e);
             }
@@ -132,6 +126,13 @@ public final class JettisonNode implements JsonNode {
         @Override
         boolean isObject(Object node) {
             return node instanceof JSONObject;
+        }
+    }
+
+    static final class BigDecimalTokener extends JSONTokener {
+        BigDecimalTokener(String s) {
+            super(s);
+            this.useBigDecimal = true;
         }
     }
 }

@@ -1,6 +1,8 @@
 package dev.harrel.jsonschema;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -61,9 +63,19 @@ public abstract class JsonNodeTest {
         assertThat(node.asString()).isEqualTo(value);
     }
 
-    @Test
-    void integerNode() {
-        String value = "321123";
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "0",
+            "-1",
+            "1",
+            "-321123",
+            "321123",
+            "-5555555555555555555555555555555",
+            "5555555555555555555555555555555",
+            "-2222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222",
+            "2222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222"
+    })
+    void integerNode(String value) {
         JsonNode node = nodeFactory.create(value);
         assertThat(node).isNotNull();
         assertThat(node.getNodeType()).isEqualTo(SimpleType.INTEGER);
@@ -75,12 +87,24 @@ public abstract class JsonNodeTest {
         assertThat(node.isArray()).isFalse();
         assertThat(node.isObject()).isFalse();
         assertThat(node.toPrintableString()).isEqualTo(value);
-        assertThat(node.asInteger()).isEqualTo(BigInteger.valueOf(Integer.parseInt(value)));
+        assertThat(node.asInteger()).isEqualTo(new BigInteger(value));
     }
 
-    @Test
-    void numberNode() {
-        String value = "321123.01";
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "0.1",
+            "-1.1",
+            "1.1",
+            "-321123.1",
+            "321123.1",
+            "-55555555555555555555555555555551.1",
+            "55555555555555555555555555555551.1",
+            "-2222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222.1",
+            "2222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222.1",
+            "-0.9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999",
+            "0.9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999"
+    })
+    void numberNode(String value) {
         JsonNode node = nodeFactory.create(value);
         assertThat(node).isNotNull();
         assertThat(node.getNodeType()).isEqualTo(SimpleType.NUMBER);
@@ -92,7 +116,7 @@ public abstract class JsonNodeTest {
         assertThat(node.isArray()).isFalse();
         assertThat(node.isObject()).isFalse();
         assertThat(node.toPrintableString()).isEqualTo(value);
-        assertThat(node.asNumber()).isEqualTo(BigDecimal.valueOf(Double.parseDouble(value)));
+        assertThat(node.asNumber()).isEqualTo(new BigDecimal(value));
     }
 
     @Test
