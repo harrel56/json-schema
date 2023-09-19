@@ -39,6 +39,13 @@ class JettisonTest {
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
+    @Test
+    void shouldFailCreateForInvalidArgument() {
+        JettisonNode.Factory factory = new JettisonNode.Factory();
+        assertThatThrownBy(() -> factory.create("{"))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
     @Nested
     class SpecificationTest extends dev.harrel.jsonschema.SpecificationTest {
         @BeforeAll

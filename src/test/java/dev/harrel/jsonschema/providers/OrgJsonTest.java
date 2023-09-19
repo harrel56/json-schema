@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.SimpleType;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
@@ -36,6 +37,13 @@ class OrgJsonTest {
         OrgJsonNode.Factory factory = new OrgJsonNode.Factory();
         assertThatThrownBy(() -> factory.wrap(object))
                 .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void shouldFailCreateForInvalidArgument() {
+        OrgJsonNode.Factory factory = new OrgJsonNode.Factory();
+        assertThatThrownBy(() -> factory.create("{"))
+                .isInstanceOf(JSONException.class);
     }
 
     @Nested

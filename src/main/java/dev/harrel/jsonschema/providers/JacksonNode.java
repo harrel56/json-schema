@@ -1,5 +1,6 @@
 package dev.harrel.jsonschema.providers;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import dev.harrel.jsonschema.JsonNode;
@@ -7,7 +8,6 @@ import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
@@ -96,7 +96,7 @@ public final class JacksonNode implements JsonNode {
         private final ObjectMapper mapper;
 
         public Factory() {
-            this(new ObjectMapper());
+            this(new ObjectMapper().enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS));
         }
 
         public Factory(ObjectMapper mapper) {
@@ -119,7 +119,7 @@ public final class JacksonNode implements JsonNode {
             try {
                 return new JacksonNode(mapper.readTree(rawJson));
             } catch (IOException e) {
-                throw new UncheckedIOException(e);
+                throw new IllegalArgumentException(e);
             }
         }
     }

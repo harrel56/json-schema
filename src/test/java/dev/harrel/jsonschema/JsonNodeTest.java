@@ -1,9 +1,10 @@
 package dev.harrel.jsonschema;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 
@@ -61,9 +62,20 @@ public abstract class JsonNodeTest {
         assertThat(node.asString()).isEqualTo(value);
     }
 
-    @Test
-    void integerNode() {
-        String value = "321123";
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "-0",
+            "0",
+            "-1",
+            "1",
+            "-321123",
+            "321123",
+            "-5555555555555555555555555555555",
+            "5555555555555555555555555555555",
+            "-2222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222",
+            "2222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222"
+    })
+    void integerNode(String value) {
         JsonNode node = nodeFactory.create(value);
         assertThat(node).isNotNull();
         assertThat(node.getNodeType()).isEqualTo(SimpleType.INTEGER);
@@ -74,13 +86,34 @@ public abstract class JsonNodeTest {
         assertThat(node.isNumber()).isTrue();
         assertThat(node.isArray()).isFalse();
         assertThat(node.isObject()).isFalse();
-        assertThat(node.toPrintableString()).isEqualTo(value);
-        assertThat(node.asInteger()).isEqualTo(BigInteger.valueOf(Integer.parseInt(value)));
+        assertThat(node.toPrintableString()).satisfiesAnyOf(
+                str -> assertThat(str).isEqualTo(value),
+                str -> assertThat(str).isEqualTo(new BigDecimal(value).toString()),
+                str -> assertThat(str).isEqualTo(Double.valueOf(value).toString())
+        );
+        assertThat(node.asInteger()).isEqualTo(new BigDecimal(value).toBigInteger());
+        assertThat(node.asNumber()).satisfiesAnyOf(
+                num -> assertThat(num).isEqualTo(new BigDecimal(value)),
+                num -> assertThat(num).isEqualTo(BigDecimal.valueOf(Double.parseDouble(value)))
+        );
     }
 
-    @Test
-    void numberNode() {
-        String value = "321123.01";
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "-0.0000001",
+            "0.0000001",
+            "-1.1",
+            "1.1",
+            "-321123.1",
+            "321123.1",
+            "-55555555555555555555555555555551.1",
+            "55555555555555555555555555555551.1",
+            "-2222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222.1",
+            "2222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222.1",
+            "-0.9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999",
+            "0.9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999"
+    })
+    void numberNode(String value) {
         JsonNode node = nodeFactory.create(value);
         assertThat(node).isNotNull();
         assertThat(node.getNodeType()).isEqualTo(SimpleType.NUMBER);
@@ -91,8 +124,15 @@ public abstract class JsonNodeTest {
         assertThat(node.isNumber()).isTrue();
         assertThat(node.isArray()).isFalse();
         assertThat(node.isObject()).isFalse();
-        assertThat(node.toPrintableString()).isEqualTo(value);
-        assertThat(node.asNumber()).isEqualTo(BigDecimal.valueOf(Double.parseDouble(value)));
+        assertThat(node.toPrintableString()).satisfiesAnyOf(
+                str -> assertThat(str).isEqualTo(value),
+                str -> assertThat(str).isEqualTo(new BigDecimal(value).toString()),
+                str -> assertThat(str).isEqualTo(Double.valueOf(value).toString())
+        );
+        assertThat(node.asNumber()).satisfiesAnyOf(
+                num -> assertThat(num).isEqualTo(new BigDecimal(value)),
+                num -> assertThat(num).isEqualTo(BigDecimal.valueOf(Double.parseDouble(value)))
+        );
     }
 
     @Test
