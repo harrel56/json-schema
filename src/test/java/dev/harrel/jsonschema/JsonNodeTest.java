@@ -9,16 +9,10 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public abstract class JsonNodeTest {
 
     protected static JsonNodeFactory nodeFactory;
-
-    @Test
-    void invalidNode() {
-        assertThatThrownBy(() -> nodeFactory.create("{"));
-    }
 
     @Test
     void nullNode() {

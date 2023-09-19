@@ -37,6 +37,13 @@ class JacksonTest {
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
+    @Test
+    void shouldFailCreateForInvalidArgument() {
+        JacksonNode.Factory factory = new JacksonNode.Factory();
+        assertThatThrownBy(() -> factory.create("{"))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
     @Nested
     class SpecificationTest extends dev.harrel.jsonschema.SpecificationTest {
         @BeforeAll

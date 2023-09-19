@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.SimpleType;
 import org.junit.jupiter.api.BeforeAll;
@@ -37,6 +38,13 @@ class GsonTest {
         GsonNode.Factory factory = new GsonNode.Factory();
         assertThatThrownBy(() -> factory.wrap(object))
                 .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void shouldFailCreateForInvalidArgument() {
+        GsonNode.Factory factory = new GsonNode.Factory();
+        assertThatThrownBy(() -> factory.create("{"))
+                .isInstanceOf(JsonSyntaxException.class);
     }
 
     @Nested

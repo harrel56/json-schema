@@ -40,6 +40,13 @@ class JsonSmartTest {
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
+    @Test
+    void shouldFailCreateForInvalidArgument() {
+        JsonSmartNode.Factory factory = new JsonSmartNode.Factory();
+        assertThatThrownBy(() -> factory.create("{"))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
     @Nested
     class SpecificationTest extends dev.harrel.jsonschema.SpecificationTest {
         @BeforeAll

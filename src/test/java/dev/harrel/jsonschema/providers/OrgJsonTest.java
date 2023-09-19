@@ -38,6 +38,13 @@ class OrgJsonTest {
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
+    @Test
+    void shouldFailCreateForInvalidArgument() {
+        OrgJsonNode.Factory factory = new OrgJsonNode.Factory();
+        assertThatThrownBy(() -> factory.create("{"))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
     @Nested
     class SpecificationTest extends dev.harrel.jsonschema.SpecificationTest {
         @BeforeAll
