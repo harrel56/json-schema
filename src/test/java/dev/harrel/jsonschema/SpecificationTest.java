@@ -268,6 +268,8 @@ public abstract class SpecificationTest {
                 Map.entry("http://localhost:1234/different-id-ref-string.json", readResource("/schemas/different-id-ref-string.json")),
                 Map.entry("http://localhost:1234/nested-absolute-ref-to-string.json", readResource("/schemas/nested-absolute-ref-to-string.json")),
                 Map.entry("http://localhost:1234/urn-ref-string.json", readResource("/schemas/urn-ref-string.json")),
+                Map.entry("http://localhost:1234/draft2020-12/detached-dynamicref.json", readResource("/schemas/detached-dynamicref.json")),
+                Map.entry("http://localhost:1234/draft2020-12/detached-ref.json", readResource("/schemas/detached-ref.json")),
                 Map.entry("http://localhost:1234/draft2020-12/extendible-dynamic-ref.json", readResource("/schemas/extendible-dynamic-ref.json")),
                 Map.entry("http://localhost:1234/draft2020-12/integer.json", readResource("/schemas/integer.json")),
                 Map.entry("http://localhost:1234/draft2020-12/locationIndependentIdentifier.json", readResource("/schemas/locationIndependentIdentifier.json")),
