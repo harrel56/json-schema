@@ -155,7 +155,7 @@ public final class EvaluationContext {
         return OptionalUtil.firstPresent(
                 () -> Optional.ofNullable(schemaRegistry.get(resolvedUri)),
                 () -> Optional.ofNullable(schemaRegistry.getDynamic(resolvedUri)),
-                () -> resolveExternalSchema(resolvedUri)
+                () -> resolveExternalSchema(ref, resolvedUri)
         );
     }
 
@@ -195,8 +195,8 @@ public final class EvaluationContext {
         return refItem.evaluationPath + evaluationPathPart;
     }
 
-    private Optional<Schema> resolveExternalSchema(String uri) {
-        String baseUri = UriUtil.getUriWithoutFragment(uri);
+    private Optional<Schema> resolveExternalSchema(String originalRef, String resolvedUri) {
+        String baseUri = UriUtil.getUriWithoutFragment(resolvedUri);
         if (schemaRegistry.get(baseUri) != null) {
             return Optional.empty();
         }
@@ -204,7 +204,7 @@ public final class EvaluationContext {
                 .toJsonNode(jsonNodeFactory)
                 .flatMap(node -> {
                     jsonParser.parseRootSchema(URI.create(baseUri), node);
-                    return resolveSchema(uri);
+                    return resolveSchema(originalRef);
                 });
     }
 
