@@ -123,7 +123,7 @@ class SchemaResolverTest {
     }
 
     @Test
-    void shouldResolveRelativeExternalReferences() {
+    void shouldResolveRelativeExternalRefs() {
         String schema1 = """
                 {
                   "$id": "a/b/root.json",
@@ -181,5 +181,90 @@ class SchemaResolverTest {
                 }""";
         result = validator.validate(URI.create("a/b/root.json"), instance2);
         assertThat(result.isValid()).isTrue();
+    }
+
+    @Test
+    void shouldResolveExternalRefsChain() {
+        String schemaX = """
+                {
+                  "$id": "a/b/x",
+                  "$ref": "y#/$defs/y"
+                }""";
+        String schemaY = """
+                {
+                  "$id": "a/b/y",
+                  "$defs": {
+                    "y": {
+                      "$ref": "z#/$defs/z"
+                    }
+                  }
+                }""";
+        String schemaZ = """
+                {
+                  "$id": "a/b/z",
+                  "$defs": {
+                    "z": {
+                      "$ref": "https://external.com/a/b/c#/$defs/c"
+                    }
+                  }
+                }""";
+        String schemaC = """
+                {
+                  "$id": "https://external.com/a/b/c",
+                  "$defs": {
+                    "c": {
+                      "$ref": "/a/b#/$defs/b"
+                    }
+                  }
+                }""";
+        String schemaB = """
+                {
+                  "$id": "https://external.com/a/b",
+                  "$defs": {
+                    "b": {
+                      "$ref": "d#/$defs/d"
+                    }
+                  }
+                }""";
+        String schemaD = """
+                {
+                  "$id": "https://external.com/a/d",
+                  "$defs": {
+                    "d": {
+                      "type": "string"
+                    }
+                  }
+                }""";
+        SchemaResolver resolver = uri ->
+                switch (uri) {
+                    case "a/b/x" -> SchemaResolver.Result.fromString(schemaX);
+                    case "a/b/y" -> SchemaResolver.Result.fromString(schemaY);
+                    case "a/b/z" -> SchemaResolver.Result.fromString(schemaZ);
+                    case "https://external.com/a/b/c" -> SchemaResolver.Result.fromString(schemaC);
+                    case "https://external.com/a/b" -> SchemaResolver.Result.fromString(schemaB);
+                    case "https://external.com/a/d" -> SchemaResolver.Result.fromString(schemaD);
+                    default -> SchemaResolver.Result.empty();
+                };
+
+        Validator validator = new ValidatorFactory()
+                .withDisabledSchemaValidation(true)
+                .withSchemaResolver(resolver)
+                .createValidator();
+        validator.registerSchema(schemaX);
+
+        String instance1 = "1";
+        Validator.Result result = validator.validate(URI.create("a/b/x"), instance1);
+
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(1);
+        assertError(
+                errors.get(0),
+                "/$ref/$ref/$ref/$ref/$ref/type",
+                "https://external.com/a/d#/$defs/d",
+                "",
+                "type",
+                "Value is [integer] but should be [string]"
+        );
     }
 }
