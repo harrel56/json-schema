@@ -5,6 +5,7 @@ import dev.harrel.jsonschema.providers.JacksonNode;
 import java.net.URI;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -125,25 +126,37 @@ public final class Validator {
     }
 
     /**
-     * Validates instance JSON against schema resolved from provided URI.
+     * Validates instance JSON against a root schema resolved from provided URI.
      *
-     * @param schemaUri    URI of schema to use for validation
+     * @param schemaUri    URI of a root schema to use for validation
      * @param instanceNode {@link JsonNode} instance JSON, which could be created via {@link JsonNodeFactory}
      * @return validation result
      */
     public Result validate(URI schemaUri, JsonNode instanceNode) {
-        Schema schema = getRootSchema(schemaUri.toString());
+        Schema schema = getRootSchema(schemaUri);
         EvaluationContext ctx = createNewEvaluationContext(schema);
         boolean valid = ctx.validateAgainstSchema(schema, instanceNode);
         return new Result(valid, ctx);
     }
 
-    private Schema getRootSchema(String uri) {
-        Schema schema = schemaRegistry.get(uri);
-        if (schema == null) {
-            throw new SchemaNotFoundException(uri);
+    private Schema getRootSchema(URI uri) {
+        if (uri.getFragment() != null) {
+            throw new IllegalArgumentException(String.format("Root schema [%s] cannot contain fragments", uri));
         }
-        return schema;
+        return OptionalUtil.firstPresent(
+                        () -> Optional.ofNullable(schemaRegistry.get(uri.toString())),
+                        () -> resolveExternalSchema(uri)
+                )
+                .orElseThrow(() -> new SchemaNotFoundException(uri.toString()));
+    }
+
+    private Optional<Schema> resolveExternalSchema(URI uri) {
+        return schemaResolver.resolve(uri.toString())
+                .toJsonNode(jsonNodeFactory)
+                .map(node -> {
+                    jsonParser.parseRootSchema(uri, node);
+                    return schemaRegistry.get(uri.toString());
+                });
     }
 
     private URI generateSchemaUri() {
