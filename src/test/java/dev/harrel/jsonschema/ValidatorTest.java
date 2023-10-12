@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import static dev.harrel.jsonschema.TestUtil.assertAnnotation;
+import static dev.harrel.jsonschema.TestUtil.assertError;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -26,6 +28,24 @@ class ValidatorTest {
         assertThatThrownBy(() -> validator.validate(invalidUri, RAW_INSTANCE))
                 .isInstanceOf(SchemaNotFoundException.class)
                 .hasMessageContaining(invalidUri.toString());
+    }
+
+    @Test
+    void failsForUriWithNonEmptyFragments() {
+        Validator validator = new ValidatorFactory().createValidator();
+        URI uri = URI.create("https://test.com/x#/$def/x");
+        assertThatThrownBy(() -> validator.validate(uri, "{}"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Root schema [https://test.com/x#/$def/x] cannot contain fragments");
+    }
+
+    @Test
+    void failsForUriWithEmptyFragments() {
+        Validator validator = new ValidatorFactory().createValidator();
+        URI uri = URI.create("https://test.com/x#");
+        assertThatThrownBy(() -> validator.validate(uri, "{}"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Root schema [https://test.com/x#] cannot contain fragments");
     }
 
     @Test
@@ -121,15 +141,46 @@ class ValidatorTest {
         List<Annotation> annotations = new ArrayList<>(result.getAnnotations());
         annotations.sort(Comparator.comparing(Annotation::getKeyword));
         assertThat(annotations).hasSize(2);
-        assertThat(annotations.get(0).getKeyword()).isEqualTo("customKeyword");
-        assertThat(annotations.get(0).getEvaluationPath()).isEqualTo("/customKeyword");
-        assertThat(annotations.get(0).getInstanceLocation()).isEmpty();
-        assertThat(annotations.get(0).getSchemaLocation()).isEqualTo("urn:test#");
-        assertThat(annotations.get(0).getAnnotation()).isEqualTo("custom");
-        assertThat(annotations.get(1).getKeyword()).isEqualTo("title");
-        assertThat(annotations.get(1).getEvaluationPath()).isEqualTo("/title");
-        assertThat(annotations.get(1).getInstanceLocation()).isEmpty();
-        assertThat(annotations.get(1).getSchemaLocation()).isEqualTo("urn:test#");
-        assertThat(annotations.get(1).getAnnotation()).isEqualTo("hello");
+        assertAnnotation(
+                annotations.get(0),
+                "/customKeyword",
+                "urn:test#",
+                "",
+                "customKeyword",
+                "custom"
+        );
+        assertAnnotation(
+                annotations.get(1),
+                "/title",
+                "urn:test#",
+                "",
+                "title",
+                "hello"
+        );
+    }
+
+    @Test
+    void shouldFallbackToSchemaResolver() {
+        Validator validator = new ValidatorFactory()
+                .withDisabledSchemaValidation(true)
+                .withSchemaResolver(uri -> SchemaResolver.Result.fromString("false"))
+                .createValidator();
+
+        validator.registerSchema(URI.create("urn:test"), "true");
+        Validator.Result result = validator.validate(URI.create("urn:test"), "{}");
+        assertThat(result.isValid()).isTrue();
+
+        result = validator.validate(URI.create("urn:test2"), "{}");
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(1);
+        assertError(
+                errors.get(0),
+                "",
+                "urn:test2#",
+                "",
+                null,
+                "False schema always fails"
+        );
     }
 }

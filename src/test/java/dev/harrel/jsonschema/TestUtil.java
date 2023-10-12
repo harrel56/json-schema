@@ -40,11 +40,11 @@ class TestUtil {
     }
 
     static void assertAnnotation(Annotation annotation,
-                            String evaluationPath,
-                            String schemaLocation,
-                            String instanceLocation,
-                            String keyword,
-                            Object annotationObject) {
+                                 String evaluationPath,
+                                 String schemaLocation,
+                                 String instanceLocation,
+                                 String keyword,
+                                 Object annotationObject) {
         assertThat(annotation.getEvaluationPath()).isEqualTo(evaluationPath);
         assertThat(annotation.getSchemaLocation()).startsWith(schemaLocation);
         assertThat(annotation.getInstanceLocation()).isEqualTo(instanceLocation);
