@@ -140,8 +140,8 @@ public final class Validator {
     }
 
     private Schema getRootSchema(URI uri) {
-        if (uri.getFragment() != null) {
-            throw new IllegalArgumentException(String.format("Root schema [%s] cannot contain fragments", uri));
+        if (uri.getFragment() != null && !uri.getFragment().isEmpty()) {
+            throw new IllegalArgumentException(String.format("Root schema [%s] cannot contain non-empty fragments", uri));
         }
         return OptionalUtil.firstPresent(
                         () -> Optional.ofNullable(schemaRegistry.get(uri.toString())),

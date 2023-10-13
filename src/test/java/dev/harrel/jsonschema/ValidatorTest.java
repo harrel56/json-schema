@@ -36,16 +36,16 @@ class ValidatorTest {
         URI uri = URI.create("https://test.com/x#/$def/x");
         assertThatThrownBy(() -> validator.validate(uri, "{}"))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Root schema [https://test.com/x#/$def/x] cannot contain fragments");
+                .hasMessage("Root schema [https://test.com/x#/$def/x] cannot contain non-empty fragments");
     }
 
     @Test
-    void failsForUriWithEmptyFragments() {
+    void registersUriWithEmptyFragments() {
         Validator validator = new ValidatorFactory().createValidator();
         URI uri = URI.create("https://test.com/x#");
         assertThatThrownBy(() -> validator.validate(uri, "{}"))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Root schema [https://test.com/x#] cannot contain fragments");
+                .isInstanceOf(SchemaNotFoundException.class)
+                .hasMessage("Couldn't find schema with uri [https://test.com/x#]");
     }
 
     @Test
