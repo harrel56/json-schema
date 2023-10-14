@@ -10,6 +10,10 @@ final class UriUtil {
 
     private UriUtil() {}
 
+    static boolean hasNonEmptyFragment(URI uri) {
+        return uri.getFragment() != null && !uri.getFragment().isEmpty();
+    }
+
     static Optional<String> getAnchor(String uri) {
         return Optional.ofNullable(URI.create(uri).getFragment())
                 .filter(fragment -> !fragment.startsWith("/"));
