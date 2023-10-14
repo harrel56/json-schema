@@ -24,26 +24,16 @@ final class JsonParser {
     }
 
     URI parseRootSchema(URI baseUri, JsonNode node) {
-        Optional<Map<String, JsonNode>> objectMapOptional = getAsObject(node);
+        Optional<Map<String, JsonNode>> objectMapOptional = JsonNodeUtil.getAsObject(node);
         String metaSchemaUri = objectMapOptional
-                .map(obj -> obj.get(Keyword.SCHEMA))
-                .filter(JsonNode::isString)
-                .map(JsonNode::asString)
+                .flatMap(obj -> JsonNodeUtil.getStringField(obj, Keyword.SCHEMA))
                 .orElse(dialect.getMetaSchema());
         Optional<String> providedSchemaId = objectMapOptional
-                .map(obj -> obj.get(Keyword.ID))
-                .filter(JsonNode::isString)
-                .map(JsonNode::asString)
+                .flatMap(obj -> JsonNodeUtil.getStringField(obj, Keyword.ID))
                 .filter(id -> !baseUri.toString().equals(id));
-        providedSchemaId
-                .map(URI::create)
-                .ifPresent(uri -> {
-                    if (UriUtil.hasNonEmptyFragment(uri)) {
-                        throw new IllegalArgumentException(String.format("$id [%s] cannot contain non-empty fragments", uri));
-                    }
-                });
 
         MetaValidationResult metaValidationResult = validateSchemaOrPostpone(node, metaSchemaUri, baseUri.toString(), providedSchemaId);
+        providedSchemaId.ifPresent(JsonNodeUtil::validateIdField);
 
         if (node.isBoolean()) {
             SchemaParsingContext ctx = new SchemaParsingContext(dialect, schemaRegistry, baseUri.toString(), emptyMap());
@@ -65,10 +55,6 @@ final class JsonParser {
         metaValidationResult.performPostponedSchemaValidation(node, metaSchemaUri, baseUri.toString(), providedSchemaId);
 
         return providedSchemaId.map(URI::create).orElse(baseUri);
-    }
-
-    private Optional<Map<String, JsonNode>> getAsObject(JsonNode node) {
-        return node.isObject() ? Optional.of(node.asObject()) : Optional.empty();
     }
 
     private void parseNode(SchemaParsingContext ctx, JsonNode node) {
@@ -96,13 +82,9 @@ final class JsonParser {
 
     private void parseObject(SchemaParsingContext ctx, JsonNode node) {
         Map<String, JsonNode> objectMap = node.asObject();
-        String metaSchemaUri = Optional.ofNullable(objectMap.get(Keyword.SCHEMA))
-                .filter(JsonNode::isString)
-                .map(JsonNode::asString)
-                .orElse(null);
-        Optional<String> providedSchemaId = Optional.ofNullable(objectMap.get(Keyword.ID))
-                .filter(JsonNode::isString)
-                .map(JsonNode::asString);
+        String metaSchemaUri = JsonNodeUtil.getStringField(objectMap, Keyword.SCHEMA).orElse(null);
+        Optional<String> providedSchemaId = JsonNodeUtil.getStringField(objectMap, Keyword.ID);
+        providedSchemaId.ifPresent(JsonNodeUtil::validateIdField);
         String absoluteUri = ctx.getAbsoluteUri(node);
         MetaValidationResult metaValidationResult = validateSchemaOrPostpone(node, metaSchemaUri, absoluteUri, providedSchemaId);
 

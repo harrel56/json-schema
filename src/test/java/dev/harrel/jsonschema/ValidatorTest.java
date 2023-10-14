@@ -185,8 +185,10 @@ class ValidatorTest {
     }
 
     @Test
-    void allowsEmptyFragmentsInId() {
-        Validator validator = new ValidatorFactory().createValidator();
+    void allowsEmptyFragmentsInIdRootSchema() {
+        Validator validator = new ValidatorFactory()
+                .withDisabledSchemaValidation(true)
+                .createValidator();
         String schema = """
                 {
                   "$id": "urn:test#"
@@ -198,8 +200,10 @@ class ValidatorTest {
     }
 
     @Test
-    void disallowsNonEmptyFragmentsInId() {
-        Validator validator = new ValidatorFactory().createValidator();
+    void disallowsNonEmptyFragmentsInIdRootSchema() {
+        Validator validator = new ValidatorFactory()
+                .withDisabledSchemaValidation(true)
+                .createValidator();
 
         String schema1 = """
                 {
@@ -216,5 +220,55 @@ class ValidatorTest {
         assertThatThrownBy(() -> validator.registerSchema(schema2))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("$id [urn:test#/$defs/x] cannot contain non-empty fragments");
+    }
+
+    @Test
+    void allowsEmptyFragmentsInIdSubSchema() {
+        Validator validator = new ValidatorFactory()
+                .withDisabledSchemaValidation(true)
+                .createValidator();
+        String schema = """
+                {
+                  "$defs": {
+                    "x": {
+                      "$id": "urn:sub#"
+                    }
+                  }
+                }""";
+
+        URI uri = validator.registerSchema(schema);
+        Validator.Result result = validator.validate(uri, "true");
+        assertThat(result.isValid()).isTrue();
+    }
+
+    @Test
+    void disallowsNonEmptyFragmentsInIdSubSchema() {
+        Validator validator = new ValidatorFactory()
+                .withDisabledSchemaValidation(true)
+                .createValidator();
+
+        String schema1 = """
+                {
+                  "$defs": {
+                    "x": {
+                      "$id": "urn:sub#anchor"
+                    }
+                  }
+                }""";
+        assertThatThrownBy(() -> validator.registerSchema(schema1))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("$id [urn:sub#anchor] cannot contain non-empty fragments");
+
+        String schema2 = """
+                {
+                  "$defs": {
+                    "x": {
+                      "$id": "urn:sub#/$defs/x"
+                    }
+                  }
+                }""";
+        assertThatThrownBy(() -> validator.registerSchema(schema2))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("$id [urn:sub#/$defs/x] cannot contain non-empty fragments");
     }
 }
