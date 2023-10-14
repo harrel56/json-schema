@@ -183,4 +183,38 @@ class ValidatorTest {
                 "False schema always fails"
         );
     }
+
+    @Test
+    void allowsEmptyFragmentsInId() {
+        Validator validator = new ValidatorFactory().createValidator();
+        String schema = """
+                {
+                  "$id": "urn:test#"
+                }""";
+
+        URI uri = validator.registerSchema(schema);
+        Validator.Result result = validator.validate(uri, "true");
+        assertThat(result.isValid()).isTrue();
+    }
+
+    @Test
+    void disallowsNonEmptyFragmentsInId() {
+        Validator validator = new ValidatorFactory().createValidator();
+
+        String schema1 = """
+                {
+                  "$id": "urn:test#anchor"
+                }""";
+        assertThatThrownBy(() -> validator.registerSchema(schema1))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("$id [urn:test#anchor] cannot contain non-empty fragments");
+
+        String schema2 = """
+                {
+                  "$id": "urn:test#/$defs/x"
+                }""";
+        assertThatThrownBy(() -> validator.registerSchema(schema2))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("$id [urn:test#/$defs/x] cannot contain non-empty fragments");
+    }
 }

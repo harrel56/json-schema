@@ -35,6 +35,13 @@ final class JsonParser {
                 .filter(JsonNode::isString)
                 .map(JsonNode::asString)
                 .filter(id -> !baseUri.toString().equals(id));
+        providedSchemaId
+                .map(URI::create)
+                .ifPresent(uri -> {
+                    if (UriUtil.hasNonEmptyFragment(uri)) {
+                        throw new IllegalArgumentException(String.format("$id [%s] cannot contain non-empty fragments", uri));
+                    }
+                });
 
         MetaValidationResult metaValidationResult = validateSchemaOrPostpone(node, metaSchemaUri, baseUri.toString(), providedSchemaId);
 
