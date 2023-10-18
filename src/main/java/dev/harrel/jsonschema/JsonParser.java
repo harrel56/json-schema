@@ -2,7 +2,6 @@ package dev.harrel.jsonschema;
 
 import java.net.URI;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
@@ -17,7 +16,7 @@ final class JsonParser {
                EvaluatorFactory evaluatorFactory,
                SchemaRegistry schemaRegistry,
                MetaSchemaValidator metaSchemaValidator) {
-        this.dialect = dialect;
+        this.dialect = Objects.requireNonNull(dialect);
         this.evaluatorFactory = Objects.requireNonNull(evaluatorFactory);
         this.schemaRegistry = Objects.requireNonNull(schemaRegistry);
         this.metaSchemaValidator = Objects.requireNonNull(metaSchemaValidator);
@@ -116,24 +115,6 @@ final class JsonParser {
         return evaluators;
     }
 
-    static Optional<Map<String, Boolean>> getVocabulariesObject(JsonNode node) {
-        return Optional.of(node)
-                .filter(JsonNode::isObject)
-                .map(JsonNode::asObject)
-                .flatMap(JsonParser::getVocabulariesObject);
-    }
-
-    static Optional<Map<String, Boolean>> getVocabulariesObject(Map<String, JsonNode> objectNode) {
-        return Optional.of(objectNode)
-                .map(obj -> obj.get(Keyword.VOCABULARY))
-                .filter(JsonNode::isObject)
-                .map(JsonNode::asObject)
-                .map(obj -> obj.entrySet().stream()
-                        .filter(entry -> entry.getValue().isBoolean())
-                        .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().asBoolean())))
-                .map(Collections::unmodifiableMap);
-    }
-
     /* If meta-schema is the same as schema, its validation needs to be postponed */
     private MetaValidationResult validateSchemaOrPostpone(JsonNode node, String metaSchemaUri, String baseUri, Optional<String> providedSchemaId) {
         if (metaSchemaUri == null) {
@@ -142,7 +123,9 @@ final class JsonParser {
             Set<String> activeVocabularies = metaSchemaValidator.validateSchema(this, metaSchemaUri, providedSchemaId.orElse(baseUri), node);
             return new MetaValidationResult(activeVocabularies, null);
         } else {
-            Map<String, Boolean> vocabularyObject = getVocabulariesObject(node).orElse(dialect.getDefaultVocabularyObject());
+            Map<String, Boolean> vocabularyObject = JsonNodeUtil.getAsObject(node)
+                    .flatMap(JsonNodeUtil::getVocabulariesObject)
+                    .orElse(dialect.getDefaultVocabularyObject());
             Set<String> activeVocabularies = metaSchemaValidator.determineActiveVocabularies(vocabularyObject);
             return new MetaValidationResult(activeVocabularies, schemaRegistry.createSnapshot());
         }

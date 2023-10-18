@@ -39,7 +39,7 @@ public final class SchemaParsingContext {
     }
 
     Map<String, Boolean> getVocabulariesObject() {
-        return JsonParser.getVocabulariesObject(currentSchemaObject).orElse(dialect.getDefaultVocabularyObject());
+        return JsonNodeUtil.getVocabulariesObject(currentSchemaObject).orElse(dialect.getDefaultVocabularyObject());
     }
 
     /**
