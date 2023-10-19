@@ -2,7 +2,6 @@ package dev.harrel.jsonschema;
 
 import java.net.URI;
 import java.util.*;
-import java.util.concurrent.ConcurrentLinkedDeque;
 
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
@@ -163,15 +162,18 @@ final class JsonParser {
 
     private static final class MetaSchemaData {
         private final Map<String, Boolean> vocabularyObject;
-        private final ConcurrentLinkedDeque<Runnable> callbacks;
+        private final List<Runnable> callbacks;
 
         private MetaSchemaData(Map<String, Boolean> vocabularyObject) {
             this.vocabularyObject = vocabularyObject;
-            this.callbacks = new ConcurrentLinkedDeque<>();
+            this.callbacks = new ArrayList<>();
         }
 
         void parsed() {
-            callbacks.forEach(Runnable::run);
+            /* old good for loop to avoid ConcurrentModificationException */
+            for (int i = 0; i < callbacks.size(); i++) {
+                callbacks.get(i).run();
+            }
         }
     }
 }
