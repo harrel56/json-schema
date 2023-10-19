@@ -54,7 +54,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./gradlew sonar --info
+        run: ./gradlew sonar --no-daemon
 
       - name: SonarCloud analyze PR
         if: needs.get-info.outputs.pullRequestNumber != ''
@@ -62,7 +62,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: >
-          ./gradlew sonar --info
+          ./gradlew sonar --no-daemon
           -Dsonar.scm.revision=${{ needs.get-info.outputs.sourceHeadSha }}
           -Dsonar.pullrequest.key=${{ needs.get-info.outputs.pullRequestNumber }}
           -Dsonar.pullrequest.branch=${{ needs.get-info.outputs.sourceHeadBranch }}
