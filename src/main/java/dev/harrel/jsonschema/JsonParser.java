@@ -25,6 +25,16 @@ final class JsonParser {
     }
 
     URI parseRootSchema(URI baseUri, JsonNode node) {
+        SchemaRegistry.State snapshot = schemaRegistry.createSnapshot();
+        try {
+            return parseRootSchemaInternal(baseUri, node);
+        } catch (RuntimeException e) {
+            schemaRegistry.restoreSnapshot(snapshot);
+            throw e;
+        }
+    }
+
+    URI parseRootSchemaInternal(URI baseUri, JsonNode node) {
         Optional<Map<String, JsonNode>> objectMapOptional = JsonNodeUtil.getAsObject(node);
         String metaSchemaUri = objectMapOptional
                 .flatMap(obj -> JsonNodeUtil.getStringField(obj, Keyword.SCHEMA))
