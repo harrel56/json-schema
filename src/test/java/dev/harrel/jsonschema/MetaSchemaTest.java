@@ -3,6 +3,7 @@ package dev.harrel.jsonschema;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -326,6 +327,56 @@ public abstract class MetaSchemaTest {
         SchemaNotFoundException notFoundException = catchThrowableOfType(() -> validator.validate(failingUri, "null"), SchemaNotFoundException.class);
         assertThat(notFoundException).hasMessage("Couldn't find schema with uri [urn:recursive-schema]");
         assertThat(notFoundException.getRef()).isEqualTo("urn:recursive-schema");
+        assertThat(validator.validate(URI.create("urn:schema1"), "{}").isValid()).isTrue();
+        assertThat(validator.validate(URI.create("urn:passing"), "{}").isValid()).isTrue();
+    }
+
+    @Test
+    void shouldRestoreRegistryStateForExceptionDuringParsing() {
+        String rawPassingSchema = """
+                {
+                  "$id": "urn:passing"
+                }""";
+        String rawFailingSchema = """
+                {
+                  "$id": "urn:root-schema",
+                  "$defs": {
+                    "x": {
+                      "$schema": "urn:recursive-schema",
+                      "$id": "urn:recursive-schema",
+                      "fail": null
+                    }
+                  }
+                }""";
+        EvaluatorFactory evaluatorFactory = (ctx, name, node) -> {
+            if (name.equals("fail")) {
+                throw new IllegalArgumentException("failing");
+            } else {
+                return Optional.empty();
+            }
+        };
+        Validator validator = new ValidatorFactory()
+                .withJsonNodeFactory(nodeFactory)
+                .withEvaluatorFactory(evaluatorFactory)
+                .withDisabledSchemaValidation(true)
+                .createValidator();
+
+        validator.registerSchema(URI.create("urn:schema1"), rawPassingSchema);
+        assertThat(validator.validate(URI.create("urn:schema1"), "{}").isValid()).isTrue();
+        assertThat(validator.validate(URI.create("urn:passing"), "{}").isValid()).isTrue();
+
+        assertThatThrownBy(() -> validator.registerSchema(rawFailingSchema))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("failing");
+        URI rootUri = URI.create("urn:root-schema");
+        URI failingUri = URI.create("urn:recursive-schema");
+
+        SchemaNotFoundException notFoundException1 = catchThrowableOfType(() -> validator.validate(failingUri, "null"), SchemaNotFoundException.class);
+        assertThat(notFoundException1).hasMessage("Couldn't find schema with uri [urn:recursive-schema]");
+        assertThat(notFoundException1.getRef()).isEqualTo("urn:recursive-schema");
+        SchemaNotFoundException notFoundException2 = catchThrowableOfType(() -> validator.validate(rootUri, "null"), SchemaNotFoundException.class);
+        assertThat(notFoundException2).hasMessage("Couldn't find schema with uri [urn:root-schema]");
+        assertThat(notFoundException2.getRef()).isEqualTo("urn:root-schema");
         assertThat(validator.validate(URI.create("urn:schema1"), "{}").isValid()).isTrue();
         assertThat(validator.validate(URI.create("urn:passing"), "{}").isValid()).isTrue();
     }

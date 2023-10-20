@@ -71,7 +71,7 @@ class SelfValidatingSchemaTest {
     }
 
     @Test
-    void failsForInvalidSchema() {
+    void failsForInvalidSchemaPart() {
         SchemaResolver invalidResolver = uri -> {
             if (uri.equals("https://json-schema.org/draft/2020-12/meta/content")) {
                 return SchemaResolver.Result.fromString(TestUtil.readResource("/draft/2020-12/meta/invalid-content.json"));
@@ -96,6 +96,75 @@ class SelfValidatingSchemaTest {
                 "/$vocabulary",
                 "type",
                 "Value is [string] but should be [object]"
+        );
+        assertError(
+                errors.get(1),
+                "/allOf",
+                "https://json-schema.org/draft/2020-12/schema#",
+                "",
+                "allOf",
+                "Value does not match against the schemas at indexes [0]"
+        );
+    }
+
+    @Test
+    void failsForInvalidRootSchema() {
+        SchemaResolver invalidResolver = uri -> {
+            if (uri.equals("https://json-schema.org/draft/2020-12/schema")) {
+                return SchemaResolver.Result.fromString(TestUtil.readResource("/draft/2020-12/invalid-schema.json"));
+            }
+            return SchemaResolver.Result.empty();
+        };
+        SchemaResolver resolver = SchemaResolver.compose(invalidResolver, new FileResolver());
+        Validator validator = new ValidatorFactory()
+                .withSchemaResolver(resolver)
+                .createValidator();
+
+        URI schemaUri = URI.create("https://json-schema.org/draft/2020-12/schema");
+        String instance = TestUtil.readResource("/draft/2020-12/schema.json");
+        InvalidSchemaException exception = catchThrowableOfType(() -> validator.validate(schemaUri, instance), InvalidSchemaException.class);
+
+        List<Error> errors = exception.getErrors();
+        assertThat(errors).hasSize(5);
+        assertError(
+                errors.get(0),
+                "/allOf/1/$ref/properties/properties/additionalProperties/$dynamicRef/allOf/3/$ref/properties/type/anyOf/0/$ref/enum",
+                "https://json-schema.org/draft/2020-12/meta/validation#/$defs/simpleTypes",
+                "/properties/definitions/type",
+                "enum",
+                "Expected any of [[array, boolean, integer, null, number, object, string]]"
+        );
+        assertError(
+                errors.get(1),
+                "/allOf/1/$ref/properties/properties/additionalProperties/$dynamicRef/allOf/3/$ref/properties/type/anyOf/1/type",
+                "https://json-schema.org/draft/2020-12/meta/validation#/properties/type/anyOf/1",
+                "/properties/definitions/type",
+                "type",
+                "Value is [integer] but should be [array]"
+        );
+        assertError(
+                errors.get(2),
+                "/allOf/1/$ref/properties/properties/additionalProperties/$dynamicRef/allOf/3/$ref/properties/type/anyOf",
+                "https://json-schema.org/draft/2020-12/meta/validation#/properties/type",
+                "/properties/definitions/type",
+                "anyOf",
+                "Value does not match against any of the schemas"
+        );
+        assertError(
+                errors.get(3),
+                "/allOf/1/$ref/properties/properties/additionalProperties/$dynamicRef/allOf",
+                "https://json-schema.org/draft/2020-12/schema#",
+                "/properties/definitions",
+                "allOf",
+                "Value does not match against the schemas at indexes [3]"
+        );
+        assertError(
+                errors.get(4),
+                "/allOf",
+                "https://json-schema.org/draft/2020-12/schema#",
+                "",
+                "allOf",
+                "Value does not match against the schemas at indexes [1]"
         );
     }
 }
