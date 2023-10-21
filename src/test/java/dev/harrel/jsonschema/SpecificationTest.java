@@ -5,15 +5,10 @@ import dev.harrel.jsonschema.util.RemoteSchemaResolver;
 import dev.harrel.jsonschema.util.SuiteTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assumptions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 
 import java.net.URI;
-import java.util.Map;
-import java.util.Optional;
 import java.util.logging.Logger;
-
-import static dev.harrel.jsonschema.util.TestUtil.readResource;
 
 @SuppressWarnings("unused")
 public abstract class SpecificationTest {
