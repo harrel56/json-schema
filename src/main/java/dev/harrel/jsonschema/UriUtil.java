@@ -19,6 +19,10 @@ final class UriUtil {
                 .filter(fragment -> !fragment.startsWith("/"));
     }
 
+    static URI getUriWithoutFragment(URI uri) {
+        return URI.create(getUriWithoutFragment(uri.toString()));
+    }
+
     static String getUriWithoutFragment(String uri) {
         int fragmentIdx = uri.indexOf('#');
         if (fragmentIdx < 0) {

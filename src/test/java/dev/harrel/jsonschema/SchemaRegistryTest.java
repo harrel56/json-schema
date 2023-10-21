@@ -3,6 +3,7 @@ package dev.harrel.jsonschema;
 import dev.harrel.jsonschema.providers.JacksonNode;
 import org.junit.jupiter.api.Test;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Set;
 
@@ -14,7 +15,7 @@ class SchemaRegistryTest {
     @Test
     void shouldRestoreStateProperly() {
         SchemaRegistry schemaRegistry = new SchemaRegistry();
-        SchemaParsingContext ctx = new SchemaParsingContext(new Dialects.Draft2020Dialect(), schemaRegistry, "urn:test", emptyMap());
+        SchemaParsingContext ctx = new SchemaParsingContext(new Dialects.Draft2020Dialect(), schemaRegistry, URI.create("urn:test"), emptyMap());
         JacksonNode.Factory factory = new JacksonNode.Factory();
         JacksonNode rootSchemaNode = factory.create("""
                 {

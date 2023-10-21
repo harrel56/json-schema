@@ -33,9 +33,10 @@ final class JsonNodeUtil {
                 .map(Collections::unmodifiableMap);
     }
 
-    static void validateIdField(String id) {
+    static boolean validateIdField(String id) {
         if (UriUtil.hasNonEmptyFragment(URI.create(id))) {
             throw new IllegalArgumentException(String.format("$id [%s] cannot contain non-empty fragments", id));
         }
+        return true;
     }
 }

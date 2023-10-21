@@ -26,8 +26,8 @@ public final class SchemaParsingContext {
         this.currentSchemaObject = currentSchemaObject;
     }
 
-    SchemaParsingContext(Dialect dialect, SchemaRegistry schemaRegistry, String baseUri, Map<String, JsonNode> currentSchemaObject) {
-        this(dialect, URI.create(baseUri), URI.create(baseUri), schemaRegistry, currentSchemaObject);
+    SchemaParsingContext(Dialect dialect, SchemaRegistry schemaRegistry, URI baseUri, Map<String, JsonNode> currentSchemaObject) {
+        this(dialect, baseUri, baseUri, schemaRegistry, currentSchemaObject);
     }
 
     SchemaParsingContext withParentUri(URI parentUri) {
@@ -40,6 +40,10 @@ public final class SchemaParsingContext {
 
     Map<String, Boolean> getVocabulariesObject() {
         return JsonNodeUtil.getVocabulariesObject(currentSchemaObject).orElse(dialect.getDefaultVocabularyObject());
+    }
+
+    URI getBaseUri() {
+        return baseUri;
     }
 
     /**
