@@ -106,6 +106,11 @@ public abstract class Draft2019SpecificationTest {
         testValidation(bundle, name, schema, json, valid);
     }
 
+    @SuiteTest("/suite/tests/draft2019-09/additionalItems.json")
+    void additionalItemsTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
     @SuiteTest("/suite/tests/draft2019-09/maxItems.json")
     void maxItemsTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
         testValidation(bundle, name, schema, json, valid);

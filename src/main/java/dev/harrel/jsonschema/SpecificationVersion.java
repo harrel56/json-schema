@@ -4,7 +4,9 @@ package dev.harrel.jsonschema;
  * {@code SpecificationVersion} enum represents JSON Schema specification versions that are supported.
  */
 public enum SpecificationVersion {
-    DRAFT2020_12("https://json-schema.org/draft/2020-12/schema", "/draft2020-12.json");
+    DRAFT2020_12("https://json-schema.org/draft/2020-12/schema", "/draft2020-12.json"),
+    // TODO add proper 2019-09 schema.json
+    DRAFT2019_09("https://json-schema.org/draft/2019-09/schema", "/draft2020-12.json");
     private final String id;
     private final String resourcePath;
 
