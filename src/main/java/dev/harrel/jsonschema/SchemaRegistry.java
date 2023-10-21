@@ -1,11 +1,10 @@
 package dev.harrel.jsonschema;
 
 import java.net.URI;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.util.Collections.*;
 
 final class SchemaRegistry {
     private State state = State.empty();
@@ -40,17 +39,24 @@ final class SchemaRegistry {
         return fragments.dynamicSchemas.get(jsonPointer);
     }
 
+    void registerAlias(URI originalUri, URI aliasUri) {
+        Fragments originalFragments = state.getFragments(originalUri);
+        /* As long as registering schema under one URI multiple times is not forbidden, */
+        /* aliases can cause unexpected changes - thus use of readOnly */
+        state.fragments.put(aliasUri, originalFragments.readOnly());
+    }
+
     void registerSchema(SchemaParsingContext ctx, JsonNode schemaNode, List<EvaluatorWrapper> evaluators, Set<String> activeVocabularies) {
         Schema schema = new Schema(ctx.getParentUri(), ctx.getAbsoluteUri(schemaNode), evaluators, activeVocabularies, ctx.getVocabulariesObject());
         state.getFragments(ctx.getBaseUri()).schemas.put(schemaNode.getJsonPointer(), schema);
         registerAnchorsIfPresent(ctx, schemaNode, schema);
     }
 
-    void registerIdentifiableSchema(SchemaParsingContext ctx,
-                                    URI id,
-                                    JsonNode schemaNode,
-                                    List<EvaluatorWrapper> evaluators,
-                                    Set<String> activeVocabularies ) {
+    void registerEmbeddedSchema(SchemaParsingContext ctx,
+                                URI id,
+                                JsonNode schemaNode,
+                                List<EvaluatorWrapper> evaluators,
+                                Set<String> activeVocabularies) {
         Fragments baseFragments = state.getFragments(ctx.getBaseUri());
         Fragments idFragments = state.getFragments(UriUtil.getUriWithoutFragment(id));
 
@@ -114,6 +120,10 @@ final class SchemaRegistry {
 
         private Fragments copy() {
             return new Fragments(new HashMap<>(this.schemas), new HashMap<>(this.additionalSchemas), new HashMap<>(this.dynamicSchemas));
+        }
+
+        private Fragments readOnly() {
+            return new Fragments(unmodifiableMap(this.schemas), unmodifiableMap(this.additionalSchemas), unmodifiableMap(this.dynamicSchemas));
         }
 
         private static Fragments empty() {
