@@ -40,6 +40,11 @@ final class SchemaRegistry {
         return fragments.dynamicSchemas.get(jsonPointer);
     }
 
+    void registerAlias(URI originalUri, URI aliasUri) {
+        Fragments originalFragments = state.getFragments(originalUri);
+        state.fragments.put(aliasUri, originalFragments);
+    }
+
     void registerSchema(SchemaParsingContext ctx, JsonNode schemaNode, List<EvaluatorWrapper> evaluators, Set<String> activeVocabularies) {
         Schema schema = new Schema(ctx.getParentUri(), ctx.getAbsoluteUri(schemaNode), evaluators, activeVocabularies, ctx.getVocabulariesObject());
         state.getFragments(ctx.getBaseUri()).schemas.put(schemaNode.getJsonPointer(), schema);
@@ -47,10 +52,20 @@ final class SchemaRegistry {
     }
 
     void registerIdentifiableSchema(SchemaParsingContext ctx,
-                                    URI id,
                                     JsonNode schemaNode,
                                     List<EvaluatorWrapper> evaluators,
-                                    Set<String> activeVocabularies ) {
+                                    Set<String> activeVocabularies) {
+        Fragments baseFragments = state.getFragments(ctx.getBaseUri());
+        Schema identifiableSchema = new Schema(ctx.getParentUri(), ctx.getAbsoluteUri(schemaNode), evaluators, activeVocabularies, ctx.getVocabulariesObject());
+        baseFragments.schemas.put(schemaNode.getJsonPointer(), identifiableSchema);
+        registerAnchorsIfPresent(ctx, schemaNode, identifiableSchema);
+    }
+
+    void registerEmbeddedIdentifiableSchema(SchemaParsingContext ctx,
+                                            URI id,
+                                            JsonNode schemaNode,
+                                            List<EvaluatorWrapper> evaluators,
+                                            Set<String> activeVocabularies) {
         Fragments baseFragments = state.getFragments(ctx.getBaseUri());
         Fragments idFragments = state.getFragments(UriUtil.getUriWithoutFragment(id));
 

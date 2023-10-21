@@ -83,7 +83,7 @@ class EvaluationPathTest {
         assertError(
                 errors.get(0),
                 "/properties/foo/$ref/properties/bar/$ref/type",
-                "urn:test#/$defs/reffed2",
+                "root#/$defs/reffed2",
                 "/foo/bar",
                 "type"
         );
