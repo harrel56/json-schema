@@ -20,15 +20,19 @@ final class UriUtil {
     }
 
     static URI getUriWithoutFragment(URI uri) {
-        return URI.create(getUriWithoutFragment(uri.toString()));
-    }
-
-    static String getUriWithoutFragment(String uri) {
-        int fragmentIdx = uri.indexOf('#');
-        if (fragmentIdx < 0) {
+        if (uri.getFragment() == null) {
             return uri;
         } else {
-            return uri.substring(0, fragmentIdx);
+            return getUriWithoutFragment(uri.toString());
+        }
+    }
+
+    static URI getUriWithoutFragment(String uri) {
+        int fragmentIdx = uri.indexOf('#');
+        if (fragmentIdx < 0) {
+            return URI.create(uri);
+        } else {
+            return URI.create(uri.substring(0, fragmentIdx));
         }
     }
 

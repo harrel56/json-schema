@@ -5,7 +5,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 interface MetaSchemaValidator {
-    Set<String> validateSchema(JsonParser jsonParser, String metaSchemaUri, String schemaUri, JsonNode node);
+    Set<String> validateSchema(JsonParser jsonParser, URI metaSchemaUri, String schemaUri, JsonNode node);
 
     Set<String> determineActiveVocabularies(Map<String, Boolean> vocabulariesObject);
 
@@ -17,7 +17,7 @@ interface MetaSchemaValidator {
         }
 
         @Override
-        public Set<String> validateSchema(JsonParser jsonParser, String metaSchemaUri, String schemaUri, JsonNode node) {
+        public Set<String> validateSchema(JsonParser jsonParser, URI metaSchemaUri, String schemaUri, JsonNode node) {
             return activeVocabularies;
         }
 
@@ -40,7 +40,7 @@ interface MetaSchemaValidator {
         }
 
         @Override
-        public Set<String> validateSchema(JsonParser jsonParser, String metaSchemaUri, String schemaUri, JsonNode node) {
+        public Set<String> validateSchema(JsonParser jsonParser, URI metaSchemaUri, String schemaUri, JsonNode node) {
             Objects.requireNonNull(metaSchemaUri);
             Schema schema = resolveMetaSchema(jsonParser, metaSchemaUri);
             EvaluationContext ctx = new EvaluationContext(jsonNodeFactory, jsonParser, schemaRegistry, schemaResolver, schema.getActiveVocabularies());
@@ -70,26 +70,26 @@ interface MetaSchemaValidator {
             return vocabulariesObject.keySet();
         }
 
-        private Schema resolveMetaSchema(JsonParser jsonParser, String uri) {
+        private Schema resolveMetaSchema(JsonParser jsonParser, URI uri) {
             return OptionalUtil.firstPresent(
                     () -> Optional.ofNullable(schemaRegistry.get(uri)),
-                    () -> Optional.ofNullable(schemaRegistry.getDynamic(uri))
+                    () -> Optional.ofNullable(schemaRegistry.getDynamic(uri.toString()))
             ).orElseGet(() -> resolveExternalSchema(jsonParser, uri));
         }
 
-        private Schema resolveExternalSchema(JsonParser jsonParser, String uri) {
-            String baseUri = UriUtil.getUriWithoutFragment(uri);
+        private Schema resolveExternalSchema(JsonParser jsonParser, URI uri) {
+            URI baseUri = UriUtil.getUriWithoutFragment(uri);
             if (schemaRegistry.get(baseUri) != null) {
-                throw MetaSchemaResolvingException.resolvingFailure(uri);
+                throw MetaSchemaResolvingException.resolvingFailure(uri.toString());
             }
-            SchemaResolver.Result result = schemaResolver.resolve(baseUri);
+            SchemaResolver.Result result = schemaResolver.resolve(baseUri.toString());
             if (result.isEmpty()) {
-                throw MetaSchemaResolvingException.resolvingFailure(uri);
+                throw MetaSchemaResolvingException.resolvingFailure(uri.toString());
             }
             try {
-                result.toJsonNode(jsonNodeFactory).ifPresent(node -> jsonParser.parseRootSchema(URI.create(baseUri), node));
+                result.toJsonNode(jsonNodeFactory).ifPresent(node -> jsonParser.parseRootSchema(baseUri, node));
             } catch (Exception e) {
-                throw MetaSchemaResolvingException.parsingFailure(uri, e);
+                throw MetaSchemaResolvingException.parsingFailure(uri.toString(), e);
             }
             return resolveMetaSchema(jsonParser, uri);
         }

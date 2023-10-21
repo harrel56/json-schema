@@ -45,7 +45,6 @@ final class JsonParser {
                 .flatMap(obj -> JsonNodeUtil.getStringField(obj, Keyword.ID))
                 .filter(JsonNodeUtil::validateIdField)
                 .map(UriUtil::getUriWithoutFragment)
-                .map(URI::create)
                 .filter(id -> !baseUri.equals(id));
         Map<String, Boolean> vocabulariesObject = objectMapOptional
                 .flatMap(JsonNodeUtil::getVocabulariesObject)
@@ -159,11 +158,11 @@ final class JsonParser {
             return dialect.getSupportedVocabularies();
         }
         if (!unfinishedSchemas.containsKey(metaSchemaUri)) {
-            return metaSchemaValidator.validateSchema(this, metaSchemaUri.toString(), uri, node);
+            return metaSchemaValidator.validateSchema(this, metaSchemaUri, uri, node);
         }
 
         MetaSchemaData metaSchemaData = unfinishedSchemas.get(metaSchemaUri);
-        metaSchemaData.callbacks.add(() -> metaSchemaValidator.validateSchema(this, metaSchemaUri.toString(), uri, node));
+        metaSchemaData.callbacks.add(() -> metaSchemaValidator.validateSchema(this, metaSchemaUri, uri, node));
         return metaSchemaValidator.determineActiveVocabularies(metaSchemaData.vocabularyObject);
     }
 

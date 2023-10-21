@@ -18,16 +18,24 @@ final class SchemaRegistry {
         this.state = state;
     }
 
-    Schema get(String uri) {
-        URI baseUri = URI.create(UriUtil.getUriWithoutFragment(uri));
-        String jsonPointer = UriUtil.getJsonPointer(uri);
-        Fragments fragments = state.getFragments(baseUri);
-        return fragments.schemas.getOrDefault(jsonPointer, fragments.additionalSchemas.get(jsonPointer));
+    Schema get(String ref) {
+        URI baseUri = UriUtil.getUriWithoutFragment(ref);
+        String jsonPointer = UriUtil.getJsonPointer(ref);
+        return get(baseUri, jsonPointer);
     }
 
-    Schema getDynamic(String uri) {
-        URI baseUri = URI.create(UriUtil.getUriWithoutFragment(uri));
-        String jsonPointer = UriUtil.getJsonPointer(uri);
+    Schema get(URI baseUri) {
+        return get(baseUri, "");
+    }
+
+    private Schema get(URI baseUri, String fragment) {
+        Fragments fragments = state.getFragments(baseUri);
+        return fragments.schemas.getOrDefault(fragment, fragments.additionalSchemas.get(fragment));
+    }
+
+    Schema getDynamic(String ref) {
+        URI baseUri = UriUtil.getUriWithoutFragment(ref);
+        String jsonPointer = UriUtil.getJsonPointer(ref);
         Fragments fragments = state.getFragments(baseUri);
         return fragments.dynamicSchemas.get(jsonPointer);
     }
@@ -43,17 +51,18 @@ final class SchemaRegistry {
                                     JsonNode schemaNode,
                                     List<EvaluatorWrapper> evaluators,
                                     Set<String> activeVocabularies ) {
-        Fragments fragments = state.getFragments(ctx.getBaseUri());
-        URI idWithoutFragment = UriUtil.getUriWithoutFragment(id);
-        fragments.schemas.entrySet().stream()
+        Fragments baseFragments = state.getFragments(ctx.getBaseUri());
+        Fragments idFragments = state.getFragments(UriUtil.getUriWithoutFragment(id));
+
+        baseFragments.schemas.entrySet().stream()
                 .filter(e -> e.getKey().startsWith(schemaNode.getJsonPointer()))
                 .forEach(e -> {
                     String newJsonPointer = e.getKey().substring(schemaNode.getJsonPointer().length());
-                    state.getFragments(idWithoutFragment).additionalSchemas.put(newJsonPointer, e.getValue());
+                    idFragments.additionalSchemas.put(newJsonPointer, e.getValue());
                 });
         Schema identifiableSchema = new Schema(ctx.getParentUri(), ctx.getAbsoluteUri(schemaNode), evaluators, activeVocabularies, ctx.getVocabulariesObject());
-        state.getFragments(idWithoutFragment).schemas.put("", identifiableSchema);
-        fragments.schemas.put(schemaNode.getJsonPointer(), identifiableSchema);
+        idFragments.schemas.put("", identifiableSchema);
+        baseFragments.schemas.put(schemaNode.getJsonPointer(), identifiableSchema);
         registerAnchorsIfPresent(ctx, schemaNode, identifiableSchema);
     }
 
