@@ -63,17 +63,10 @@ final class JsonParser {
             schemaRegistry.registerSchema(ctx, node, evaluators, activeVocabularies);
         } else if (objectMapOptional.isPresent()) {
             Map<String, JsonNode> objectMap = objectMapOptional.get();
-            if (providedSchemaId.isPresent()) {
-                URI idUri = providedSchemaId.get();
-                SchemaParsingContext ctx = new SchemaParsingContext(dialect, schemaRegistry, idUri, objectMap);
-                List<EvaluatorWrapper> evaluators = parseEvaluators(ctx, objectMap, node.getJsonPointer());
-                schemaRegistry.registerSchema(ctx, node, evaluators, activeVocabularies);
-                schemaRegistry.registerAlias(idUri, baseUri);
-            } else {
-                SchemaParsingContext ctx = new SchemaParsingContext(dialect, schemaRegistry, baseUri, objectMap);
-                List<EvaluatorWrapper> evaluators = parseEvaluators(ctx, objectMap, node.getJsonPointer());
-                schemaRegistry.registerSchema(ctx, node, evaluators, activeVocabularies);
-            }
+            SchemaParsingContext ctx = new SchemaParsingContext(dialect, schemaRegistry, finalUri, objectMap);
+            List<EvaluatorWrapper> evaluators = parseEvaluators(ctx, objectMap, node.getJsonPointer());
+            schemaRegistry.registerSchema(ctx, node, evaluators, activeVocabularies);
+            providedSchemaId.ifPresent(id -> schemaRegistry.registerAlias(id, baseUri));
         }
 
         metaSchemaData.parsed();
