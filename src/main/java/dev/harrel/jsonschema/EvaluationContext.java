@@ -161,8 +161,9 @@ public final class EvaluationContext {
 
     private Optional<Schema> resolveDynamicSchema(String ref) {
         String resolvedUri = UriUtil.resolveUri(dynamicScope.element(), ref);
-        if (schemaRegistry.get(resolvedUri) != null) {
-            return Optional.of(schemaRegistry.get(resolvedUri));
+        Schema staticSchema = schemaRegistry.get(resolvedUri);
+        if (staticSchema != null) {
+            return Optional.of(staticSchema);
         }
         Optional<String> anchor = UriUtil.getAnchor(ref);
         if (anchor.isPresent()) {
@@ -196,14 +197,14 @@ public final class EvaluationContext {
     }
 
     private Optional<Schema> resolveExternalSchema(String originalRef, String resolvedUri) {
-        String baseUri = UriUtil.getUriWithoutFragment(resolvedUri);
+        URI baseUri = UriUtil.getUriWithoutFragment(resolvedUri);
         if (schemaRegistry.get(baseUri) != null) {
             return Optional.empty();
         }
-        return schemaResolver.resolve(baseUri)
+        return schemaResolver.resolve(baseUri.toString())
                 .toJsonNode(jsonNodeFactory)
                 .flatMap(node -> {
-                    jsonParser.parseRootSchema(URI.create(baseUri), node);
+                    jsonParser.parseRootSchema(baseUri, node);
                     return resolveSchema(originalRef);
                 });
     }

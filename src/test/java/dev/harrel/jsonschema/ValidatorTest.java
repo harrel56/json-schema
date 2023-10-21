@@ -234,12 +234,12 @@ class ValidatorTest {
         Validator validator2 = new ValidatorFactory().createValidator();
 
         assertThatThrownBy(() -> validator2.registerSchema(schema1))
-                .isInstanceOf(InvalidSchemaException.class)
-                .hasMessage("Schema [urn:test#anchor] failed to validate against meta-schema [https://json-schema.org/draft/2020-12/schema]");
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("$id [urn:test#anchor] cannot contain non-empty fragments");
 
         assertThatThrownBy(() -> validator2.registerSchema(schema2))
-                .isInstanceOf(InvalidSchemaException.class)
-                .hasMessage("Schema [urn:test#/$defs/x] failed to validate against meta-schema [https://json-schema.org/draft/2020-12/schema]");
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("$id [urn:test#/$defs/x] cannot contain non-empty fragments");
     }
 
     @Test

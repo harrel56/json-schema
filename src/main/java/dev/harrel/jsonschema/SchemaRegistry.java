@@ -5,29 +5,44 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 final class SchemaRegistry {
     private State state = State.empty();
 
     State createSnapshot() {
-        return State.copyOf(this.state);
+        return state.copy();
     }
 
     void restoreSnapshot(State state) {
         this.state = state;
     }
 
-    Schema get(String uri) {
-        return state.schemas.getOrDefault(uri, state.additionalSchemas.get(uri));
+    Schema get(String ref) {
+        URI baseUri = UriUtil.getUriWithoutFragment(ref);
+        String jsonPointer = UriUtil.getJsonPointer(ref);
+        return get(baseUri, jsonPointer);
     }
 
-    Schema getDynamic(String anchor) {
-        return state.dynamicSchemas.get(anchor);
+    Schema get(URI baseUri) {
+        return get(baseUri, "");
+    }
+
+    private Schema get(URI baseUri, String fragment) {
+        Fragments fragments = state.getFragments(baseUri);
+        return fragments.schemas.getOrDefault(fragment, fragments.additionalSchemas.get(fragment));
+    }
+
+    Schema getDynamic(String ref) {
+        URI baseUri = UriUtil.getUriWithoutFragment(ref);
+        String jsonPointer = UriUtil.getJsonPointer(ref);
+        Fragments fragments = state.getFragments(baseUri);
+        return fragments.dynamicSchemas.get(jsonPointer);
     }
 
     void registerSchema(SchemaParsingContext ctx, JsonNode schemaNode, List<EvaluatorWrapper> evaluators, Set<String> activeVocabularies) {
         Schema schema = new Schema(ctx.getParentUri(), ctx.getAbsoluteUri(schemaNode), evaluators, activeVocabularies, ctx.getVocabulariesObject());
-        state.schemas.put(ctx.getAbsoluteUri(schemaNode), schema);
+        state.getFragments(ctx.getBaseUri()).schemas.put(schemaNode.getJsonPointer(), schema);
         registerAnchorsIfPresent(ctx, schemaNode, schema);
     }
 
@@ -36,19 +51,18 @@ final class SchemaRegistry {
                                     JsonNode schemaNode,
                                     List<EvaluatorWrapper> evaluators,
                                     Set<String> activeVocabularies ) {
-        String absoluteUri = ctx.getAbsoluteUri(schemaNode);
-        state.schemas.entrySet().stream()
-                .filter(e -> e.getKey().startsWith(absoluteUri))
+        Fragments baseFragments = state.getFragments(ctx.getBaseUri());
+        Fragments idFragments = state.getFragments(UriUtil.getUriWithoutFragment(id));
+
+        baseFragments.schemas.entrySet().stream()
+                .filter(e -> e.getKey().startsWith(schemaNode.getJsonPointer()))
                 .forEach(e -> {
-                    /* Special case for root json pointer, because it ends with slash */
-                    int normalizedUriSize = absoluteUri.endsWith("/") ? absoluteUri.length() - 1 : absoluteUri.length();
-                    String newJsonPointer = e.getKey().substring(normalizedUriSize);
-                    String newUri = id.toString() + "#" + newJsonPointer;
-                    state.additionalSchemas.put(newUri, e.getValue());
+                    String newJsonPointer = e.getKey().substring(schemaNode.getJsonPointer().length());
+                    idFragments.additionalSchemas.put(newJsonPointer, e.getValue());
                 });
-        Schema identifiableSchema = new Schema(ctx.getParentUri(), absoluteUri, evaluators, activeVocabularies, ctx.getVocabulariesObject());
-        state.schemas.put(id.toString(), identifiableSchema);
-        state.schemas.put(absoluteUri, identifiableSchema);
+        Schema identifiableSchema = new Schema(ctx.getParentUri(), ctx.getAbsoluteUri(schemaNode), evaluators, activeVocabularies, ctx.getVocabulariesObject());
+        idFragments.schemas.put("", identifiableSchema);
+        baseFragments.schemas.put(schemaNode.getJsonPointer(), identifiableSchema);
         registerAnchorsIfPresent(ctx, schemaNode, identifiableSchema);
     }
 
@@ -57,36 +71,53 @@ final class SchemaRegistry {
             return;
         }
         Map<String, JsonNode> objectMap = schemaNode.asObject();
-        JsonNode anchorNode = objectMap.get(Keyword.ANCHOR);
-        if (anchorNode != null && anchorNode.isString()) {
-            String anchorFragment = "#" + anchorNode.asString();
-            String anchoredUri = UriUtil.resolveUri(ctx.getParentUri(), anchorFragment);
-            state.additionalSchemas.put(anchoredUri, schema);
-        }
-        JsonNode dynamicAnchorNode = objectMap.get(Keyword.DYNAMIC_ANCHOR);
-        if (dynamicAnchorNode != null && dynamicAnchorNode.isString()) {
-            String anchorFragment = "#" + dynamicAnchorNode.asString();
-            state.dynamicSchemas.put(ctx.getParentUri().toString() + anchorFragment, schema);
-        }
+        Fragments fragments = state.getFragments(ctx.getParentUri());
+
+        JsonNodeUtil.getStringField(objectMap, Keyword.ANCHOR)
+                .ifPresent(anchorString -> fragments.additionalSchemas.put(anchorString, schema));
+        JsonNodeUtil.getStringField(objectMap, Keyword.DYNAMIC_ANCHOR)
+                .ifPresent(anchorString -> fragments.dynamicSchemas.put(anchorString, schema));
     }
 
     static final class State {
+        private final Map<URI, Fragments> fragments;
+
+        private State(Map<URI, Fragments> fragments) {
+            this.fragments = fragments;
+        }
+
+        private Fragments getFragments(URI uri) {
+            return fragments.computeIfAbsent(uri, key -> Fragments.empty());
+        }
+
+        private State copy() {
+            Map<URI, Fragments> copiedMap = this.fragments.entrySet().stream()
+                    .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().copy()));
+            return new State(copiedMap);
+        }
+
+        private static State empty() {
+            return new State(new HashMap<>());
+        }
+    }
+
+    private static final class Fragments {
         private final Map<String, Schema> schemas;
         private final Map<String, Schema> additionalSchemas;
         private final Map<String, Schema> dynamicSchemas;
 
-        private State(Map<String, Schema> schemas, Map<String, Schema> additionalSchemas, Map<String, Schema> dynamicSchemas) {
-            this.schemas = new HashMap<>(schemas);
-            this.additionalSchemas = new HashMap<>(additionalSchemas);
-            this.dynamicSchemas = new HashMap<>(dynamicSchemas);
+        private Fragments(Map<String, Schema> schemas, Map<String, Schema> additionalSchemas, Map<String, Schema> dynamicSchemas) {
+            this.schemas = schemas;
+            this.additionalSchemas = additionalSchemas;
+            this.dynamicSchemas = dynamicSchemas;
         }
 
-        private static State empty() {
-            return new State(new HashMap<>(), new HashMap<>(), new HashMap<>());
+        private Fragments copy() {
+            return new Fragments(new HashMap<>(this.schemas), new HashMap<>(this.additionalSchemas), new HashMap<>(this.dynamicSchemas));
         }
 
-        private static State copyOf(State other) {
-            return new State(new HashMap<>(other.schemas), new HashMap<>(other.additionalSchemas), new HashMap<>(other.dynamicSchemas));
+        private static Fragments empty() {
+            return new Fragments(new HashMap<>(), new HashMap<>(), new HashMap<>());
         }
     }
 }

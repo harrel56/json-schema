@@ -4,6 +4,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -31,7 +32,7 @@ public abstract class Draft2020EvaluatorFactoryTest {
     void shouldCreateEvaluatorOnlyForSupportedTypes(String keyword, Set<SimpleType> supportedTypes) {
         Dialects.Draft2020Dialect dialect = new Dialects.Draft2020Dialect();
         EvaluatorFactory evaluatorFactory = dialect.getEvaluatorFactory();
-        SchemaParsingContext ctx = new SchemaParsingContext(dialect, new SchemaRegistry(), "CoreEvaluatorFactoryTest", emptyMap());
+        SchemaParsingContext ctx = new SchemaParsingContext(dialect, new SchemaRegistry(), URI.create("CoreEvaluatorFactoryTest"), emptyMap());
 
         for (var entry : TYPE_MAP.entrySet()) {
             JsonNode wrappedNode = nodeFactory.create("{\"%s\": %s}".formatted(keyword, entry.getValue()));

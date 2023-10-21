@@ -19,12 +19,20 @@ final class UriUtil {
                 .filter(fragment -> !fragment.startsWith("/"));
     }
 
-    static String getUriWithoutFragment(String uri) {
-        int fragmentIdx = uri.indexOf('#');
-        if (fragmentIdx < 0) {
+    static URI getUriWithoutFragment(URI uri) {
+        if (uri.getFragment() == null) {
             return uri;
         } else {
-            return uri.substring(0, fragmentIdx);
+            return getUriWithoutFragment(uri.toString());
+        }
+    }
+
+    static URI getUriWithoutFragment(String uri) {
+        int fragmentIdx = uri.indexOf('#');
+        if (fragmentIdx < 0) {
+            return URI.create(uri);
+        } else {
+            return URI.create(uri.substring(0, fragmentIdx));
         }
     }
 
@@ -60,8 +68,7 @@ final class UriUtil {
     }
 
     static String decodeUrl(String url) {
-        String decoded = internalDecode(url);
-        String[] split = decoded.split("#", -1);
+        String[] split = url.split("#", -1);
         StringBuilder sb = new StringBuilder(split[0]);
         if (split.length > 1) {
             sb.append('#');
@@ -71,7 +78,7 @@ final class UriUtil {
     }
 
     static String decodeJsonPointer(String pointer) {
-        return pointer.replace("~0", "~").replace("~1", "/");
+        return internalDecode(pointer).replace("~0", "~").replace("~1", "/");
     }
 
     private static String internalDecode(String url) {
