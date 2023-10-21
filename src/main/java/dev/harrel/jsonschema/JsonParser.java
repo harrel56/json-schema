@@ -60,19 +60,19 @@ final class JsonParser {
         if (node.isBoolean()) {
             SchemaParsingContext ctx = new SchemaParsingContext(dialect, schemaRegistry, baseUri, emptyMap());
             List<EvaluatorWrapper> evaluators = singletonList(new EvaluatorWrapper(null, node, Schema.getBooleanEvaluator(node.asBoolean())));
-            schemaRegistry.registerIdentifiableSchema(ctx, node, evaluators, activeVocabularies);
+            schemaRegistry.registerSchema(ctx, node, evaluators, activeVocabularies);
         } else if (objectMapOptional.isPresent()) {
             Map<String, JsonNode> objectMap = objectMapOptional.get();
             if (providedSchemaId.isPresent()) {
                 URI idUri = providedSchemaId.get();
                 SchemaParsingContext ctx = new SchemaParsingContext(dialect, schemaRegistry, idUri, objectMap);
                 List<EvaluatorWrapper> evaluators = parseEvaluators(ctx, objectMap, node.getJsonPointer());
-                schemaRegistry.registerIdentifiableSchema(ctx, node, evaluators, activeVocabularies);
+                schemaRegistry.registerSchema(ctx, node, evaluators, activeVocabularies);
                 schemaRegistry.registerAlias(idUri, baseUri);
             } else {
                 SchemaParsingContext ctx = new SchemaParsingContext(dialect, schemaRegistry, baseUri, objectMap);
                 List<EvaluatorWrapper> evaluators = parseEvaluators(ctx, objectMap, node.getJsonPointer());
-                schemaRegistry.registerIdentifiableSchema(ctx, node, evaluators, activeVocabularies);
+                schemaRegistry.registerSchema(ctx, node, evaluators, activeVocabularies);
             }
         }
 
@@ -128,7 +128,7 @@ final class JsonParser {
             URI uri = ctx.getParentUri().resolve(idUri);
             SchemaParsingContext newCtx = ctx.withParentUri(uri);
             List<EvaluatorWrapper> evaluators = parseEvaluators(newCtx, objectMap, node.getJsonPointer());
-            schemaRegistry.registerEmbeddedIdentifiableSchema(newCtx, uri, node, evaluators, activeVocabularies);
+            schemaRegistry.registerEmbeddedSchema(newCtx, uri, node, evaluators, activeVocabularies);
         } else {
             schemaRegistry.registerSchema(ctx, node, parseEvaluators(ctx, objectMap, node.getJsonPointer()), activeVocabularies);
         }

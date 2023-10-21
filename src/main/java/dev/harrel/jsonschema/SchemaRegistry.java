@@ -51,21 +51,11 @@ final class SchemaRegistry {
         registerAnchorsIfPresent(ctx, schemaNode, schema);
     }
 
-    void registerIdentifiableSchema(SchemaParsingContext ctx,
-                                    JsonNode schemaNode,
-                                    List<EvaluatorWrapper> evaluators,
-                                    Set<String> activeVocabularies) {
-        Fragments baseFragments = state.getFragments(ctx.getBaseUri());
-        Schema identifiableSchema = new Schema(ctx.getParentUri(), ctx.getAbsoluteUri(schemaNode), evaluators, activeVocabularies, ctx.getVocabulariesObject());
-        baseFragments.schemas.put(schemaNode.getJsonPointer(), identifiableSchema);
-        registerAnchorsIfPresent(ctx, schemaNode, identifiableSchema);
-    }
-
-    void registerEmbeddedIdentifiableSchema(SchemaParsingContext ctx,
-                                            URI id,
-                                            JsonNode schemaNode,
-                                            List<EvaluatorWrapper> evaluators,
-                                            Set<String> activeVocabularies) {
+    void registerEmbeddedSchema(SchemaParsingContext ctx,
+                                URI id,
+                                JsonNode schemaNode,
+                                List<EvaluatorWrapper> evaluators,
+                                Set<String> activeVocabularies) {
         Fragments baseFragments = state.getFragments(ctx.getBaseUri());
         Fragments idFragments = state.getFragments(UriUtil.getUriWithoutFragment(id));
 
