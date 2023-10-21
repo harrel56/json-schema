@@ -56,6 +56,14 @@ class GsonTest {
     }
 
     @Nested
+    class Draft2019SpecificationTest extends dev.harrel.jsonschema.Draft2019SpecificationTest {
+        @BeforeAll
+        static void beforeAll() {
+            nodeFactory = new GsonNode.Factory();
+        }
+    }
+
+    @Nested
     class JsonNodeTest extends dev.harrel.jsonschema.JsonNodeTest {
         @BeforeAll
         static void beforeAll() {
