@@ -12,8 +12,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
-import static dev.harrel.jsonschema.TestUtil.assertError;
-import static dev.harrel.jsonschema.TestUtil.readResource;
+import static dev.harrel.jsonschema.util.TestUtil.assertError;
+import static dev.harrel.jsonschema.util.TestUtil.readResource;
 import static org.assertj.core.api.Assertions.*;
 
 class ValidatorFactoryTest {

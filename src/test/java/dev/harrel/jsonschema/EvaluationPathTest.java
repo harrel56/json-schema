@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test;
 import java.net.URI;
 import java.util.List;
 
-import static dev.harrel.jsonschema.TestUtil.assertError;
-import static dev.harrel.jsonschema.TestUtil.readResource;
+import static dev.harrel.jsonschema.util.TestUtil.assertError;
+import static dev.harrel.jsonschema.util.TestUtil.readResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class EvaluationPathTest {

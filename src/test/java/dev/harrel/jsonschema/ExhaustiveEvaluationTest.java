@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Comparator;
 import java.util.List;
 
-import static dev.harrel.jsonschema.TestUtil.assertError;
+import static dev.harrel.jsonschema.util.TestUtil.assertError;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ExhaustiveEvaluationTest {

@@ -1,6 +1,8 @@
 package dev.harrel.jsonschema;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import dev.harrel.jsonschema.util.RemoteSchemaResolver;
+import dev.harrel.jsonschema.util.SuiteTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
@@ -11,7 +13,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Logger;
 
-import static dev.harrel.jsonschema.TestUtil.readResource;
+import static dev.harrel.jsonschema.util.TestUtil.readResource;
 
 @SuppressWarnings("unused")
 public abstract class SpecificationTest {
@@ -259,37 +261,6 @@ public abstract class SpecificationTest {
         testValidation(bundle, name, schema, json, valid);
     }
 
-    private static SchemaResolver resolver;
-
-    @BeforeAll
-    static void resolverSetup() {
-        Map<String, String> schemaMap = Map.ofEntries(
-                Map.entry("https://json-schema.org/draft/2020-12/schema", readResource("/schemas/draft2020-12.json")),
-                Map.entry("http://localhost:1234/different-id-ref-string.json", readResource("/schemas/different-id-ref-string.json")),
-                Map.entry("http://localhost:1234/nested-absolute-ref-to-string.json", readResource("/schemas/nested-absolute-ref-to-string.json")),
-                Map.entry("http://localhost:1234/urn-ref-string.json", readResource("/schemas/urn-ref-string.json")),
-                Map.entry("http://localhost:1234/draft2020-12/detached-dynamicref.json", readResource("/schemas/detached-dynamicref.json")),
-                Map.entry("http://localhost:1234/draft2020-12/detached-ref.json", readResource("/schemas/detached-ref.json")),
-                Map.entry("http://localhost:1234/draft2020-12/extendible-dynamic-ref.json", readResource("/schemas/extendible-dynamic-ref.json")),
-                Map.entry("http://localhost:1234/draft2020-12/integer.json", readResource("/schemas/integer.json")),
-                Map.entry("http://localhost:1234/draft2020-12/locationIndependentIdentifier.json", readResource("/schemas/locationIndependentIdentifier.json")),
-                Map.entry("http://localhost:1234/draft2020-12/metaschema-no-validation.json", readResource("/schemas/metaschema-no-validation.json")),
-                Map.entry("http://localhost:1234/draft2020-12/metaschema-optional-vocabulary.json", readResource("/schemas/metaschema-optional-vocabulary.json")),
-                Map.entry("http://localhost:1234/draft2020-12/name-defs.json", readResource("/schemas/name-defs.json")),
-                Map.entry("http://localhost:1234/draft2020-12/ref-and-defs.json", readResource("/schemas/ref-and-defs.json")),
-                Map.entry("http://localhost:1234/draft2020-12/subSchemas-defs.json", readResource("/schemas/subSchemas-defs.json")),
-                Map.entry("http://localhost:1234/draft2020-12/tree.json", readResource("/schemas/tree.json")),
-                Map.entry("http://localhost:1234/draft2020-12/baseUriChange/folderInteger.json", readResource("/schemas/baseUriChange/folderInteger.json")),
-                Map.entry("http://localhost:1234/draft2020-12/baseUriChangeFolder/folderInteger.json", readResource("/schemas/baseUriChangeFolder/folderInteger.json")),
-                Map.entry("http://localhost:1234/draft2020-12/baseUriChangeFolderInSubschema/folderInteger.json", readResource("/schemas/baseUriChangeFolderInSubschema/folderInteger.json")),
-                Map.entry("http://localhost:1234/draft2020-12/nested/foo-ref-string.json", readResource("/schemas/nested/foo-ref-string.json")),
-                Map.entry("http://localhost:1234/draft2020-12/nested/string.json", readResource("/schemas/nested/string.json"))
-        );
-        resolver = uri -> Optional.ofNullable(schemaMap.get(uri))
-                .map(SchemaResolver.Result::fromString)
-                .orElse(SchemaResolver.Result.empty());
-    }
-
     private void testValidation(String bundle, String name, JsonNode schema, JsonNode instance, boolean valid) {
 //        Assumptions.assumeTrue(bundle.equals("tests for implementation dynamic anchor and reference link"));
 //        Assumptions.assumeTrue(name.equals("correct extended schema"));
@@ -297,7 +268,7 @@ public abstract class SpecificationTest {
         String instanceString = instance.toPrettyString();
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(nodeFactory)
-                .withSchemaResolver(resolver)
+                .withSchemaResolver(new RemoteSchemaResolver())
                 .createValidator();
         logger.info("%s: %s".formatted(bundle, name));
         logger.info(schemaString);

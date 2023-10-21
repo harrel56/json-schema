@@ -1,12 +1,16 @@
-package dev.harrel.jsonschema;
+package dev.harrel.jsonschema.util;
+
+import dev.harrel.jsonschema.Annotation;
+import dev.harrel.jsonschema.Error;
+import dev.harrel.jsonschema.SpecificationTest;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class TestUtil {
-    static String readResource(String resource) {
+public class TestUtil {
+    public static String readResource(String resource) {
         try {
             return new String(SpecificationTest.class.getResourceAsStream(resource).readAllBytes());
         } catch (IOException e) {
@@ -14,7 +18,7 @@ class TestUtil {
         }
     }
 
-    static void assertError(Error error,
+    public static void assertError(Error error,
                             String evaluationPath,
                             String schemaLocation,
                             String instanceLocation,
@@ -26,7 +30,7 @@ class TestUtil {
         assertThat(error.getError()).isNotNull();
     }
 
-    static void assertError(Error error,
+    public static void assertError(Error error,
                             String evaluationPath,
                             String schemaLocation,
                             String instanceLocation,
@@ -39,7 +43,7 @@ class TestUtil {
         assertThat(error.getError()).isEqualTo(errorMessage);
     }
 
-    static void assertAnnotation(Annotation annotation,
+    public static void assertAnnotation(Annotation annotation,
                                  String evaluationPath,
                                  String schemaLocation,
                                  String instanceLocation,
