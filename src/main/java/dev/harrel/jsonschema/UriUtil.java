@@ -68,8 +68,7 @@ final class UriUtil {
     }
 
     static String decodeUrl(String url) {
-        String decoded = internalDecode(url);
-        String[] split = decoded.split("#", -1);
+        String[] split = url.split("#", -1);
         StringBuilder sb = new StringBuilder(split[0]);
         if (split.length > 1) {
             sb.append('#');
@@ -79,7 +78,7 @@ final class UriUtil {
     }
 
     static String decodeJsonPointer(String pointer) {
-        return pointer.replace("~0", "~").replace("~1", "/");
+        return internalDecode(pointer).replace("~0", "~").replace("~1", "/");
     }
 
     private static String internalDecode(String url) {
