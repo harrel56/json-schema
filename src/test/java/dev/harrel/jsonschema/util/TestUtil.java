@@ -2,7 +2,7 @@ package dev.harrel.jsonschema.util;
 
 import dev.harrel.jsonschema.Annotation;
 import dev.harrel.jsonschema.Error;
-import dev.harrel.jsonschema.SpecificationTest;
+import dev.harrel.jsonschema.Draft2020SpecificationTest;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class TestUtil {
     public static String readResource(String resource) {
         try {
-            return new String(SpecificationTest.class.getResourceAsStream(resource).readAllBytes());
+            return new String(TestUtil.class.getResourceAsStream(resource).readAllBytes());
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

@@ -50,7 +50,7 @@ class JakartaJsonTest {
     }
 
     @Nested
-    class SpecificationTest extends dev.harrel.jsonschema.SpecificationTest {
+    class Draft2020SpecificationTest extends dev.harrel.jsonschema.Draft2020SpecificationTest {
         @BeforeAll
         static void beforeAll() {
             nodeFactory = new JakartaJsonNode.Factory();

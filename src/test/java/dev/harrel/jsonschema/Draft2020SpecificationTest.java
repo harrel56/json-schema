@@ -11,7 +11,7 @@ import java.net.URI;
 import java.util.logging.Logger;
 
 @SuppressWarnings("unused")
-public abstract class SpecificationTest {
+public abstract class Draft2020SpecificationTest {
     static final Logger logger = Logger.getLogger("SpecificationTest");
     protected static JsonNodeFactory nodeFactory;
 
