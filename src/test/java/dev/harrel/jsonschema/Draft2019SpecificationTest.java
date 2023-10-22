@@ -262,6 +262,7 @@ public abstract class Draft2019SpecificationTest {
         String schemaString = schema.toPrettyString();
         String instanceString = instance.toPrettyString();
         Validator validator = new ValidatorFactory()
+                .withDialect(new Dialects.Draft2019Dialect())
                 .withJsonNodeFactory(nodeFactory)
                 .withSchemaResolver(new RemoteSchemaResolver())
                 .createValidator();

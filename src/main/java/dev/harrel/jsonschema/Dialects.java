@@ -73,7 +73,7 @@ public final class Dialects {
         private final Map<String, Boolean> defaultVocabularyObject;
 
         public Draft2019Dialect() {
-            this.evaluatorFactory = new Draft2020EvaluatorFactory();
+            this.evaluatorFactory = new Draft2019EvaluatorFactory();
             this.requiredVocabularies = singleton(Draft2019.CORE);
             Map<String, Boolean> vocabs = new HashMap<>();
             vocabs.put(Draft2019.CORE, true);

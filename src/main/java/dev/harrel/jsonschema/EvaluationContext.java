@@ -87,13 +87,17 @@ public final class EvaluationContext {
     }
 
     <T> Optional<T> getSiblingAnnotation(String sibling, Class<T> annotationType) {
+        return getSiblingAnnotation(sibling)
+                .filter(annotationType::isInstance)
+                .map(annotationType::cast);
+    }
+
+    Optional<Object> getSiblingAnnotation(String sibling) {
         String parentPath = UriUtil.getJsonPointerParent(evaluationStack.element());
         return annotations.stream()
                 .filter(item -> sibling.equals(item.getKeyword()))
                 .filter(item -> parentPath.equals(UriUtil.getJsonPointerParent(item.getEvaluationPath())))
                 .map(Annotation::getAnnotation)
-                .filter(annotationType::isInstance)
-                .map(annotationType::cast)
                 .findAny();
     }
 
