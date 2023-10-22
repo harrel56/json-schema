@@ -6,7 +6,7 @@ import java.util.function.BiFunction;
 import static dev.harrel.jsonschema.Keyword.*;
 
 /**
- * {@code EvaluatorFactory} implementation that supports <a href="https://json-schema.org/draft/2020-12/schema">2020 draft</a> specification.
+ * {@code EvaluatorFactory} implementation that supports <a href="https://json-schema.org/draft/2019-09/schema">2019 draft</a> specification.
  */
 class Draft2019EvaluatorFactory implements EvaluatorFactory {
     private final Draft2020EvaluatorFactory draft2020EvaluatorFactory = new Draft2020EvaluatorFactory();
