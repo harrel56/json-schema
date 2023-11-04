@@ -67,6 +67,9 @@ public final class Dialects {
         }
     }
 
+    /**
+     * Dialect corresponding to <i>draft2019-09</i> specification.
+     */
     public static class Draft2019Dialect implements Dialect {
         private final EvaluatorFactory evaluatorFactory;
         private final Set<String> requiredVocabularies;
