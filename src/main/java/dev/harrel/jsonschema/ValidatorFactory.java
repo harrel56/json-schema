@@ -2,11 +2,9 @@ package dev.harrel.jsonschema;
 
 import dev.harrel.jsonschema.providers.JacksonNode;
 
-import java.io.*;
 import java.net.URI;
 import java.util.*;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 /**
  * Configurable factory for {@link Validator} class. Provides methods for ad-hoc validation, which parse schema each time they are invoked.
@@ -250,19 +248,10 @@ public final class ValidatorFactory {
             }
 
             Optional<String> rawSchema = Arrays.stream(SpecificationVersion.values())
-                    .filter(spec -> spec.getId().equals(uri))
-                    .findFirst()
-                    .map(SpecificationVersion::getResourcePath)
-                    .map(path -> {
-                        try (InputStream is = getClass().getResourceAsStream(path)) {
-                            if (is == null) {
-                                return null;
-                            }
-                            return new BufferedReader(new InputStreamReader(is)).lines().collect(Collectors.joining());
-                        } catch (IOException e) {
-                            throw new UncheckedIOException(e);
-                        }
-                    });
+                    .map(spec -> spec.resolveResource(uri))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .findFirst();
 
             rawSchema.ifPresent(s -> schemaCache.put(uri, s));
             return rawSchema
