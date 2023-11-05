@@ -16,7 +16,7 @@ class Draft2019EvaluatorFactory implements EvaluatorFactory {
         Map<String, BiFunction<SchemaParsingContext, JsonNode, Evaluator>> map = new HashMap<>();
         map.put(ITEMS, Items2019Evaluator::new);
         map.put(ADDITIONAL_ITEMS, AdditionalItemsEvaluator::new);
-//        map.put(RECURSIVE_REF, ItemsEvaluator::new);
+        map.put(RECURSIVE_REF, (ctx, node) -> new RecursiveRefEvaluator(node));
         this.evaluatorsMap = Collections.unmodifiableMap(map);
     }
 

@@ -257,8 +257,8 @@ public abstract class Draft2019SpecificationTest {
     }
 
     private void testValidation(String bundle, String name, JsonNode schema, JsonNode instance, boolean valid) {
-//        Assumptions.assumeTrue(bundle.equals("tests for implementation dynamic anchor and reference link"));
-//        Assumptions.assumeTrue(name.equals("correct extended schema"));
+//        Assumptions.assumeTrue(bundle.equals("$recursiveRef with nesting"));
+//        Assumptions.assumeTrue(name.equals("integer now matches as a property value"));
         String schemaString = schema.toPrettyString();
         String instanceString = instance.toPrettyString();
         Validator validator = new ValidatorFactory()

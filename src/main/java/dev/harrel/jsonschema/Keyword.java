@@ -62,4 +62,5 @@ public final class Keyword {
     /* draft2019-09 */
     public static final String ADDITIONAL_ITEMS = "additionalItems";
     public static final String RECURSIVE_REF = "$recursiveRef";
+    public static final String RECURSIVE_ANCHOR = "$recursiveAnchor";
 }

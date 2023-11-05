@@ -692,3 +692,28 @@ class DynamicRefEvaluator implements Evaluator {
         return Vocabulary.CORE_VOCABULARY;
     }
 }
+
+class RecursiveRefEvaluator implements Evaluator {
+    private final String ref;
+
+    RecursiveRefEvaluator(JsonNode node) {
+        if (!node.isString()) {
+            throw new IllegalArgumentException();
+        }
+        this.ref = node.asString();
+    }
+
+    @Override
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
+        try {
+            return ctx.resolveRecursiveRefAndValidate(ref, node) ? Result.success() : Result.failure();
+        } catch (SchemaNotFoundException e) {
+            return Result.failure(String.format("Resolution of $recursiveRef [%s] failed", ref));
+        }
+    }
+
+    @Override
+    public Set<String> getVocabularies() {
+        return Vocabulary.CORE_VOCABULARY;
+    }
+}

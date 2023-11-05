@@ -65,6 +65,22 @@ public final class EvaluationContext {
     }
 
     /**
+     * Recursively resolves schema using provided reference string (current implementation behaves the same for any reference string),
+     * and then validates instance node against it.
+     * This method is specifically created for <i>$recursiveRef</i> keyword.
+     *
+     * @param schemaRef reference to the schema (specification-wise this should always have a value of '#')
+     * @param node      instance node to be validated
+     * @return if validation was successful
+     * @throws SchemaNotFoundException when schema cannot be resolved
+     */
+    public boolean resolveRecursiveRefAndValidate(String schemaRef, JsonNode node) {
+        return resolveRecursiveSchema()
+                .map(schema -> validateAgainstRefSchema(schema, node))
+                .orElseThrow(() -> new SchemaNotFoundException(schemaRef));
+    }
+
+    /**
      * Resolves <i>internal</i> schema using provided reference string and then validates instance node against it.
      * This method should only be used for internal schema resolutions, that means schema/evaluator calling this
      * method should only refer to schema instances which are descendants of calling node.
@@ -180,6 +196,19 @@ public final class EvaluationContext {
             }
         }
         return Optional.empty();
+    }
+
+    private Optional<Schema> resolveRecursiveSchema() {
+        Schema schema = schemaRegistry.get(dynamicScope.element().toString());
+        for (URI uri : dynamicScope) {
+            Schema recursedSchema = schemaRegistry.getDynamic(uri.toString());
+            if (recursedSchema == null) {
+                return Optional.of(schema);
+            } else {
+                schema = recursedSchema;
+            }
+        }
+        return Optional.of(schema);
     }
 
     private boolean isOutOfDynamicScope(URI uri) {

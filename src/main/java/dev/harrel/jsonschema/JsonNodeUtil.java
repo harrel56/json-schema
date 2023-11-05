@@ -13,6 +13,12 @@ final class JsonNodeUtil {
         return node.isObject() ? Optional.of(node.asObject()) : Optional.empty();
     }
 
+    static Optional<Boolean> getBooleanField(Map<String, JsonNode> objectMap, String fieldName) {
+        return Optional.ofNullable(objectMap.get(fieldName))
+                .filter(JsonNode::isBoolean)
+                .map(JsonNode::asBoolean);
+    }
+
     static Optional<String> getStringField(Map<String, JsonNode> objectMap, String fieldName) {
         return Optional.ofNullable(objectMap.get(fieldName))
                 .filter(JsonNode::isString)

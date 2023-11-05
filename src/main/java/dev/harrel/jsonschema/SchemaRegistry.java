@@ -83,6 +83,9 @@ final class SchemaRegistry {
                 .ifPresent(anchorString -> fragments.additionalSchemas.put(anchorString, schema));
         JsonNodeUtil.getStringField(objectMap, Keyword.DYNAMIC_ANCHOR)
                 .ifPresent(anchorString -> fragments.dynamicSchemas.put(anchorString, schema));
+        JsonNodeUtil.getBooleanField(objectMap, Keyword.RECURSIVE_ANCHOR)
+                .filter(anchor -> anchor)
+                .ifPresent(anchorString -> fragments.dynamicSchemas.put("", schema));
     }
 
     static final class State {
