@@ -3,6 +3,7 @@ package dev.harrel.jsonschema.providers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.harrel.jsonschema.JsonNode;
+import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
 import jakarta.json.Json;
 import jakarta.json.JsonStructure;
@@ -51,9 +52,17 @@ class JakartaJsonTest {
 
     @Nested
     class Draft2020SpecificationTest extends dev.harrel.jsonschema.Draft2020SpecificationTest {
-        @BeforeAll
-        static void beforeAll() {
-            nodeFactory = new JakartaJsonNode.Factory();
+        @Override
+        protected JsonNodeFactory getJsonNodeFactory() {
+            return new JakartaJsonNode.Factory();
+        }
+    }
+
+    @Nested
+    class Draft2019SpecificationTest extends dev.harrel.jsonschema.Draft2019SpecificationTest {
+        @Override
+        protected JsonNodeFactory getJsonNodeFactory() {
+            return new JakartaJsonNode.Factory();
         }
     }
 

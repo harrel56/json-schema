@@ -3,17 +3,27 @@ package dev.harrel.jsonschema;
 import com.fasterxml.jackson.databind.JsonNode;
 import dev.harrel.jsonschema.util.RemoteSchemaResolver;
 import dev.harrel.jsonschema.util.SuiteTest;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Assumptions;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.*;
 
 import java.net.URI;
 import java.util.logging.Logger;
 
 @SuppressWarnings("unused")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class Draft2019SpecificationTest {
-    static final Logger logger = Logger.getLogger("SpecificationTest");
-    protected static JsonNodeFactory nodeFactory;
+    private static final Logger logger = Logger.getLogger("SpecificationTest");
+    private Validator validator;
+
+    abstract protected JsonNodeFactory getJsonNodeFactory();
+
+    @BeforeAll
+    void beforeAll() {
+        validator = new ValidatorFactory()
+                .withDialect(new Dialects.Draft2019Dialect())
+                .withJsonNodeFactory(getJsonNodeFactory())
+                .withSchemaResolver(new RemoteSchemaResolver())
+                .createValidator();
+    }
 
     @SuiteTest("/suite/tests/draft2019-09/boolean_schema.json")
     void booleanSchemaTest(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
@@ -261,11 +271,6 @@ public abstract class Draft2019SpecificationTest {
 //        Assumptions.assumeTrue(name.equals("integer now matches as a property value"));
         String schemaString = schema.toPrettyString();
         String instanceString = instance.toPrettyString();
-        Validator validator = new ValidatorFactory()
-                .withDialect(new Dialects.Draft2019Dialect())
-                .withJsonNodeFactory(nodeFactory)
-                .withSchemaResolver(new RemoteSchemaResolver())
-                .createValidator();
         logger.info("%s: %s".formatted(bundle, name));
         logger.info(schemaString);
         logger.info(instanceString);

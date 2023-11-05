@@ -6,6 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import dev.harrel.jsonschema.JsonNode;
+import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
@@ -49,17 +50,17 @@ class GsonTest {
 
     @Nested
     class Draft2020SpecificationTest extends dev.harrel.jsonschema.Draft2020SpecificationTest {
-        @BeforeAll
-        static void beforeAll() {
-            nodeFactory = new GsonNode.Factory();
+        @Override
+        protected JsonNodeFactory getJsonNodeFactory() {
+            return new GsonNode.Factory();
         }
     }
 
     @Nested
     class Draft2019SpecificationTest extends dev.harrel.jsonschema.Draft2019SpecificationTest {
-        @BeforeAll
-        static void beforeAll() {
-            nodeFactory = new GsonNode.Factory();
+        @Override
+        protected JsonNodeFactory getJsonNodeFactory() {
+            return new GsonNode.Factory();
         }
     }
 
