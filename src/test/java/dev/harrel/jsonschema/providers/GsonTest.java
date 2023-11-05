@@ -8,7 +8,6 @@ import com.google.gson.JsonSyntaxException;
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -83,6 +82,7 @@ class GsonTest {
             return createFactory();
         }
     }
+
     @Nested
     class MetaSchemaTest extends dev.harrel.jsonschema.MetaSchemaTest {
         @Override

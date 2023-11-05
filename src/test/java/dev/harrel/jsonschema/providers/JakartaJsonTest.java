@@ -8,7 +8,6 @@ import dev.harrel.jsonschema.SimpleType;
 import jakarta.json.Json;
 import jakarta.json.JsonStructure;
 import jakarta.json.stream.JsonParsingException;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
