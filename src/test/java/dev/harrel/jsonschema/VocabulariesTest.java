@@ -7,9 +7,7 @@ import java.net.URI;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public abstract class VocabulariesTest {
-    protected static JsonNodeFactory nodeFactory;
-
+public abstract class VocabulariesTest implements ProviderTest {
     private final Dialect testDialect = new Dialects.Draft2020Dialect() {
         @Override
         public String getMetaSchema() {
@@ -20,7 +18,7 @@ public abstract class VocabulariesTest {
     @Test
     void shouldRunEvaluatorsOnlyFromActiveVocabularies() {
         Validator validator = new ValidatorFactory()
-                .withJsonNodeFactory(nodeFactory)
+                .withJsonNodeFactory(getJsonNodeFactory())
                 .withDialect(testDialect)
                 .createValidator();
 
@@ -47,7 +45,7 @@ public abstract class VocabulariesTest {
     @Test
     void shouldIgnoreOptionalUnsupportedVocabularies() {
         Validator validator = new ValidatorFactory()
-                .withJsonNodeFactory(nodeFactory)
+                .withJsonNodeFactory(getJsonNodeFactory())
                 .withDialect(testDialect)
                 .createValidator();
 
@@ -74,7 +72,7 @@ public abstract class VocabulariesTest {
     @Test
     void shouldFailForUnsupportedRequiredVocabularies() {
         Validator validator = new ValidatorFactory()
-                .withJsonNodeFactory(nodeFactory)
+                .withJsonNodeFactory(getJsonNodeFactory())
                 .withDialect(testDialect)
                 .createValidator();
 
@@ -101,7 +99,7 @@ public abstract class VocabulariesTest {
     @Test
     void shouldFailForMissingRequiredVocabularies() {
         Validator validator = new ValidatorFactory()
-                .withJsonNodeFactory(nodeFactory)
+                .withJsonNodeFactory(getJsonNodeFactory())
                 .withDialect(testDialect)
                 .createValidator();
 
@@ -125,7 +123,7 @@ public abstract class VocabulariesTest {
     @Test
     void shouldUseAllSupportedVocabulariesByDefault() {
         Validator validator = new ValidatorFactory()
-                .withJsonNodeFactory(nodeFactory)
+                .withJsonNodeFactory(getJsonNodeFactory())
                 .withDialect(testDialect)
                 .createValidator();
 

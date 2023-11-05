@@ -13,6 +13,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class JacksonTest {
+    private JsonNodeFactory createFactory() {
+        return new JacksonNode.Factory();
+    }
+
     @Test
     void shouldWrapForValidArgument() throws JsonProcessingException {
         JsonNode object = new ObjectMapper().readTree("{}");
@@ -48,48 +52,48 @@ class JacksonTest {
     @Nested
     class Draft2020SpecificationTest extends dev.harrel.jsonschema.Draft2020SpecificationTest {
         @Override
-        protected JsonNodeFactory getJsonNodeFactory() {
-            return new JacksonNode.Factory();
+        public JsonNodeFactory getJsonNodeFactory() {
+            return createFactory();
         }
     }
 
     @Nested
     class Draft2019SpecificationTest extends dev.harrel.jsonschema.Draft2019SpecificationTest {
         @Override
-        protected JsonNodeFactory getJsonNodeFactory() {
-            return new JacksonNode.Factory();
+        public JsonNodeFactory getJsonNodeFactory() {
+            return createFactory();
         }
     }
 
     @Nested
     class JsonNodeTest extends dev.harrel.jsonschema.JsonNodeTest {
-        @BeforeAll
-        static void beforeAll() {
-            nodeFactory = new JacksonNode.Factory();
+        @Override
+        public JsonNodeFactory getJsonNodeFactory() {
+            return createFactory();
         }
     }
 
     @Nested
     class Draft2020EvaluatorFactoryTest extends dev.harrel.jsonschema.Draft2020EvaluatorFactoryTest {
-        @BeforeAll
-        static void beforeAll() {
-            nodeFactory = new JacksonNode.Factory();
+        @Override
+        public JsonNodeFactory getJsonNodeFactory() {
+            return createFactory();
         }
     }
 
     @Nested
     class MetaSchemaTest extends dev.harrel.jsonschema.MetaSchemaTest {
-        @BeforeAll
-        static void beforeAll() {
-            nodeFactory = new JacksonNode.Factory();
+        @Override
+        public JsonNodeFactory getJsonNodeFactory() {
+            return createFactory();
         }
     }
 
     @Nested
     class VocabulariesTest extends dev.harrel.jsonschema.VocabulariesTest {
-        @BeforeAll
-        static void beforeAll() {
-            nodeFactory = new JacksonNode.Factory();
+        @Override
+        public JsonNodeFactory getJsonNodeFactory() {
+            return createFactory();
         }
     }
 }

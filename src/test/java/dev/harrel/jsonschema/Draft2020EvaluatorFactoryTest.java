@@ -14,9 +14,7 @@ import static dev.harrel.jsonschema.SimpleType.*;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public abstract class Draft2020EvaluatorFactoryTest {
-
-    protected static JsonNodeFactory nodeFactory;
+public abstract class Draft2020EvaluatorFactoryTest implements ProviderTest {
     private static final Map<SimpleType, String> TYPE_MAP = Map.of(
             NULL, "null",
             BOOLEAN, "true",
@@ -35,7 +33,7 @@ public abstract class Draft2020EvaluatorFactoryTest {
         SchemaParsingContext ctx = new SchemaParsingContext(dialect, new SchemaRegistry(), URI.create("CoreEvaluatorFactoryTest"), emptyMap());
 
         for (var entry : TYPE_MAP.entrySet()) {
-            JsonNode wrappedNode = nodeFactory.create("{\"%s\": %s}".formatted(keyword, entry.getValue()));
+            JsonNode wrappedNode = getJsonNodeFactory().create("{\"%s\": %s}".formatted(keyword, entry.getValue()));
             Optional<Evaluator> evaluator = evaluatorFactory.create(ctx, keyword, wrappedNode.asObject().get(keyword));
             if (supportedTypes.contains(entry.getKey())) {
                 assertThat(evaluator)

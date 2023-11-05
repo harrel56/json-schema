@@ -10,11 +10,9 @@ import java.util.logging.Logger;
 
 @SuppressWarnings("unused")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public abstract class Draft2020SpecificationTest {
+public abstract class Draft2020SpecificationTest implements ProviderTest {
     private static final Logger logger = Logger.getLogger("SpecificationTest");
     private Validator validator;
-
-    abstract protected JsonNodeFactory getJsonNodeFactory();
 
     @BeforeAll
     void beforeAll() {

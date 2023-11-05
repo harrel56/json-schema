@@ -10,13 +10,11 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public abstract class JsonNodeTest {
-
-    protected static JsonNodeFactory nodeFactory;
+public abstract class JsonNodeTest implements ProviderTest {
 
     @Test
     void nullNode() {
-        JsonNode node = nodeFactory.create("null");
+        JsonNode node = getJsonNodeFactory().create("null");
         assertThat(node).isNotNull();
         assertThat(node.getNodeType()).isEqualTo(SimpleType.NULL);
         assertThat(node.isNull()).isTrue();
@@ -31,7 +29,7 @@ public abstract class JsonNodeTest {
 
     @Test
     void booleanNode() {
-        JsonNode node = nodeFactory.create("true");
+        JsonNode node = getJsonNodeFactory().create("true");
         assertThat(node).isNotNull();
         assertThat(node.getNodeType()).isEqualTo(SimpleType.BOOLEAN);
         assertThat(node.isNull()).isFalse();
@@ -48,7 +46,7 @@ public abstract class JsonNodeTest {
     @Test
     void stringNode() {
         String value = "~!@#$%6 anything \uD83D\uDCA9";
-        JsonNode node = nodeFactory.create("\"" + value + "\"");
+        JsonNode node = getJsonNodeFactory().create("\"" + value + "\"");
         assertThat(node).isNotNull();
         assertThat(node.getNodeType()).isEqualTo(SimpleType.STRING);
         assertThat(node.isNull()).isFalse();
@@ -76,7 +74,7 @@ public abstract class JsonNodeTest {
             "2222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222"
     })
     void integerNode(String value) {
-        JsonNode node = nodeFactory.create(value);
+        JsonNode node = getJsonNodeFactory().create(value);
         assertThat(node).isNotNull();
         assertThat(node.getNodeType()).isEqualTo(SimpleType.INTEGER);
         assertThat(node.isNull()).isFalse();
@@ -114,7 +112,7 @@ public abstract class JsonNodeTest {
             "0.9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999"
     })
     void numberNode(String value) {
-        JsonNode node = nodeFactory.create(value);
+        JsonNode node = getJsonNodeFactory().create(value);
         assertThat(node).isNotNull();
         assertThat(node.getNodeType()).isEqualTo(SimpleType.NUMBER);
         assertThat(node.isNull()).isFalse();
@@ -138,7 +136,7 @@ public abstract class JsonNodeTest {
     @Test
     void arrayNode() {
         String value = "[null, true, \"a\", 1, 1.2]";
-        JsonNode node = nodeFactory.create(value);
+        JsonNode node = getJsonNodeFactory().create(value);
         assertThat(node).isNotNull();
         assertThat(node.getNodeType()).isEqualTo(SimpleType.ARRAY);
         assertThat(node.isNull()).isFalse();
@@ -155,7 +153,7 @@ public abstract class JsonNodeTest {
     @Test
     void objectNode() {
         String value = "{\"a\": null, \"b\": 1, \"c\": {}}";
-        JsonNode node = nodeFactory.create(value);
+        JsonNode node = getJsonNodeFactory().create(value);
         assertThat(node).isNotNull();
         assertThat(node.getNodeType()).isEqualTo(SimpleType.OBJECT);
         assertThat(node.isNull()).isFalse();
@@ -171,37 +169,37 @@ public abstract class JsonNodeTest {
 
     @Test
     void jsonPointerForNull() {
-        JsonNode node = nodeFactory.create("null");
+        JsonNode node = getJsonNodeFactory().create("null");
         assertThat(node.getJsonPointer()).isEmpty();
     }
 
     @Test
     void jsonPointerForBoolean() {
-        JsonNode node = nodeFactory.create("false");
+        JsonNode node = getJsonNodeFactory().create("false");
         assertThat(node.getJsonPointer()).isEmpty();
     }
 
     @Test
     void jsonPointerForString() {
-        JsonNode node = nodeFactory.create("\"anything\"");
+        JsonNode node = getJsonNodeFactory().create("\"anything\"");
         assertThat(node.getJsonPointer()).isEmpty();
     }
 
     @Test
     void jsonPointerForInteger() {
-        JsonNode node = nodeFactory.create("123");
+        JsonNode node = getJsonNodeFactory().create("123");
         assertThat(node.getJsonPointer()).isEmpty();
     }
 
     @Test
     void jsonPointerForNumber() {
-        JsonNode node = nodeFactory.create("123.321");
+        JsonNode node = getJsonNodeFactory().create("123.321");
         assertThat(node.getJsonPointer()).isEmpty();
     }
 
     @Test
     void jsonPointerForArray() {
-        JsonNode node = nodeFactory.create("[[1, 2], []]");
+        JsonNode node = getJsonNodeFactory().create("[[1, 2], []]");
         assertThat(node.getJsonPointer()).isEmpty();
         List<JsonNode> nodes = node.asArray();
         assertThat(nodes.get(0).getJsonPointer()).isEqualTo("/0");
@@ -212,7 +210,7 @@ public abstract class JsonNodeTest {
 
     @Test
     void jsonPointerForObject() {
-        JsonNode node = nodeFactory.create("{\"a\": [1, {\"b\": 2}]}");
+        JsonNode node = getJsonNodeFactory().create("{\"a\": [1, {\"b\": 2}]}");
         assertThat(node.getJsonPointer()).isEmpty();
         Map<String, JsonNode> object = node.asObject();
         assertThat(object.get("a").getJsonPointer()).isEqualTo("/a");
@@ -223,6 +221,8 @@ public abstract class JsonNodeTest {
 
     @Test
     void nullEquals() {
+        JsonNodeFactory nodeFactory = getJsonNodeFactory();
+
         JsonNode node1 = nodeFactory.create("null");
         JsonNode node2 = nodeFactory.create("null");
         assertThat(node1.isEqualTo(node2)).isTrue();
@@ -238,6 +238,8 @@ public abstract class JsonNodeTest {
 
     @Test
     void booleanEquals() {
+        JsonNodeFactory nodeFactory = getJsonNodeFactory();
+
         JsonNode node1 = nodeFactory.create("true");
         JsonNode node2 = nodeFactory.create("true");
         assertThat(node1.isEqualTo(node2)).isTrue();
@@ -254,6 +256,8 @@ public abstract class JsonNodeTest {
 
     @Test
     void stringEquals() {
+        JsonNodeFactory nodeFactory = getJsonNodeFactory();
+
         JsonNode node1 = nodeFactory.create("\"a\"");
         JsonNode node2 = nodeFactory.create("\"a\"");
         assertThat(node1.isEqualTo(node2)).isTrue();
@@ -270,6 +274,8 @@ public abstract class JsonNodeTest {
 
     @Test
     void integerEquals() {
+        JsonNodeFactory nodeFactory = getJsonNodeFactory();
+
         JsonNode node1 = nodeFactory.create("123");
         JsonNode node2 = nodeFactory.create("123");
         assertThat(node1.isEqualTo(node2)).isTrue();
@@ -287,6 +293,8 @@ public abstract class JsonNodeTest {
 
     @Test
     void numberEquals() {
+        JsonNodeFactory nodeFactory = getJsonNodeFactory();
+
         JsonNode node1 = nodeFactory.create("1.01");
         JsonNode node2 = nodeFactory.create("1.01");
         assertThat(node1.isEqualTo(node2)).isTrue();
@@ -303,6 +311,8 @@ public abstract class JsonNodeTest {
 
     @Test
     void arrayEquals() {
+        JsonNodeFactory nodeFactory = getJsonNodeFactory();
+
         String value = "[null, true, \"a\", 1, 1.2]";
         JsonNode node1 = nodeFactory.create(value);
         JsonNode node2 = nodeFactory.create(value);
@@ -323,6 +333,8 @@ public abstract class JsonNodeTest {
 
     @Test
     void objectEquals() {
+        JsonNodeFactory nodeFactory = getJsonNodeFactory();
+
         String value = "{\"a\": [1, {\"b\": 2}], \"b\": 1}";
         JsonNode node1 = nodeFactory.create(value);
         JsonNode node2 = nodeFactory.create(value);

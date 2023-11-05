@@ -7,9 +7,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 
-public abstract class MetaSchemaTest {
-
-    protected static JsonNodeFactory nodeFactory;
+public abstract class MetaSchemaTest implements ProviderTest {
     private static final String CUSTOM_META_SCHEMA = """
             {
                 "type": "object",
@@ -49,7 +47,7 @@ public abstract class MetaSchemaTest {
                     "type": ["null"]
                 }""";
         new ValidatorFactory()
-                .withJsonNodeFactory(nodeFactory)
+                .withJsonNodeFactory(getJsonNodeFactory())
                 .validate(rawSchema, "null");
     }
 
@@ -60,7 +58,7 @@ public abstract class MetaSchemaTest {
                     "type": []
                 }""";
         Validator validator = new ValidatorFactory()
-                .withJsonNodeFactory(nodeFactory)
+                .withJsonNodeFactory(getJsonNodeFactory())
                 .createValidator();
         InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawSchema), InvalidSchemaException.class);
         assertThat(exception.getErrors()).isNotEmpty();
@@ -73,7 +71,7 @@ public abstract class MetaSchemaTest {
                     "type": ["null"]
                 }""";
         new ValidatorFactory()
-                .withJsonNodeFactory(nodeFactory)
+                .withJsonNodeFactory(getJsonNodeFactory())
                 .withDialect(new CustomDialect())
                 .withSchemaResolver(resolver)
                 .validate(rawSchema, "null");
@@ -88,7 +86,7 @@ public abstract class MetaSchemaTest {
                     "minLength": 1
                 }""";
         Validator validator = new ValidatorFactory()
-                .withJsonNodeFactory(nodeFactory)
+                .withJsonNodeFactory(getJsonNodeFactory())
                 .withDialect(new CustomDialect())
                 .withSchemaResolver(resolver)
                 .createValidator();
@@ -103,7 +101,7 @@ public abstract class MetaSchemaTest {
                     "type": 1
                 }""";
         new ValidatorFactory()
-                .withJsonNodeFactory(nodeFactory)
+                .withJsonNodeFactory(getJsonNodeFactory())
                 .withDisabledSchemaValidation(true)
                 .validate(rawSchema, "null");
     }
@@ -115,7 +113,7 @@ public abstract class MetaSchemaTest {
                     "type": 1
                 }""";
         Validator validator = new ValidatorFactory()
-                .withJsonNodeFactory(nodeFactory)
+                .withJsonNodeFactory(getJsonNodeFactory())
                 .withDialect(new CustomDialect())
                 .createValidator();
         assertThatThrownBy(() -> validator.registerSchema(rawSchema))
@@ -129,7 +127,7 @@ public abstract class MetaSchemaTest {
                     "type": "string"
                 }""";
         Validator validator = new ValidatorFactory()
-                .withJsonNodeFactory(nodeFactory)
+                .withJsonNodeFactory(getJsonNodeFactory())
                 .withDialect(new InvalidCustomDialect())
                 .createValidator();
         assertThatThrownBy(() -> validator.registerSchema(rawSchema))
@@ -148,7 +146,7 @@ public abstract class MetaSchemaTest {
                     }
                 }""";
         new ValidatorFactory()
-                .withJsonNodeFactory(nodeFactory)
+                .withJsonNodeFactory(getJsonNodeFactory())
                 .withSchemaResolver(resolver)
                 .validate(rawSchema, "{}");
     }
@@ -167,7 +165,7 @@ public abstract class MetaSchemaTest {
                     }
                 }""";
         Validator validator = new ValidatorFactory()
-                .withJsonNodeFactory(nodeFactory)
+                .withJsonNodeFactory(getJsonNodeFactory())
                 .withSchemaResolver(resolver)
                 .createValidator();
         InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawSchema), InvalidSchemaException.class);
@@ -182,7 +180,7 @@ public abstract class MetaSchemaTest {
                     "type": 1
                 }""";
         new ValidatorFactory()
-                .withJsonNodeFactory(nodeFactory)
+                .withJsonNodeFactory(getJsonNodeFactory())
                 .withSchemaResolver(resolver)
                 .validate(rawSchema, "{}");
     }
@@ -196,7 +194,7 @@ public abstract class MetaSchemaTest {
                     "minLength": 1
                 }""";
         Validator validator = new ValidatorFactory()
-                .withJsonNodeFactory(nodeFactory)
+                .withJsonNodeFactory(getJsonNodeFactory())
                 .withSchemaResolver(resolver)
                 .createValidator();
         InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawSchema), InvalidSchemaException.class);
@@ -207,7 +205,7 @@ public abstract class MetaSchemaTest {
     void shouldFailForInvalidTopSchemaElement() {
         String rawSchema = "[]";
         Validator validator = new ValidatorFactory()
-                .withJsonNodeFactory(nodeFactory)
+                .withJsonNodeFactory(getJsonNodeFactory())
                 .withSchemaResolver(resolver)
                 .createValidator();
         InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawSchema), InvalidSchemaException.class);
@@ -222,7 +220,7 @@ public abstract class MetaSchemaTest {
                     "maxLength": "not a number"
                 }""";
         Validator validator = new ValidatorFactory()
-                .withJsonNodeFactory(nodeFactory)
+                .withJsonNodeFactory(getJsonNodeFactory())
                 .withSchemaResolver(resolver)
                 .createValidator();
 
@@ -240,7 +238,7 @@ public abstract class MetaSchemaTest {
                     "type": "object"
                 }""";
         new ValidatorFactory()
-                .withJsonNodeFactory(nodeFactory)
+                .withJsonNodeFactory(getJsonNodeFactory())
                 .withSchemaResolver(resolver)
                 .validate(rawSchema, "{}");
     }
@@ -254,7 +252,7 @@ public abstract class MetaSchemaTest {
                     "type": "null"
                 }""";
         Validator validator = new ValidatorFactory()
-                .withJsonNodeFactory(nodeFactory)
+                .withJsonNodeFactory(getJsonNodeFactory())
                 .withSchemaResolver(resolver)
                 .createValidator();
         InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawSchema), InvalidSchemaException.class);
@@ -274,7 +272,7 @@ public abstract class MetaSchemaTest {
                     }
                 }""";
         new ValidatorFactory()
-                .withJsonNodeFactory(nodeFactory)
+                .withJsonNodeFactory(getJsonNodeFactory())
                 .withSchemaResolver(resolver)
                 .validate(rawSchema, "{}");
     }
@@ -292,7 +290,7 @@ public abstract class MetaSchemaTest {
                     }
                 }""";
         Validator validator = new ValidatorFactory()
-                .withJsonNodeFactory(nodeFactory)
+                .withJsonNodeFactory(getJsonNodeFactory())
                 .withSchemaResolver(resolver)
                 .createValidator();
         InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawSchema), InvalidSchemaException.class);
@@ -312,7 +310,7 @@ public abstract class MetaSchemaTest {
                     "type": "null"
                 }""";
         Validator validator = new ValidatorFactory()
-                .withJsonNodeFactory(nodeFactory)
+                .withJsonNodeFactory(getJsonNodeFactory())
                 .withSchemaResolver(resolver)
                 .createValidator();
 
@@ -356,7 +354,7 @@ public abstract class MetaSchemaTest {
             }
         };
         Validator validator = new ValidatorFactory()
-                .withJsonNodeFactory(nodeFactory)
+                .withJsonNodeFactory(getJsonNodeFactory())
                 .withEvaluatorFactory(evaluatorFactory)
                 .withDisabledSchemaValidation(true)
                 .createValidator();
