@@ -88,7 +88,8 @@ public abstract class Draft2020EvaluatorFactoryTest implements ProviderTest {
                 Arguments.of(Keyword.UNEVALUATED_ITEMS, Set.of(BOOLEAN, OBJECT)),
                 Arguments.of(Keyword.UNEVALUATED_PROPERTIES, Set.of(BOOLEAN, OBJECT)),
                 Arguments.of(Keyword.REF, Set.of(STRING)),
-                Arguments.of(Keyword.DYNAMIC_REF, Set.of(STRING))
+                Arguments.of(Keyword.DYNAMIC_REF, Set.of(STRING)),
+                Arguments.of(Keyword.RECURSIVE_REF, Set.of(STRING))
         );
     }
 }

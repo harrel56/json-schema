@@ -70,7 +70,7 @@ public abstract class Draft2019EvaluatorFactoryTest implements ProviderTest {
                 Arguments.of(Keyword.REQUIRED, Set.of(ARRAY)),
                 Arguments.of(Keyword.DEPENDENT_REQUIRED, Set.of(OBJECT)),
 
-                Arguments.of(Keyword.PREFIX_ITEMS, Set.of(ARRAY)),
+                Arguments.of(Keyword.PREFIX_ITEMS, Set.of(STRING)),
                 Arguments.of(Keyword.ITEMS, Set.of(BOOLEAN, OBJECT, ARRAY)),
                 Arguments.of(Keyword.ADDITIONAL_ITEMS, Set.of(BOOLEAN, OBJECT)),
                 Arguments.of(Keyword.CONTAINS, Set.of(BOOLEAN, OBJECT)),
