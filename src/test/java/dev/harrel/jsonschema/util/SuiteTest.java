@@ -1,4 +1,4 @@
-package dev.harrel.jsonschema;
+package dev.harrel.jsonschema.util;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;

@@ -58,4 +58,9 @@ public final class Keyword {
     public static final String NOT = "not";
     public static final String UNEVALUATED_ITEMS = "unevaluatedItems";
     public static final String UNEVALUATED_PROPERTIES = "unevaluatedProperties";
+
+    /* draft2019-09 */
+    public static final String ADDITIONAL_ITEMS = "additionalItems";
+    public static final String RECURSIVE_REF = "$recursiveRef";
+    public static final String RECURSIVE_ANCHOR = "$recursiveAnchor";
 }

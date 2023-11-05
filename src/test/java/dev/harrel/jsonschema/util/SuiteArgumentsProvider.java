@@ -1,4 +1,4 @@
-package dev.harrel.jsonschema;
+package dev.harrel.jsonschema.util;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;

@@ -12,7 +12,7 @@ import java.net.URI;
 import java.util.List;
 
 import static dev.harrel.jsonschema.SchemaResolver.Result;
-import static dev.harrel.jsonschema.TestUtil.assertError;
+import static dev.harrel.jsonschema.util.TestUtil.assertError;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 

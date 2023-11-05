@@ -3,10 +3,10 @@ package dev.harrel.jsonschema.providers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.harrel.jsonschema.JsonNode;
+import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -15,6 +15,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class JsonSmartTest {
+    private JsonNodeFactory createFactory() {
+        return new JsonSmartNode.Factory();
+    }
+
     @Test
     void shouldWrapForValidArgument() throws ParseException {
         Object object = new JSONParser(MODE_JSON_SIMPLE).parse("{}");
@@ -48,42 +52,58 @@ class JsonSmartTest {
     }
 
     @Nested
-    class SpecificationTest extends dev.harrel.jsonschema.SpecificationTest {
-        @BeforeAll
-        static void beforeAll() {
-            nodeFactory = new JsonSmartNode.Factory();
+    class Draft2020SpecificationTest extends dev.harrel.jsonschema.Draft2020SpecificationTest {
+        @Override
+        public JsonNodeFactory getJsonNodeFactory() {
+            return createFactory();
         }
     }
 
     @Nested
-    class JsonNodeTest extends dev.harrel.jsonschema.JsonNodeTest {
-        @BeforeAll
-        static void beforeAll() {
-            nodeFactory = new JsonSmartNode.Factory();
+    class Draft2019SpecificationTest extends dev.harrel.jsonschema.Draft2019SpecificationTest {
+        @Override
+        public JsonNodeFactory getJsonNodeFactory() {
+            return createFactory();
         }
     }
 
     @Nested
     class Draft2020EvaluatorFactoryTest extends dev.harrel.jsonschema.Draft2020EvaluatorFactoryTest {
-        @BeforeAll
-        static void beforeAll() {
-            nodeFactory = new JsonSmartNode.Factory();
+        @Override
+        public JsonNodeFactory getJsonNodeFactory() {
+            return createFactory();
+        }
+    }
+
+    @Nested
+    class Draft2019EvaluatorFactoryTest extends dev.harrel.jsonschema.Draft2019EvaluatorFactoryTest {
+        @Override
+        public JsonNodeFactory getJsonNodeFactory() {
+            return createFactory();
+        }
+    }
+
+    @Nested
+    class JsonNodeTest extends dev.harrel.jsonschema.JsonNodeTest {
+        @Override
+        public JsonNodeFactory getJsonNodeFactory() {
+            return createFactory();
         }
     }
 
     @Nested
     class MetaSchemaTest extends dev.harrel.jsonschema.MetaSchemaTest {
-        @BeforeAll
-        static void beforeAll() {
-            nodeFactory = new JsonSmartNode.Factory();
+        @Override
+        public JsonNodeFactory getJsonNodeFactory() {
+            return createFactory();
         }
     }
 
     @Nested
     class VocabulariesTest extends dev.harrel.jsonschema.VocabulariesTest {
-        @BeforeAll
-        static void beforeAll() {
-            nodeFactory = new JsonSmartNode.Factory();
+        @Override
+        public JsonNodeFactory getJsonNodeFactory() {
+            return createFactory();
         }
     }
 }

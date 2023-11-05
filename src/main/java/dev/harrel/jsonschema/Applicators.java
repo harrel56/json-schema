@@ -79,6 +79,93 @@ class ItemsEvaluator implements Evaluator {
     }
 }
 
+class Items2019Evaluator implements Evaluator {
+    private final String schemaRef;
+    private final List<String> schemaRefs;
+
+    Items2019Evaluator(SchemaParsingContext ctx, JsonNode node) {
+        if (node.isObject() || node.isBoolean()) {
+            this.schemaRef = ctx.getAbsoluteUri(node);
+            this.schemaRefs = null;
+        } else if (node.isArray()) {
+            this.schemaRef = null;
+            this.schemaRefs = unmodifiableList(node.asArray().stream()
+                    .map(ctx::getAbsoluteUri)
+                    .collect(Collectors.toList()));
+        } else {
+            throw new IllegalArgumentException();
+        }
+    }
+
+    @Override
+    public Set<String> getVocabularies() {
+        return APPLICATOR_VOCABULARY;
+    }
+
+    @Override
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
+        if (!node.isArray()) {
+            return Result.success();
+        }
+        List<JsonNode> array = node.asArray();
+        if (schemaRef != null) {
+            boolean valid = array.stream()
+                    .filter(element -> ctx.resolveInternalRefAndValidate(schemaRef, element))
+                    .count() == array.size();
+            return valid ? Result.success(true) : Result.failure();
+        } else {
+            int size = Math.min(schemaRefs.size(), array.size());
+            boolean valid = IntStream.range(0, size)
+                    .boxed()
+                    .filter(idx -> ctx.resolveInternalRefAndValidate(schemaRefs.get(idx), array.get(idx)))
+                    .count() == size;
+            return valid ? Result.success(schemaRefs.size()) : Result.failure();
+        }
+    }
+}
+
+class AdditionalItemsEvaluator implements Evaluator {
+    private static final Set<String> vocabularies = singleton(Vocabulary.Draft2019.APPLICATOR);
+    private final String schemaRef;
+
+    AdditionalItemsEvaluator(SchemaParsingContext ctx, JsonNode node) {
+        if (!node.isObject() && !node.isBoolean()) {
+            throw new IllegalArgumentException();
+        }
+        this.schemaRef = ctx.getAbsoluteUri(node);
+    }
+
+    @Override
+    public Set<String> getVocabularies() {
+        return vocabularies;
+    }
+
+    @Override
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
+        if (!node.isArray()) {
+            return Result.success();
+        }
+        List<JsonNode> array = node.asArray();
+        Optional<Object> itemsAnnotation = ctx.getSiblingAnnotation(Keyword.ITEMS);
+        boolean shouldSkip = itemsAnnotation.map(Boolean.class::isInstance).orElse(false);
+        if (shouldSkip) {
+            return Result.success(true);
+        }
+        int itemsSize = itemsAnnotation.filter(Integer.class::isInstance).map(Integer.class::cast).orElse(array.size());
+        int size = Math.max(array.size() - itemsSize, 0);
+        boolean valid = array.stream()
+                .skip(itemsSize)
+                .filter(element -> ctx.resolveInternalRefAndValidate(schemaRef, element))
+                .count() == size;
+        return valid ? Result.success(true) : Result.failure();
+    }
+
+    @Override
+    public int getOrder() {
+        return 10;
+    }
+}
+
 class ContainsEvaluator implements Evaluator {
     private final String schemaRef;
     private final boolean minContainsZero;
@@ -597,6 +684,31 @@ class DynamicRefEvaluator implements Evaluator {
             return ctx.resolveDynamicRefAndValidate(ref, node) ? Result.success() : Result.failure();
         } catch (SchemaNotFoundException e) {
             return Result.failure(String.format("Resolution of $dynamicRef [%s] failed", ref));
+        }
+    }
+
+    @Override
+    public Set<String> getVocabularies() {
+        return Vocabulary.CORE_VOCABULARY;
+    }
+}
+
+class RecursiveRefEvaluator implements Evaluator {
+    private final String ref;
+
+    RecursiveRefEvaluator(JsonNode node) {
+        if (!node.isString()) {
+            throw new IllegalArgumentException();
+        }
+        this.ref = node.asString();
+    }
+
+    @Override
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
+        try {
+            return ctx.resolveRecursiveRefAndValidate(ref, node) ? Result.success() : Result.failure();
+        } catch (SchemaNotFoundException e) {
+            return Result.failure(String.format("Resolution of $recursiveRef [%s] failed", ref));
         }
     }
 

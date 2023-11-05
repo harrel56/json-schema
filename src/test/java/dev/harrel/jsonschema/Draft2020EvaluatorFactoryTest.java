@@ -14,9 +14,7 @@ import static dev.harrel.jsonschema.SimpleType.*;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public abstract class Draft2020EvaluatorFactoryTest {
-
-    protected static JsonNodeFactory nodeFactory;
+public abstract class Draft2020EvaluatorFactoryTest implements ProviderTest {
     private static final Map<SimpleType, String> TYPE_MAP = Map.of(
             NULL, "null",
             BOOLEAN, "true",
@@ -32,10 +30,10 @@ public abstract class Draft2020EvaluatorFactoryTest {
     void shouldCreateEvaluatorOnlyForSupportedTypes(String keyword, Set<SimpleType> supportedTypes) {
         Dialects.Draft2020Dialect dialect = new Dialects.Draft2020Dialect();
         EvaluatorFactory evaluatorFactory = dialect.getEvaluatorFactory();
-        SchemaParsingContext ctx = new SchemaParsingContext(dialect, new SchemaRegistry(), URI.create("CoreEvaluatorFactoryTest"), emptyMap());
+        SchemaParsingContext ctx = new SchemaParsingContext(dialect, new SchemaRegistry(), URI.create("urn:CoreEvaluatorFactoryTest"), emptyMap());
 
         for (var entry : TYPE_MAP.entrySet()) {
-            JsonNode wrappedNode = nodeFactory.create("{\"%s\": %s}".formatted(keyword, entry.getValue()));
+            JsonNode wrappedNode = getJsonNodeFactory().create("{\"%s\": %s}".formatted(keyword, entry.getValue()));
             Optional<Evaluator> evaluator = evaluatorFactory.create(ctx, keyword, wrappedNode.asObject().get(keyword));
             if (supportedTypes.contains(entry.getKey())) {
                 assertThat(evaluator)
@@ -90,7 +88,8 @@ public abstract class Draft2020EvaluatorFactoryTest {
                 Arguments.of(Keyword.UNEVALUATED_ITEMS, Set.of(BOOLEAN, OBJECT)),
                 Arguments.of(Keyword.UNEVALUATED_PROPERTIES, Set.of(BOOLEAN, OBJECT)),
                 Arguments.of(Keyword.REF, Set.of(STRING)),
-                Arguments.of(Keyword.DYNAMIC_REF, Set.of(STRING))
+                Arguments.of(Keyword.DYNAMIC_REF, Set.of(STRING)),
+                Arguments.of(Keyword.RECURSIVE_REF, Set.of(STRING))
         );
     }
 }
