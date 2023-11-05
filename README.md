@@ -7,7 +7,9 @@
 
 Java library implementing [JSON schema specification](https://json-schema.org/specification.html):
 - compatible with Java 8,
-- support for the newest specification draft (*2020-12*) [![Supported spec](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie-json-schema.github.io%2Fbowtie%2Fbadges%2Fjava-json-schema%2Fsupported_versions.json)](https://bowtie.report/#/implementations/java-json-schema) [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie-json-schema.github.io%2Fbowtie%2Fbadges%2Fjava-json-schema%2Fcompliance%2FDraft_2020-12.json)](https://bowtie.report/#/implementations/java-json-schema),
+- support for the newest specification versions [![Supported spec](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie-json-schema.github.io%2Fbowtie%2Fbadges%2Fjava-json-schema%2Fsupported_versions.json)](https://bowtie.report/#/implementations/java-json-schema):
+  - Draft 2019-09 [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie-json-schema.github.io%2Fbowtie%2Fbadges%2Fjava-json-schema%2Fcompliance%2FDraft_2019-09.json)](https://bowtie.report/#/implementations/java-json-schema),
+  - Draft 2020-12 [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie-json-schema.github.io%2Fbowtie%2Fbadges%2Fjava-json-schema%2Fcompliance%2FDraft_2020-12.json)](https://bowtie.report/#/implementations/java-json-schema),
 - support for custom keywords,
 - support for annotation collection,
 - multiple JSON providers to choose from ([supported JSON libraries](#json-providers))
