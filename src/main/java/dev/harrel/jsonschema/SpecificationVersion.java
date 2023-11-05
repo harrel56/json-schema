@@ -66,9 +66,9 @@ public enum SpecificationVersion {
     private static Optional<String> readFileResource(String uri) {
         try (InputStream is = SpecificationVersion.class.getResourceAsStream(uri)) {
             if (is == null) {
-                return java.util.Optional.empty();
+                return Optional.empty();
             }
-            return java.util.Optional.of(new BufferedReader(new InputStreamReader(is)).lines().collect(Collectors.joining()));
+            return Optional.of(new BufferedReader(new InputStreamReader(is)).lines().collect(Collectors.joining()));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
