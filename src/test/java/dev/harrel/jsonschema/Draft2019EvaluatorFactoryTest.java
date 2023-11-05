@@ -14,7 +14,7 @@ import static dev.harrel.jsonschema.SimpleType.*;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public abstract class Draft2020EvaluatorFactoryTest implements ProviderTest {
+public abstract class Draft2019EvaluatorFactoryTest implements ProviderTest {
     private static final Map<SimpleType, String> TYPE_MAP = Map.of(
             NULL, "null",
             BOOLEAN, "true",
@@ -28,7 +28,7 @@ public abstract class Draft2020EvaluatorFactoryTest implements ProviderTest {
     @ParameterizedTest
     @MethodSource("getKeywords")
     void shouldCreateEvaluatorOnlyForSupportedTypes(String keyword, Set<SimpleType> supportedTypes) {
-        Dialects.Draft2020Dialect dialect = new Dialects.Draft2020Dialect();
+        Dialect dialect = new Dialects.Draft2019Dialect();
         EvaluatorFactory evaluatorFactory = dialect.getEvaluatorFactory();
         SchemaParsingContext ctx = new SchemaParsingContext(dialect, new SchemaRegistry(), URI.create("urn:CoreEvaluatorFactoryTest"), emptyMap());
 
@@ -71,7 +71,8 @@ public abstract class Draft2020EvaluatorFactoryTest implements ProviderTest {
                 Arguments.of(Keyword.DEPENDENT_REQUIRED, Set.of(OBJECT)),
 
                 Arguments.of(Keyword.PREFIX_ITEMS, Set.of(ARRAY)),
-                Arguments.of(Keyword.ITEMS, Set.of(BOOLEAN, OBJECT)),
+                Arguments.of(Keyword.ITEMS, Set.of(BOOLEAN, OBJECT, ARRAY)),
+                Arguments.of(Keyword.ADDITIONAL_ITEMS, Set.of(BOOLEAN, OBJECT)),
                 Arguments.of(Keyword.CONTAINS, Set.of(BOOLEAN, OBJECT)),
                 Arguments.of(Keyword.ADDITIONAL_PROPERTIES, Set.of(BOOLEAN, OBJECT)),
                 Arguments.of(Keyword.PROPERTIES, Set.of(OBJECT)),
@@ -88,7 +89,8 @@ public abstract class Draft2020EvaluatorFactoryTest implements ProviderTest {
                 Arguments.of(Keyword.UNEVALUATED_ITEMS, Set.of(BOOLEAN, OBJECT)),
                 Arguments.of(Keyword.UNEVALUATED_PROPERTIES, Set.of(BOOLEAN, OBJECT)),
                 Arguments.of(Keyword.REF, Set.of(STRING)),
-                Arguments.of(Keyword.DYNAMIC_REF, Set.of(STRING))
+                Arguments.of(Keyword.DYNAMIC_REF, Set.of(STRING)),
+                Arguments.of(Keyword.RECURSIVE_REF, Set.of(STRING))
         );
     }
 }

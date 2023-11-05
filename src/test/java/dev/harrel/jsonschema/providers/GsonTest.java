@@ -68,7 +68,7 @@ class GsonTest {
     }
 
     @Nested
-    class JsonNodeTest extends dev.harrel.jsonschema.JsonNodeTest {
+    class Draft2020EvaluatorFactoryTest extends dev.harrel.jsonschema.Draft2020EvaluatorFactoryTest {
         @Override
         public JsonNodeFactory getJsonNodeFactory() {
             return createFactory();
@@ -76,7 +76,15 @@ class GsonTest {
     }
 
     @Nested
-    class Draft2020EvaluatorFactoryTest extends dev.harrel.jsonschema.Draft2020EvaluatorFactoryTest {
+    class Draft2019EvaluatorFactoryTest extends dev.harrel.jsonschema.Draft2019EvaluatorFactoryTest {
+        @Override
+        public JsonNodeFactory getJsonNodeFactory() {
+            return createFactory();
+        }
+    }
+
+    @Nested
+    class JsonNodeTest extends dev.harrel.jsonschema.JsonNodeTest {
         @Override
         public JsonNodeFactory getJsonNodeFactory() {
             return createFactory();
