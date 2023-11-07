@@ -2,7 +2,6 @@ package dev.harrel.jsonschema;
 
 import java.net.URI;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * {@code EvaluationContext} class represents state of current evaluation (instance validation against schema).
@@ -134,25 +133,23 @@ public final class EvaluationContext {
         }
 
         int annotationsBefore = annotations.size();
-        boolean valid = true;
-        List<EvaluatorWrapper> filteredEvaluators = schema.getEvaluators().stream()
+        boolean valid = schema.getEvaluators().stream()
                 .filter(ev -> ev.getVocabularies().stream().anyMatch(activeVocabularies::contains) || ev.getVocabularies().isEmpty())
-                .collect(Collectors.toList());
-        for (EvaluatorWrapper evaluator : filteredEvaluators) {
-            String evaluationPath = resolveEvaluationPath(evaluator);
-            evaluationStack.push(evaluationPath);
-            int errorsBefore = errors.size();
-            Evaluator.Result result = evaluator.evaluate(this, node);
-            if (result.isValid()) {
-                /* Discarding errors that were produced by keywords evaluated to true */
-                errors.subList(errorsBefore, errors.size()).clear();
-                annotations.add(new Annotation(evaluationPath, schema.getSchemaLocation(), node.getJsonPointer(), evaluator.getKeyword(), result.getAnnotation()));
-            } else {
-                errors.add(new Error(evaluationPath, schema.getSchemaLocation(), node.getJsonPointer(), evaluator.getKeyword(), result.getError()));
-            }
-            valid = valid && result.isValid();
-            evaluationStack.pop();
-        }
+                .reduce(true, (validAcc, evaluator) -> {
+                    String evaluationPath = resolveEvaluationPath(evaluator);
+                    evaluationStack.push(evaluationPath);
+                    int errorsBefore = errors.size();
+                    Evaluator.Result result = evaluator.evaluate(this, node);
+                    if (result.isValid()) {
+                        /* Discarding errors that were produced by keywords evaluated to true */
+                        errors.subList(errorsBefore, errors.size()).clear();
+                        annotations.add(new Annotation(evaluationPath, schema.getSchemaLocation(), node.getJsonPointer(), evaluator.getKeyword(), result.getAnnotation()));
+                    } else {
+                        errors.add(new Error(evaluationPath, schema.getSchemaLocation(), node.getJsonPointer(), evaluator.getKeyword(), result.getError()));
+                    }
+                    evaluationStack.pop();
+                    return validAcc && result.isValid();
+                }, (v1, v2) -> v1 && v2);
         if (!valid) {
             /* Discarding annotations */
             annotations.subList(annotationsBefore, annotations.size()).clear();
