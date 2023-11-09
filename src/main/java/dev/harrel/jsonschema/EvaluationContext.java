@@ -3,6 +3,9 @@ package dev.harrel.jsonschema;
 import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static java.util.Collections.*;
 
 /**
  * {@code EvaluationContext} class represents state of current evaluation (instance validation against schema).
@@ -19,7 +22,8 @@ public final class EvaluationContext {
     private final Deque<URI> dynamicScope = new LinkedList<>();
     private final Deque<RefStackItem> refStack = new LinkedList<>();
     private final LinkedList<String> evaluationStack = new LinkedList<>();
-    private final Map<String, Map<String, List<Annotation>>> annotations = new LinkedHashMap<>();
+    private final LinkedList<String> schemaStack = new LinkedList<>();
+    private final AnnotationTree annotationTree = new AnnotationTree();
     private final List<Error> errors = new ArrayList<>();
 
     EvaluationContext(JsonNodeFactory jsonNodeFactory,
@@ -99,7 +103,7 @@ public final class EvaluationContext {
     }
 
     List<Error> getErrors() {
-        return Collections.unmodifiableList(errors);
+        return unmodifiableList(errors);
     }
 
     <T> Optional<T> getSiblingAnnotation(String sibling, Class<T> annotationType) {
@@ -109,10 +113,13 @@ public final class EvaluationContext {
     }
 
     Optional<Object> getSiblingAnnotation(String sibling) {
-        return Optional.ofNullable(annotations.get(evaluationStack.get(1)).get(sibling))
-                .filter(items -> !items.isEmpty())
-                .map(items -> items.get(0))
-                .map(Annotation::getAnnotation);
+        String parentPath = UriUtil.getJsonPointerParent(evaluationStack.element());
+        return annotationTree.getNode(schemaStack.get(0)).annotations.stream()
+                .filter(item -> sibling.equals(item.getKeyword()))
+                .filter(item -> item.getEvaluationPath().startsWith(parentPath))
+                .filter(item -> !item.getEvaluationPath().substring(parentPath.length() + 1).contains("/"))
+                .map(Annotation::getAnnotation)
+                .findFirst();
     }
 
     /**
@@ -122,26 +129,25 @@ public final class EvaluationContext {
      * @return unmodifiable list of annotations
      */
     List<Annotation> getAnnotations() {
-        return Collections.unmodifiableList(
-                annotations.values()
-                        .stream()
-                        .flatMap(map -> map.values().stream())
-                        .flatMap(Collection::stream)
-                        .collect(Collectors.toList()));
+        return unmodifiableList(annotationTree.getAllAnnotations().collect(Collectors.toList()));
+    }
+
+    Stream<Annotation> getAnnotationsFromParent(String parentPath) {
+        return annotationTree.getNode(parentPath).stream();
     }
 
     boolean validateAgainstSchema(Schema schema, JsonNode node) {
-        if (evaluationStack.isEmpty()) {
-            evaluationStack.push("");
-        }
+        schemaStack.push(UriUtil.getJsonPointer(schema.getSchemaLocation()));
         boolean outOfDynamicScope = isOutOfDynamicScope(schema.getParentUri());
         if (outOfDynamicScope) {
             dynamicScope.push(schema.getParentUri());
         }
 
-        String parentPath = evaluationStack.element();
-        int parentAnnotationsBefore = annotations.size();
-        Map<String, List<Annotation>> annotationMap = annotations.computeIfAbsent(parentPath, key -> new LinkedHashMap<>());
+        String schemaLocation = schemaStack.element();
+        String parentSchemaLocation = schemaStack.size() > 1 ? schemaStack.get(1) : null;
+        AnnotationTree.Node treeNode = annotationTree.get(parentSchemaLocation, schemaLocation);
+        int nodesBefore = treeNode.nodes.size();
+        int annotationsBefore = treeNode.annotations.size();
         boolean valid = schema.getEvaluators().stream()
                 .filter(ev -> ev.getVocabularies().stream().anyMatch(activeVocabularies::contains) || ev.getVocabularies().isEmpty())
                 .reduce(true, (validAcc, evaluator) -> {
@@ -152,8 +158,8 @@ public final class EvaluationContext {
                     if (result.isValid()) {
                         /* Discarding errors that were produced by keywords evaluated to true */
                         errors.subList(errorsBefore, errors.size()).clear();
-                        List<Annotation> annotationList = annotationMap.computeIfAbsent(evaluator.getKeyword(), key -> new ArrayList<>());
-                        annotationList.add(new Annotation(evaluationPath, schema.getSchemaLocation(), node.getJsonPointer(), evaluator.getKeyword(), result.getAnnotation()));
+                        Annotation annotation = new Annotation(evaluationPath, schema.getSchemaLocation(), node.getJsonPointer(), evaluator.getKeyword(), result.getAnnotation());
+                        treeNode.annotations.add(annotation);
                     } else {
                         errors.add(new Error(evaluationPath, schema.getSchemaLocation(), node.getJsonPointer(), evaluator.getKeyword(), result.getError()));
                     }
@@ -162,11 +168,13 @@ public final class EvaluationContext {
                 }, (v1, v2) -> v1 && v2);
         if (!valid) {
             /* Discarding annotations */
-            annotations.keySet().removeAll(Arrays.asList(annotations.keySet().toArray()).subList(parentAnnotationsBefore, annotations.size()));
+            treeNode.nodes.subList(nodesBefore, treeNode.nodes.size()).clear();
+            treeNode.annotations.subList(annotationsBefore, treeNode.annotations.size()).clear();
         }
         if (outOfDynamicScope) {
             dynamicScope.pop();
         }
+        schemaStack.pop();
         return valid;
     }
 

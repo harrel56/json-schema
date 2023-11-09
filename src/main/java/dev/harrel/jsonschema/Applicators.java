@@ -567,12 +567,12 @@ class UnevaluatedItemsEvaluator implements Evaluator {
             return Result.success();
         }
 
-        List<EvaluationItem> evaluationItems = unmodifiableList(ctx.getAnnotations().stream()
-                .filter(a -> getSchemaPath(a).startsWith(parentPath))
-                .collect(Collectors.toList()));
+        Set<String> evaluatedInstances = ctx.getAnnotationsFromParent(parentPath)
+                .map(Annotation::getInstanceLocation)
+                .collect(Collectors.toSet());
         List<JsonNode> array = node.asArray()
                 .stream()
-                .filter(arrayNode -> evaluationItems.stream().noneMatch(a -> a.getInstanceLocation().startsWith(arrayNode.getJsonPointer())))
+                .filter(arrayNode -> !evaluatedInstances.contains(arrayNode.getJsonPointer()))
                 .collect(Collectors.toList());
 
         boolean valid = array.stream()
@@ -585,10 +585,6 @@ class UnevaluatedItemsEvaluator implements Evaluator {
     @Override
     public int getOrder() {
         return 30;
-    }
-
-    private String getSchemaPath(EvaluationItem item) {
-        return UriUtil.getJsonPointer(item.getSchemaLocation());
     }
 }
 
@@ -616,14 +612,14 @@ class UnevaluatedPropertiesEvaluator implements Evaluator {
             return Result.success();
         }
 
-        List<EvaluationItem> evaluationItems = unmodifiableList(ctx.getAnnotations().stream()
-                .filter(a -> getSchemaPath(a).startsWith(parentPath))
-                .collect(Collectors.toList()));
+        Set<String> evaluatedInstances = ctx.getAnnotationsFromParent(parentPath)
+                .map(Annotation::getInstanceLocation)
+                .collect(Collectors.toSet());
 
         List<JsonNode> array = node.asObject()
                 .values()
                 .stream()
-                .filter(propertyNode -> evaluationItems.stream().noneMatch(a -> a.getInstanceLocation().startsWith(propertyNode.getJsonPointer())))
+                .filter(propertyNode -> !evaluatedInstances.contains(propertyNode.getJsonPointer()))
                 .collect(Collectors.toList());
 
         boolean valid = array.stream()
@@ -636,10 +632,6 @@ class UnevaluatedPropertiesEvaluator implements Evaluator {
     @Override
     public int getOrder() {
         return 20;
-    }
-
-    private String getSchemaPath(EvaluationItem item) {
-        return UriUtil.getJsonPointer(item.getSchemaLocation());
     }
 }
 
