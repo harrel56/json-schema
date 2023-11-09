@@ -253,12 +253,7 @@ public final class EvaluationContext {
             return evaluator.getKeywordPath();
         }
         RefStackItem refItem = refStack.peek();
-        String currentPath = evaluator.getKeywordPath();
-        if (!currentPath.startsWith(refItem.schemaLocation)) {
-            throw new IllegalStateException("Unexpected evaluation path resolution error");
-        }
-
-        String evaluationPathPart = currentPath.substring(refItem.schemaLocation.length());
+        String evaluationPathPart = evaluator.getKeywordPath().substring(refItem.schemaLocation.length());
         return refItem.evaluationPath + evaluationPathPart;
     }
 
