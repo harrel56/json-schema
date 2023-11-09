@@ -145,7 +145,7 @@ public final class EvaluationContext {
 
         String schemaLocation = schemaStack.element();
         String parentSchemaLocation = schemaStack.size() > 1 ? schemaStack.get(1) : null;
-        AnnotationTree.Node treeNode = annotationTree.get(parentSchemaLocation, schemaLocation);
+        AnnotationTree.Node treeNode = annotationTree.createIfAbsent(parentSchemaLocation, schemaLocation);
         int nodesBefore = treeNode.nodes.size();
         int annotationsBefore = treeNode.annotations.size();
         boolean valid = schema.getEvaluators().stream()

@@ -23,7 +23,7 @@ class AnnotationTree {
         return lookupMap.get(location);
     }
 
-    Node get(String parentLocation, String location) {
+    Node createIfAbsent(String parentLocation, String location) {
         boolean contained = lookupMap.containsKey(location);
         Node node = lookupMap.computeIfAbsent(location, key -> new Node());
         if (parentLocation == null) {
