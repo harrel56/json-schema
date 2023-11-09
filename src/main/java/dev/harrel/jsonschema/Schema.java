@@ -11,6 +11,7 @@ final class Schema {
 
     private final URI parentUri;
     private final String schemaLocation;
+    private final String schemaLocationFragment;
     private final List<EvaluatorWrapper> evaluators;
     private final Set<String> activeVocabularies;
     private final Map<String, Boolean> vocabulariesObject;
@@ -20,8 +21,9 @@ final class Schema {
            List<EvaluatorWrapper> evaluators,
            Set<String> activeVocabularies,
            Map<String, Boolean> vocabulariesObject) {
-        this.parentUri = parentUri;
+        this.parentUri = Objects.requireNonNull(parentUri);
         this.schemaLocation = Objects.requireNonNull(schemaLocation);
+        this.schemaLocationFragment = UriUtil.getJsonPointer(schemaLocation);
         this.activeVocabularies = Objects.requireNonNull(activeVocabularies);
         this.vocabulariesObject = Objects.requireNonNull(vocabulariesObject);
         List<EvaluatorWrapper> unsortedEvaluators = new ArrayList<>(Objects.requireNonNull(evaluators));
@@ -39,6 +41,10 @@ final class Schema {
 
     String getSchemaLocation() {
         return schemaLocation;
+    }
+
+    public String getSchemaLocationFragment() {
+        return schemaLocationFragment;
     }
 
     List<EvaluatorWrapper> getEvaluators() {

@@ -137,7 +137,7 @@ public final class EvaluationContext {
     }
 
     boolean validateAgainstSchema(Schema schema, JsonNode node) {
-        schemaStack.push(UriUtil.getJsonPointer(schema.getSchemaLocation()));
+        schemaStack.push(schema.getSchemaLocationFragment());
         boolean outOfDynamicScope = isOutOfDynamicScope(schema.getParentUri());
         if (outOfDynamicScope) {
             dynamicScope.push(schema.getParentUri());
@@ -179,7 +179,7 @@ public final class EvaluationContext {
     }
 
     private boolean validateAgainstRefSchema(Schema schema, JsonNode node) {
-        refStack.push(new RefStackItem(UriUtil.getJsonPointer(schema.getSchemaLocation()), evaluationStack.peek()));
+        refStack.push(new RefStackItem(schema.getSchemaLocationFragment(), evaluationStack.peek()));
         boolean valid = validateAgainstSchema(schema, node);
         refStack.pop();
         return valid;
