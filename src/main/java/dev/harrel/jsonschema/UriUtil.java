@@ -78,9 +78,7 @@ final class UriUtil {
         if (baseUri.getAuthority() == null && ref.uri.toString().isEmpty()) {
             return new CompoundUri(baseUri, fragment);
         }
-        if (ref.uri.toString().isEmpty() && fragment.isEmpty()) {
-            return new CompoundUri(baseUri, "");
-        } else if (ref.uri.toString().isEmpty() && !fragment.isEmpty()) {
+        if (ref.uri.toString().isEmpty()) {
             return new CompoundUri(baseUri, fragment);
         } else {
             return new CompoundUri(baseUri.resolve(ref.uri), fragment);
