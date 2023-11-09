@@ -75,9 +75,6 @@ final class UriUtil {
 
     static CompoundUri resolveUri(URI baseUri, CompoundUri ref) {
         String fragment = UriUtil.decodeJsonPointer(ref.fragment);
-        if (baseUri.getAuthority() == null && ref.uri.toString().isEmpty()) {
-            return new CompoundUri(baseUri, fragment);
-        }
         if (ref.uri.toString().isEmpty()) {
             return new CompoundUri(baseUri, fragment);
         } else {
