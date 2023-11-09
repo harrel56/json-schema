@@ -35,8 +35,12 @@ final class SchemaRegistry {
     Schema getDynamic(String ref) {
         URI baseUri = UriUtil.getUriWithoutFragment(ref);
         String jsonPointer = UriUtil.getJsonPointer(ref);
+        return getDynamic(baseUri, jsonPointer);
+    }
+
+    Schema getDynamic(URI baseUri, String fragment) {
         Fragments fragments = state.getFragments(baseUri);
-        return fragments.dynamicSchemas.get(jsonPointer);
+        return fragments.dynamicSchemas.get(fragment);
     }
 
     void registerAlias(URI originalUri, URI aliasUri) {

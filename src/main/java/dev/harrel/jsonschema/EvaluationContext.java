@@ -48,9 +48,15 @@ public final class EvaluationContext {
      * @throws SchemaNotFoundException when schema cannot be resolved
      */
     public boolean resolveRefAndValidate(String schemaRef, JsonNode node) {
-        return resolveSchema(schemaRef)
+        URI refUri = UriUtil.getUriWithoutFragment(schemaRef);
+        String refFragment = UriUtil.getJsonPointer(schemaRef);
+        return resolveRefAndValidate(new CompoundUri(refUri, refFragment), node);
+    }
+
+    boolean resolveRefAndValidate(CompoundUri compoundUri, JsonNode node) {
+        return resolveSchema(compoundUri)
                 .map(schema -> validateAgainstRefSchema(schema, node))
-                .orElseThrow(() -> new SchemaNotFoundException(schemaRef));
+                .orElseThrow(() -> new SchemaNotFoundException(compoundUri.uri, compoundUri.fragment));
     }
 
     /**
@@ -63,9 +69,15 @@ public final class EvaluationContext {
      * @throws SchemaNotFoundException when schema cannot be resolved
      */
     public boolean resolveDynamicRefAndValidate(String schemaRef, JsonNode node) {
-        return resolveDynamicSchema(schemaRef)
+        URI refUri = UriUtil.getUriWithoutFragment(schemaRef);
+        String refFragment = UriUtil.getJsonPointer(schemaRef);
+        return resolveDynamicRefAndValidate(new CompoundUri(refUri, refFragment), node);
+    }
+
+    boolean resolveDynamicRefAndValidate(CompoundUri compoundUri, JsonNode node) {
+        return resolveDynamicSchema(compoundUri)
                 .map(schema -> validateAgainstRefSchema(schema, node))
-                .orElseThrow(() -> new SchemaNotFoundException(schemaRef));
+                .orElseThrow(() -> new SchemaNotFoundException(compoundUri.uri, compoundUri.fragment));
     }
 
     /**
@@ -195,26 +207,26 @@ public final class EvaluationContext {
         return valid;
     }
 
-    private Optional<Schema> resolveSchema(String ref) {
-        String resolvedUri = UriUtil.resolveUri(dynamicScope.element(), ref);
+    private Optional<Schema> resolveSchema(CompoundUri compoundUri) {
+        CompoundUri resolvedUri = UriUtil.resolveUri(dynamicScope.element(), compoundUri);
         return OptionalUtil.firstPresent(
-                () -> Optional.ofNullable(schemaRegistry.get(resolvedUri)),
-                () -> Optional.ofNullable(schemaRegistry.getDynamic(resolvedUri)),
-                () -> resolveExternalSchema(ref, resolvedUri)
+                () -> Optional.ofNullable(schemaRegistry.get(resolvedUri.uri, resolvedUri.fragment)),
+                () -> Optional.ofNullable(schemaRegistry.getDynamic(resolvedUri.uri, resolvedUri.fragment)),
+                () -> resolveExternalSchema(compoundUri, resolvedUri)
         );
     }
 
-    private Optional<Schema> resolveDynamicSchema(String ref) {
-        String resolvedUri = UriUtil.resolveUri(dynamicScope.element(), ref);
-        Schema staticSchema = schemaRegistry.get(resolvedUri);
+    private Optional<Schema> resolveDynamicSchema(CompoundUri compoundUri) {
+        CompoundUri resolvedUri = UriUtil.resolveUri(dynamicScope.element(), compoundUri);
+        Schema staticSchema = schemaRegistry.get(resolvedUri.uri, resolvedUri.fragment);
         if (staticSchema != null) {
             return Optional.of(staticSchema);
         }
-        Optional<String> anchor = UriUtil.getAnchor(ref);
+        Optional<String> anchor = UriUtil.getAnchor(compoundUri);
         if (anchor.isPresent()) {
             Iterator<URI> it = dynamicScope.descendingIterator();
             while (it.hasNext()) {
-                Schema schema = schemaRegistry.getDynamic(it.next().toString() + "#" + anchor.get());
+                Schema schema = schemaRegistry.getDynamic(it.next(), resolvedUri.fragment);
                 if (schema != null) {
                     return Optional.of(schema);
                 }
@@ -250,15 +262,14 @@ public final class EvaluationContext {
         return refItem.evaluationPath + evaluationPathPart;
     }
 
-    private Optional<Schema> resolveExternalSchema(String originalRef, String resolvedUri) {
-        URI baseUri = UriUtil.getUriWithoutFragment(resolvedUri);
-        if (schemaRegistry.get(baseUri) != null) {
+    private Optional<Schema> resolveExternalSchema(CompoundUri originalRef, CompoundUri resolvedUri) {
+        if (schemaRegistry.get(resolvedUri.uri) != null) {
             return Optional.empty();
         }
-        return schemaResolver.resolve(baseUri.toString())
+        return schemaResolver.resolve(resolvedUri.uri.toString())
                 .toJsonNode(jsonNodeFactory)
                 .flatMap(node -> {
-                    jsonParser.parseRootSchema(baseUri, node);
+                    jsonParser.parseRootSchema(resolvedUri.uri, node);
                     return resolveSchema(originalRef);
                 });
     }
