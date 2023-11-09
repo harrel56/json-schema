@@ -97,9 +97,19 @@ public final class EvaluationContext {
      * @throws SchemaNotFoundException when schema cannot be resolved
      */
     public boolean resolveInternalRefAndValidate(String schemaRef, JsonNode node) {
-        return Optional.ofNullable(schemaRegistry.get(schemaRef))
+        URI refUri = UriUtil.getUriWithoutFragment(schemaRef);
+        String refFragment = UriUtil.getJsonPointer(schemaRef);
+        return resolveInternalRefAndValidate(refUri, refFragment, node);
+    }
+
+    boolean resolveInternalRefAndValidate(CompoundUri compoundUri, JsonNode node) {
+        return resolveInternalRefAndValidate(compoundUri.uri, compoundUri.fragment, node);
+    }
+
+    boolean resolveInternalRefAndValidate(URI refUri, String refFragment, JsonNode node) {
+        return Optional.ofNullable(schemaRegistry.get(refUri, refFragment))
                 .map(schema -> validateAgainstSchema(schema, node))
-                .orElseThrow(() -> new SchemaNotFoundException(schemaRef));
+                .orElseThrow(() -> new SchemaNotFoundException(refUri, refFragment));
     }
 
     List<Error> getErrors() {
@@ -138,7 +148,7 @@ public final class EvaluationContext {
 
     boolean validateAgainstSchema(Schema schema, JsonNode node) {
         schemaStack.push(schema.getSchemaLocationFragment());
-        boolean outOfDynamicScope = isOutOfDynamicScope(schema.getParentUri());
+        boolean outOfDynamicScope = !schema.getParentUri().equals(dynamicScope.peek());
         if (outOfDynamicScope) {
             dynamicScope.push(schema.getParentUri());
         }
@@ -224,10 +234,6 @@ public final class EvaluationContext {
             }
         }
         return Optional.of(schema);
-    }
-
-    private boolean isOutOfDynamicScope(URI uri) {
-        return dynamicScope.isEmpty() || !uri.equals(dynamicScope.peek());
     }
 
     private String resolveEvaluationPath(EvaluatorWrapper evaluator) {

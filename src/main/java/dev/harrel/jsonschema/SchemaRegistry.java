@@ -27,7 +27,7 @@ final class SchemaRegistry {
         return get(baseUri, "");
     }
 
-    private Schema get(URI baseUri, String fragment) {
+    Schema get(URI baseUri, String fragment) {
         Fragments fragments = state.getFragments(baseUri);
         return fragments.schemas.getOrDefault(fragment, fragments.additionalSchemas.get(fragment));
     }

@@ -155,7 +155,7 @@ public final class Validator {
                 .toJsonNode(jsonNodeFactory)
                 .map(node -> {
                     jsonParser.parseRootSchema(uri, node);
-                    return schemaRegistry.get(uri.toString());
+                    return schemaRegistry.get(uri, "");
                 });
     }
 

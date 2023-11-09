@@ -6,6 +6,19 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
+/**
+ * Because fragments can contain illegal characters and URI parsing might fail.
+ */
+final class CompoundUri {
+    final URI uri;
+    final String fragment;
+
+    CompoundUri(URI uri, String fragment) {
+        this.uri = uri;
+        this.fragment = fragment;
+    }
+}
+
 final class UriUtil {
 
     private UriUtil() {}
