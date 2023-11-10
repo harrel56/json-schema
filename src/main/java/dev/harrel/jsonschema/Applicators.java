@@ -11,14 +11,14 @@ import static dev.harrel.jsonschema.Vocabulary.UNEVALUATED_VOCABULARY;
 import static java.util.Collections.*;
 
 class PrefixItemsEvaluator implements Evaluator {
-    private final List<String> prefixRefs;
+    private final List<CompoundUri> prefixRefs;
 
     PrefixItemsEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isArray()) {
             throw new IllegalArgumentException();
         }
         this.prefixRefs = unmodifiableList(node.asArray().stream()
-                .map(ctx::getAbsoluteUri)
+                .map(ctx::getCompoundUri)
                 .collect(Collectors.toList()));
     }
 
@@ -44,13 +44,13 @@ class PrefixItemsEvaluator implements Evaluator {
 }
 
 class ItemsEvaluator implements Evaluator {
-    private final String schemaRef;
+    private final CompoundUri schemaRef;
 
     ItemsEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isObject() && !node.isBoolean()) {
             throw new IllegalArgumentException();
         }
-        this.schemaRef = ctx.getAbsoluteUri(node);
+        this.schemaRef = ctx.getCompoundUri(node);
     }
 
     @Override
@@ -80,17 +80,17 @@ class ItemsEvaluator implements Evaluator {
 }
 
 class Items2019Evaluator implements Evaluator {
-    private final String schemaRef;
-    private final List<String> schemaRefs;
+    private final CompoundUri schemaRef;
+    private final List<CompoundUri> schemaRefs;
 
     Items2019Evaluator(SchemaParsingContext ctx, JsonNode node) {
         if (node.isObject() || node.isBoolean()) {
-            this.schemaRef = ctx.getAbsoluteUri(node);
+            this.schemaRef = ctx.getCompoundUri(node);
             this.schemaRefs = null;
         } else if (node.isArray()) {
             this.schemaRef = null;
             this.schemaRefs = unmodifiableList(node.asArray().stream()
-                    .map(ctx::getAbsoluteUri)
+                    .map(ctx::getCompoundUri)
                     .collect(Collectors.toList()));
         } else {
             throw new IllegalArgumentException();
@@ -126,13 +126,13 @@ class Items2019Evaluator implements Evaluator {
 
 class AdditionalItemsEvaluator implements Evaluator {
     private static final Set<String> vocabularies = singleton(Vocabulary.Draft2019.APPLICATOR);
-    private final String schemaRef;
+    private final CompoundUri schemaRef;
 
     AdditionalItemsEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isObject() && !node.isBoolean()) {
             throw new IllegalArgumentException();
         }
-        this.schemaRef = ctx.getAbsoluteUri(node);
+        this.schemaRef = ctx.getCompoundUri(node);
     }
 
     @Override
@@ -167,14 +167,14 @@ class AdditionalItemsEvaluator implements Evaluator {
 }
 
 class ContainsEvaluator implements Evaluator {
-    private final String schemaRef;
+    private final CompoundUri schemaRef;
     private final boolean minContainsZero;
 
     ContainsEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isObject() && !node.isBoolean()) {
             throw new IllegalArgumentException();
         }
-        this.schemaRef = ctx.getAbsoluteUri(node);
+        this.schemaRef = ctx.getCompoundUri(node);
         this.minContainsZero = Optional.ofNullable(ctx.getCurrentSchemaObject().get(Keyword.MIN_CONTAINS))
                 .map(JsonNode::asInteger)
                 .map(BigInteger::intValueExact)
@@ -204,13 +204,13 @@ class ContainsEvaluator implements Evaluator {
 
 @SuppressWarnings("unchecked")
 class AdditionalPropertiesEvaluator implements Evaluator {
-    private final String schemaRef;
+    private final CompoundUri schemaRef;
 
     AdditionalPropertiesEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isObject() && !node.isBoolean()) {
             throw new IllegalArgumentException();
         }
-        this.schemaRef = ctx.getAbsoluteUri(node);
+        this.schemaRef = ctx.getCompoundUri(node);
     }
 
     @Override
@@ -244,15 +244,15 @@ class AdditionalPropertiesEvaluator implements Evaluator {
 }
 
 class PropertiesEvaluator implements Evaluator {
-    private final Map<String, String> schemaRefs;
+    private final Map<String, CompoundUri> schemaRefs;
 
     PropertiesEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isObject()) {
             throw new IllegalArgumentException();
         }
-        Map<String, String> uris = new HashMap<>();
+        Map<String, CompoundUri> uris = new HashMap<>();
         for (Map.Entry<String, JsonNode> entry : node.asObject().entrySet()) {
-            uris.put(entry.getKey(), ctx.getAbsoluteUri(entry.getValue()));
+            uris.put(entry.getKey(), ctx.getCompoundUri(entry.getValue()));
         }
         this.schemaRefs = unmodifiableMap(uris);
     }
@@ -286,14 +286,14 @@ class PropertiesEvaluator implements Evaluator {
 }
 
 class PatternPropertiesEvaluator implements Evaluator {
-    private final Map<Pattern, String> schemasByPatterns;
+    private final Map<Pattern, CompoundUri> schemasByPatterns;
 
     PatternPropertiesEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isObject()) {
             throw new IllegalArgumentException();
         }
         this.schemasByPatterns = node.asObject().entrySet().stream()
-                .collect(Collectors.toMap(e -> Pattern.compile(e.getKey()), e -> ctx.getAbsoluteUri(e.getValue())));
+                .collect(Collectors.toMap(e -> Pattern.compile(e.getKey()), e -> ctx.getCompoundUri(e.getValue())));
     }
 
     @Override
@@ -310,7 +310,7 @@ class PatternPropertiesEvaluator implements Evaluator {
         boolean valid = true;
         Set<String> processed = new HashSet<>();
         for (Map.Entry<String, JsonNode> entry : node.asObject().entrySet()) {
-            List<String> schemaRefs = unmodifiableList(schemasByPatterns.entrySet().stream()
+            List<CompoundUri> schemaRefs = unmodifiableList(schemasByPatterns.entrySet().stream()
                     .filter(e -> e.getKey().matcher(entry.getKey()).find())
                     .map(Map.Entry::getValue)
                     .collect(Collectors.toList()));
@@ -326,7 +326,7 @@ class PatternPropertiesEvaluator implements Evaluator {
 }
 
 class DependentSchemasEvaluator implements Evaluator {
-    private final Map<String, String> dependentSchemas;
+    private final Map<String, CompoundUri> dependentSchemas;
 
     DependentSchemasEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isObject()) {
@@ -334,7 +334,7 @@ class DependentSchemasEvaluator implements Evaluator {
         }
         this.dependentSchemas = node.asObject().entrySet()
                 .stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> ctx.getAbsoluteUri(e.getValue())));
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> ctx.getCompoundUri(e.getValue())));
     }
 
     @Override
@@ -364,13 +364,13 @@ class DependentSchemasEvaluator implements Evaluator {
 }
 
 class PropertyNamesEvaluator implements Evaluator {
-    private final String schemaRef;
+    private final CompoundUri schemaRef;
 
     PropertyNamesEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isObject() && !node.isBoolean()) {
             throw new IllegalArgumentException();
         }
-        this.schemaRef = ctx.getAbsoluteUri(node);
+        this.schemaRef = ctx.getCompoundUri(node);
     }
 
     @Override
@@ -394,19 +394,19 @@ class PropertyNamesEvaluator implements Evaluator {
 }
 
 class IfThenElseEvaluator implements Evaluator {
-    private final String ifRef;
-    private final Optional<String> thenRef;
-    private final Optional<String> elseRef;
+    private final CompoundUri ifRef;
+    private final Optional<CompoundUri> thenRef;
+    private final Optional<CompoundUri> elseRef;
 
     IfThenElseEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isObject() && !node.isBoolean()) {
             throw new IllegalArgumentException();
         }
-        this.ifRef = ctx.getAbsoluteUri(node);
+        this.ifRef = ctx.getCompoundUri(node);
         this.thenRef = Optional.ofNullable(ctx.getCurrentSchemaObject().get(Keyword.THEN))
-                .map(ctx::getAbsoluteUri);
+                .map(ctx::getCompoundUri);
         this.elseRef = Optional.ofNullable(ctx.getCurrentSchemaObject().get(Keyword.ELSE))
-                .map(ctx::getAbsoluteUri);
+                .map(ctx::getCompoundUri);
     }
 
     @Override
@@ -433,13 +433,13 @@ class IfThenElseEvaluator implements Evaluator {
 }
 
 class AllOfEvaluator implements Evaluator {
-    private final List<String> refs;
+    private final List<CompoundUri> refs;
 
     AllOfEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isArray()) {
             throw new IllegalArgumentException();
         }
-        this.refs = unmodifiableList(node.asArray().stream().map(ctx::getAbsoluteUri).collect(Collectors.toList()));
+        this.refs = unmodifiableList(node.asArray().stream().map(ctx::getCompoundUri).collect(Collectors.toList()));
     }
 
     @Override
@@ -463,13 +463,13 @@ class AllOfEvaluator implements Evaluator {
 }
 
 class AnyOfEvaluator implements Evaluator {
-    private final List<String> refs;
+    private final List<CompoundUri> refs;
 
     AnyOfEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isArray()) {
             throw new IllegalArgumentException();
         }
-        this.refs = unmodifiableList(node.asArray().stream().map(ctx::getAbsoluteUri).collect(Collectors.toList()));
+        this.refs = unmodifiableList(node.asArray().stream().map(ctx::getCompoundUri).collect(Collectors.toList()));
     }
 
     @Override
@@ -488,13 +488,13 @@ class AnyOfEvaluator implements Evaluator {
 }
 
 class OneOfEvaluator implements Evaluator {
-    private final List<String> refs;
+    private final List<CompoundUri> refs;
 
     OneOfEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isArray()) {
             throw new IllegalArgumentException();
         }
-        this.refs = unmodifiableList(node.asArray().stream().map(ctx::getAbsoluteUri).collect(Collectors.toList()));
+        this.refs = unmodifiableList(node.asArray().stream().map(ctx::getCompoundUri).collect(Collectors.toList()));
     }
 
     @Override
@@ -522,13 +522,13 @@ class OneOfEvaluator implements Evaluator {
 }
 
 class NotEvaluator implements Evaluator {
-    private final String schemaUri;
+    private final CompoundUri schemaUri;
 
     NotEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isObject() && !node.isBoolean()) {
             throw new IllegalArgumentException();
         }
-        this.schemaUri = ctx.getAbsoluteUri(node);
+        this.schemaUri = ctx.getCompoundUri(node);
     }
 
     @Override
@@ -544,16 +544,15 @@ class NotEvaluator implements Evaluator {
 }
 
 class UnevaluatedItemsEvaluator implements Evaluator {
-    private final String schemaRef;
+    private final CompoundUri schemaRef;
     private final String parentPath;
 
     UnevaluatedItemsEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isObject() && !node.isBoolean()) {
             throw new IllegalArgumentException();
         }
-        String schemaPointer = node.getJsonPointer();
-        this.schemaRef = ctx.getAbsoluteUri(schemaPointer);
-        this.parentPath = UriUtil.getJsonPointerParent(schemaPointer);
+        this.schemaRef = ctx.getCompoundUri(node);
+        this.parentPath = UriUtil.getJsonPointerParent(schemaRef.fragment);
     }
 
     @Override
@@ -567,12 +566,12 @@ class UnevaluatedItemsEvaluator implements Evaluator {
             return Result.success();
         }
 
-        List<EvaluationItem> evaluationItems = unmodifiableList(ctx.getAnnotations().stream()
-                .filter(a -> getSchemaPath(a).startsWith(parentPath))
-                .collect(Collectors.toList()));
+        Set<String> evaluatedInstances = ctx.getAnnotationsFromParent(parentPath)
+                .map(Annotation::getInstanceLocation)
+                .collect(Collectors.toSet());
         List<JsonNode> array = node.asArray()
                 .stream()
-                .filter(arrayNode -> evaluationItems.stream().noneMatch(a -> a.getInstanceLocation().startsWith(arrayNode.getJsonPointer())))
+                .filter(arrayNode -> !evaluatedInstances.contains(arrayNode.getJsonPointer()))
                 .collect(Collectors.toList());
 
         boolean valid = array.stream()
@@ -586,23 +585,18 @@ class UnevaluatedItemsEvaluator implements Evaluator {
     public int getOrder() {
         return 30;
     }
-
-    private String getSchemaPath(EvaluationItem item) {
-        return UriUtil.getJsonPointer(item.getSchemaLocation());
-    }
 }
 
 class UnevaluatedPropertiesEvaluator implements Evaluator {
-    private final String schemaRef;
+    private final CompoundUri schemaRef;
     private final String parentPath;
 
     UnevaluatedPropertiesEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isObject() && !node.isBoolean()) {
             throw new IllegalArgumentException();
         }
-        String schemaPointer = node.getJsonPointer();
-        this.schemaRef = ctx.getAbsoluteUri(schemaPointer);
-        this.parentPath = UriUtil.getJsonPointerParent(schemaPointer);
+        this.schemaRef = ctx.getCompoundUri(node);
+        this.parentPath = UriUtil.getJsonPointerParent(schemaRef.fragment);
     }
 
     @Override
@@ -616,14 +610,14 @@ class UnevaluatedPropertiesEvaluator implements Evaluator {
             return Result.success();
         }
 
-        List<EvaluationItem> evaluationItems = unmodifiableList(ctx.getAnnotations().stream()
-                .filter(a -> getSchemaPath(a).startsWith(parentPath))
-                .collect(Collectors.toList()));
+        Set<String> evaluatedInstances = ctx.getAnnotationsFromParent(parentPath)
+                .map(Annotation::getInstanceLocation)
+                .collect(Collectors.toSet());
 
         List<JsonNode> array = node.asObject()
                 .values()
                 .stream()
-                .filter(propertyNode -> evaluationItems.stream().noneMatch(a -> a.getInstanceLocation().startsWith(propertyNode.getJsonPointer())))
+                .filter(propertyNode -> !evaluatedInstances.contains(propertyNode.getJsonPointer()))
                 .collect(Collectors.toList());
 
         boolean valid = array.stream()
@@ -637,20 +631,16 @@ class UnevaluatedPropertiesEvaluator implements Evaluator {
     public int getOrder() {
         return 20;
     }
-
-    private String getSchemaPath(EvaluationItem item) {
-        return UriUtil.getJsonPointer(item.getSchemaLocation());
-    }
 }
 
 class RefEvaluator implements Evaluator {
-    private final String ref;
+    private final CompoundUri ref;
 
     RefEvaluator(JsonNode node) {
         if (!node.isString()) {
             throw new IllegalArgumentException();
         }
-        this.ref = node.asString();
+        this.ref = CompoundUri.fromString(node.asString());
     }
 
     @Override
@@ -669,13 +659,13 @@ class RefEvaluator implements Evaluator {
 }
 
 class DynamicRefEvaluator implements Evaluator {
-    private final String ref;
+    private final CompoundUri ref;
 
     DynamicRefEvaluator(JsonNode node) {
         if (!node.isString()) {
             throw new IllegalArgumentException();
         }
-        this.ref = node.asString();
+        this.ref = CompoundUri.fromString(node.asString());
     }
 
     @Override

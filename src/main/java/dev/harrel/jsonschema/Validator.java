@@ -147,7 +147,7 @@ public final class Validator {
                         () -> Optional.ofNullable(schemaRegistry.get(UriUtil.getUriWithoutFragment(uri))),
                         () -> resolveExternalSchema(uri)
                 )
-                .orElseThrow(() -> new SchemaNotFoundException(uri.toString()));
+                .orElseThrow(() -> new SchemaNotFoundException(new CompoundUri(uri, "")));
     }
 
     private Optional<Schema> resolveExternalSchema(URI uri) {
@@ -155,7 +155,7 @@ public final class Validator {
                 .toJsonNode(jsonNodeFactory)
                 .map(node -> {
                     jsonParser.parseRootSchema(uri, node);
-                    return schemaRegistry.get(uri.toString());
+                    return schemaRegistry.get(uri);
                 });
     }
 

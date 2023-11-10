@@ -3,6 +3,9 @@ package dev.harrel.jsonschema;
 import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static java.util.Collections.unmodifiableList;
 
 /**
  * {@code EvaluationContext} class represents state of current evaluation (instance validation against schema).
@@ -19,7 +22,8 @@ public final class EvaluationContext {
     private final Deque<URI> dynamicScope = new LinkedList<>();
     private final Deque<RefStackItem> refStack = new LinkedList<>();
     private final Deque<String> evaluationStack = new LinkedList<>();
-    private final List<Annotation> annotations = new ArrayList<>();
+    private final Deque<String> schemaStack = new LinkedList<>();
+    private final AnnotationTree annotationTree = new AnnotationTree();
     private final List<Error> errors = new ArrayList<>();
 
     EvaluationContext(JsonNodeFactory jsonNodeFactory,
@@ -44,9 +48,13 @@ public final class EvaluationContext {
      * @throws SchemaNotFoundException when schema cannot be resolved
      */
     public boolean resolveRefAndValidate(String schemaRef, JsonNode node) {
-        return resolveSchema(schemaRef)
+        return resolveRefAndValidate(CompoundUri.fromString(schemaRef), node);
+    }
+
+    boolean resolveRefAndValidate(CompoundUri compoundUri, JsonNode node) {
+        return resolveSchema(compoundUri)
                 .map(schema -> validateAgainstRefSchema(schema, node))
-                .orElseThrow(() -> new SchemaNotFoundException(schemaRef));
+                .orElseThrow(() -> new SchemaNotFoundException(compoundUri));
     }
 
     /**
@@ -59,9 +67,13 @@ public final class EvaluationContext {
      * @throws SchemaNotFoundException when schema cannot be resolved
      */
     public boolean resolveDynamicRefAndValidate(String schemaRef, JsonNode node) {
-        return resolveDynamicSchema(schemaRef)
+        return resolveDynamicRefAndValidate(CompoundUri.fromString(schemaRef), node);
+    }
+
+    boolean resolveDynamicRefAndValidate(CompoundUri compoundUri, JsonNode node) {
+        return resolveDynamicSchema(compoundUri)
                 .map(schema -> validateAgainstRefSchema(schema, node))
-                .orElseThrow(() -> new SchemaNotFoundException(schemaRef));
+                .orElseThrow(() -> new SchemaNotFoundException(compoundUri));
     }
 
     /**
@@ -77,7 +89,7 @@ public final class EvaluationContext {
     public boolean resolveRecursiveRefAndValidate(String schemaRef, JsonNode node) {
         return resolveRecursiveSchema()
                 .map(schema -> validateAgainstRefSchema(schema, node))
-                .orElseThrow(() -> new SchemaNotFoundException(schemaRef));
+                .orElseThrow(() -> new SchemaNotFoundException(CompoundUri.fromString(schemaRef)));
     }
 
     /**
@@ -93,13 +105,17 @@ public final class EvaluationContext {
      * @throws SchemaNotFoundException when schema cannot be resolved
      */
     public boolean resolveInternalRefAndValidate(String schemaRef, JsonNode node) {
-        return Optional.ofNullable(schemaRegistry.get(schemaRef))
+        return resolveInternalRefAndValidate(CompoundUri.fromString(schemaRef), node);
+    }
+
+    boolean resolveInternalRefAndValidate(CompoundUri compoundUri, JsonNode node) {
+        return Optional.ofNullable(schemaRegistry.get(compoundUri))
                 .map(schema -> validateAgainstSchema(schema, node))
-                .orElseThrow(() -> new SchemaNotFoundException(schemaRef));
+                .orElseThrow(() -> new SchemaNotFoundException(compoundUri));
     }
 
     List<Error> getErrors() {
-        return Collections.unmodifiableList(errors);
+        return unmodifiableList(errors);
     }
 
     <T> Optional<T> getSiblingAnnotation(String sibling, Class<T> annotationType) {
@@ -110,11 +126,12 @@ public final class EvaluationContext {
 
     Optional<Object> getSiblingAnnotation(String sibling) {
         String parentPath = UriUtil.getJsonPointerParent(evaluationStack.element());
-        return annotations.stream()
+        return annotationTree.getNode(schemaStack.element()).annotations.stream()
                 .filter(item -> sibling.equals(item.getKeyword()))
+                .filter(item -> item.getEvaluationPath().startsWith(parentPath))
                 .filter(item -> parentPath.equals(UriUtil.getJsonPointerParent(item.getEvaluationPath())))
                 .map(Annotation::getAnnotation)
-                .findAny();
+                .findFirst();
     }
 
     /**
@@ -124,84 +141,92 @@ public final class EvaluationContext {
      * @return unmodifiable list of annotations
      */
     List<Annotation> getAnnotations() {
-        return Collections.unmodifiableList(annotations);
+        return unmodifiableList(annotationTree.getAllAnnotations().collect(Collectors.toList()));
+    }
+
+    Stream<Annotation> getAnnotationsFromParent(String parentPath) {
+        return annotationTree.getNode(parentPath).stream();
     }
 
     boolean validateAgainstSchema(Schema schema, JsonNode node) {
-        boolean outOfDynamicScope = isOutOfDynamicScope(schema.getParentUri());
+        String parentSchemaLocation = schemaStack.peek();
+        schemaStack.push(schema.getSchemaLocationFragment());
+        boolean outOfDynamicScope = !schema.getParentUri().equals(dynamicScope.peek());
         if (outOfDynamicScope) {
             dynamicScope.push(schema.getParentUri());
         }
 
-        int annotationsBefore = annotations.size();
-        boolean valid = true;
-        List<EvaluatorWrapper> filteredEvaluators = schema.getEvaluators().stream()
+        String schemaLocation = schemaStack.element();
+        AnnotationTree.Node treeNode = annotationTree.createIfAbsent(parentSchemaLocation, schemaLocation);
+        int nodesBefore = treeNode.nodes.size();
+        int annotationsBefore = treeNode.annotations.size();
+        boolean valid = schema.getEvaluators().stream()
                 .filter(ev -> ev.getVocabularies().stream().anyMatch(activeVocabularies::contains) || ev.getVocabularies().isEmpty())
-                .collect(Collectors.toList());
-        for (EvaluatorWrapper evaluator : filteredEvaluators) {
-            String evaluationPath = resolveEvaluationPath(evaluator);
-            evaluationStack.push(evaluationPath);
-            int errorsBefore = errors.size();
-            Evaluator.Result result = evaluator.evaluate(this, node);
-            if (result.isValid()) {
-                /* Discarding errors that were produced by keywords evaluated to true */
-                errors.subList(errorsBefore, errors.size()).clear();
-                annotations.add(new Annotation(evaluationPath, schema.getSchemaLocation(), node.getJsonPointer(), evaluator.getKeyword(), result.getAnnotation()));
-            } else {
-                errors.add(new Error(evaluationPath, schema.getSchemaLocation(), node.getJsonPointer(), evaluator.getKeyword(), result.getError()));
-            }
-            valid = valid && result.isValid();
-            evaluationStack.pop();
-        }
+                .reduce(true, (validAcc, evaluator) -> {
+                    String evaluationPath = resolveEvaluationPath(evaluator);
+                    evaluationStack.push(evaluationPath);
+                    int errorsBefore = errors.size();
+                    Evaluator.Result result = evaluator.evaluate(this, node);
+                    if (result.isValid()) {
+                        /* Discarding errors that were produced by keywords evaluated to true */
+                        errors.subList(errorsBefore, errors.size()).clear();
+                        Annotation annotation = new Annotation(evaluationPath, schema.getSchemaLocation(), node.getJsonPointer(), evaluator.getKeyword(), result.getAnnotation());
+                        treeNode.annotations.add(annotation);
+                    } else {
+                        errors.add(new Error(evaluationPath, schema.getSchemaLocation(), node.getJsonPointer(), evaluator.getKeyword(), result.getError()));
+                    }
+                    evaluationStack.pop();
+                    return validAcc && result.isValid();
+                }, (v1, v2) -> v1 && v2);
         if (!valid) {
             /* Discarding annotations */
-            annotations.subList(annotationsBefore, annotations.size()).clear();
+            treeNode.nodes.subList(nodesBefore, treeNode.nodes.size()).clear();
+            treeNode.annotations.subList(annotationsBefore, treeNode.annotations.size()).clear();
         }
         if (outOfDynamicScope) {
             dynamicScope.pop();
         }
+        schemaStack.pop();
         return valid;
     }
 
     private boolean validateAgainstRefSchema(Schema schema, JsonNode node) {
-        refStack.push(new RefStackItem(UriUtil.getJsonPointer(schema.getSchemaLocation()), evaluationStack.peek()));
+        refStack.push(new RefStackItem(schema.getSchemaLocationFragment(), evaluationStack.peek()));
         boolean valid = validateAgainstSchema(schema, node);
         refStack.pop();
         return valid;
     }
 
-    private Optional<Schema> resolveSchema(String ref) {
-        String resolvedUri = UriUtil.resolveUri(dynamicScope.element(), ref);
+    private Optional<Schema> resolveSchema(CompoundUri compoundUri) {
+        CompoundUri resolvedUri = UriUtil.resolveUri(dynamicScope.element(), compoundUri);
         return OptionalUtil.firstPresent(
                 () -> Optional.ofNullable(schemaRegistry.get(resolvedUri)),
                 () -> Optional.ofNullable(schemaRegistry.getDynamic(resolvedUri)),
-                () -> resolveExternalSchema(ref, resolvedUri)
+                () -> resolveExternalSchema(compoundUri, resolvedUri)
         );
     }
 
-    private Optional<Schema> resolveDynamicSchema(String ref) {
-        String resolvedUri = UriUtil.resolveUri(dynamicScope.element(), ref);
+    private Optional<Schema> resolveDynamicSchema(CompoundUri compoundUri) {
+        CompoundUri resolvedUri = UriUtil.resolveUri(dynamicScope.element(), compoundUri);
         Schema staticSchema = schemaRegistry.get(resolvedUri);
         if (staticSchema != null) {
             return Optional.of(staticSchema);
         }
-        Optional<String> anchor = UriUtil.getAnchor(ref);
-        if (anchor.isPresent()) {
-            Iterator<URI> it = dynamicScope.descendingIterator();
-            while (it.hasNext()) {
-                Schema schema = schemaRegistry.getDynamic(it.next().toString() + "#" + anchor.get());
-                if (schema != null) {
-                    return Optional.of(schema);
-                }
+
+        Iterator<URI> it = dynamicScope.descendingIterator();
+        while (it.hasNext()) {
+            Schema schema = schemaRegistry.getDynamic(new CompoundUri(it.next(), resolvedUri.fragment));
+            if (schema != null) {
+                return Optional.of(schema);
             }
         }
         return Optional.empty();
     }
 
     private Optional<Schema> resolveRecursiveSchema() {
-        Schema schema = schemaRegistry.get(dynamicScope.element().toString());
+        Schema schema = schemaRegistry.get(dynamicScope.element());
         for (URI uri : dynamicScope) {
-            Schema recursedSchema = schemaRegistry.getDynamic(uri.toString());
+            Schema recursedSchema = schemaRegistry.getDynamic(uri);
             if (recursedSchema == null) {
                 return Optional.of(schema);
             } else {
@@ -211,33 +236,23 @@ public final class EvaluationContext {
         return Optional.of(schema);
     }
 
-    private boolean isOutOfDynamicScope(URI uri) {
-        return dynamicScope.isEmpty() || !uri.equals(dynamicScope.peek());
-    }
-
     private String resolveEvaluationPath(EvaluatorWrapper evaluator) {
         if (refStack.isEmpty()) {
             return evaluator.getKeywordPath();
         }
         RefStackItem refItem = refStack.peek();
-        String currentPath = evaluator.getKeywordPath();
-        if (!currentPath.startsWith(refItem.schemaLocation)) {
-            throw new IllegalStateException("Unexpected evaluation path resolution error");
-        }
-
-        String evaluationPathPart = currentPath.substring(refItem.schemaLocation.length());
+        String evaluationPathPart = evaluator.getKeywordPath().substring(refItem.schemaLocation.length());
         return refItem.evaluationPath + evaluationPathPart;
     }
 
-    private Optional<Schema> resolveExternalSchema(String originalRef, String resolvedUri) {
-        URI baseUri = UriUtil.getUriWithoutFragment(resolvedUri);
-        if (schemaRegistry.get(baseUri) != null) {
+    private Optional<Schema> resolveExternalSchema(CompoundUri originalRef, CompoundUri resolvedUri) {
+        if (schemaRegistry.get(resolvedUri.uri) != null) {
             return Optional.empty();
         }
-        return schemaResolver.resolve(baseUri.toString())
+        return schemaResolver.resolve(resolvedUri.uri.toString())
                 .toJsonNode(jsonNodeFactory)
                 .flatMap(node -> {
-                    jsonParser.parseRootSchema(baseUri, node);
+                    jsonParser.parseRootSchema(resolvedUri.uri, node);
                     return resolveSchema(originalRef);
                 });
     }

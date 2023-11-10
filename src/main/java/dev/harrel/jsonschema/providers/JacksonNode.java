@@ -2,7 +2,6 @@ package dev.harrel.jsonschema.providers;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
@@ -13,25 +12,14 @@ import java.math.BigInteger;
 import java.util.*;
 
 public final class JacksonNode implements JsonNode {
-
-    private static final Map<JsonNodeType, SimpleType> TYPE_MAP;
-    static {
-        Map<JsonNodeType, SimpleType> typeMap = new EnumMap<>(JsonNodeType.class);
-        typeMap.put(JsonNodeType.NULL, SimpleType.NULL);
-        typeMap.put(JsonNodeType.BOOLEAN, SimpleType.BOOLEAN);
-        typeMap.put(JsonNodeType.STRING, SimpleType.STRING);
-        typeMap.put(JsonNodeType.NUMBER, SimpleType.NUMBER);
-        typeMap.put(JsonNodeType.ARRAY, SimpleType.ARRAY);
-        typeMap.put(JsonNodeType.OBJECT, SimpleType.OBJECT);
-        TYPE_MAP = Collections.unmodifiableMap(typeMap);
-    }
-
     private final com.fasterxml.jackson.databind.JsonNode node;
     private final String jsonPointer;
+    private final SimpleType nodeType;
 
     private JacksonNode(com.fasterxml.jackson.databind.JsonNode node, String jsonPointer) {
         this.node = Objects.requireNonNull(node);
         this.jsonPointer = Objects.requireNonNull(jsonPointer);
+        this.nodeType = computeNodeType(node);
     }
 
     public JacksonNode(com.fasterxml.jackson.databind.JsonNode node) {
@@ -45,12 +33,7 @@ public final class JacksonNode implements JsonNode {
 
     @Override
     public SimpleType getNodeType() {
-        SimpleType type = TYPE_MAP.get(node.getNodeType());
-        if (node.canConvertToExactIntegral()) {
-            return SimpleType.INTEGER;
-        } else {
-            return type;
-        }
+        return nodeType;
     }
 
     @Override
@@ -90,6 +73,28 @@ public final class JacksonNode implements JsonNode {
             map.put(entry.getKey(), new JacksonNode(entry.getValue(), jsonPointer + "/" + entry.getKey()));
         }
         return map;
+    }
+
+    private static SimpleType computeNodeType(com.fasterxml.jackson.databind.JsonNode node) {
+        if (node.canConvertToExactIntegral()) {
+            return SimpleType.INTEGER;
+        }
+        switch (node.getNodeType()) {
+            case NULL:
+                return SimpleType.NULL;
+            case BOOLEAN:
+                return SimpleType.BOOLEAN;
+            case STRING:
+                return SimpleType.STRING;
+            case NUMBER:
+                return SimpleType.NUMBER;
+            case ARRAY:
+                return SimpleType.ARRAY;
+            case OBJECT:
+                return SimpleType.OBJECT;
+            default:
+                throw new IllegalArgumentException(String.format("Unknown node type [%s]", node.getNodeType()));
+        }
     }
 
     public static final class Factory implements JsonNodeFactory {

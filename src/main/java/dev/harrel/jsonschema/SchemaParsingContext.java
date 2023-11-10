@@ -81,4 +81,8 @@ public final class SchemaParsingContext {
     public Map<String, JsonNode> getCurrentSchemaObject() {
         return unmodifiableMap(currentSchemaObject);
     }
+
+    CompoundUri getCompoundUri(JsonNode node) {
+        return new CompoundUri(baseUri, node.getJsonPointer());
+    }
 }

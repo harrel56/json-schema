@@ -4,19 +4,37 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Optional;
+import java.util.Objects;
+
+/**
+ * Because fragments can contain illegal characters and URI parsing might fail.
+ */
+final class CompoundUri {
+    final URI uri;
+    final String fragment;
+
+    static CompoundUri fromString(String ref) {
+        String[] split = ref.split("#", -1);
+        String fragment = split.length > 1 ? split[1] : "";
+        return new CompoundUri(URI.create(split[0]), fragment);
+    }
+
+    CompoundUri(URI uri, String fragment) {
+        this.uri = Objects.requireNonNull(uri);
+        this.fragment = Objects.requireNonNull(fragment);
+    }
+
+    @Override
+    public String toString() {
+        return fragment.isEmpty() ? uri.toString() : uri + "#" + fragment;
+    }
+}
 
 final class UriUtil {
-
     private UriUtil() {}
 
     static boolean hasNonEmptyFragment(URI uri) {
         return uri.getFragment() != null && !uri.getFragment().isEmpty();
-    }
-
-    static Optional<String> getAnchor(String uri) {
-        return Optional.ofNullable(URI.create(uri).getFragment())
-                .filter(fragment -> !fragment.startsWith("/"));
     }
 
     static URI getUriWithoutFragment(URI uri) {
@@ -49,32 +67,13 @@ final class UriUtil {
         return pointer.substring(0, pointer.lastIndexOf('/'));
     }
 
-    static boolean isJsonPointerOrAnchor(String uri) {
-        return uri.startsWith("#") && uri.length() > 1;
-    }
-
-    static String resolveUri(URI baseUri, String ref) {
-        ref = UriUtil.decodeUrl(ref);
-        if (baseUri.getAuthority() == null && UriUtil.isJsonPointerOrAnchor(ref)) {
-            return baseUri + ref;
-        }
-        if (ref.equals("#")) {
-            return baseUri.toString();
-        } else if (UriUtil.isJsonPointerOrAnchor(ref)) {
-            return baseUri + ref;
+    static CompoundUri resolveUri(URI baseUri, CompoundUri ref) {
+        String fragment = UriUtil.decodeJsonPointer(ref.fragment);
+        if (ref.uri.toString().isEmpty()) {
+            return new CompoundUri(baseUri, fragment);
         } else {
-            return baseUri.resolve(ref).toString();
+            return new CompoundUri(baseUri.resolve(ref.uri), fragment);
         }
-    }
-
-    static String decodeUrl(String url) {
-        String[] split = url.split("#", -1);
-        StringBuilder sb = new StringBuilder(split[0]);
-        if (split.length > 1) {
-            sb.append('#');
-            sb.append(decodeJsonPointer(split[1]));
-        }
-        return sb.toString();
     }
 
     static String decodeJsonPointer(String pointer) {
