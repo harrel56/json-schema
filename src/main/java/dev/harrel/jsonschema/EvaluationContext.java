@@ -48,9 +48,7 @@ public final class EvaluationContext {
      * @throws SchemaNotFoundException when schema cannot be resolved
      */
     public boolean resolveRefAndValidate(String schemaRef, JsonNode node) {
-        URI refUri = UriUtil.getUriWithoutFragment(schemaRef);
-        String refFragment = UriUtil.getJsonPointer(schemaRef);
-        return resolveRefAndValidate(new CompoundUri(refUri, refFragment), node);
+        return resolveRefAndValidate(CompoundUri.fromString(schemaRef), node);
     }
 
     boolean resolveRefAndValidate(CompoundUri compoundUri, JsonNode node) {
@@ -69,9 +67,7 @@ public final class EvaluationContext {
      * @throws SchemaNotFoundException when schema cannot be resolved
      */
     public boolean resolveDynamicRefAndValidate(String schemaRef, JsonNode node) {
-        URI refUri = UriUtil.getUriWithoutFragment(schemaRef);
-        String refFragment = UriUtil.getJsonPointer(schemaRef);
-        return resolveDynamicRefAndValidate(new CompoundUri(refUri, refFragment), node);
+        return resolveDynamicRefAndValidate(CompoundUri.fromString(schemaRef), node);
     }
 
     boolean resolveDynamicRefAndValidate(CompoundUri compoundUri, JsonNode node) {
@@ -109,9 +105,7 @@ public final class EvaluationContext {
      * @throws SchemaNotFoundException when schema cannot be resolved
      */
     public boolean resolveInternalRefAndValidate(String schemaRef, JsonNode node) {
-        URI refUri = UriUtil.getUriWithoutFragment(schemaRef);
-        String refFragment = UriUtil.getJsonPointer(schemaRef);
-        return resolveInternalRefAndValidate(new CompoundUri(refUri, refFragment), node);
+        return resolveInternalRefAndValidate(CompoundUri.fromString(schemaRef), node);
     }
 
     boolean resolveInternalRefAndValidate(CompoundUri compoundUri, JsonNode node) {
