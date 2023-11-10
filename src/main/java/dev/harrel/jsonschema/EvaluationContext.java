@@ -159,6 +159,7 @@ public final class EvaluationContext {
     }
 
     boolean validateAgainstSchema(Schema schema, JsonNode node) {
+        String parentSchemaLocation = schemaStack.peek();
         schemaStack.push(schema.getSchemaLocationFragment());
         boolean outOfDynamicScope = !schema.getParentUri().equals(dynamicScope.peek());
         if (outOfDynamicScope) {
@@ -166,7 +167,6 @@ public final class EvaluationContext {
         }
 
         String schemaLocation = schemaStack.element();
-        String parentSchemaLocation = schemaStack.size() > 1 ? schemaStack.get(1) : null;
         AnnotationTree.Node treeNode = annotationTree.createIfAbsent(parentSchemaLocation, schemaLocation);
         int nodesBefore = treeNode.nodes.size();
         int annotationsBefore = treeNode.annotations.size();

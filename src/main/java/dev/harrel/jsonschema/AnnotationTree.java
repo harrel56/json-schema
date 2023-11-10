@@ -8,15 +8,13 @@ import java.util.stream.Stream;
 
 class AnnotationTree {
     private final Map<String, Node> lookupMap = new HashMap<>();
-    private final Node rootNode;
 
-    public AnnotationTree() {
-        this.rootNode = new Node();
-        lookupMap.put("", rootNode);
+    AnnotationTree() {
+        lookupMap.put(null, new Node());
     }
 
     Stream<Annotation> getAllAnnotations() {
-        return rootNode.stream();
+        return lookupMap.get(null).stream();
     }
 
     Node getNode(String location) {
@@ -24,16 +22,11 @@ class AnnotationTree {
     }
 
     Node createIfAbsent(String parentLocation, String location) {
-        boolean contained = lookupMap.containsKey(location);
-        Node node = lookupMap.computeIfAbsent(location, key -> new Node());
-        if (parentLocation == null) {
+        return lookupMap.computeIfAbsent(location, key -> {
+            Node node = new Node();
+            lookupMap.get(parentLocation).nodes.add(node);
             return node;
-        }
-        if (!contained) {
-            Node parentNode = lookupMap.get(parentLocation);
-            parentNode.nodes.add(node);
-        }
-        return node;
+        });
     }
 
     static class Node {
