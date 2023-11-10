@@ -5,7 +5,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.util.Collections.*;
+import static java.util.Collections.unmodifiableList;
 
 /**
  * {@code EvaluationContext} class represents state of current evaluation (instance validation against schema).
@@ -222,14 +222,12 @@ public final class EvaluationContext {
         if (staticSchema != null) {
             return Optional.of(staticSchema);
         }
-        Optional<String> anchor = UriUtil.getAnchor(compoundUri);
-        if (anchor.isPresent()) {
-            Iterator<URI> it = dynamicScope.descendingIterator();
-            while (it.hasNext()) {
-                Schema schema = schemaRegistry.getDynamic(it.next(), resolvedUri.fragment);
-                if (schema != null) {
-                    return Optional.of(schema);
-                }
+
+        Iterator<URI> it = dynamicScope.descendingIterator();
+        while (it.hasNext()) {
+            Schema schema = schemaRegistry.getDynamic(it.next(), resolvedUri.fragment);
+            if (schema != null) {
+                return Optional.of(schema);
             }
         }
         return Optional.empty();

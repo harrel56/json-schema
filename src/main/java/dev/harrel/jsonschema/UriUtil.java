@@ -4,7 +4,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Optional;
+import java.util.Objects;
 
 /**
  * Because fragments can contain illegal characters and URI parsing might fail.
@@ -20,8 +20,8 @@ final class CompoundUri {
     }
 
     CompoundUri(URI uri, String fragment) {
-        this.uri = uri;
-        this.fragment = fragment;
+        this.uri = Objects.requireNonNull(uri);
+        this.fragment = Objects.requireNonNull(fragment);
     }
 
     @Override
@@ -31,16 +31,10 @@ final class CompoundUri {
 }
 
 final class UriUtil {
-
     private UriUtil() {}
 
     static boolean hasNonEmptyFragment(URI uri) {
         return uri.getFragment() != null && !uri.getFragment().isEmpty();
-    }
-
-    static Optional<String> getAnchor(CompoundUri compoundUri) {
-        return Optional.of(compoundUri.fragment)
-                .filter(fragment -> !fragment.startsWith("/"));
     }
 
     static URI getUriWithoutFragment(URI uri) {
