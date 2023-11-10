@@ -26,19 +26,19 @@ class SchemaRegistryTest {
         JsonNode subSchemaNode = rootSchemaNode.asObject().get("properties").asObject().get("field");
 
         schemaRegistry.registerSchema(ctx, subSchemaNode, List.of(), Set.of());
-        assertThat(schemaRegistry.get("urn:test#/properties/field")).isNotNull();
+        assertThat(schemaRegistry.get(CompoundUri.fromString("urn:test#/properties/field"))).isNotNull();
 
         SchemaRegistry.State snapshot = schemaRegistry.createSnapshot();
         schemaRegistry.registerSchema(ctx, rootSchemaNode, List.of(), Set.of());
-        assertThat(schemaRegistry.get("urn:test#")).isNotNull();
+        assertThat(schemaRegistry.get(CompoundUri.fromString("urn:test#"))).isNotNull();
         SchemaRegistry.State nextSnapshot = schemaRegistry.createSnapshot();
 
         schemaRegistry.restoreSnapshot(snapshot);
-        assertThat(schemaRegistry.get("urn:test#/properties/field")).isNotNull();
-        assertThat(schemaRegistry.get("urn:test#")).isNull();
+        assertThat(schemaRegistry.get(CompoundUri.fromString("urn:test#/properties/field"))).isNotNull();
+        assertThat(schemaRegistry.get(CompoundUri.fromString("urn:test#"))).isNull();
 
         schemaRegistry.restoreSnapshot(nextSnapshot);
-        assertThat(schemaRegistry.get("urn:test#/properties/field")).isNotNull();
-        assertThat(schemaRegistry.get("urn:test#")).isNotNull();
+        assertThat(schemaRegistry.get(CompoundUri.fromString("urn:test#/properties/field"))).isNotNull();
+        assertThat(schemaRegistry.get(CompoundUri.fromString("urn:test#"))).isNotNull();
     }
 }

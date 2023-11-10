@@ -73,7 +73,7 @@ interface MetaSchemaValidator {
         private Schema resolveMetaSchema(JsonParser jsonParser, URI uri) {
             return OptionalUtil.firstPresent(
                     () -> Optional.ofNullable(schemaRegistry.get(uri)),
-                    () -> Optional.ofNullable(schemaRegistry.getDynamic(uri.toString()))
+                    () -> Optional.ofNullable(schemaRegistry.getDynamic(uri))
             ).orElseGet(() -> resolveExternalSchema(jsonParser, uri));
         }
 

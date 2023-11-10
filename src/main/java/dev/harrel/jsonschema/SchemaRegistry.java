@@ -17,30 +17,22 @@ final class SchemaRegistry {
         this.state = state;
     }
 
-    Schema get(String ref) {
-        URI baseUri = UriUtil.getUriWithoutFragment(ref);
-        String jsonPointer = UriUtil.getJsonPointer(ref);
-        return get(baseUri, jsonPointer);
-    }
-
     Schema get(URI baseUri) {
-        return get(baseUri, "");
+        return get(new CompoundUri(baseUri, ""));
     }
 
-    Schema get(URI baseUri, String fragment) {
-        Fragments fragments = state.getFragments(baseUri);
-        return fragments.schemas.getOrDefault(fragment, fragments.additionalSchemas.get(fragment));
+    Schema get(CompoundUri compoundUri) {
+        Fragments fragments = state.getFragments(compoundUri.uri);
+        return fragments.schemas.getOrDefault(compoundUri.fragment, fragments.additionalSchemas.get(compoundUri.fragment));
     }
 
-    Schema getDynamic(String ref) {
-        URI baseUri = UriUtil.getUriWithoutFragment(ref);
-        String jsonPointer = UriUtil.getJsonPointer(ref);
-        return getDynamic(baseUri, jsonPointer);
+    Schema getDynamic(URI baseUri) {
+        return getDynamic(new CompoundUri(baseUri, ""));
     }
 
-    Schema getDynamic(URI baseUri, String fragment) {
-        Fragments fragments = state.getFragments(baseUri);
-        return fragments.dynamicSchemas.get(fragment);
+    Schema getDynamic(CompoundUri compoundUri) {
+        Fragments fragments = state.getFragments(compoundUri.uri);
+        return fragments.dynamicSchemas.get(compoundUri.fragment);
     }
 
     void registerAlias(URI originalUri, URI aliasUri) {

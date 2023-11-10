@@ -111,17 +111,13 @@ public final class EvaluationContext {
     public boolean resolveInternalRefAndValidate(String schemaRef, JsonNode node) {
         URI refUri = UriUtil.getUriWithoutFragment(schemaRef);
         String refFragment = UriUtil.getJsonPointer(schemaRef);
-        return resolveInternalRefAndValidate(refUri, refFragment, node);
+        return resolveInternalRefAndValidate(new CompoundUri(refUri, refFragment), node);
     }
 
     boolean resolveInternalRefAndValidate(CompoundUri compoundUri, JsonNode node) {
-        return resolveInternalRefAndValidate(compoundUri.uri, compoundUri.fragment, node);
-    }
-
-    boolean resolveInternalRefAndValidate(URI refUri, String refFragment, JsonNode node) {
-        return Optional.ofNullable(schemaRegistry.get(refUri, refFragment))
+        return Optional.ofNullable(schemaRegistry.get(compoundUri))
                 .map(schema -> validateAgainstSchema(schema, node))
-                .orElseThrow(() -> new SchemaNotFoundException(refUri, refFragment));
+                .orElseThrow(() -> new SchemaNotFoundException(compoundUri.uri, compoundUri.fragment));
     }
 
     List<Error> getErrors() {
@@ -210,22 +206,22 @@ public final class EvaluationContext {
     private Optional<Schema> resolveSchema(CompoundUri compoundUri) {
         CompoundUri resolvedUri = UriUtil.resolveUri(dynamicScope.element(), compoundUri);
         return OptionalUtil.firstPresent(
-                () -> Optional.ofNullable(schemaRegistry.get(resolvedUri.uri, resolvedUri.fragment)),
-                () -> Optional.ofNullable(schemaRegistry.getDynamic(resolvedUri.uri, resolvedUri.fragment)),
+                () -> Optional.ofNullable(schemaRegistry.get(resolvedUri)),
+                () -> Optional.ofNullable(schemaRegistry.getDynamic(resolvedUri)),
                 () -> resolveExternalSchema(compoundUri, resolvedUri)
         );
     }
 
     private Optional<Schema> resolveDynamicSchema(CompoundUri compoundUri) {
         CompoundUri resolvedUri = UriUtil.resolveUri(dynamicScope.element(), compoundUri);
-        Schema staticSchema = schemaRegistry.get(resolvedUri.uri, resolvedUri.fragment);
+        Schema staticSchema = schemaRegistry.get(resolvedUri);
         if (staticSchema != null) {
             return Optional.of(staticSchema);
         }
 
         Iterator<URI> it = dynamicScope.descendingIterator();
         while (it.hasNext()) {
-            Schema schema = schemaRegistry.getDynamic(it.next(), resolvedUri.fragment);
+            Schema schema = schemaRegistry.getDynamic(new CompoundUri(it.next(), resolvedUri.fragment));
             if (schema != null) {
                 return Optional.of(schema);
             }
@@ -234,9 +230,9 @@ public final class EvaluationContext {
     }
 
     private Optional<Schema> resolveRecursiveSchema() {
-        Schema schema = schemaRegistry.get(dynamicScope.element().toString());
+        Schema schema = schemaRegistry.get(dynamicScope.element());
         for (URI uri : dynamicScope) {
-            Schema recursedSchema = schemaRegistry.getDynamic(uri.toString());
+            Schema recursedSchema = schemaRegistry.getDynamic(uri);
             if (recursedSchema == null) {
                 return Optional.of(schema);
             } else {
