@@ -121,7 +121,7 @@ class EvaluationContextTest {
                     return Evaluator.Result.failure();
                 }
             }
-        };
+        }
         var customFactory = new EvaluatorFactory() {
             @Override
             public Optional<Evaluator> create(SchemaParsingContext spCtx, String fieldName, JsonNode fieldNode) {
