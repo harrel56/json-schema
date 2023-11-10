@@ -43,7 +43,7 @@ final class Schema {
         return schemaLocation;
     }
 
-    public String getSchemaLocationFragment() {
+    String getSchemaLocationFragment() {
         return schemaLocationFragment;
     }
 
