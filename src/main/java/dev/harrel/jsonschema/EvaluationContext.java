@@ -136,7 +136,7 @@ public final class EvaluationContext {
 
     Optional<Object> getSiblingAnnotation(String sibling) {
         String parentPath = UriUtil.getJsonPointerParent(evaluationStack.element());
-        return annotationTree.getNode(schemaStack.get(0)).annotations.stream()
+        return annotationTree.getNode(schemaStack.element()).annotations.stream()
                 .filter(item -> sibling.equals(item.getKeyword()))
                 .filter(item -> item.getEvaluationPath().startsWith(parentPath))
                 .filter(item -> !item.getEvaluationPath().substring(parentPath.length() + 1).contains("/"))
