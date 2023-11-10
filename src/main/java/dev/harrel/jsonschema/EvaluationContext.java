@@ -21,8 +21,8 @@ public final class EvaluationContext {
     private final Set<String> activeVocabularies;
     private final Deque<URI> dynamicScope = new LinkedList<>();
     private final Deque<RefStackItem> refStack = new LinkedList<>();
-    private final LinkedList<String> evaluationStack = new LinkedList<>();
-    private final LinkedList<String> schemaStack = new LinkedList<>();
+    private final Deque<String> evaluationStack = new LinkedList<>();
+    private final Deque<String> schemaStack = new LinkedList<>();
     private final AnnotationTree annotationTree = new AnnotationTree();
     private final List<Error> errors = new ArrayList<>();
 
