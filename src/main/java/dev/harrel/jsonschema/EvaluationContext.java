@@ -129,7 +129,7 @@ public final class EvaluationContext {
         return annotationTree.getNode(schemaStack.element()).annotations.stream()
                 .filter(item -> sibling.equals(item.getKeyword()))
                 .filter(item -> item.getEvaluationPath().startsWith(parentPath))
-                .filter(item -> !item.getEvaluationPath().substring(parentPath.length() + 1).contains("/"))
+                .filter(item -> parentPath.equals(UriUtil.getJsonPointerParent(item.getEvaluationPath())))
                 .map(Annotation::getAnnotation)
                 .findFirst();
     }
