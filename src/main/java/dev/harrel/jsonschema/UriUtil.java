@@ -26,7 +26,7 @@ final class CompoundUri {
 
     @Override
     public String toString() {
-        return uri + "#" + fragment;
+        return fragment.isEmpty() ? uri.toString() : uri + "#" + fragment;
     }
 }
 

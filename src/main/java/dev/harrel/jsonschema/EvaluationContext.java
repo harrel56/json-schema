@@ -54,7 +54,7 @@ public final class EvaluationContext {
     boolean resolveRefAndValidate(CompoundUri compoundUri, JsonNode node) {
         return resolveSchema(compoundUri)
                 .map(schema -> validateAgainstRefSchema(schema, node))
-                .orElseThrow(() -> new SchemaNotFoundException(compoundUri.uri, compoundUri.fragment));
+                .orElseThrow(() -> new SchemaNotFoundException(compoundUri));
     }
 
     /**
@@ -73,7 +73,7 @@ public final class EvaluationContext {
     boolean resolveDynamicRefAndValidate(CompoundUri compoundUri, JsonNode node) {
         return resolveDynamicSchema(compoundUri)
                 .map(schema -> validateAgainstRefSchema(schema, node))
-                .orElseThrow(() -> new SchemaNotFoundException(compoundUri.uri, compoundUri.fragment));
+                .orElseThrow(() -> new SchemaNotFoundException(compoundUri));
     }
 
     /**
@@ -89,7 +89,7 @@ public final class EvaluationContext {
     public boolean resolveRecursiveRefAndValidate(String schemaRef, JsonNode node) {
         return resolveRecursiveSchema()
                 .map(schema -> validateAgainstRefSchema(schema, node))
-                .orElseThrow(() -> new SchemaNotFoundException(schemaRef));
+                .orElseThrow(() -> new SchemaNotFoundException(CompoundUri.fromString(schemaRef)));
     }
 
     /**
@@ -111,7 +111,7 @@ public final class EvaluationContext {
     boolean resolveInternalRefAndValidate(CompoundUri compoundUri, JsonNode node) {
         return Optional.ofNullable(schemaRegistry.get(compoundUri))
                 .map(schema -> validateAgainstSchema(schema, node))
-                .orElseThrow(() -> new SchemaNotFoundException(compoundUri.uri, compoundUri.fragment));
+                .orElseThrow(() -> new SchemaNotFoundException(compoundUri));
     }
 
     List<Error> getErrors() {
