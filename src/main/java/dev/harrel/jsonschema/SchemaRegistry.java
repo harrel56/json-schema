@@ -23,7 +23,8 @@ final class SchemaRegistry {
 
     Schema get(CompoundUri compoundUri) {
         Fragments fragments = state.getFragments(compoundUri.uri);
-        return fragments.schemas.getOrDefault(compoundUri.fragment, fragments.additionalSchemas.get(compoundUri.fragment));
+        return Optional.ofNullable(fragments.schemas.get(compoundUri.fragment))
+                .orElseGet(() -> fragments.additionalSchemas.get(compoundUri.fragment));
     }
 
     Schema getDynamic(URI baseUri) {
