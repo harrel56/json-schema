@@ -19,10 +19,10 @@ public final class EvaluationContext {
     private final SchemaRegistry schemaRegistry;
     private final SchemaResolver schemaResolver;
     private final Set<String> activeVocabularies;
-    private final Deque<URI> dynamicScope = new LinkedList<>();
-    private final Deque<RefStackItem> refStack = new LinkedList<>();
-    private final Deque<String> evaluationStack = new LinkedList<>();
-    private final Deque<String> schemaStack = new LinkedList<>();
+    private final Deque<URI> dynamicScope = new ArrayDeque<>();
+    private final Deque<RefStackItem> refStack = new ArrayDeque<>();
+    private final Deque<String> evaluationStack = new ArrayDeque<>();
+    private final Deque<String> schemaStack = new ArrayDeque<>();
     private final AnnotationTree annotationTree = new AnnotationTree();
     private final List<Error> errors = new ArrayList<>();
 
@@ -261,7 +261,7 @@ public final class EvaluationContext {
         private final String schemaLocation;
         private final String evaluationPath;
 
-        public RefStackItem(String schemaLocation, String evaluationPath) {
+        private RefStackItem(String schemaLocation, String evaluationPath) {
             this.schemaLocation = schemaLocation;
             this.evaluationPath = evaluationPath;
         }
