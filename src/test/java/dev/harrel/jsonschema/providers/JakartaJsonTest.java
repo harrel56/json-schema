@@ -108,4 +108,12 @@ class JakartaJsonTest {
             return createFactory();
         }
     }
+
+    @Nested
+    class JsonPointerEscapingTest extends dev.harrel.jsonschema.JsonPointerEscapingTest {
+        @Override
+        public JsonNodeFactory getJsonNodeFactory() {
+            return createFactory();
+        }
+    }
 }
