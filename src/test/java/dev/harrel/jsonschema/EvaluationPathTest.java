@@ -186,4 +186,52 @@ public abstract class EvaluationPathTest implements ProviderTest {
                 Set.of("x/y")
         );
     }
+
+    @Test
+    void withValidPropertyNames() {
+        String schema = """
+                {
+                  "$id": "urn:test",
+                  "propertyNames": {
+                    "maxLength": 2
+                  }
+                }""";
+        String instance = """
+                {
+                  "/1": true
+                }""";
+        validator.registerSchema(uri, schema);
+        Validator.Result result = validator.validate(uri, instance);
+
+        assertThat(result.isValid()).isTrue();
+    }
+
+    @Test
+    void withInvalidPropertyNames() {
+        String schema = """
+                {
+                  "$id": "urn:test",
+                  "propertyNames": {
+                    "maxLength": 2
+                  }
+                }""";
+        String instance = """
+                {
+                  "///": true
+                }""";
+        validator.registerSchema(uri, schema);
+        Validator.Result result = validator.validate(uri, instance);
+
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(1);
+        assertError(
+                errors.get(0),
+                "/propertyNames/maxLength",
+                "urn:test#/propertyNames",
+                "",
+                "maxLength",
+                "\"///\" is longer than 2 characters"
+        );
+    }
 }
