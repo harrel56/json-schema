@@ -16,8 +16,8 @@ jobs:
         uses: actions/setup-java@v3
         with:
           # Not using variables to allow running from forks
-          distribution: corretto
-          java-version: 17
+          distribution: temurin
+          java-version: 21
 
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
@@ -60,8 +60,8 @@ jobs:
         uses: actions/setup-java@v3
         with:
           # Not using variables to allow running from forks
-          distribution: corretto
-          java-version: 17
+          distribution: temurin
+          java-version: 21
 
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
@@ -90,8 +90,8 @@ jobs:
         uses: actions/setup-java@v3
         with:
           # Not using variables to allow running from forks
-          distribution: corretto
-          java-version: 17
+          distribution: temurin
+          java-version: 21
 
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
