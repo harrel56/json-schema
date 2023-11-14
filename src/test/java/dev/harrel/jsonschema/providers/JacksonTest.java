@@ -103,4 +103,20 @@ class JacksonTest {
             return createFactory();
         }
     }
+
+    @Nested
+    class JsonPointerEscapingTest extends dev.harrel.jsonschema.JsonPointerEscapingTest {
+        @Override
+        public JsonNodeFactory getJsonNodeFactory() {
+            return createFactory();
+        }
+    }
+
+    @Nested
+    class EvaluationPathTest extends dev.harrel.jsonschema.EvaluationPathTest {
+        @Override
+        public JsonNodeFactory getJsonNodeFactory() {
+            return createFactory();
+        }
+    }
 }

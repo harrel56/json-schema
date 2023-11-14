@@ -85,7 +85,7 @@ public final class OrgJsonNode implements JsonNode {
         Map<String, JsonNode> map = new HashMap<>();
         JSONObject jsonObject = (JSONObject) node;
         for (String key : jsonObject.keySet()) {
-            map.put(key, new OrgJsonNode(factory, jsonObject.get(key), jsonPointer + "/" + key));
+            map.put(key, new OrgJsonNode(factory, jsonObject.get(key), jsonPointer + "/" + JsonNode.encodeJsonPointer(key)));
         }
         return map;
     }
