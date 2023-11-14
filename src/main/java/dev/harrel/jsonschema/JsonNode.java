@@ -13,6 +13,14 @@ import static dev.harrel.jsonschema.ComparatorHelper.compareObjects;
  */
 public interface JsonNode {
     /**
+     * Encodes all illegal characters in JSON pointer segment
+     * @param pointer JSON pointer segment
+     * @return encoded JSON pointer segment
+     */
+    static String encodeJsonPointer(String pointer) {
+        return pointer.replace("~", "~0").replace("/", "~1");
+    }
+    /**
      * JSON pointer getter.
      * @return JSON pointer
      */

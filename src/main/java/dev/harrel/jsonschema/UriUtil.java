@@ -68,7 +68,7 @@ final class UriUtil {
     }
 
     static CompoundUri resolveUri(URI baseUri, CompoundUri ref) {
-        String fragment = UriUtil.decodeJsonPointer(ref.fragment);
+        String fragment = urlDecode(ref.fragment);
         if (ref.uri.toString().isEmpty()) {
             return new CompoundUri(baseUri, fragment);
         } else {
@@ -76,11 +76,7 @@ final class UriUtil {
         }
     }
 
-    static String decodeJsonPointer(String pointer) {
-        return internalDecode(pointer).replace("~0", "~").replace("~1", "/");
-    }
-
-    private static String internalDecode(String url) {
+    private static String urlDecode(String url) {
         try {
             return URLDecoder.decode(url, StandardCharsets.UTF_8.toString());
         } catch (UnsupportedEncodingException e) {

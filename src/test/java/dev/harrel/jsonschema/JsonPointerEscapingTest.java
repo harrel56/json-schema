@@ -5,6 +5,7 @@ import org.junit.jupiter.api.TestInstance;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 import static dev.harrel.jsonschema.util.TestUtil.assertError;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,14 +32,20 @@ public abstract class JsonPointerEscapingTest implements ProviderTest {
                 }""";
         JsonNode jsonNode = getJsonNodeFactory().create(json);
         assertThat(jsonNode.isObject()).isTrue();
-        assertThat(jsonNode.asObject()).containsOnlyKeys("x", "x~1y", "x~1y~1x", "x~1~1~1~1y", "~1", "~0", "~00~01", "a~1b~1c");
-        JsonNode nested1 = jsonNode.asObject().get("a~1b~1c");
-        assertThat(nested1.isObject()).isTrue();
-        assertThat(nested1.asObject()).containsOnlyKeys("d~1e~1f");
-        JsonNode nested2 = jsonNode.asObject().get("d~1e~1f");
-        assertThat(nested2.isObject()).isTrue();
-        assertThat(nested2.asObject()).containsOnlyKeys("g~1h");
-        assertThat(nested2.asObject().get("g~1h").getJsonPointer()).isEqualTo("a~1b~1c/d~1e~1f/g~1h");
+        Map<String, JsonNode> object1 = jsonNode.asObject();
+        assertThat(object1.get("x").getJsonPointer()).isEqualTo("/x");
+        assertThat(object1.get("x/y").getJsonPointer()).isEqualTo("/x~1y");
+        assertThat(object1.get("x/y/z").getJsonPointer()).isEqualTo("/x~1y~1z");
+        assertThat(object1.get("x////y").getJsonPointer()).isEqualTo("/x~1~1~1~1y");
+        assertThat(object1.get("/").getJsonPointer()).isEqualTo("/~1");
+        assertThat(object1.get("~").getJsonPointer()).isEqualTo("/~0");
+        assertThat(object1.get("~0~1").getJsonPointer()).isEqualTo("/~00~01");
+        assertThat(object1.get("a/b/c").getJsonPointer()).isEqualTo("/a~1b~1c");
+
+        Map<String, JsonNode> nested1 = object1.get("a/b/c").asObject();
+        assertThat(nested1.get("d/e/f").getJsonPointer()).isEqualTo("/a~1b~1c/d~1e~1f");
+        Map<String, JsonNode> nested2 = nested1.get("d/e/f").asObject();
+        assertThat(nested2.get("g/h").getJsonPointer()).isEqualTo("/a~1b~1c/d~1e~1f/g~1h");
     }
 
     @Test
@@ -66,16 +73,16 @@ public abstract class JsonPointerEscapingTest implements ProviderTest {
         JsonNode jsonNode = getJsonNodeFactory().create(json);
         JsonNode nestedNode = jsonNode
                 .asArray().get(0)
-                .asObject().get("~1a~1")
-                .asArray().get(3)
+                .asObject().get("/a/")
+                .asArray().get(2)
                 .asArray().get(0)
-                .asObject().get("~1b~1c~0")
-                .asObject().get("~0~1")
+                .asObject().get("/b/c~")
+                .asObject().get("~/")
                 .asArray().get(0)
                 .asObject().get("nested");
 
         assertThat(nestedNode.isBoolean()).isTrue();
-        assertThat(nestedNode.getJsonPointer()).isEqualTo("/0/~1a~1/3/0/~1b~1c~0/~0~1/0/nested");
+        assertThat(nestedNode.getJsonPointer()).isEqualTo("/0/~1a~1/2/0/~1b~1c~0/~0~1/0/nested");
     }
 
     @Test
@@ -101,11 +108,11 @@ public abstract class JsonPointerEscapingTest implements ProviderTest {
         assertThat(errors).hasSize(1);
         assertError(
                 errors.get(0),
-                "",
+                "/$ref",
                 "",
                 "",
                 null,
-                "Object does not have some of the required properties [[y]]"
+                "False schema always fails"
         );
     }
 }
