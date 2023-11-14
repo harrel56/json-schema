@@ -113,4 +113,12 @@ class JettisonTest {
             return createFactory();
         }
     }
+
+    @Nested
+    class EvaluationPathTest extends dev.harrel.jsonschema.EvaluationPathTest {
+        @Override
+        public JsonNodeFactory getJsonNodeFactory() {
+            return createFactory();
+        }
+    }
 }

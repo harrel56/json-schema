@@ -2,22 +2,24 @@ package dev.harrel.jsonschema;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Set;
 
-import static dev.harrel.jsonschema.util.TestUtil.assertError;
-import static dev.harrel.jsonschema.util.TestUtil.readResource;
+import static dev.harrel.jsonschema.util.TestUtil.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
-class EvaluationPathTest {
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+public abstract class EvaluationPathTest implements ProviderTest {
 
     private Validator validator;
     private URI uri;
 
     @BeforeEach
     void setUp() {
-        validator = new ValidatorFactory().withDisabledSchemaValidation(true).createValidator();
+        validator = new ValidatorFactory().withJsonNodeFactory(getJsonNodeFactory()).createValidator();
         uri = URI.create("urn:test");
     }
 
@@ -140,6 +142,48 @@ class EvaluationPathTest {
                 "/0/0",
                 null,
                 "False schema always fails"
+        );
+    }
+
+    @Test
+    void withEscapedJsonPointer() {
+        String schema = """
+                {
+                  "$id": "urn:test",
+                  "properties": {
+                    "x/y": {
+                      "required": ["a/b"],
+                      "title": "/hmm"
+                    }
+                  }
+                }""";
+        String instance = """
+                {
+                  "x/y": {
+                    "a/b": true
+                  }
+                }""";
+        validator.registerSchema(uri, schema);
+        Validator.Result result = validator.validate(uri, instance);
+
+        assertThat(result.isValid()).isTrue();
+        List<Annotation> annotations = result.getAnnotations();
+        assertThat(annotations).hasSize(2);
+        assertAnnotation(
+                annotations.get(0),
+                "/properties/x~1y/title",
+                "urn:test#/properties/x~1y",
+                "/x~1y",
+                "title",
+                "/hmm"
+        );
+        assertAnnotation(
+                annotations.get(1),
+                "/properties",
+                "urn:test#",
+                "",
+                "properties",
+                Set.of("x/y")
         );
     }
 }

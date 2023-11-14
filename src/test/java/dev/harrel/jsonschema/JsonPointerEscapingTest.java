@@ -2,10 +2,14 @@ package dev.harrel.jsonschema;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static dev.harrel.jsonschema.util.TestUtil.assertError;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -85,20 +89,10 @@ public abstract class JsonPointerEscapingTest implements ProviderTest {
         assertThat(nestedNode.getJsonPointer()).isEqualTo("/0/~1a~1/2/0/~1b~1c~0/~0~1/0/nested");
     }
 
-    @Test
-    void shouldEscapeWhenRegisteringSchemas1() {
-        // TODO add 3 other variants
-        String schema = """
-                {
-                  "$ref": "#/$defs/x/y",
-                  "$defs": {
-                    "x/y": true,
-                    "x": {
-                      "y": false
-                    }
-                  }
-                }""";
-        Validator validator = new ValidatorFactory().withDisabledSchemaValidation(true).createValidator();
+    @ParameterizedTest
+    @MethodSource("getScenarios")
+    void shouldEscapeWhenRegisteringSchemas(String schema, String errorLocation) {
+        Validator validator = new ValidatorFactory().createValidator();
         URI uri = validator.registerSchema(schema);
 
         Validator.Result result = validator.validate(uri, "{}");
@@ -109,10 +103,50 @@ public abstract class JsonPointerEscapingTest implements ProviderTest {
         assertError(
                 errors.get(0),
                 "/$ref",
-                "",
+                errorLocation,
                 "",
                 null,
                 "False schema always fails"
+        );
+    }
+
+    static Stream<Arguments> getScenarios() {
+        return Stream.of(
+                Arguments.of(
+                        """
+                                {
+                                  "$id": "urn:test",
+                                  "$ref": "#/$defs/x/y",
+                                  "$defs": {
+                                    "x/y": true,
+                                    "x": {
+                                      "y": false
+                                    }
+                                  }
+                                }""",
+                        "urn:test#/$defs/x/y"),
+                Arguments.of(
+                        """
+                                {
+                                  "$id": "urn:test",
+                                  "$ref": "#/$defs/x~1y",
+                                  "$defs": {
+                                    "x/y": false,
+                                    "x": {
+                                      "y": true
+                                    }
+                                  }
+                                }""",
+                        "urn:test#/$defs/x~1y"),
+                Arguments.of(
+                        """
+                                {
+                                  "$id": "urn:test",
+                                  "$ref": "#/~1",
+                                  "/": false
+                                  }
+                                }""",
+                        "urn:test#/~1")
         );
     }
 }
