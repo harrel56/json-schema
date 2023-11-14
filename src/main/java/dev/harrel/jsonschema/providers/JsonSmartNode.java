@@ -89,7 +89,7 @@ public final class JsonSmartNode implements JsonNode {
         Set<Map.Entry<String, Object>> objectMap = ((JSONObject) node).entrySet();
         Map<String, JsonNode> result = new HashMap<>(objectMap.size());
         for (Map.Entry<String, Object> entry : objectMap) {
-            result.put(entry.getKey(), new JsonSmartNode(factory, entry.getValue(), jsonPointer + "/" + entry.getKey()));
+            result.put(entry.getKey(), new JsonSmartNode(factory, entry.getValue(), jsonPointer + "/" + JsonNode.encodeJsonPointer(entry.getKey())));
         }
         return result;
     }

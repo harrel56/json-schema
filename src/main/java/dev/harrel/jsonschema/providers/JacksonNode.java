@@ -70,7 +70,7 @@ public final class JacksonNode implements JsonNode {
         Map<String, JsonNode> map = new HashMap<>();
         for (Iterator<Map.Entry<String, com.fasterxml.jackson.databind.JsonNode>> iterator = node.fields(); iterator.hasNext(); ) {
             Map.Entry<String, com.fasterxml.jackson.databind.JsonNode> entry = iterator.next();
-            map.put(entry.getKey(), new JacksonNode(entry.getValue(), jsonPointer + "/" + entry.getKey()));
+            map.put(entry.getKey(), new JacksonNode(entry.getValue(), jsonPointer + "/" + JsonNode.encodeJsonPointer(entry.getKey())));
         }
         return map;
     }

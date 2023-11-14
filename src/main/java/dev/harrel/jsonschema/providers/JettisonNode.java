@@ -87,7 +87,7 @@ public final class JettisonNode implements JsonNode {
         JSONObject jsonObject = (JSONObject) node;
         for (Object object : jsonObject.toMap().entrySet()) {
             Map.Entry<Object, Object> entry = (Map.Entry<Object, Object>) object;
-            map.put(entry.getKey().toString(), new JettisonNode(factory, entry.getValue(), jsonPointer + "/" + entry.getKey()));
+            map.put(entry.getKey().toString(), new JettisonNode(factory, entry.getValue(), jsonPointer + "/" + JsonNode.encodeJsonPointer(entry.getKey().toString())));
         }
         return map;
     }

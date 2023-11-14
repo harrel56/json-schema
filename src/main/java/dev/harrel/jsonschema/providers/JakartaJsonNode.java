@@ -72,7 +72,7 @@ public final class JakartaJsonNode implements JsonNode {
         Set<Map.Entry<String, JsonValue>> objectMap = node.asJsonObject().entrySet();
         Map<String, JsonNode> result = new HashMap<>(objectMap.size());
         for (Map.Entry<String, JsonValue> entry : objectMap) {
-            result.put(entry.getKey(), new JakartaJsonNode(entry.getValue(), jsonPointer + "/" + entry.getKey()));
+            result.put(entry.getKey(), new JakartaJsonNode(entry.getValue(), jsonPointer + "/" + JsonNode.encodeJsonPointer(entry.getKey())));
         }
         return result;
     }
