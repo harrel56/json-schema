@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-class AnnotationTree {
+final class AnnotationTree {
     private final Map<String, Node> lookupMap = new HashMap<>();
 
     AnnotationTree() {

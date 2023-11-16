@@ -172,17 +172,16 @@ public final class Validator {
      */
     public static final class Result {
         private final boolean valid;
-        private final List<Annotation> annotations;
         private final List<Error> errors;
+        private final AnnotationTree annotationTree;
+        private List<Annotation> annotations;
 
         Result(boolean valid, EvaluationContext ctx) {
             this.valid = valid;
-            this.annotations = unmodifiableList(ctx.getAnnotations().stream()
-                    .filter(a -> a.getAnnotation() != null)
-                    .collect(Collectors.toList()));
             this.errors = unmodifiableList(ctx.getErrors().stream()
                     .filter(e -> e.getError() != null)
                     .collect(Collectors.toList()));
+            this.annotationTree = ctx.getAnnotationTree();
         }
 
         /**
@@ -194,10 +193,16 @@ public final class Validator {
 
         /**
          * Returns collected annotation during schema validation.
+         * @apiNote This getter works lazily. First call can be more expensive.
          *
          * @return unmodifiable list of {@link Annotation}s
          */
         public List<Annotation> getAnnotations() {
+            if (annotations == null) {
+                this.annotations = unmodifiableList(annotationTree.getAllAnnotations()
+                        .filter(a -> a.getAnnotation() != null)
+                        .collect(Collectors.toList()));
+            }
             return annotations;
         }
 
