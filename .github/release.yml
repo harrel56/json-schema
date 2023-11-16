@@ -3,6 +3,9 @@ changelog:
     - title: Features
       labels:
         - enhancement
+    - title: Performance related
+      labels:
+        - performance
     - title: Fixes
       labels:
         - bug
