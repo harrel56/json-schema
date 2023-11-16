@@ -11,6 +11,37 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ValidatorResultTest {
 
     @Test
+    void shouldAlwaysReturnExactlyTheSameAnnotationsList() {
+        String schema = """
+                {
+                  "custom": "hello",
+                  "title": "world"
+                }""";
+        Validator.Result result = new ValidatorFactory().validate(schema, "{}");
+
+        assertThat(result.isValid()).isTrue();
+        // check if lazy getter return always the same instance
+        List<Annotation> annotations = result.getAnnotations();
+        assertThat(annotations).isSameAs(result.getAnnotations());
+        assertAnnotation(
+                annotations.get(0),
+                "/custom",
+                "https://harrel.dev/",
+                "",
+                "custom",
+                "hello"
+        );
+        assertAnnotation(
+                annotations.get(1),
+                "/title",
+                "https://harrel.dev/",
+                "",
+                "title",
+                "world"
+        );
+    }
+
+    @Test
     void returnsErrorMessageWhenContainsFails() {
         String schema = """
                 {

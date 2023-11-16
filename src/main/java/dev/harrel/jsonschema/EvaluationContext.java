@@ -2,7 +2,6 @@ package dev.harrel.jsonschema;
 
 import java.net.URI;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.Collections.unmodifiableList;
@@ -134,14 +133,8 @@ public final class EvaluationContext {
                 .findFirst();
     }
 
-    /**
-     * Returns collected annotations up to this point.
-     * Discarded annotations are not included.
-     *
-     * @return unmodifiable list of annotations
-     */
-    List<Annotation> getAnnotations() {
-        return unmodifiableList(annotationTree.getAllAnnotations().collect(Collectors.toList()));
+    AnnotationTree getAnnotationTree() {
+        return annotationTree;
     }
 
     Stream<Annotation> getAnnotationsFromParent(String parentPath) {
