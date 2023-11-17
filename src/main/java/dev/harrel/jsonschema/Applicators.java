@@ -227,14 +227,15 @@ class AdditionalPropertiesEvaluator implements Evaluator {
         Set<String> props = new HashSet<>();
         props.addAll(ctx.getSiblingAnnotation(Keyword.PROPERTIES, Set.class).orElse(emptySet()));
         props.addAll(ctx.getSiblingAnnotation(Keyword.PATTERN_PROPERTIES, Set.class).orElse(emptySet()));
-        Map<String, JsonNode> filtered = node.asObject().entrySet().stream()
-                .filter(e -> !props.contains(e.getKey()))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-        boolean valid = filtered.values().stream()
-                .filter(prop -> ctx.resolveInternalRefAndValidate(schemaRef, prop))
-                .count() == filtered.size();
-        return valid ? Result.success(unmodifiableSet(filtered.keySet())) : Result.failure();
+        Set<String> fields = new HashSet<>();
+        boolean valid = true;
+        for (Map.Entry<String, JsonNode> e : node.asObject().entrySet()) {
+            if (!props.contains(e.getKey())) {
+                fields.add(e.getKey());
+                valid = ctx.resolveInternalRefAndValidate(schemaRef, e.getValue()) && valid;
+            }
+        }
+        return valid ? Result.success(unmodifiableSet(fields)) : Result.failure();
     }
 
     @Override
