@@ -268,20 +268,16 @@ class PropertiesEvaluator implements Evaluator {
             return Result.success();
         }
 
-        Map<String, JsonNode> filtered = node.asObject()
-                .entrySet()
-                .stream()
-                .filter(e -> schemaRefs.containsKey(e.getKey()))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-        boolean valid = filtered
-                .entrySet()
-                .stream()
-                .map(e -> new AbstractMap.SimpleEntry<>(schemaRefs.get(e.getKey()), e.getValue()))
-                .filter(e -> ctx.resolveInternalRefAndValidate(e.getKey(), e.getValue()))
-                .count() == filtered.size();
-
-        return valid ? Result.success(unmodifiableSet(filtered.keySet())) : Result.failure();
+        Set<String> fields = new HashSet<>();
+        boolean valid = true;
+        for (Map.Entry<String, JsonNode> entry : node.asObject().entrySet()) {
+            CompoundUri ref = schemaRefs.get(entry.getKey());
+            if (ref != null) {
+                fields.add(entry.getKey());
+                valid = ctx.resolveInternalRefAndValidate(ref, entry.getValue()) && valid;
+            }
+        }
+        return valid ? Result.success(unmodifiableSet(fields)) : Result.failure();
     }
 }
 
