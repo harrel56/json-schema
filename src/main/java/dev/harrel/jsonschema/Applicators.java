@@ -227,15 +227,15 @@ class AdditionalPropertiesEvaluator implements Evaluator {
         Set<String> props = new HashSet<>();
         props.addAll(ctx.getSiblingAnnotation(Keyword.PROPERTIES, Set.class).orElse(emptySet()));
         props.addAll(ctx.getSiblingAnnotation(Keyword.PATTERN_PROPERTIES, Set.class).orElse(emptySet()));
-        Set<String> fields = new HashSet<>();
+        Set<String> processed = new HashSet<>();
         boolean valid = true;
         for (Map.Entry<String, JsonNode> e : node.asObject().entrySet()) {
             if (!props.contains(e.getKey())) {
-                fields.add(e.getKey());
+                processed.add(e.getKey());
                 valid = ctx.resolveInternalRefAndValidate(schemaRef, e.getValue()) && valid;
             }
         }
-        return valid ? Result.success(unmodifiableSet(fields)) : Result.failure();
+        return valid ? Result.success(unmodifiableSet(processed)) : Result.failure();
     }
 
     @Override
@@ -269,16 +269,16 @@ class PropertiesEvaluator implements Evaluator {
             return Result.success();
         }
 
-        Set<String> fields = new HashSet<>();
+        Set<String> processed = new HashSet<>();
         boolean valid = true;
         for (Map.Entry<String, JsonNode> entry : node.asObject().entrySet()) {
             CompoundUri ref = schemaRefs.get(entry.getKey());
             if (ref != null) {
-                fields.add(entry.getKey());
+                processed.add(entry.getKey());
                 valid = ctx.resolveInternalRefAndValidate(ref, entry.getValue()) && valid;
             }
         }
-        return valid ? Result.success(unmodifiableSet(fields)) : Result.failure();
+        return valid ? Result.success(unmodifiableSet(processed)) : Result.failure();
     }
 }
 
@@ -307,16 +307,12 @@ class PatternPropertiesEvaluator implements Evaluator {
         boolean valid = true;
         Set<String> processed = new HashSet<>();
         for (Map.Entry<String, JsonNode> entry : node.asObject().entrySet()) {
-            List<CompoundUri> schemaRefs = unmodifiableList(schemasByPatterns.entrySet().stream()
-                    .filter(e -> e.getKey().matcher(entry.getKey()).find())
-                    .map(Map.Entry::getValue)
-                    .collect(Collectors.toList()));
-            if (!schemaRefs.isEmpty()) {
-                processed.add(entry.getKey());
+            for (Map.Entry<Pattern, CompoundUri> patternEntry : schemasByPatterns.entrySet()) {
+                if (patternEntry.getKey().matcher(entry.getKey()).find()) {
+                    processed.add(entry.getKey());
+                    valid = ctx.resolveInternalRefAndValidate(patternEntry.getValue(), entry.getValue()) && valid;
+                }
             }
-            valid = schemaRefs.stream()
-                    .filter(ref -> ctx.resolveInternalRefAndValidate(ref, entry.getValue()))
-                    .count() == schemaRefs.size() && valid;
         }
         return valid ? Result.success(unmodifiableSet(processed)) : Result.failure();
     }
