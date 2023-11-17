@@ -18,6 +18,7 @@ public final class EvaluationContext {
     private final SchemaRegistry schemaRegistry;
     private final SchemaResolver schemaResolver;
     private final Set<String> activeVocabularies;
+    private final boolean disabledSchemaValidation;
     private final Deque<URI> dynamicScope = new ArrayDeque<>();
     private final Deque<RefStackItem> refStack = new ArrayDeque<>();
     private final Deque<String> evaluationStack = new ArrayDeque<>();
@@ -29,12 +30,14 @@ public final class EvaluationContext {
                       JsonParser jsonParser,
                       SchemaRegistry schemaRegistry,
                       SchemaResolver schemaResolver,
-                      Set<String> activeVocabularies) {
+                      Set<String> activeVocabularies,
+                      boolean disabledSchemaValidation) {
         this.jsonNodeFactory = Objects.requireNonNull(jsonNodeFactory);
         this.jsonParser = Objects.requireNonNull(jsonParser);
         this.schemaRegistry = Objects.requireNonNull(schemaRegistry);
         this.schemaResolver = Objects.requireNonNull(schemaResolver);
         this.activeVocabularies = Objects.requireNonNull(activeVocabularies);
+        this.disabledSchemaValidation = disabledSchemaValidation;
     }
 
     /**
@@ -153,9 +156,12 @@ public final class EvaluationContext {
         AnnotationTree.Node treeNode = annotationTree.createIfAbsent(parentSchemaLocation, schemaLocation);
         int nodesBefore = treeNode.nodes.size();
         int annotationsBefore = treeNode.annotations.size();
-        boolean valid = schema.getEvaluators().stream()
-                .filter(ev -> ev.getVocabularies().stream().anyMatch(activeVocabularies::contains) || ev.getVocabularies().isEmpty())
-                .reduce(true, (validAcc, evaluator) -> {
+        Stream<EvaluatorWrapper> evaluatorStream = schema.getEvaluators().stream();
+        if (!disabledSchemaValidation) {
+            evaluatorStream = evaluatorStream.filter(ev -> ev.getVocabularies().stream().anyMatch(activeVocabularies::contains) || ev.getVocabularies().isEmpty());
+        }
+
+        boolean valid = evaluatorStream.reduce(true, (validAcc, evaluator) -> {
                     String evaluationPath = resolveEvaluationPath(evaluator);
                     evaluationStack.push(evaluationPath);
                     int errorsBefore = errors.size();

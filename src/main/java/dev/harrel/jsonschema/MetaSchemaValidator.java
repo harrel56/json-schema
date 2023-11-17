@@ -43,7 +43,7 @@ interface MetaSchemaValidator {
         public Set<String> validateSchema(JsonParser jsonParser, URI metaSchemaUri, String schemaUri, JsonNode node) {
             Objects.requireNonNull(metaSchemaUri);
             Schema schema = resolveMetaSchema(jsonParser, metaSchemaUri);
-            EvaluationContext ctx = new EvaluationContext(jsonNodeFactory, jsonParser, schemaRegistry, schemaResolver, schema.getActiveVocabularies());
+            EvaluationContext ctx = new EvaluationContext(jsonNodeFactory, jsonParser, schemaRegistry, schemaResolver, schema.getActiveVocabularies(), false);
             if (!ctx.validateAgainstSchema(schema, node)) {
                 throw new InvalidSchemaException(String.format("Schema [%s] failed to validate against meta-schema [%s]", schemaUri, metaSchemaUri),
                         new Validator.Result(false, ctx).getErrors());

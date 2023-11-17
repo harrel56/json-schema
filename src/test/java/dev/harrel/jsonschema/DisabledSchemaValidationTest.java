@@ -9,9 +9,8 @@ import java.util.Set;
 
 import static dev.harrel.jsonschema.util.TestUtil.assertError;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public abstract class VocabulariesTest implements ProviderTest {
+public abstract class DisabledSchemaValidationTest implements ProviderTest {
     private final Dialect testDialect = new Dialects.Draft2020Dialect() {
         @Override
         public String getMetaSchema() {
@@ -20,10 +19,11 @@ public abstract class VocabulariesTest implements ProviderTest {
     };
 
     @Test
-    void shouldRunEvaluatorsOnlyFromActiveVocabularies() {
+    void shouldIgnoreTurnedOffVocabularies() {
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .withDialect(testDialect)
+                .withDisabledSchemaValidation(true)
                 .createValidator();
 
         String metaSchema = """
@@ -43,7 +43,18 @@ public abstract class VocabulariesTest implements ProviderTest {
         URI schemaUri = URI.create("urn:schema");
         validator.registerSchema(schemaUri, schema);
         Validator.Result result = validator.validate(schemaUri, "{}");
-        assertThat(result.isValid()).isTrue();
+
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(1);
+        assertError(
+                errors.get(0),
+                "/type",
+                "urn:schema#",
+                "",
+                "type",
+                "Value is [object] but should be [null]"
+        );
     }
 
     @Test
@@ -51,6 +62,7 @@ public abstract class VocabulariesTest implements ProviderTest {
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .withDialect(testDialect)
+                .withDisabledSchemaValidation(true)
                 .createValidator();
 
         String metaSchema = """
@@ -74,10 +86,11 @@ public abstract class VocabulariesTest implements ProviderTest {
     }
 
     @Test
-    void shouldFailForUnsupportedRequiredVocabularies() {
+    void shouldNotFailForUnsupportedRequiredVocabularies() {
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .withDialect(testDialect)
+                .withDisabledSchemaValidation(true)
                 .createValidator();
 
         String metaSchema = """
@@ -95,16 +108,17 @@ public abstract class VocabulariesTest implements ProviderTest {
 
         validator.registerSchema(metaSchema);
         URI schemaUri = URI.create("urn:schema");
-        assertThatThrownBy(() -> validator.registerSchema(schemaUri, schema))
-                .isInstanceOf(VocabularyException.class)
-                .hasMessage("Following vocabularies [[urn:unknown]] are required but not supported");
+        validator.registerSchema(schemaUri, schema);
+        Validator.Result result = validator.validate(schemaUri, "{}");
+        assertThat(result.isValid()).isTrue();
     }
 
     @Test
-    void shouldFailForMissingRequiredVocabularies() {
+    void shouldNotFailForMissingRequiredVocabularies() {
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .withDialect(testDialect)
+                .withDisabledSchemaValidation(true)
                 .createValidator();
 
         String metaSchema = """
@@ -119,33 +133,9 @@ public abstract class VocabulariesTest implements ProviderTest {
 
         validator.registerSchema(metaSchema);
         URI schemaUri = URI.create("urn:schema");
-        assertThatThrownBy(() -> validator.registerSchema(schemaUri, schema))
-                .isInstanceOf(VocabularyException.class)
-                .hasMessage("Required vocabularies [[https://json-schema.org/draft/2020-12/vocab/core]] were missing or marked optional in $vocabulary object");
-    }
-
-    @Test
-    void shouldUseAllSupportedVocabulariesByDefault() {
-        Validator validator = new ValidatorFactory()
-                .withJsonNodeFactory(getJsonNodeFactory())
-                .withDialect(testDialect)
-                .createValidator();
-
-        String metaSchema = """
-                {
-                  "$id": "urn:meta"
-                }""";
-        String schema = """
-                {
-                  "$schema": "urn:meta",
-                  "type": "null"
-                }""";
-
-        validator.registerSchema(metaSchema);
-        URI schemaUri = URI.create("urn:schema");
         validator.registerSchema(schemaUri, schema);
         Validator.Result result = validator.validate(schemaUri, "{}");
-        assertThat(result.isValid()).isFalse();
+        assertThat(result.isValid()).isTrue();
     }
 
     @Test
@@ -173,6 +163,7 @@ public abstract class VocabulariesTest implements ProviderTest {
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .withDialect(testDialect)
                 .withEvaluatorFactory(evaluatorFactory)
+                .withDisabledSchemaValidation(true)
                 .createValidator();
 
         String schema = """
@@ -197,7 +188,7 @@ public abstract class VocabulariesTest implements ProviderTest {
     }
 
     @Test
-    void shouldNotSupportEvaluatorWithUnknownVocabularies() {
+    void shouldSupportEvaluatorWithUnknownVocabularies() {
         Evaluator evaluator = new Evaluator() {
             @Override
             public Result evaluate(EvaluationContext ctx, JsonNode node) {
@@ -221,6 +212,7 @@ public abstract class VocabulariesTest implements ProviderTest {
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .withDialect(testDialect)
                 .withEvaluatorFactory(evaluatorFactory)
+                .withDisabledSchemaValidation(true)
                 .createValidator();
 
         String schema = """
@@ -231,6 +223,16 @@ public abstract class VocabulariesTest implements ProviderTest {
         URI schemaUri = URI.create("urn:schema");
         validator.registerSchema(schemaUri, schema);
         Validator.Result result = validator.validate(schemaUri, "{}");
-        assertThat(result.isValid()).isTrue();
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(1);
+        assertError(
+                errors.get(0),
+                "/custom",
+                "urn:schema#",
+                "",
+                "custom",
+                "custom message"
+        );
     }
 }

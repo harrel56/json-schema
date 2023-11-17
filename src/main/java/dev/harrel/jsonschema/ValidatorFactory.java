@@ -26,14 +26,7 @@ public final class ValidatorFactory {
     public Validator createValidator() {
         EvaluatorFactory compositeFactory = evaluatorFactory == null ? dialect.getEvaluatorFactory() : EvaluatorFactory.compose(evaluatorFactory, dialect.getEvaluatorFactory());
         JsonNodeFactory nodeFactory = jsonNodeFactory.get();
-        SchemaRegistry schemaRegistry = new SchemaRegistry();
-        MetaSchemaValidator metaSchemaValidator;
-        if (disabledSchemaValidation) {
-            metaSchemaValidator = new MetaSchemaValidator.NoOpMetaSchemaValidator(dialect.getSupportedVocabularies());
-        } else {
-            metaSchemaValidator = new MetaSchemaValidator.DefaultMetaSchemaValidator(dialect, nodeFactory, schemaRegistry, schemaResolver);
-        }
-        return new Validator(dialect, compositeFactory, nodeFactory, schemaResolver, schemaRegistry, metaSchemaValidator);
+        return new Validator(dialect, compositeFactory, nodeFactory, schemaResolver, disabledSchemaValidation);
     }
 
     /**

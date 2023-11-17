@@ -124,4 +124,12 @@ class JakartaJsonTest {
             return createFactory();
         }
     }
+
+    @Nested
+    class DisabledSchemaValidationTest extends dev.harrel.jsonschema.DisabledSchemaValidationTest {
+        @Override
+        public JsonNodeFactory getJsonNodeFactory() {
+            return createFactory();
+        }
+    }
 }

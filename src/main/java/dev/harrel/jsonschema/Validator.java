@@ -24,17 +24,24 @@ public final class Validator {
     private final SchemaResolver schemaResolver;
     private final SchemaRegistry schemaRegistry;
     private final JsonParser jsonParser;
+    private final boolean disabledSchemaValidation;
 
     Validator(Dialect dialect,
               EvaluatorFactory evaluatorFactory,
               JsonNodeFactory jsonNodeFactory,
               SchemaResolver schemaResolver,
-              SchemaRegistry schemaRegistry,
-              MetaSchemaValidator metaSchemaValidator) {
+              boolean disabledSchemaValidation) {
         this.jsonNodeFactory = Objects.requireNonNull(jsonNodeFactory);
         this.schemaResolver = Objects.requireNonNull(schemaResolver);
-        this.schemaRegistry = schemaRegistry;
-        this.jsonParser = new JsonParser(dialect, evaluatorFactory, this.schemaRegistry, metaSchemaValidator);
+        this.schemaRegistry = new SchemaRegistry();
+        this.disabledSchemaValidation = disabledSchemaValidation;
+        MetaSchemaValidator metaSchemaValidator;
+        if (disabledSchemaValidation) {
+            metaSchemaValidator = new MetaSchemaValidator.NoOpMetaSchemaValidator(dialect.getSupportedVocabularies());
+        } else {
+            metaSchemaValidator = new MetaSchemaValidator.DefaultMetaSchemaValidator(dialect, this.jsonNodeFactory, schemaRegistry, schemaResolver);
+        }
+        this.jsonParser = new JsonParser(dialect, evaluatorFactory, schemaRegistry, metaSchemaValidator);
     }
 
     /**
@@ -164,7 +171,7 @@ public final class Validator {
     }
 
     private EvaluationContext createNewEvaluationContext(Schema schema) {
-        return new EvaluationContext(jsonNodeFactory, jsonParser, schemaRegistry, schemaResolver, schema.getActiveVocabularies());
+        return new EvaluationContext(jsonNodeFactory, jsonParser, schemaRegistry, schemaResolver, schema.getActiveVocabularies(), disabledSchemaValidation);
     }
 
     /**
