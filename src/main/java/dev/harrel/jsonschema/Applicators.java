@@ -603,17 +603,12 @@ class UnevaluatedPropertiesEvaluator implements Evaluator {
         Set<String> evaluatedInstances = ctx.getAnnotationsFromParent(parentPath)
                 .map(Annotation::getInstanceLocation)
                 .collect(Collectors.toSet());
-
-        List<JsonNode> array = node.asObject()
-                .values()
-                .stream()
-                .filter(propertyNode -> !evaluatedInstances.contains(propertyNode.getJsonPointer()))
-                .collect(Collectors.toList());
-
-        boolean valid = array.stream()
-                .filter(propertyNode -> ctx.resolveInternalRefAndValidate(schemaRef, propertyNode))
-                .count() == array.size();
-
+        boolean valid = true;
+        for (JsonNode fieldNode : node.asObject().values()) {
+            if (!evaluatedInstances.contains(fieldNode.getJsonPointer())) {
+                valid = ctx.resolveInternalRefAndValidate(schemaRef, fieldNode) && valid;
+            }
+        }
         return valid ? Result.success() : Result.failure();
     }
 
