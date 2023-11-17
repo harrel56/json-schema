@@ -35,10 +35,10 @@ class PrefixItemsEvaluator implements Evaluator {
 
         List<JsonNode> elements = node.asArray();
         int size = Math.min(prefixRefs.size(), elements.size());
-        boolean valid = IntStream.range(0, size)
-                .boxed()
-                .filter(idx -> ctx.resolveInternalRefAndValidate(prefixRefs.get(idx), elements.get(idx)))
-                .count() == size;
+        boolean valid = true;
+        for (int i = 0; i < size; i++) {
+            valid = ctx.resolveInternalRefAndValidate(prefixRefs.get(i), elements.get(i)) && valid;
+        }
         return valid ? Result.success(prefixRefs.size()) : Result.failure();
     }
 }
