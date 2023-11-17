@@ -341,13 +341,13 @@ class DependentSchemasEvaluator implements Evaluator {
             return Result.success();
         }
 
-        List<String> fields = node.asObject().keySet()
-                .stream()
-                .filter(dependentSchemas::containsKey)
-                .collect(Collectors.toList());
-        List<String> failedFields = fields.stream()
-                .filter(field -> !ctx.resolveInternalRefAndValidate(dependentSchemas.get(field), node))
-                .collect(Collectors.toList());
+        List<String> failedFields = new ArrayList<>();
+        for (Map.Entry<String, JsonNode> e : node.asObject().entrySet()) {
+            CompoundUri ref = dependentSchemas.get(e.getKey());
+            if (ref != null && !ctx.resolveInternalRefAndValidate(ref, node)) {
+                failedFields.add(e.getKey());
+            }
+        }
         if (failedFields.isEmpty()) {
             return Result.success();
         } else {
