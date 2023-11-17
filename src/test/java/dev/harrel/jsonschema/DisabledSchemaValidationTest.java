@@ -1,6 +1,5 @@
 package dev.harrel.jsonschema;
 
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
@@ -10,7 +9,6 @@ import java.util.Set;
 
 import static dev.harrel.jsonschema.util.TestUtil.assertError;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public abstract class DisabledSchemaValidationTest implements ProviderTest {
     private final Dialect testDialect = new Dialects.Draft2020Dialect() {

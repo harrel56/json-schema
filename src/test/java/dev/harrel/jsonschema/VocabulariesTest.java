@@ -1,6 +1,5 @@
 package dev.harrel.jsonschema;
 
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
