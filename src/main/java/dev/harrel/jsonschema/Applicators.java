@@ -562,15 +562,12 @@ class UnevaluatedItemsEvaluator implements Evaluator {
         Set<String> evaluatedInstances = ctx.getAnnotationsFromParent(parentPath)
                 .map(Annotation::getInstanceLocation)
                 .collect(Collectors.toSet());
-        List<JsonNode> array = node.asArray()
-                .stream()
-                .filter(arrayNode -> !evaluatedInstances.contains(arrayNode.getJsonPointer()))
-                .collect(Collectors.toList());
-
-        boolean valid = array.stream()
-                .filter(arrayNode -> ctx.resolveInternalRefAndValidate(schemaRef, arrayNode))
-                .count() == array.size();
-
+        boolean valid = true;
+        for (JsonNode arrayNode : node.asArray()) {
+            if (!evaluatedInstances.contains(arrayNode.getJsonPointer())) {
+                valid = ctx.resolveInternalRefAndValidate(schemaRef, arrayNode) && valid;
+            }
+        }
         return valid ? Result.success() : Result.failure();
     }
 
