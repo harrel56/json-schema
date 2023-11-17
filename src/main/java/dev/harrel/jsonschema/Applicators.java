@@ -442,15 +442,16 @@ class AllOfEvaluator implements Evaluator {
 
     @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
-        List<Integer> unmatchedIndexes = IntStream.range(0, refs.size())
-                .filter(i -> !ctx.resolveInternalRefAndValidate(refs.get(i), node))
-                .boxed()
-                .collect(Collectors.toList());
+        List<Integer> unmatchedIndexes = new ArrayList<>(0);
+        for (int i = 0; i < refs.size(); i++) {
+            if (!ctx.resolveInternalRefAndValidate(refs.get(i), node)) {
+                unmatchedIndexes.add(i);
+            }
+        }
 
         if (unmatchedIndexes.isEmpty()) {
             return Result.success();
         }
-
         return Result.failure(String.format("Value does not match against the schemas at indexes %s", unmatchedIndexes));
     }
 }
@@ -472,10 +473,10 @@ class AnyOfEvaluator implements Evaluator {
 
     @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
-        boolean valid = refs.stream()
-                .filter(pointer -> ctx.resolveInternalRefAndValidate(pointer, node))
-                .count() > 0;
-
+        boolean valid = false;
+        for (CompoundUri ref : refs) {
+            valid = ctx.resolveInternalRefAndValidate(ref, node) || valid;
+        }
         return valid ? Result.success() : Result.failure("Value does not match against any of the schemas");
     }
 }
@@ -497,19 +498,19 @@ class OneOfEvaluator implements Evaluator {
 
     @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
-        List<Integer> matchedIndexes = IntStream.range(0, refs.size())
-                .filter(i -> ctx.resolveInternalRefAndValidate(refs.get(i), node))
-                .boxed()
-                .collect(Collectors.toList());
+        List<Integer> matchedIndexes = new ArrayList<>(1);
+        for (int i = 0; i < refs.size(); i++) {
+            if (ctx.resolveInternalRefAndValidate(refs.get(i), node)) {
+                matchedIndexes.add(i);
+            }
+        }
 
         if (matchedIndexes.size() == 1) {
             return Result.success();
         }
-
         if (matchedIndexes.isEmpty()) {
             return Result.failure("Value does not match against any of the schemas");
         }
-
         return Result.failure(String.format("Value matches against more than one schema. Matched schema indexes %s", matchedIndexes));
     }
 }
