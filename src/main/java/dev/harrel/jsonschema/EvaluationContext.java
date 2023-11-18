@@ -21,8 +21,7 @@ public final class EvaluationContext {
     private final boolean disabledSchemaValidation;
     private final Deque<URI> dynamicScope = new ArrayDeque<>();
     private final Deque<RefStackItem> refStack = new ArrayDeque<>();
-    private final Deque<String> evaluationStack = new ArrayDeque<>();
-    private final Deque<String> schemaStack = new ArrayDeque<>();
+    private final LinkedList<String> evaluationStack = new LinkedList<>();
     private final AnnotationTree annotationTree = new AnnotationTree();
     private final List<Error> errors = new ArrayList<>();
 
@@ -38,6 +37,7 @@ public final class EvaluationContext {
         this.schemaResolver = Objects.requireNonNull(schemaResolver);
         this.activeVocabularies = Objects.requireNonNull(activeVocabularies);
         this.disabledSchemaValidation = disabledSchemaValidation;
+        this.evaluationStack.push("");
     }
 
     /**
@@ -127,11 +127,8 @@ public final class EvaluationContext {
     }
 
     Optional<Object> getSiblingAnnotation(String sibling) {
-        String parentPath = UriUtil.getJsonPointerParent(evaluationStack.element());
-        return annotationTree.getNode(schemaStack.element()).annotations.stream()
+        return annotationTree.getNode(evaluationStack.get(1)).annotations.stream()
                 .filter(item -> sibling.equals(item.getKeyword()))
-                .filter(item -> item.getEvaluationPath().startsWith(parentPath))
-                .filter(item -> parentPath.equals(UriUtil.getJsonPointerParent(item.getEvaluationPath())))
                 .map(Annotation::getAnnotation)
                 .findFirst();
     }
@@ -140,20 +137,22 @@ public final class EvaluationContext {
         return annotationTree;
     }
 
-    Stream<Annotation> getAnnotationsFromParent(String parentPath) {
-        return annotationTree.getNode(parentPath).stream();
+    Stream<Annotation> getAnnotationsFromParent() {
+        /* As on evaluationStack there are no paths to schemas in arrays (e.g. "/items/0")
+        * this needs to be accounted for with correctedParentPath */
+        String parentPath = evaluationStack.get(1);
+        String correctedParentPath = UriUtil.getJsonPointerParent(evaluationStack.element());
+        return annotationTree.getNode(parentPath).stream().filter(item -> item.getEvaluationPath().startsWith(correctedParentPath));
     }
 
     boolean validateAgainstSchema(Schema schema, JsonNode node) {
-        String parentSchemaLocation = schemaStack.peek();
-        schemaStack.push(schema.getSchemaLocationFragment());
         boolean outOfDynamicScope = !schema.getParentUri().equals(dynamicScope.peek());
         if (outOfDynamicScope) {
             dynamicScope.push(schema.getParentUri());
         }
 
-        String schemaLocation = schemaStack.element();
-        AnnotationTree.Node treeNode = annotationTree.createIfAbsent(parentSchemaLocation, schemaLocation);
+        String parentSchemaLocation = evaluationStack.size() > 1 ? evaluationStack.get(1) : null;
+        AnnotationTree.Node treeNode = annotationTree.createIfAbsent(parentSchemaLocation, evaluationStack.element());
         int nodesBefore = treeNode.nodes.size();
         int annotationsBefore = treeNode.annotations.size();
         Stream<EvaluatorWrapper> evaluatorStream = schema.getEvaluators().stream();
@@ -185,7 +184,6 @@ public final class EvaluationContext {
         if (outOfDynamicScope) {
             dynamicScope.pop();
         }
-        schemaStack.pop();
         return valid;
     }
 

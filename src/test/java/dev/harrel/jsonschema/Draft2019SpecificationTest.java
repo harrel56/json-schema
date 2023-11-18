@@ -265,8 +265,8 @@ public abstract class Draft2019SpecificationTest implements ProviderTest {
     }
 
     private void testValidation(String bundle, String name, JsonNode schema, JsonNode instance, boolean valid) {
-//        Assumptions.assumeTrue(bundle.equals("$recursiveRef with nesting"));
-//        Assumptions.assumeTrue(name.equals("integer now matches as a property value"));
+//        Assumptions.assumeTrue(bundle.equals("unevaluatedProperties can't see inside cousins"));
+//        Assumptions.assumeTrue(name.equals("always fails"));
         String schemaString = schema.toPrettyString();
         String instanceString = instance.toPrettyString();
         logger.info("%s: %s".formatted(bundle, name));
