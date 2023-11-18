@@ -442,7 +442,7 @@ class AllOfEvaluator implements Evaluator {
 
     @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
-        List<Integer> unmatchedIndexes = new ArrayList<>(0);
+        List<Integer> unmatchedIndexes = new ArrayList<>();
         for (int i = 0; i < refs.size(); i++) {
             if (!ctx.resolveInternalRefAndValidate(refs.get(i), node)) {
                 unmatchedIndexes.add(i);
@@ -498,7 +498,7 @@ class OneOfEvaluator implements Evaluator {
 
     @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
-        List<Integer> matchedIndexes = new ArrayList<>(1);
+        List<Integer> matchedIndexes = new ArrayList<>();
         for (int i = 0; i < refs.size(); i++) {
             if (ctx.resolveInternalRefAndValidate(refs.get(i), node)) {
                 matchedIndexes.add(i);
@@ -539,14 +539,12 @@ class NotEvaluator implements Evaluator {
 
 class UnevaluatedItemsEvaluator implements Evaluator {
     private final CompoundUri schemaRef;
-    private final String parentPath;
 
     UnevaluatedItemsEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isObject() && !node.isBoolean()) {
             throw new IllegalArgumentException();
         }
         this.schemaRef = ctx.getCompoundUri(node);
-        this.parentPath = UriUtil.getJsonPointerParent(schemaRef.fragment);
     }
 
     @Override
@@ -560,7 +558,7 @@ class UnevaluatedItemsEvaluator implements Evaluator {
             return Result.success();
         }
 
-        Set<String> evaluatedInstances = ctx.getAnnotationsFromParent(parentPath)
+        Set<String> evaluatedInstances = ctx.getAnnotationsFromParent()
                 .map(Annotation::getInstanceLocation)
                 .collect(Collectors.toSet());
         boolean valid = true;
@@ -580,14 +578,12 @@ class UnevaluatedItemsEvaluator implements Evaluator {
 
 class UnevaluatedPropertiesEvaluator implements Evaluator {
     private final CompoundUri schemaRef;
-    private final String parentPath;
 
     UnevaluatedPropertiesEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isObject() && !node.isBoolean()) {
             throw new IllegalArgumentException();
         }
         this.schemaRef = ctx.getCompoundUri(node);
-        this.parentPath = UriUtil.getJsonPointerParent(schemaRef.fragment);
     }
 
     @Override
@@ -601,7 +597,7 @@ class UnevaluatedPropertiesEvaluator implements Evaluator {
             return Result.success();
         }
 
-        Set<String> evaluatedInstances = ctx.getAnnotationsFromParent(parentPath)
+        Set<String> evaluatedInstances = ctx.getAnnotationsFromParent()
                 .map(Annotation::getInstanceLocation)
                 .collect(Collectors.toSet());
         boolean valid = true;

@@ -264,8 +264,8 @@ public abstract class Draft2020SpecificationTest implements ProviderTest {
     }
 
     private void testValidation(String bundle, String name, JsonNode schema, JsonNode instance, boolean valid) {
-//        Assumptions.assumeTrue(bundle.equals("tests for implementation dynamic anchor and reference link"));
-//        Assumptions.assumeTrue(name.equals("correct extended schema"));
+//        Assumptions.assumeTrue(bundle.equals("unevaluatedProperties with $dynamicRef"));
+//        Assumptions.assumeTrue(name.equals("with no unevaluated properties"));
         String schemaString = schema.toPrettyString();
         String instanceString = instance.toPrettyString();
         logger.info("%s: %s".formatted(bundle, name));
