@@ -442,7 +442,7 @@ class AllOfEvaluator implements Evaluator {
 
     @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
-        List<Integer> unmatchedIndexes = new ArrayList<>(0);
+        List<Integer> unmatchedIndexes = new ArrayList<>();
         for (int i = 0; i < refs.size(); i++) {
             if (!ctx.resolveInternalRefAndValidate(refs.get(i), node)) {
                 unmatchedIndexes.add(i);
@@ -498,7 +498,7 @@ class OneOfEvaluator implements Evaluator {
 
     @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
-        List<Integer> matchedIndexes = new ArrayList<>(1);
+        List<Integer> matchedIndexes = new ArrayList<>();
         for (int i = 0; i < refs.size(); i++) {
             if (ctx.resolveInternalRefAndValidate(refs.get(i), node)) {
                 matchedIndexes.add(i);
