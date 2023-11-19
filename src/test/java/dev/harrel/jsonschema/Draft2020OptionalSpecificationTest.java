@@ -49,6 +49,56 @@ public abstract class Draft2020OptionalSpecificationTest implements ProviderTest
         testValidation(bundle, name, schema, json, valid);
     }
 
+    @SuiteTest("/suite/tests/draft2020-12/optional/format/idn-email.json")
+    void optionalIdnEmail(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
+    @SuiteTest("/suite/tests/draft2020-12/optional/format/hostname.json")
+    void optionalHostname(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
+    @SuiteTest("/suite/tests/draft2020-12/optional/format/idn-hostname.json")
+    void optionalIdnHostname(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
+    @SuiteTest("/suite/tests/draft2020-12/optional/format/ipv4.json")
+    void optionalIpv4(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
+    @SuiteTest("/suite/tests/draft2020-12/optional/format/ipv6.json")
+    void optionalIpv6(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
+    @SuiteTest("/suite/tests/draft2020-12/optional/format/uri.json")
+    void optionalUri(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
+    @SuiteTest("/suite/tests/draft2020-12/optional/format/uri-reference.json")
+    void optionalUriReference(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
+    @SuiteTest("/suite/tests/draft2020-12/optional/format/iri.json")
+    void optionalIri(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
+    @SuiteTest("/suite/tests/draft2020-12/optional/format/iri-reference.json")
+    void optionalIriReference(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
+    @SuiteTest("/suite/tests/draft2020-12/optional/format/uuid.json")
+    void optionalUuid(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
     private void testValidation(String bundle, String name, JsonNode schema, JsonNode instance, boolean valid) {
 //        Assumptions.assumeTrue(bundle.equals("unevaluatedProperties with $dynamicRef"));
 //        Assumptions.assumeTrue(name.equals("with no unevaluated properties"));
