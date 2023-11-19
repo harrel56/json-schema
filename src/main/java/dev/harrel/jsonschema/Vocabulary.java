@@ -13,6 +13,7 @@ public final class Vocabulary {
     static final Set<String> CORE_VOCABULARY = unmodifiableSet(new HashSet<>(Arrays.asList(Draft2020.CORE, Draft2019.CORE)));
     static final Set<String> APPLICATOR_VOCABULARY = unmodifiableSet(new HashSet<>(Arrays.asList(Draft2020.APPLICATOR, Draft2019.APPLICATOR)));
     static final Set<String> VALIDATION_VOCABULARY = unmodifiableSet(new HashSet<>(Arrays.asList(Draft2020.VALIDATION, Draft2019.VALIDATION)));
+    static final Set<String> FORMAT_ASSERTION_VOCABULARY = unmodifiableSet(new HashSet<>(Arrays.asList(Draft2020.FORMAT_ASSERTION, Draft2019.FORMAT)));
     /* In draft2019-09 unevaluated keywords are in applicator vocab */
     static final Set<String> UNEVALUATED_VOCABULARY = unmodifiableSet(new HashSet<>(Arrays.asList(Draft2020.UNEVALUATED, Draft2019.APPLICATOR)));
 
@@ -28,6 +29,7 @@ public final class Vocabulary {
         public static final String VALIDATION = "https://json-schema.org/draft/2020-12/vocab/validation";
         public static final String META_DATA = "https://json-schema.org/draft/2020-12/vocab/meta-data";
         public static final String FORMAT_ANNOTATION = "https://json-schema.org/draft/2020-12/vocab/format-annotation";
+        public static final String FORMAT_ASSERTION = "https://json-schema.org/draft/2020-12/vocab/format-assertion";
         public static final String CONTENT = "https://json-schema.org/draft/2020-12/vocab/content";
     }
 

@@ -60,6 +60,14 @@ class GsonTest {
     }
 
     @Nested
+    class Draft2020OptionalSpecificationTest extends dev.harrel.jsonschema.Draft2020OptionalSpecificationTest {
+        @Override
+        public JsonNodeFactory getJsonNodeFactory() {
+            return createFactory();
+        }
+    }
+
+    @Nested
     class Draft2019SpecificationTest extends dev.harrel.jsonschema.Draft2019SpecificationTest {
         @Override
         public JsonNodeFactory getJsonNodeFactory() {
