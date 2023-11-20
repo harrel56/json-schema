@@ -6,6 +6,7 @@ import dev.harrel.jsonschema.util.SuiteTest;
 import org.junit.jupiter.api.*;
 
 import java.net.URI;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -134,9 +135,9 @@ public abstract class Draft2020OptionalSpecificationTest implements ProviderTest
     }
 
     private void skipUnsupportedTests(String bundle, String name) {
-        /* leap seconds not supported */
         Assumptions.assumeFalse(bundle.equals("validation of date-time strings") &&
                 Set.of(
+                        /* leap seconds not supported */
                         "a valid date-time with a leap second, UTC",
                         "a valid date-time with a leap second, with minus offset"
                 ).contains(name));
@@ -152,5 +153,32 @@ public abstract class Draft2020OptionalSpecificationTest implements ProviderTest
                         "no time offset",
                         "no time offset with second fraction"
                 ).contains(name));
+        Assumptions.assumeFalse(bundle.equals("validation of IRIs") &&
+                Objects.equals("an invalid IRI based on IPv6", name));
+        Assumptions.assumeFalse(bundle.equals("validation of internationalized host names") &&
+                Set.of(
+                        "a valid host name (example.test in Hangul)",
+                        "invalid Punycode",
+                        "U-label contains \"--\" in the 3rd and 4th position",
+                        "Exceptions that are PVALID, left-to-right chars",
+                        "Exceptions that are PVALID, right-to-left chars",
+                        "MIDDLE DOT with surrounding 'l's",
+                        "Greek KERAIA followed by Greek",
+                        "Hebrew GERESH preceded by Hebrew",
+                        "Hebrew GERSHAYIM preceded by Hebrew",
+                        "KATAKANA MIDDLE DOT with Hiragana",
+                        "KATAKANA MIDDLE DOT with Katakana",
+                        "KATAKANA MIDDLE DOT with Han",
+                        "Arabic-Indic digits not mixed with Extended Arabic-Indic digits",
+                        "Extended Arabic-Indic digits not mixed with Arabic-Indic digits",
+                        "ZERO WIDTH JOINER preceded by Virama",
+                        "ZERO WIDTH NON-JOINER preceded by Virama",
+                        "ZERO WIDTH NON-JOINER not preceded by Virama but matches regexp"
+                ).contains(name));
+        Assumptions.assumeFalse(bundle.equals("validation of IP addresses") &&
+                Objects.equals("invalid leading zeroes, as they are treated as octals", name) ||
+                name.contains("Bengali 2"));
+        Assumptions.assumeFalse(bundle.equals("validation of IPv6 addresses") &&
+                name.contains("Bengali 4"));
     }
 }

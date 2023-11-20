@@ -4,26 +4,50 @@ import com.sanctionco.jmail.JMail;
 import com.sanctionco.jmail.net.InternetProtocolAddress;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 import static java.util.Collections.emptySet;
 
+@SuppressWarnings("ResultOfMethodCallIgnored")
 public final class FormatEvaluatorFactory implements EvaluatorFactory {
+    private static final class FormatEvaluator implements Evaluator {
+        private final Set<String> vocabularies;
+        private final UnaryOperator<String> operator;
+
+        private FormatEvaluator(Set<String> vocabularies, UnaryOperator<String> operator) {
+            this.vocabularies = vocabularies;
+            this.operator = operator;
+        }
+
+        @Override
+        public Result evaluate(EvaluationContext ctx, JsonNode node) {
+            if (!node.isString()) {
+                return Result.success();
+            }
+            String value = node.asString();
+            String err = operator.apply(value);
+            return err == null ? Result.success(value) : Result.failure(err);
+        }
+
+        @Override
+        public Set<String> getVocabularies() {
+            return vocabularies;
+        }
+    }
     private static final Pattern DURATION_PATTERN = Pattern.compile(
             "P(?:\\d+W|T(?:\\d+H(?:\\d+M(?:\\d+S)?)?|\\d+M(?:\\d+S)?|\\d+S)|(?:\\d+D|\\d+M(?:\\d+D)?|\\d+Y(?:\\d+M(?:\\d+D)?)?)(?:T(?:\\d+H(?:\\d+M(?:\\d+S)?)?|\\d+M(?:\\d+S)?|\\d+S))?)",
             Pattern.CASE_INSENSITIVE
     );
     private static final Pattern HOSTNAME_PATTERN = Pattern.compile(
             "([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])(\\.([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9]))*",
-            Pattern.UNICODE_CHARACTER_CLASS
+            Pattern.CASE_INSENSITIVE
     );
     private static final Pattern URI_TEMPLATE_PATTERN = Pattern.compile("\\{([^/]+?)}");
     private static final Pattern RJP_PATTERN = Pattern.compile("^(\\d+)([^#]*)#?$");
@@ -39,240 +63,108 @@ public final class FormatEvaluatorFactory implements EvaluatorFactory {
         if (!"format".equals(fieldName) || !fieldNode.isString()) {
             return Optional.empty();
         }
+        return Optional.ofNullable(getOperator(fieldNode.asString()))
+                .map(op -> new FormatEvaluator(vocabularies, op));
+    }
 
-        switch (fieldNode.asString()) {
+    private UnaryOperator<String> getOperator(String format) {
+        switch (format) {
             case "date":
-                return Optional.of(new DateTimeFormatEvaluator(DateTimeFormatter.ISO_DATE));
+                return tryOf(DateTimeFormatter.ISO_DATE::parse);
             case "date-time":
-                return Optional.of(new DateTimeFormatEvaluator(DateTimeFormatter.ISO_DATE_TIME));
+                return tryOf(DateTimeFormatter.ISO_DATE_TIME::parse);
             case "time":
-                return Optional.of(new DateTimeFormatEvaluator(DateTimeFormatter.ISO_TIME));
+                return tryOf(DateTimeFormatter.ISO_TIME::parse);
             case "duration":
-                return Optional.of(new DurationFormatEvaluator());
+                return v -> DURATION_PATTERN.matcher(v).matches() ? null : String.format("\"%s\" is not a valid duration string", v);
             case "email":
             case "idn-email":
-                return Optional.of(new EmailFormatEvaluator());
+                return v -> JMail.isValid(v) ? null : String.format("\"%s\" is not a valid email address", v);
             case "hostname":
             case "idn-hostname":
-                return Optional.of(new HostnameFormatEvaluator());
+                return v -> HOSTNAME_PATTERN.matcher(v).matches() ? null : String.format("\"%s\" is not a valid hostname", v);
             case "ipv4":
-                return Optional.of(new Ipv4FormatEvaluator());
+                return v -> InternetProtocolAddress.validateIpv4(v).isPresent() ? null : String.format("\"%s\" is not a valid IPv4 address", v);
             case "ipv6":
-                return Optional.of(new Ipv6FormatEvaluator());
+                return v -> InternetProtocolAddress.validateIpv6(v).isPresent() ? null : String.format("\"%s\" is not a valid IPv6 address", v);
             case "uri":
             case "iri":
-                return Optional.of(new UriFormatEvaluator());
+                return FormatEvaluatorFactory::uriOperator;
             case "uri-reference":
             case "iri-reference":
-                return Optional.of(new UriReferenceFormatEvaluator());
+                return tryOf(URI::create);
             case "uuid":
-                return Optional.of(new UuidFormatEvaluator());
+                return FormatEvaluatorFactory::uuidOperator;
             case "uri-template":
-                return Optional.of(new UriTemplateFormatEvaluator());
+                return FormatEvaluatorFactory::uriTemplateOperator;
             case "json-pointer":
-                return Optional.of(new JsonPointerFormatEvaluator());
+                return v -> validateJsonPointer(v) ? null : String.format("\"%s\" is not a valid json-pointer", v);
             case "relative-json-pointer":
-                return Optional.of(new RelativeJsonPointerFormatEvaluator());
+                return v -> {
+                    Matcher matcher = RJP_PATTERN.matcher(v);
+                    if (!matcher.find() || matcher.groupCount() != 2) {
+                        return String.format("\"%s\" is not a valid relative-json-pointer", v);
+                    }
+                    String firstSegment = matcher.group(1);
+                    if (firstSegment.length() > 1 && firstSegment.startsWith("0") || !validateJsonPointer(matcher.group(2))) {
+                        return String.format("\"%s\" is not a valid relative-json-pointer", v);
+                    }
+                    return null;
+                };
             case "regex":
-                return Optional.of(new RegexFormatEvaluator());
+                return tryOf(Pattern::compile);
             default:
-                return Optional.empty();
+                return null;
         }
     }
 
-    private abstract class FormatEvaluator implements Evaluator {
-        @Override
-        public final Result evaluate(EvaluationContext ctx, JsonNode node) {
-            if (node.isString()) {
-                return evaluateString(node.asString());
-            } else {
-                return Result.success();
-            }
-        }
-
-        @Override
-        public Set<String> getVocabularies() {
-            return vocabularies;
-        }
-
-        abstract Result evaluateString(String value);
-    }
-
-    private class DateTimeFormatEvaluator extends FormatEvaluator {
-        private final DateTimeFormatter formatter;
-
-        public DateTimeFormatEvaluator(DateTimeFormatter formatter) {
-            this.formatter = formatter;
-        }
-
-        @Override
-        Result evaluateString(String value) {
+    private static UnaryOperator<String> tryOf(Consumer<String> op) {
+        return v -> {
             try {
-                formatter.parse(value);
-                return Result.success();
-            } catch (DateTimeParseException e) {
-                return Result.failure(e.getMessage());
-            }
-        }
-    }
-
-    private class DurationFormatEvaluator extends FormatEvaluator {
-        @Override
-        Result evaluateString(String value) {
-            if (DURATION_PATTERN.matcher(value).matches()) {
-                return Result.success();
-            } else {
-                return Result.failure(String.format("\"%s\" is not a valid duration string", value));
-            }
-        }
-    }
-
-    private class EmailFormatEvaluator extends FormatEvaluator {
-        @Override
-        Result evaluateString(String value) {
-            if (JMail.isValid(value)) {
-                return Result.success();
-            } else {
-                return Result.failure(String.format("\"%s\" is not a valid email address", value));
-            }
-        }
-    }
-
-    private class HostnameFormatEvaluator extends FormatEvaluator {
-        @Override
-        Result evaluateString(String value) {
-            if (HOSTNAME_PATTERN.matcher(value).matches()) {
-                return Result.success();
-            } else {
-                return Result.failure(String.format("\"%s\" is not a valid hostname", value));
-            }
-        }
-    }
-
-    private class Ipv4FormatEvaluator extends FormatEvaluator {
-        @Override
-        Result evaluateString(String value) {
-            if (InternetProtocolAddress.validateIpv4(value).isPresent()) {
-                return Result.success();
-            } else {
-                return Result.failure(String.format("\"%s\" is not a valid ipv4 address", value));
-            }
-        }
-    }
-
-    private class Ipv6FormatEvaluator extends FormatEvaluator {
-        @Override
-        Result evaluateString(String value) {
-            if (InternetProtocolAddress.validateIpv6(value).isPresent()) {
-                return Result.success();
-            } else {
-                return Result.failure(String.format("\"%s\" is not a valid ipv6 address", value));
-            }
-        }
-    }
-
-    private class UriFormatEvaluator extends FormatEvaluator {
-        @Override
-        Result evaluateString(String value) {
-            try {
-                URI uri = new URI(value);
-                if (uri.isAbsolute()) {
-                    return Result.success();
-                } else {
-                    return Result.failure(String.format("[%s] is a relative URI", uri));
-                }
-            } catch (URISyntaxException e) {
-                return Result.failure(e.getMessage());
-            }
-        }
-    }
-
-    private class UriReferenceFormatEvaluator extends FormatEvaluator {
-        @Override
-        Result evaluateString(String value) {
-            try {
-                new URI(value);
-                return Result.success();
-            } catch (URISyntaxException e) {
-                return Result.failure(e.getMessage());
-            }
-        }
-    }
-
-    private class UuidFormatEvaluator extends FormatEvaluator {
-        @Override
-        Result evaluateString(String value) {
-            try {
-                UUID.fromString(value);
-                if (value.length() == 36) {
-                    return Result.success();
-                } else {
-                    return Result.failure(String.format("[%s] UUID has invalid length", value));
-                }
+                op.accept(v);
+                return null;
             } catch (Exception e) {
-                return Result.failure(e.getMessage());
+                return e.getMessage();
             }
+        };
+    }
+
+    private static boolean validateJsonPointer(String pointer) {
+        if (pointer.isEmpty()) {
+            return true;
+        }
+        if (!pointer.startsWith("/")) {
+            return false;
+        }
+        String decoded = pointer.replace("~0", "").replace("~1", "");
+        return !decoded.contains("~");
+    }
+
+    private static String uriOperator(String value) {
+        try {
+            URI uri = URI.create(value);
+            return uri.isAbsolute() ? null : String.format("\"%s\" is a relative URI", uri);
+        } catch (Exception e) {
+            return e.getMessage();
         }
     }
 
-    private class UriTemplateFormatEvaluator extends FormatEvaluator {
-        @Override
-        Result evaluateString(String value) {
-            String replaced = URI_TEMPLATE_PATTERN.matcher(value).replaceAll("0");
-            try {
-                new URI(replaced);
-                return Result.success();
-            } catch (URISyntaxException e) {
-                return Result.failure(String.format("[%s] is not a valid URI template", value));
-            }
+    private static String uuidOperator(String value) {
+        try {
+            UUID.fromString(value);
+            return value.length() == 36 ? null : String.format("\"%s\" UUID has invalid length", value);
+        } catch (Exception e) {
+            return e.getMessage();
         }
     }
 
-    private class JsonPointerFormatEvaluator extends FormatEvaluator {
-        @Override
-        Result evaluateString(String value) {
-            if (value.isEmpty()) {
-                return Result.success();
-            }
-            if (!value.startsWith("/")) {
-                return Result.failure(String.format("[%s] does not start with a \"/\"", value));
-            }
-            String decoded = value.replace("~0", "").replace("~1", "");
-            if (decoded.contains("~")) {
-                return Result.failure(String.format("[%s] is not escaped properly", value));
-            }
-            return Result.success();
-        }
-    }
-
-    private class RelativeJsonPointerFormatEvaluator extends FormatEvaluator {
-        @Override
-        Result evaluateString(String value) {
-            Matcher matcher = RJP_PATTERN.matcher(value);
-            if (!matcher.find() || matcher.groupCount() != 2) {
-                return Result.failure(); //todo
-            }
-            String firstSegment = matcher.group(1);
-            if (!"0".equals(firstSegment) && firstSegment.startsWith("0")) {
-                return Result.failure(); //todo
-            }
-            String decoded = matcher.group(2).replace("~0", "").replace("~1", "");
-            if (decoded.contains("~")) {
-                return Result.failure(String.format("[%s] is not escaped properly", value));
-            }
-            return Result.success();
-        }
-    }
-
-    private class RegexFormatEvaluator extends FormatEvaluator {
-        @Override
-        Result evaluateString(String value) {
-            try {
-                Pattern.compile(value);
-                return Result.success();
-            } catch (PatternSyntaxException e) {
-                return Result.failure();
-            }
+    private static String uriTemplateOperator(String value) {
+        String replaced = URI_TEMPLATE_PATTERN.matcher(value).replaceAll("0");
+        try {
+            URI.create(replaced);
+            return null;
+        } catch (Exception e) {
+            return String.format("\"%s\" is not a valid URI template", value);
         }
     }
 }
