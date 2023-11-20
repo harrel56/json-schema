@@ -5,6 +5,7 @@ import com.sanctionco.jmail.net.InternetProtocolAddress;
 
 import java.net.URI;
 import java.time.format.DateTimeFormatter;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -14,7 +15,66 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static java.util.Collections.emptySet;
+import static java.util.Collections.unmodifiableSet;
 
+/**
+ * {@code EvaluatorFactory} implementation that provides format validation capabilities.
+ * It should not be used as a standalone factory.
+ * It is intended to be used as a supplementary factory to a full dialect-compatible factory (like {@link Draft2020EvaluatorFactory}).
+ * <pre>
+ *     new ValidatorFactory().withEvaluatorFactory(new FormatEvaluatorFactory());
+ * </pre>
+ * May also be used in conjunction with custom factories:
+ * <pre>
+ *     new ValidatorFactory().withEvaluatorFactory(EvaluatorFactory.compose(customFactory, new FormatEvaluatorFactory()));
+ * </pre>
+ * <p>
+ * It may not be fully compatible with JSON Schema specification. It is mostly based on tools already present in JDK itself.
+ * Supported formats:
+ * <ul>
+ *     <li>
+ *         <strong>date, date-time, time</strong> - uses {@link DateTimeFormatter} with standard ISO formatters,
+ *     </li>
+ *     <li>
+ *          <strong>duration</strong> - regex based validation as it may be combination of {@link java.time.Duration} and {@link java.time.Period},
+ *     </li>
+ *     <li>
+ *          <strong>email, idn-email</strong> - uses {@link JMail#isValid(String)},
+ *     </li>
+ *     <li>
+ *          <strong>hostname</strong> - regex based validation,
+ *     </li>
+ *     <li>
+ *          <strong>idn-hostname</strong> - not supported - performs same validation as <strong>hostname</strong>,
+ *     </li>
+ *     <li>
+ *          <strong>ipv4, ipv6</strong> - uses {@link InternetProtocolAddress},
+ *     </li>
+ *     <li>
+ *          <strong>uri, uri-reference, iri, iri-reference</strong> - uses {@link URI},
+ *     </li>
+ *     <li>
+ *          <strong>uuid</strong> - uses {@link UUID},
+ *     </li>
+ *     <li>
+ *          <strong>uuid</strong> - regex based validation in conjunction with {@link URI},
+ *     </li>
+ *     <li>
+ *          <strong>json-pointer, relative-json-pointer</strong> - regex based validation,
+ *     </li>
+ *     <li>
+ *          <strong>regex</strong> - uses {@link Pattern}.
+ *     </li>
+ * </ul>
+ *
+ * @implNote Default constructor provides instance without <i>vocabulary</i> support. This means the validation will
+ * always occur regardless of currently active vocabularies (determined based on meta-schema).
+ * If more specification compliant instance is needed, please explicitly provide vocabularies to the constructor:
+ * <pre>
+ *     new FormatEvaluatorFactory(Set.of(Vocabulary.Draft2020.FORMAT_ASSERTION, Vocabulary.Draft2019.FORMAT));
+ * </pre>
+ * Then the validation will only be run if at least one of provided vocabularies is active.
+ */
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public final class FormatEvaluatorFactory implements EvaluatorFactory {
     private static final class FormatEvaluator implements Evaluator {
@@ -41,6 +101,7 @@ public final class FormatEvaluatorFactory implements EvaluatorFactory {
             return vocabularies;
         }
     }
+
     private static final Pattern DURATION_PATTERN = Pattern.compile(
             "P(?:\\d+W|T(?:\\d+H(?:\\d+M(?:\\d+S)?)?|\\d+M(?:\\d+S)?|\\d+S)|(?:\\d+D|\\d+M(?:\\d+D)?|\\d+Y(?:\\d+M(?:\\d+D)?)?)(?:T(?:\\d+H(?:\\d+M(?:\\d+S)?)?|\\d+M(?:\\d+S)?|\\d+S))?)",
             Pattern.CASE_INSENSITIVE
@@ -54,8 +115,19 @@ public final class FormatEvaluatorFactory implements EvaluatorFactory {
 
     private final Set<String> vocabularies;
 
+    /**
+     * Creates a default instance without vocabularies support.
+     */
     public FormatEvaluatorFactory() {
         this.vocabularies = emptySet();
+    }
+
+    /**
+     * Creates a customized instance with vocabularies support.
+     * Validation will only be run when at least one of provided vocabularies is active during validation process.
+     */
+    public FormatEvaluatorFactory(Set<String> vocabularies) {
+        this.vocabularies = unmodifiableSet(new HashSet<>(vocabularies));
     }
 
     @Override
