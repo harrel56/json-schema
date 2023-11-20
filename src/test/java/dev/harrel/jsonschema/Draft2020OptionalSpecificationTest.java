@@ -99,6 +99,26 @@ public abstract class Draft2020OptionalSpecificationTest implements ProviderTest
         testValidation(bundle, name, schema, json, valid);
     }
 
+    @SuiteTest("/suite/tests/draft2020-12/optional/format/uri-template.json")
+    void optionalUriTemplate(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
+    @SuiteTest("/suite/tests/draft2020-12/optional/format/json-pointer.json")
+    void optionalJsonPointer(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
+    @SuiteTest("/suite/tests/draft2020-12/optional/format/relative-json-pointer.json")
+    void optionalRelativeJsonPointer(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
+    @SuiteTest("/suite/tests/draft2020-12/optional/format/regex.json")
+    void optionalRegex(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
+        testValidation(bundle, name, schema, json, valid);
+    }
+
     private void testValidation(String bundle, String name, JsonNode schema, JsonNode instance, boolean valid) {
 //        Assumptions.assumeTrue(bundle.equals("unevaluatedProperties with $dynamicRef"));
 //        Assumptions.assumeTrue(name.equals("with no unevaluated properties"));
