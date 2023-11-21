@@ -7,6 +7,7 @@ import org.junit.jupiter.api.TestFactory;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 public abstract class SpecificationSuiteTest implements ProviderTest {
@@ -57,6 +58,37 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
 
         SuiteTestGenerator generator = new SuiteTestGenerator(validator, skippedFormatTests());
         return generator.generate("/suite/tests/draft2019-09/optional/format");
+    }
+
+    @TestFactory
+    Stream<DynamicNode> draft2020Optional() {
+        Validator validator = new ValidatorFactory()
+                .withJsonNodeFactory(getJsonNodeFactory())
+                .createValidator();
+
+        SuiteTestGenerator generator = new SuiteTestGenerator(validator, Map.of());
+        return Stream.of(
+                generator.generate("/suite/tests/draft2020-12/optional/bignum.json"),
+                generator.generate("/suite/tests/draft2020-12/optional/no-schema.json"),
+                generator.generate("/suite/tests/draft2020-12/optional/non-bmp-regex.json"),
+                generator.generate("/suite/tests/draft2020-12/optional/refOfUnknownKeyword.json")
+        ).flatMap(Function.identity());
+    }
+
+    @TestFactory
+    Stream<DynamicNode> draft2019Optional() {
+        Validator validator = new ValidatorFactory()
+                .withDialect(new Dialects.Draft2019Dialect())
+                .withJsonNodeFactory(getJsonNodeFactory())
+                .createValidator();
+
+        SuiteTestGenerator generator = new SuiteTestGenerator(validator, Map.of());
+        return Stream.of(
+                generator.generate("/suite/tests/draft2019-09/optional/bignum.json"),
+                generator.generate("/suite/tests/draft2019-09/optional/no-schema.json"),
+                generator.generate("/suite/tests/draft2019-09/optional/non-bmp-regex.json"),
+                generator.generate("/suite/tests/draft2019-09/optional/refOfUnknownKeyword.json")
+        ).flatMap(Function.identity());
     }
 
     private static Map<String, Map<String, Set<String>>> skippedRequiredTests() {
