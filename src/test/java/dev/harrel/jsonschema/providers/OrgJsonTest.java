@@ -51,15 +51,7 @@ class OrgJsonTest {
     }
 
     @Nested
-    class Draft2020SpecificationTest extends dev.harrel.jsonschema.Draft2020SpecificationTest {
-        @Override
-        public JsonNodeFactory getJsonNodeFactory() {
-            return createFactory();
-        }
-    }
-
-    @Nested
-    class Draft2019SpecificationTest extends dev.harrel.jsonschema.Draft2019SpecificationTest {
+    class SpecificationSuiteTest extends dev.harrel.jsonschema.SpecificationSuiteTest {
         @Override
         public JsonNodeFactory getJsonNodeFactory() {
             return createFactory();
