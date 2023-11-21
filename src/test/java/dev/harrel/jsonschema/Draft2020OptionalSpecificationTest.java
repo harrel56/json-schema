@@ -1,14 +1,26 @@
 package dev.harrel.jsonschema;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.harrel.jsonschema.util.RemoteSchemaResolver;
-import dev.harrel.jsonschema.util.SuiteTest;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.provider.Arguments;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 @SuppressWarnings("unused")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -25,100 +37,41 @@ public abstract class Draft2020OptionalSpecificationTest implements ProviderTest
                 .createValidator();
     }
 
-    @SuiteTest("/suite/tests/draft2020-12/optional/format/date.json")
-    void optionalDate(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-        testValidation(bundle, name, schema, json, valid);
+    @TestFactory
+    Stream<DynamicNode> generateTest() throws URISyntaxException, IOException {
+        ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        URL url = getClass().getResource("/suite/tests/draft2020-12/optional/format");
+        Path path = Paths.get(url.toURI());
+        List<Path> list = Files.list(path).toList();
+        return Files.list(path).map(p -> DynamicContainer.dynamicContainer(p.getFileName().toString(), readTestFile(p)));
     }
 
-    @SuiteTest("/suite/tests/draft2020-12/optional/format/date-time.json")
-    void optionalDateTime(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-        testValidation(bundle, name, schema, json, valid);
+    private Stream<DynamicContainer> readTestFile(Path path) {
+        ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        try {
+            String rawString = Files.readString(path);
+            List<SchemaTest> bundles = objectMapper.readValue(rawString, new TypeReference<>() {});
+            return bundles.stream()
+                    .map(bundle -> DynamicContainer.dynamicContainer(bundle.description, bundle.tests.stream()
+                            .map(test -> DynamicTest.dynamicTest(test.description, path.toUri(),
+                                    () -> testValidation(bundle.description, test.description, bundle.schema, test.data, test.valid)))));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+//        return bundles.stream()
+//                .flatMap(bundle -> bundle.tests().stream().map(test ->
+//                        Arguments.arguments(bundle.description(),
+//                                test.description(),
+//                                bundle.schema(),
+//                                test.data(),
+//                                test.valid())));
     }
 
-    @SuiteTest("/suite/tests/draft2020-12/optional/format/time.json")
-    void optionalTime(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-        testValidation(bundle, name, schema, json, valid);
-    }
 
-    @SuiteTest("/suite/tests/draft2020-12/optional/format/duration.json")
-    void optionalDuration(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-        testValidation(bundle, name, schema, json, valid);
-    }
+    record SchemaTest(String description, JsonNode schema, List<TestData> tests) {}
 
-    @SuiteTest("/suite/tests/draft2020-12/optional/format/email.json")
-    void optionalEmail(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-        testValidation(bundle, name, schema, json, valid);
-    }
-
-    @SuiteTest("/suite/tests/draft2020-12/optional/format/idn-email.json")
-    void optionalIdnEmail(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-        testValidation(bundle, name, schema, json, valid);
-    }
-
-    @SuiteTest("/suite/tests/draft2020-12/optional/format/hostname.json")
-    void optionalHostname(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-        testValidation(bundle, name, schema, json, valid);
-    }
-
-    @SuiteTest("/suite/tests/draft2020-12/optional/format/idn-hostname.json")
-    void optionalIdnHostname(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-        testValidation(bundle, name, schema, json, valid);
-    }
-
-    @SuiteTest("/suite/tests/draft2020-12/optional/format/ipv4.json")
-    void optionalIpv4(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-        testValidation(bundle, name, schema, json, valid);
-    }
-
-    @SuiteTest("/suite/tests/draft2020-12/optional/format/ipv6.json")
-    void optionalIpv6(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-        testValidation(bundle, name, schema, json, valid);
-    }
-
-    @SuiteTest("/suite/tests/draft2020-12/optional/format/uri.json")
-    void optionalUri(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-        testValidation(bundle, name, schema, json, valid);
-    }
-
-    @SuiteTest("/suite/tests/draft2020-12/optional/format/uri-reference.json")
-    void optionalUriReference(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-        testValidation(bundle, name, schema, json, valid);
-    }
-
-    @SuiteTest("/suite/tests/draft2020-12/optional/format/iri.json")
-    void optionalIri(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-        testValidation(bundle, name, schema, json, valid);
-    }
-
-    @SuiteTest("/suite/tests/draft2020-12/optional/format/iri-reference.json")
-    void optionalIriReference(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-        testValidation(bundle, name, schema, json, valid);
-    }
-
-    @SuiteTest("/suite/tests/draft2020-12/optional/format/uuid.json")
-    void optionalUuid(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-        testValidation(bundle, name, schema, json, valid);
-    }
-
-    @SuiteTest("/suite/tests/draft2020-12/optional/format/uri-template.json")
-    void optionalUriTemplate(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-        testValidation(bundle, name, schema, json, valid);
-    }
-
-    @SuiteTest("/suite/tests/draft2020-12/optional/format/json-pointer.json")
-    void optionalJsonPointer(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-        testValidation(bundle, name, schema, json, valid);
-    }
-
-    @SuiteTest("/suite/tests/draft2020-12/optional/format/relative-json-pointer.json")
-    void optionalRelativeJsonPointer(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-        testValidation(bundle, name, schema, json, valid);
-    }
-
-    @SuiteTest("/suite/tests/draft2020-12/optional/format/regex.json")
-    void optionalRegex(String bundle, String name, JsonNode schema, JsonNode json, boolean valid) {
-        testValidation(bundle, name, schema, json, valid);
-    }
+    record TestData(String description, JsonNode data, boolean valid) {}
 
     private void testValidation(String bundle, String name, JsonNode schema, JsonNode instance, boolean valid) {
 //        Assumptions.assumeTrue(bundle.equals("unevaluatedProperties with $dynamicRef"));
