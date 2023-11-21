@@ -11,7 +11,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static java.util.Collections.emptySet;
@@ -57,10 +56,10 @@ import static java.util.Collections.unmodifiableSet;
  *          <strong>uuid</strong> - uses {@link UUID},
  *     </li>
  *     <li>
- *          <strong>uuid</strong> - regex based validation in conjunction with {@link URI},
+ *          <strong>uri-template</strong> - lenient checking of unclosed braces (should be compatible with Spring's implementation),
  *     </li>
  *     <li>
- *          <strong>json-pointer, relative-json-pointer</strong> - regex based validation,
+ *          <strong>json-pointer, relative-json-pointer</strong> - manual validation,
  *     </li>
  *     <li>
  *          <strong>regex</strong> - uses {@link Pattern}.
@@ -110,8 +109,6 @@ public final class FormatEvaluatorFactory implements EvaluatorFactory {
             "([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])(\\.([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9]))*",
             Pattern.CASE_INSENSITIVE
     );
-    private static final Pattern URI_TEMPLATE_PATTERN = Pattern.compile("\\{([^/]+?)}");
-    private static final Pattern RJP_PATTERN = Pattern.compile("^(\\d+)([^#]*)#?$");
 
     private final Set<String> vocabularies;
 
@@ -172,17 +169,7 @@ public final class FormatEvaluatorFactory implements EvaluatorFactory {
             case "json-pointer":
                 return v -> validateJsonPointer(v) ? null : String.format("\"%s\" is not a valid json-pointer", v);
             case "relative-json-pointer":
-                return v -> {
-                    Matcher matcher = RJP_PATTERN.matcher(v);
-                    if (!matcher.find() || matcher.groupCount() != 2) {
-                        return String.format("\"%s\" is not a valid relative-json-pointer", v);
-                    }
-                    String firstSegment = matcher.group(1);
-                    if (firstSegment.length() > 1 && firstSegment.startsWith("0") || !validateJsonPointer(matcher.group(2))) {
-                        return String.format("\"%s\" is not a valid relative-json-pointer", v);
-                    }
-                    return null;
-                };
+                return FormatEvaluatorFactory::rjpOperator;
             case "regex":
                 return tryOf(Pattern::compile);
             default:
@@ -231,12 +218,44 @@ public final class FormatEvaluatorFactory implements EvaluatorFactory {
     }
 
     private static String uriTemplateOperator(String value) {
-        String replaced = URI_TEMPLATE_PATTERN.matcher(value).replaceAll("0");
-        try {
-            URI.create(replaced);
-            return null;
-        } catch (Exception e) {
-            return String.format("\"%s\" is not a valid URI template", value);
+        int level = 0;
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (c == '{') {
+                level++;
+            } else if (c == '}' && level > 0) {
+                level--;
+            }
         }
+        return level == 0 ? null : String.format("\"%s\" is not a valid URI template", value);
+    }
+
+    private static String rjpOperator(String value) {
+        int firstSegmentEndIdx = value.length();
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (c == '#' && i != value.length() - 1) {
+                return invalidRjpMessage(value);
+            }
+            if (c == '#' || c == '/') {
+                firstSegmentEndIdx = i;
+                break;
+            }
+            if (!Character.isDigit(c)) {
+                return invalidRjpMessage(value);
+            }
+        }
+        String firstSegment = value.substring(0, firstSegmentEndIdx);
+        String secondSegment = value.substring(firstSegmentEndIdx);
+        if (firstSegment.isEmpty() ||
+                firstSegment.length() > 1 && firstSegment.startsWith("0") || // no leading zeros
+                !secondSegment.startsWith("#") && !validateJsonPointer(secondSegment)) {
+            return invalidRjpMessage(value);
+        }
+        return null;
+    }
+
+    private static String invalidRjpMessage(String value) {
+        return String.format("\"%s\" is not a valid relative-json-pointer", value);
     }
 }
