@@ -234,9 +234,6 @@ public final class FormatEvaluatorFactory implements EvaluatorFactory {
         int firstSegmentEndIdx = value.length();
         for (int i = 0; i < value.length(); i++) {
             char c = value.charAt(i);
-            if (c == '#' && i != value.length() - 1) {
-                return invalidRjpMessage(value);
-            }
             if (c == '#' || c == '/') {
                 firstSegmentEndIdx = i;
                 break;
@@ -249,7 +246,7 @@ public final class FormatEvaluatorFactory implements EvaluatorFactory {
         String secondSegment = value.substring(firstSegmentEndIdx);
         if (firstSegment.isEmpty() ||
                 firstSegment.length() > 1 && firstSegment.startsWith("0") || // no leading zeros
-                !secondSegment.startsWith("#") && !validateJsonPointer(secondSegment)) {
+                !"#".equals(secondSegment) && !validateJsonPointer(secondSegment)) {
             return invalidRjpMessage(value);
         }
         return null;

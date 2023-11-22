@@ -65,4 +65,5 @@ dependencies {
 
 test {
     useJUnitPlatform()
+    jvmArgs("-XX:+EnableDynamicAgentLoading")
 }
