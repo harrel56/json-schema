@@ -7,11 +7,12 @@
 
 Java library implementing [JSON schema specification](https://json-schema.org/specification.html):
 - compatible with Java 8,
-- support for the newest specification versions [![Supported spec](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie-json-schema.github.io%2Fbowtie%2Fbadges%2Fjava-dev.harrel.json-schema%2Fsupported_versions.json)](https://bowtie.report/#/implementations/java-json-schema):
+- support for the newest [specification versions](#dialects) [![Supported spec](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie-json-schema.github.io%2Fbowtie%2Fbadges%2Fjava-dev.harrel.json-schema%2Fsupported_versions.json)](https://bowtie.report/#/implementations/java-json-schema):
   - Draft 2019-09 [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie-json-schema.github.io%2Fbowtie%2Fbadges%2Fjava-dev.harrel.json-schema%2Fcompliance%2FDraft_2019-09.json)](https://bowtie.report/#/implementations/java-json-schema),
   - Draft 2020-12 [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie-json-schema.github.io%2Fbowtie%2Fbadges%2Fjava-dev.harrel.json-schema%2Fcompliance%2FDraft_2020-12.json)](https://bowtie.report/#/implementations/java-json-schema),
-- support for custom keywords,
+- support for [custom keywords](#adding-custom-keywords),
 - support for annotation collection,
+- support for [format validation](#format-validation) (for a price of one additional dependency 😉),
 - multiple JSON providers to choose from ([supported JSON libraries](#json-providers))
 - and no additional dependencies on top of that.
 
@@ -60,11 +61,6 @@ Validator.Result result1 = validator.validate(schemaUri, instance1);
 Validator.Result result2 = validator.validate(schemaUri, instance2);
 ```
 This way, schema is parsed only once. You could also register multiple schemas this way and refer to them independently. Keep in mind that the "registration space" for schemas is common for one `Validator` - this can be used to refer dynamically between schemas.
-
-## Limitations
-Features that are not supported yet:
-- ~~`$vocabulary` keyword - all vocabularies' related semantics are not yet there.~~ Vocabularies are supported from version 1.2.0 - [see more](#custom-dialects).
-- `format` keyword - the specification doesn't require `format` to perform any validations. Support for official format validation might be added in future versions. Meanwhile, the implementation could be provided by user (see [adding custom keywords](#adding-custom-keywords)).
 
 ## JSON providers
 Supported providers:
@@ -143,6 +139,46 @@ and they represent literal nodes with these classes:
 - `java.math.BigInteger`,
 - `java.math.BigDecimal`.
 
+## Format validation
+By default, `format` keyword performs no validation (only collects annotations as mandated by the JSON Schema specification).
+If you want to use format validation, please add an explicit dependency to `jmail` library ([maven link](https://mvnrepository.com/artifact/com.sanctionco.jmail/jmail)):
+```xml
+<dependency>
+  <groupId>com.sanctionco.jmail</groupId>
+  <artifactId>jmail</artifactId>
+  <version>1.6.1</version>
+</dependency>
+```
+```groovy
+implementation 'com.sanctionco.jmail:jmail:1.6.1'
+```
+
+To enable format validation, attach `FormatEvaluatorFactory` to your `ValidatorFactory` instance:
+```java
+new ValidatorFactory().withEvaluatorFactory(new FormatEvaluatorFactory());
+```
+If usage of another custom `EvaluatorFactory` is required, you can use `EvaluatorFactory.compose()` method:
+```java
+new ValidatorFactory().withEvaluatorFactory(EvaluatorFactory.compose(customFactory, new FormatEvaluatorFactory()));
+```
+
+#### Supported formats
+- **date**, **date-time**, **time** - uses `java.time.format.DateTimeFormatter` with standard ISO formatters,
+- **duration** - uses regex validation as it may be combination of `java.time.Duration` and `java.time.Period`,
+- **email**, **idn-email** - uses `com.sanctionco.jmail.JMail`,
+- **hostname** - uses regex validation,
+- **idn-hostname** - not supported - performs same validation as `hostname`,
+- **ipv4**, **ipv6** - uses `com.sanctionco.jmail.net.InternetProtocolAddress`,
+- **uri**, **uri-reference**, **iri**, **iri-reference** - uses `java.net.URI`,
+- **uuid** - uses `java.util.UUID`,
+- **uri-template** - lenient checking of unclosed braces (should be compatible with Spring's implementation),
+- **json-pointer**, **relative-json-pointer** - uses manual validation,
+- **regex** - uses `java.util.regex.Pattern`.
+
+Note that provided format validation is **not** 100% specification compliant.
+Instead, it focuses to be more "Java environment oriented".
+So for example, when a `value` is validated as being in `uri-reference` format, it is guaranteed that `URI.create(value)` call will succeed.
+
 ## Advanced configuration
 ### Resolving external schemas
 By default, the only schemas that are resolved externally, are specification meta-schemas (e.g. *https://json-schema.org/draft/2020-12/schema*) which are used for validating schemas during registration process. The meta-schema files are fetched from the classpath and are packaged with jar.
@@ -176,7 +212,7 @@ For more information about return type please refer to the [documentation](https
 By default, [draft 2020-12 dialect](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/Dialects.Draft2020Dialect.html) is used,
 but it can be changed with:
 ```java
-new ValidatorFactory().withDialect(new Dialects.Draft2020Dialect()); // or any other dialect
+new ValidatorFactory().withDialect(new Dialects.Draft2019Dialect()); // or any other dialect
 ```
 Custom dialects are also supported, see more [here](#custom-dialects).
 
