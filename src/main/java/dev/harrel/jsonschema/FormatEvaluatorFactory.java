@@ -238,7 +238,7 @@ public final class FormatEvaluatorFactory implements EvaluatorFactory {
                 firstSegmentEndIdx = i;
                 break;
             }
-            if (!Character.isDigit(c)) {
+            if (c < '0' || c > '9') {
                 return invalidRjpMessage(value);
             }
         }
