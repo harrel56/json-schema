@@ -158,14 +158,7 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
                 ),
                 "ipv4.json", Map.of(
                         "validation of IP addresses", Set.of(
-                                "invalid leading zeroes, as they are treated as octals",
-                                "invalid non-ASCII '\u09e8' (a Bengali 2)"
-                        )
-                ),
-                "ipv6.json", Map.of(
-                        "validation of IPv6 addresses", Set.of(
-                                "invalid non-ASCII '\u09ea' (a Bengali 4)",
-                                "invalid non-ASCII '\u09ea' (a Bengali 4) in the IPv4 portion"
+                                "invalid leading zeroes, as they are treated as octals"
                         )
                 )
         );
