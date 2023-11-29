@@ -1,0 +1,51 @@
+[
+  {
+    "description": "maxContains inside items keyword",
+    "schema": {
+      "items": {
+        "contains": {
+          "type": "number"
+        },
+        "maxContains": 1,
+        "minContains": 0
+      }
+    },
+    "tests": [
+      {
+        "description": "array with 1 item",
+        "data": [[1]],
+        "valid": true
+      },
+      {
+        "description": "array with 2 items (empty + valid)",
+        "data": [[], [1]],
+        "valid": true
+      },
+      {
+        "description": "array with 2 items (valid + empty)",
+        "data": [[1], []],
+        "valid": true
+      },
+      {
+        "description": "array with 2 items (empty + empty)",
+        "data": [[], []],
+        "valid": true
+      },
+      {
+        "description": "array with 2 items (valid + valid)",
+        "data": [[1], [1]],
+        "valid": true
+      },
+      {
+        "description": "array with 3 items (empty + empty + valid)",
+        "data": [[], [], [1]],
+        "valid": true
+      },
+      {
+        "description": "array invalid item",
+        "data": [[], [], [1, 2, 3]],
+        "valid": false
+      }
+    ]
+  }
+]
