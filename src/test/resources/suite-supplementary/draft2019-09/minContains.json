@@ -1,0 +1,45 @@
+[
+  {
+    "description": "minContains inside items keyword",
+    "schema": {
+      "items": {
+        "contains": {
+          "type": "number"
+        },
+        "minContains": 2
+      }
+    },
+    "tests": [
+      {
+        "description": "array with 1 item",
+        "data": [[1, 2]],
+        "valid": true
+      },
+      {
+        "description": "array with 2 items (valid + invalid)",
+        "data": [[1, 2], [1]],
+        "valid": false
+      },
+      {
+        "description": "array with 2 items (invalid + valid)",
+        "data": [[1], [1, 2]],
+        "valid": false
+      },
+      {
+        "description": "array with 2 items (invalid + invalid)",
+        "data": [[1], [1]],
+        "valid": false
+      },
+      {
+        "description": "array with 2 items (valid + valid)",
+        "data": [[1, 2], [1, 2]],
+        "valid": true
+      },
+      {
+        "description": "array with 3 items (valid + valid + invalid)",
+        "data": [[1, 2], [1, 2], []],
+        "valid": false
+      }
+    ]
+  }
+]
