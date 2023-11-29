@@ -12,25 +12,24 @@ public abstract class SupplementarySuiteTest implements ProviderTest {
     @TestFactory
     Stream<DynamicNode> draft2020Supplementary() {
         Validator validator = new ValidatorFactory()
-                .withDisabledSchemaValidation(true)
                 .withEvaluatorFactory(new FormatEvaluatorFactory())
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .createValidator();
 
         SuiteTestGenerator generator = new SuiteTestGenerator(validator, Map.of());
-        return generator.generate("/suite-supplementary");
+        return generator.generate("/suite-supplementary/draft2020-12");
     }
 
     @TestFactory
     Stream<DynamicNode> draft2019Supplementary() {
         Validator validator = new ValidatorFactory()
-                .withDisabledSchemaValidation(true)
+                .withDialect(new Dialects.Draft2019Dialect())
                 .withEvaluatorFactory(new FormatEvaluatorFactory())
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .createValidator();
 
         SuiteTestGenerator generator = new SuiteTestGenerator(validator, Map.of());
-        return generator.generate("/suite-supplementary");
+        return generator.generate("/suite-supplementary/draft2019-09");
     }
 
     @TestFactory
@@ -41,7 +40,7 @@ public abstract class SupplementarySuiteTest implements ProviderTest {
                 .createValidator();
 
         SuiteTestGenerator generator = new SuiteTestGenerator(validator, Map.of());
-        return generator.generate("/suite-supplementary/format");
+        return generator.generate("/suite-supplementary/draft2020-12/format");
     }
 
     @TestFactory
@@ -53,6 +52,6 @@ public abstract class SupplementarySuiteTest implements ProviderTest {
                 .createValidator();
 
         SuiteTestGenerator generator = new SuiteTestGenerator(validator, Map.of());
-        return generator.generate("/suite-supplementary/format");
+        return generator.generate("/suite-supplementary/draft2019-09/format");
     }
 }

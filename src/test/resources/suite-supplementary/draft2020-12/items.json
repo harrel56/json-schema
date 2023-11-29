@@ -1,0 +1,51 @@
+[
+  {
+    "description": "items inside items keyword",
+    "schema": {
+      "items": {
+        "prefixItems": [
+          { "type": "number" },
+          { "type": "number" }
+        ],
+        "items": false
+      }
+    },
+    "tests": [
+      {
+        "description": "array with 1 item",
+        "data": [[1, 2]],
+        "valid": true
+      },
+      {
+        "description": "array with 2 items (empty + valid)",
+        "data": [[], [1, 2]],
+        "valid": true
+      },
+      {
+        "description": "array with 2 items (valid + empty)",
+        "data": [[1, 2], []],
+        "valid": true
+      },
+      {
+        "description": "array with 2 items (empty + empty)",
+        "data": [[], []],
+        "valid": true
+      },
+      {
+        "description": "array with 2 items (valid + valid)",
+        "data": [[1], [1, 2]],
+        "valid": true
+      },
+      {
+        "description": "array with 3 items (empty + empty + valid)",
+        "data": [[], [], [1, 2]],
+        "valid": true
+      },
+      {
+        "description": "array invalid item",
+        "data": [[], [], [1, 2, 3]],
+        "valid": false
+      }
+    ]
+  }
+]
