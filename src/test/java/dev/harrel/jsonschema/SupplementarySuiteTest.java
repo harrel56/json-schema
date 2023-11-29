@@ -22,6 +22,18 @@ public abstract class SupplementarySuiteTest implements ProviderTest {
     }
 
     @TestFactory
+    Stream<DynamicNode> draft2019Supplementary() {
+        Validator validator = new ValidatorFactory()
+                .withDisabledSchemaValidation(true)
+                .withEvaluatorFactory(new FormatEvaluatorFactory())
+                .withJsonNodeFactory(getJsonNodeFactory())
+                .createValidator();
+
+        SuiteTestGenerator generator = new SuiteTestGenerator(validator, Map.of());
+        return generator.generate("/suite-supplementary");
+    }
+
+    @TestFactory
     Stream<DynamicNode> draft2020FormatSupplementary() {
         Validator validator = new ValidatorFactory()
                 .withEvaluatorFactory(new FormatEvaluatorFactory())
