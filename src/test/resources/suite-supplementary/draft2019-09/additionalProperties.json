@@ -84,5 +84,121 @@
         "valid": false
       }
     ]
+  },
+  {
+    "description": "additionalProperties inside properties keyword field",
+    "schema": {
+      "properties": {
+        "x": {
+          "properties": {
+            "a": {
+              "type": "number"
+            }
+          },
+          "additionalProperties": false
+        },
+        "y": {
+          "properties": {
+            "a": {
+              "type": "number"
+            }
+          },
+          "additionalProperties": false
+        },
+        "z": {
+          "properties": {
+            "a": {
+              "type": "number"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "object with 1 field",
+        "data": {
+          "y": {
+            "a": 1
+          }
+        },
+        "valid": true
+      },
+      {
+        "description": "object with 2 fields (empty + valid)",
+        "data": {
+          "x": {},
+          "y": {
+            "a": 1
+          }
+        },
+        "valid": true
+      },
+      {
+        "description": "object with 2 fields (valid + empty)",
+        "data": {
+          "x":  {
+            "a": 1
+          },
+          "y": {}
+        },
+        "valid": true
+      },
+      {
+        "description": "object with 2 fields (empty + empty)",
+        "data": {
+          "x": {},
+          "y": {}
+        },
+        "valid": true
+      },
+      {
+        "description": "object with 2 fields (valid + valid)",
+        "data": {
+          "x": {
+            "a": 1
+          },
+          "y": {
+            "a": 1
+          }
+        },
+        "valid": true
+      },
+      {
+        "description": "object with 2 fields (valid + valid)",
+        "data": {
+          "x": {
+            "a": 1
+          },
+          "y": {
+            "a": 1
+          }
+        },
+        "valid": true
+      },
+      {
+        "description": "object with 3 fields (empty + empty + valid)",
+        "data": {
+          "x": {},
+          "y": {},
+          "z": {
+            "a": 1
+          }
+        },
+        "valid": true
+      },
+      {
+        "description": "object with invalid field",
+        "data": {
+          "x": {},
+          "y": {},
+          "z": {
+            "b": 1
+          }
+        },
+        "valid": false
+      }
+    ]
   }
 ]
