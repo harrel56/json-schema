@@ -17,7 +17,7 @@ public abstract class SupplementarySuiteTest implements ProviderTest {
                 .createValidator();
 
         SuiteTestGenerator generator = new SuiteTestGenerator(validator, Map.of());
-        return generator.generate("/suite-supplementary/format");
+        return generator.generate("/suite-supplementary/draft2020-12");
     }
 
     @TestFactory
@@ -29,6 +29,29 @@ public abstract class SupplementarySuiteTest implements ProviderTest {
                 .createValidator();
 
         SuiteTestGenerator generator = new SuiteTestGenerator(validator, Map.of());
-        return generator.generate("/suite-supplementary/format");
+        return generator.generate("/suite-supplementary/draft2019-09");
+    }
+
+    @TestFactory
+    Stream<DynamicNode> draft2020FormatSupplementary() {
+        Validator validator = new ValidatorFactory()
+                .withEvaluatorFactory(new FormatEvaluatorFactory())
+                .withJsonNodeFactory(getJsonNodeFactory())
+                .createValidator();
+
+        SuiteTestGenerator generator = new SuiteTestGenerator(validator, Map.of());
+        return generator.generate("/suite-supplementary/draft2020-12/format");
+    }
+
+    @TestFactory
+    Stream<DynamicNode> draft2019FormatSupplementary() {
+        Validator validator = new ValidatorFactory()
+                .withDialect(new Dialects.Draft2019Dialect())
+                .withEvaluatorFactory(new FormatEvaluatorFactory())
+                .withJsonNodeFactory(getJsonNodeFactory())
+                .createValidator();
+
+        SuiteTestGenerator generator = new SuiteTestGenerator(validator, Map.of());
+        return generator.generate("/suite-supplementary/draft2019-09/format");
     }
 }

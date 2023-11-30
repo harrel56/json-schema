@@ -1,0 +1,138 @@
+[
+  {
+    "description": "maxContains inside items keyword",
+    "schema": {
+      "items": {
+        "contains": {
+          "type": "number"
+        },
+        "maxContains": 1,
+        "minContains": 0
+      }
+    },
+    "tests": [
+      {
+        "description": "array with 1 item",
+        "data": [[1]],
+        "valid": true
+      },
+      {
+        "description": "array with 2 items (empty + valid)",
+        "data": [[], [1]],
+        "valid": true
+      },
+      {
+        "description": "array with 2 items (valid + empty)",
+        "data": [[1], []],
+        "valid": true
+      },
+      {
+        "description": "array with 2 items (empty + empty)",
+        "data": [[], []],
+        "valid": true
+      },
+      {
+        "description": "array with 2 items (valid + valid)",
+        "data": [[1], [1]],
+        "valid": true
+      },
+      {
+        "description": "array with 3 items (empty + empty + valid)",
+        "data": [[], [], [1]],
+        "valid": true
+      },
+      {
+        "description": "array invalid item",
+        "data": [[], [], [1, 2, 3]],
+        "valid": false
+      }
+    ]
+  },
+  {
+    "description": "maxContains inside properties keyword",
+    "schema": {
+      "properties": {
+        "x": {
+          "contains": {
+            "type": "number"
+          },
+          "maxContains": 1,
+          "minContains": 0
+        },
+        "y": {
+          "contains": {
+            "type": "number"
+          },
+          "maxContains": 1,
+          "minContains": 0
+        },
+        "z": {
+          "contains": {
+            "type": "number"
+          },
+          "maxContains": 1,
+          "minContains": 0
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "object with 1 field",
+        "data": {
+          "x": [1]
+        },
+        "valid": true
+      },
+      {
+        "description": "object with 2 fields (empty + valid)",
+        "data": {
+          "x": [],
+          "y": [1]
+        },
+        "valid": true
+      },
+      {
+        "description": "object with 2 fields (valid + empty)",
+        "data": {
+          "x": [1],
+          "y": []
+        },
+        "valid": true
+      },
+      {
+        "description": "object with 2 fields (valid + valid)",
+        "data": {
+          "x": [1],
+          "y": [1]
+        },
+        "valid": true
+      },
+      {
+        "description": "object with 2 fields (empty + empty)",
+        "data": {
+          "x": [],
+          "y": []
+        },
+        "valid": true
+      },
+      {
+        "description": "object with 3 fields (empty + empty + valid)",
+        "data": {
+          "x": [],
+          "y": [],
+          "z": [1]
+        },
+        "valid": true
+      },
+      {
+        "description": "object with invalid field",
+        "data": {
+          "x": [],
+          "y": [],
+          "z": [1, 2]
+        },
+        "valid": false
+      }
+    ]
+  }
+]

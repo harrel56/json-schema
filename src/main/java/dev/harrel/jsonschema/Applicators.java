@@ -64,7 +64,7 @@ class ItemsEvaluator implements Evaluator {
             return Result.success();
         }
         List<JsonNode> array = node.asArray();
-        int prefixItemsSize = ctx.getSiblingAnnotation(Keyword.PREFIX_ITEMS, Integer.class).orElse(0);
+        int prefixItemsSize = ctx.getSiblingAnnotation(Keyword.PREFIX_ITEMS, node.getJsonPointer(), Integer.class).orElse(0);
         int size = Math.max(array.size() - prefixItemsSize, 0);
         boolean valid = array.stream()
                 .skip(prefixItemsSize)
@@ -146,7 +146,7 @@ class AdditionalItemsEvaluator implements Evaluator {
             return Result.success();
         }
         List<JsonNode> array = node.asArray();
-        Optional<Object> itemsAnnotation = ctx.getSiblingAnnotation(Keyword.ITEMS);
+        Optional<Object> itemsAnnotation = ctx.getSiblingAnnotation(Keyword.ITEMS, node.getJsonPointer());
         boolean shouldSkip = itemsAnnotation.map(Boolean.class::isInstance).orElse(false);
         if (shouldSkip) {
             return Result.success(true);
@@ -224,9 +224,10 @@ class AdditionalPropertiesEvaluator implements Evaluator {
             return Result.success();
         }
 
+        String instanceLocation = node.getJsonPointer();
         Set<String> props = new HashSet<>();
-        props.addAll(ctx.getSiblingAnnotation(Keyword.PROPERTIES, Set.class).orElse(emptySet()));
-        props.addAll(ctx.getSiblingAnnotation(Keyword.PATTERN_PROPERTIES, Set.class).orElse(emptySet()));
+        props.addAll(ctx.getSiblingAnnotation(Keyword.PROPERTIES, instanceLocation, Set.class).orElse(emptySet()));
+        props.addAll(ctx.getSiblingAnnotation(Keyword.PATTERN_PROPERTIES, instanceLocation, Set.class).orElse(emptySet()));
         Set<String> processed = new HashSet<>();
         boolean valid = true;
         for (Map.Entry<String, JsonNode> e : node.asObject().entrySet()) {

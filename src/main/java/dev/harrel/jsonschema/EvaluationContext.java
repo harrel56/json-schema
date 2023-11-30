@@ -120,14 +120,15 @@ public final class EvaluationContext {
         return unmodifiableList(errors);
     }
 
-    <T> Optional<T> getSiblingAnnotation(String sibling, Class<T> annotationType) {
-        return getSiblingAnnotation(sibling)
+    <T> Optional<T> getSiblingAnnotation(String sibling, String instanceLocation, Class<T> annotationType) {
+        return getSiblingAnnotation(sibling, instanceLocation)
                 .filter(annotationType::isInstance)
                 .map(annotationType::cast);
     }
 
-    Optional<Object> getSiblingAnnotation(String sibling) {
+    Optional<Object> getSiblingAnnotation(String sibling, String instanceLocation) {
         return annotationTree.getNode(evaluationStack.get(1)).annotations.stream()
+                .filter(item -> instanceLocation.equals(item.getInstanceLocation()))
                 .filter(item -> sibling.equals(item.getKeyword()))
                 .map(Annotation::getAnnotation)
                 .findFirst();
