@@ -41,5 +41,89 @@
         "valid": false
       }
     ]
+  },
+  {
+    "description": "minContains inside properties keyword",
+    "schema": {
+      "properties": {
+        "x": {
+          "contains": {
+            "type": "number"
+          },
+          "minContains": 2
+        },
+        "y": {
+          "contains": {
+            "type": "number"
+          },
+          "minContains": 2
+        },
+        "z": {
+          "contains": {
+            "type": "number"
+          },
+          "minContains": 2
+        }
+      }
+    },
+    "tests": [
+      {
+        "description": "object with 1 field",
+        "data": {
+          "x": [1, 2]
+        },
+        "valid": true
+      },
+      {
+        "description": "object with 2 fields (invalid + valid)",
+        "data": {
+          "x": [1],
+          "y": [1, 2]
+        },
+        "valid": false
+      },
+      {
+        "description": "object with 2 fields (valid + invalid)",
+        "data": {
+          "x": [1, 2],
+          "y": [1]
+        },
+        "valid": false
+      },
+      {
+        "description": "object with 2 fields (valid + valid)",
+        "data": {
+          "x": [1, 2],
+          "y": [1, 2]
+        },
+        "valid": true
+      },
+      {
+        "description": "object with 2 fields (invalid + invalid)",
+        "data": {
+          "x": [1],
+          "y": [1]
+        },
+        "valid": false
+      },
+      {
+        "description": "object with 3 fields (invalid + invalid + valid)",
+        "data": {
+          "x": [1],
+          "y": [1],
+          "z": [1, 2]
+        },
+        "valid": false
+      },
+      {
+        "description": "object with invalid field",
+        "data": {
+          "x": [1, 2],
+          "y": [1, 2],
+          "z": []
+        },
+        "valid": false
+      }
+    ]
   }
 ]
