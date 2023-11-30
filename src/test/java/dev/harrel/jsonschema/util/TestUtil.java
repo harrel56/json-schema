@@ -2,7 +2,6 @@ package dev.harrel.jsonschema.util;
 
 import dev.harrel.jsonschema.Annotation;
 import dev.harrel.jsonschema.Error;
-import dev.harrel.jsonschema.Draft2020SpecificationTest;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;

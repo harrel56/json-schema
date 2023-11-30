@@ -25,6 +25,10 @@ java {
     withSourcesJar()
     withJavadocJar()
     javadoc.options.addStringOption('Xdoclint:none', '-quiet')
+
+    registerFeature('format') {
+        usingSourceSet(sourceSets.main)
+    }
 }
 
 repositories {
@@ -49,6 +53,8 @@ jsonProviders.entrySet().forEach {
 }
 
 dependencies {
+    formatImplementation 'com.sanctionco.jmail:jmail:1.6.2'
+
     testImplementation 'org.eclipse.parsson:parsson:1.1.5'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.1'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'
@@ -59,4 +65,5 @@ dependencies {
 
 test {
     useJUnitPlatform()
+    jvmArgs("-XX:+EnableDynamicAgentLoading")
 }
