@@ -232,19 +232,41 @@ Customizing specific keywords behaviour can be achieved by providing custom [Eva
 Each dialect comes with its core *EvaluatorFactory* which will always be used, but additional *EvaluatorFactory* implementation can be provided on top of that.
 If you want to completely alter how schemas are validated, please refer to [custom dialects](#custom-dialects).
 
-This example shows an implementation that adds `customKeyword` keyword handling which fails validation if JSON node is not an empty array:
+This example shows an implementation that adds `containsString` keyword handling:
 ```java
+class ContainsStringEvaluator implements Evaluator {
+    /* A value which should be contained in a validated string */
+    private final String value;
+
+    ContainsStringEvaluator(String value) {
+        this.value = value;
+    }
+    
+    @Override
+    public Evaluator.Result evaluate(EvaluationContext ctx, JsonNode node) {
+        /* To stay consistent with other keywords, types not applicable to this keyword should succeed */
+        if (node.isString()) {
+            return Evaluator.Result.success();
+        }
+        
+        /* Actual validation logic */
+        if (node.asString().contains(value)) {
+            return Evaluator.Result.success();
+        } else {
+            return Evaluator.Result.failure(String.format("\"%s\" does not contain required value [%s]", node.asString(), value));
+        }
+    }
+}
+
 class CustomEvaluatorFactory implements EvaluatorFactory {
     @Override
-    public Optional<Evaluator> create(SchemaParsingContext ctx, String fieldName, JsonNode node) {
-        if ("customKeyword".equals(fieldName)) {
-            return Optional.of((evaluationContext, instanceNode) -> {
-                if (instanceNode.isArray() && instanceNode.asArray().isEmpty()) {
-                    return Evaluator.Result.success(); // Optionally, you could also pass annotation
-                } else {
-                    return Evaluator.Result.failure(); // Optionally, you could also pass error message
-                }
-            });
+    public Optional<Evaluator> create(SchemaParsingContext ctx, String fieldName, JsonNode schemaNode) {
+        /* Check if fieldName equals the keyword value you want to support.
+         * Additionally, check if the node type of this keyword field is a string - this is the only type which makes sense in this case.
+         * It may be tempting to fail if the keyword field type is different than string,
+         * but it's strongly recommended to just return Optional.empty() in such case. */
+        if ("containsString".equals(fieldName) && schemaNode.isString()) {
+            return Optional.of(new ContainsStringEvaluator(schemaNode.asString()));
         }
         return Optional.empty();
     }
@@ -254,6 +276,28 @@ class CustomEvaluatorFactory implements EvaluatorFactory {
 Then it just needs to be attached to `ValidatorFactory`:
 ```java
 new ValidatorFactory().withEvaluatorFactory(new CustomEvaluatorFactory());
+```
+
+The implementation logic consist of two parts:
+1. **Schema parsing** - running `EvaluatorFactory.create(...)` logic and constructing concrete `Evaluator` instance. You probably want to do as much computation heavy processing in this part.
+2. **Validation** - running `Evaluator.evaluate(...)`.
+
+Please ensure that your `EvaluatorFactory` and `Evaluator` implementations correctly handle cases when node types are different than expected.
+This is because `EvaluatorFactory.create(...)` will be called for all schema object properties (nested too). So for example this may be intended usage:
+```js
+{
+  "containsString": "hello"
+}
+```
+but the `EvaluatorFactory` will be called also in this case:
+```js
+{
+  "properties": {
+    "containsString": {
+      "type": "null"
+    }
+  }
+}
 ```
 
 ### Custom dialects
