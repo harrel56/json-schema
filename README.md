@@ -16,6 +16,10 @@ Java library implementing [JSON schema specification](https://json-schema.org/sp
 - multiple JSON providers to choose from ([supported JSON libraries](#json-providers))
 - and no additional dependencies on top of that.
 
+Check how it compares with other implementations:
+- [Bowtie](https://bowtie.report/#/implementations/java-json-schema) - specification compliance (only mandatory behaviour),
+- [Creek's benchmark](https://www.creekservice.org/json-schema-validation-comparison/performance) - benchmark for JVM based implementations.
+
 ## Demo
 You can check out how it works [here](https://harrel.dev/json-schema).
 ## Installation
@@ -69,9 +73,7 @@ Supported providers:
 - `jakarta.json:jakarta.json-api`,
 - `org.json:json`,
 - `new.minidev:json-smart`,
-- `org.codehouse.jettison:jettison`,
-- `org.apache.tapestry:tapestry-json` - planned,
-- `javax.json:javax.json-api` - planned.
+- `org.codehouse.jettison:jettison`.
 
 The default provider is `com.fasterxml.jackson.core:jackson-databind`, so if you are not planning on changing the `ValidatorFactory` configuration, **you need to have this dependency present in your project**.
 
