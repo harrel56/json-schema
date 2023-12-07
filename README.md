@@ -8,8 +8,8 @@
 Java library implementing [JSON schema specification](https://json-schema.org/specification.html):
 - compatible with Java 8,
 - support for the newest [specification versions](#dialects) [![Supported spec](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie-json-schema.github.io%2Fbowtie%2Fbadges%2Fjava-dev.harrel.json-schema%2Fsupported_versions.json)](https://bowtie.report/#/implementations/java-json-schema):
-  - Draft 2019-09 [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie-json-schema.github.io%2Fbowtie%2Fbadges%2Fjava-dev.harrel.json-schema%2Fcompliance%2FDraft_2019-09.json)](https://bowtie.report/#/implementations/java-json-schema),
-  - Draft 2020-12 [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie-json-schema.github.io%2Fbowtie%2Fbadges%2Fjava-dev.harrel.json-schema%2Fcompliance%2FDraft_2020-12.json)](https://bowtie.report/#/implementations/java-json-schema),
+  - Draft 2020-12 [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie-json-schema.github.io%2Fbowtie%2Fbadges%2Fjava-dev.harrel.json-schema%2Fcompliance%2FDraft_2020-12.json)](https://bowtie.report/#/dialects/draft2020-12),
+  - Draft 2019-09 [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie-json-schema.github.io%2Fbowtie%2Fbadges%2Fjava-dev.harrel.json-schema%2Fcompliance%2FDraft_2019-09.json)](https://bowtie.report/#/dialects/draft2019-09),
 - support for [custom keywords](#adding-custom-keywords),
 - support for annotation collection,
 - support for [format validation](#format-validation) (for a price of one additional dependency 😉),
@@ -17,7 +17,7 @@ Java library implementing [JSON schema specification](https://json-schema.org/sp
 - and no additional dependencies on top of that.
 
 Check how it compares with other implementations:
-- [Bowtie](https://bowtie.report/#/implementations/java-json-schema) - specification compliance (only mandatory behaviour),
+- [Bowtie](https://bowtie.report) - specification compliance (only mandatory behaviour),
 - [Creek's benchmark](https://www.creekservice.org/json-schema-validation-comparison/performance) - benchmark for JVM based implementations.
 
 ## Demo
