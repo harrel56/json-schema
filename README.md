@@ -247,7 +247,7 @@ class ContainsStringEvaluator implements Evaluator {
     @Override
     public Evaluator.Result evaluate(EvaluationContext ctx, JsonNode node) {
         /* To stay consistent with other keywords, types not applicable to this keyword should succeed */
-        if (node.isString()) {
+        if (!node.isString()) {
             return Evaluator.Result.success();
         }
         
