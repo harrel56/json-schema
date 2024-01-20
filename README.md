@@ -280,6 +280,27 @@ Then it just needs to be attached to `ValidatorFactory`:
 new ValidatorFactory().withEvaluatorFactory(new CustomEvaluatorFactory());
 ```
 
+And if you have more than one custom evaluator factory, you should use:
+```java
+new ValidatorFactory().withEvaluatorFactory(EvaluatorFactory.compose(new CustomEvaluatorFactory1(), new CustomEvaluatorFactory2()));
+```
+
+Having such configuration as above you would have following list of evaluator factories:
+1. `CustomEvaluatorFactory1`,
+2. `CustomEvaluatorFactory2`,
+3. `Draft2020EvaluatorFactory` (the core evaluator factory provided by `Dialect` object, might be different depending on which dialect is set).
+
+The ordering of factories is important as it will only query the next factory only if the previous one returned `Optional.empty()`.
+This allows for overriding keywords logic easily.
+
+*E.g. if `CustomEvaluatorFactory1` returns an evaluator for `type` keyword, the `type` evaluator from `Draft2020EvaluatorFactory` would not be provided.*
+
+Each *keyword* & *keyword-value* pair can have 0 or 1 evaluators attached.
+If you want multiple evaluators attached to a single *keyword* & *keyword-value* pair, 
+you would need to simulate such behavior by encapsulating multiple evaluators logic in just one evaluator instance.
+
+#### Difference between schema parsing and validation
+
 The implementation logic consist of two parts:
 1. **Schema parsing** - running `EvaluatorFactory.create(...)` logic and constructing concrete `Evaluator` instance. You probably want to do as much computation heavy processing in this part.
 2. **Validation** - running `Evaluator.evaluate(...)`.
