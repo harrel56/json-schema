@@ -38,7 +38,7 @@ public interface EvaluatorFactory {
     /**
      * Builder for constructing {@link EvaluatorFactory} instances which is an alternative for providing a custom implementation.
      * It is recommended when the {@code Evaluator} creation logic is simple and depends only on keyword name.
-     * To create factory which supports only "custom" and "type" keywords, you can write following code:
+     * To create factory which supports only "custom" and "type" keywords, you can write the following code:
      * <pre>
      *     new EvaluatorFactory.Builder()
      *          .withKeyword("custom", CustomEvaluator::new)
