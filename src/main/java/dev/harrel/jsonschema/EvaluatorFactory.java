@@ -59,7 +59,7 @@ public interface EvaluatorFactory {
          * @return this
          */
         public Builder withKeyword(String keyword, BiFunction<SchemaParsingContext, JsonNode, Evaluator> evaluatorProvider) {
-            providers.put(keyword, evaluatorProvider);
+            providers.put(Objects.requireNonNull(keyword), Objects.requireNonNull(evaluatorProvider));
             return this;
         }
 
@@ -67,18 +67,20 @@ public interface EvaluatorFactory {
          * @see EvaluatorFactory.Builder#withKeyword(String, BiFunction)
          */
         public Builder withKeyword(String keyword, Function<JsonNode, Evaluator> evaluatorProvider) {
-            providers.put(keyword, (ctx, jsonNode) -> evaluatorProvider.apply(jsonNode));
-            return this;
+            return withKeyword(keyword, (ctx, jsonNode) -> evaluatorProvider.apply(jsonNode));
         }
 
         /**
          * @see EvaluatorFactory.Builder#withKeyword(String, BiFunction)
          */
         public Builder withKeyword(String keyword, Supplier<Evaluator> evaluatorProvider) {
-            providers.put(keyword, (ctx, jsonNode) -> evaluatorProvider.get());
-            return this;
+            return withKeyword(keyword, (ctx, jsonNode) -> evaluatorProvider.get());
         }
 
+        /**
+         * Creates factory instance.
+         * @return factory instance
+         */
         public EvaluatorFactory build() {
             return new MapEvaluatorFactory(providers);
         }
