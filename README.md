@@ -234,14 +234,18 @@ Customizing specific keywords behaviour can be achieved by providing custom [Eva
 Each dialect comes with its core *EvaluatorFactory* which will always be used, but additional *EvaluatorFactory* implementation can be provided on top of that.
 If you want to completely alter how schemas are validated, please refer to [custom dialects](#custom-dialects).
 
-This example shows an implementation that adds `containsString` keyword handling:
+First step is to implement `Evaluator` interface:
 ```java
 class ContainsStringEvaluator implements Evaluator {
     /* A value which should be contained in a validated string */
     private final String value;
 
-    ContainsStringEvaluator(String value) {
-        this.value = value;
+    ContainsStringEvaluator(JsonNode node) {
+        /* Other types are not supported - this exception will be handled appropriately by factory returned by the builder */
+        if (!node.isString()) {
+            throw new IllegalArgumentException();
+        }
+        this.value = node.asString();
     }
     
     @Override
@@ -259,7 +263,18 @@ class ContainsStringEvaluator implements Evaluator {
         }
     }
 }
+```
 
+For the simplest cases (like this one) it is recommended to use [EvaluatorFactory.Builder](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/EvaluatorFactory.Builder.html).
+This example shows how to create an evaluator factory using builder:
+```java
+EvaluatorFactory factory = new EvaluatorFactory.Builder()
+    .withKeyword("containsString", ContainsStringEvaluator::new)
+    .build();
+```
+
+For more complex cases when you need more control over creation of evaluators, you should provide your own factory implementation:
+```java
 class CustomEvaluatorFactory implements EvaluatorFactory {
     @Override
     public Optional<Evaluator> create(SchemaParsingContext ctx, String fieldName, JsonNode schemaNode) {
@@ -268,19 +283,19 @@ class CustomEvaluatorFactory implements EvaluatorFactory {
          * It may be tempting to fail if the keyword field type is different than string,
          * but it's strongly recommended to just return Optional.empty() in such case. */
         if ("containsString".equals(fieldName) && schemaNode.isString()) {
-            return Optional.of(new ContainsStringEvaluator(schemaNode.asString()));
+            return Optional.of(new ContainsStringEvaluator(schemaNode));
         }
         return Optional.empty();
     }
 }
 ```
 
-Then it just needs to be attached to `ValidatorFactory`:
+Then the factory just needs to be attached to `ValidatorFactory`:
 ```java
-new ValidatorFactory().withEvaluatorFactory(new CustomEvaluatorFactory());
+new ValidatorFactory().withEvaluatorFactory(factory);
 ```
 
-And if you have more than one custom evaluator factory, you should use:
+And if you have more than one custom evaluator factory, you should use [compose](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/EvaluatorFactory.html#compose(dev.harrel.jsonschema.EvaluatorFactory...)) function:
 ```java
 new ValidatorFactory().withEvaluatorFactory(EvaluatorFactory.compose(new CustomEvaluatorFactory1(), new CustomEvaluatorFactory2()));
 ```
