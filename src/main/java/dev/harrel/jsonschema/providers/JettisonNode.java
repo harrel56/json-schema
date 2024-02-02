@@ -1,6 +1,7 @@
 package dev.harrel.jsonschema.providers;
 
 import dev.harrel.jsonschema.JsonNode;
+import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -11,21 +12,19 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 
-public final class JettisonNode implements JsonNode {
-    private final Factory factory;
+public final class JettisonNode extends SimpleJsonNode {
     private final Object node;
     private final String jsonPointer;
     private final SimpleType nodeType;
 
-    private JettisonNode(Factory factory, Object node, String jsonPointer) {
-        this.factory = Objects.requireNonNull(factory);
+    private JettisonNode(Object node, String jsonPointer) {
         this.node = Objects.requireNonNull(node);
         this.jsonPointer = Objects.requireNonNull(jsonPointer);
-        this.nodeType = factory.computeNodeType(node);
+        this.nodeType = computeNodeType(node);
     }
 
-    public JettisonNode(Factory factory, Object node) {
-        this(factory, node, "");
+    public JettisonNode(Object node) {
+        this(node, "");
     }
 
     @Override
@@ -45,11 +44,7 @@ public final class JettisonNode implements JsonNode {
 
     @Override
     public String asString() {
-        if (factory.isNull(node)) {
-            return "null";
-        } else {
-            return node.toString();
-        }
+        return Objects.toString(isNull() ? null : node);
     }
 
     @Override
@@ -75,7 +70,7 @@ public final class JettisonNode implements JsonNode {
         List<JsonNode> elements = new ArrayList<>();
         JSONArray arrayNode = (JSONArray) node;
         for (int i = 0; i < arrayNode.length(); ++i) {
-            elements.add(new JettisonNode(factory, arrayNode.opt(i), jsonPointer + "/" + elements.size()));
+            elements.add(new JettisonNode(arrayNode.opt(i), jsonPointer + "/" + elements.size()));
         }
         return elements;
     }
@@ -87,45 +82,43 @@ public final class JettisonNode implements JsonNode {
         JSONObject jsonObject = (JSONObject) node;
         for (Object object : jsonObject.toMap().entrySet()) {
             Map.Entry<Object, Object> entry = (Map.Entry<Object, Object>) object;
-            map.put(entry.getKey().toString(), new JettisonNode(factory, entry.getValue(), jsonPointer + "/" + JsonNode.encodeJsonPointer(entry.getKey().toString())));
+            map.put(entry.getKey().toString(), new JettisonNode(entry.getValue(), jsonPointer + "/" + JsonNode.encodeJsonPointer(entry.getKey().toString())));
         }
         return map;
     }
 
-    public static final class Factory extends SimpleJsonNodeFactory {
+    @Override
+    boolean isNull(Object node) {
+        return JSONObject.NULL.equals(node) || JSONObject.EXPLICIT_NULL.equals(node);
+    }
+
+    @Override
+    boolean isArray(Object node) {
+        return node instanceof JSONArray;
+    }
+
+    @Override
+    boolean isObject(Object node) {
+        return node instanceof JSONObject;
+    }
+
+    public static final class Factory implements JsonNodeFactory {
         @Override
         public JsonNode wrap(Object node) {
-            if (isLiteral(node) || isArray(node) || isObject(node)) {
-                return new JettisonNode(this, node);
-            } else if (node instanceof JettisonNode) {
+            if (node instanceof JettisonNode) {
                 return (JettisonNode) node;
             } else {
-                throw new IllegalArgumentException("Cannot wrap object which is not an instance of org.codehaus.jettison.json.JSONObject, org.codehaus.jettison.json.JSONArray or simple literal");
+                return new JettisonNode(node);
             }
         }
 
         @Override
         public JsonNode create(String rawJson) {
             try {
-                return new JettisonNode(this, new BigDecimalTokener(rawJson).nextValue());
+                return new JettisonNode(new BigDecimalTokener(rawJson).nextValue());
             } catch (JSONException e) {
                 throw new IllegalArgumentException(e);
             }
-        }
-
-        @Override
-        boolean isNull(Object node) {
-            return JSONObject.NULL.equals(node) || JSONObject.EXPLICIT_NULL.equals(node);
-        }
-
-        @Override
-        boolean isArray(Object node) {
-            return node instanceof JSONArray;
-        }
-
-        @Override
-        boolean isObject(Object node) {
-            return node instanceof JSONObject;
         }
     }
 

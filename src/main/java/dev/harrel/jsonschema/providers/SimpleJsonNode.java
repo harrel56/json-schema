@@ -1,16 +1,12 @@
 package dev.harrel.jsonschema.providers;
 
-import dev.harrel.jsonschema.JsonNodeFactory;
+import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.SimpleType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-abstract class SimpleJsonNodeFactory implements JsonNodeFactory {
-    boolean isLiteral(Object node) {
-        return isNull(node) || isBoolean(node) || isString(node) || isInteger(node) || isDecimal(node);
-    }
-
+abstract class SimpleJsonNode implements JsonNode {
     boolean isBoolean(Object node) {
         return node instanceof Boolean;
     }

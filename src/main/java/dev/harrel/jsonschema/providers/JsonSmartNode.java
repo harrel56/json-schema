@@ -1,6 +1,7 @@
 package dev.harrel.jsonschema.providers;
 
 import dev.harrel.jsonschema.JsonNode;
+import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
@@ -13,21 +14,19 @@ import java.util.*;
 
 import static net.minidev.json.parser.JSONParser.MODE_JSON_SIMPLE;
 
-public final class JsonSmartNode implements JsonNode {
-    private final Factory factory;
+public final class JsonSmartNode extends SimpleJsonNode {
     private final Object node;
     private final String jsonPointer;
     private final SimpleType nodeType;
 
-    private JsonSmartNode(Factory factory, Object node, String jsonPointer) {
-        this.factory = Objects.requireNonNull(factory);
+    private JsonSmartNode(Object node, String jsonPointer) {
         this.node = node;
         this.jsonPointer = Objects.requireNonNull(jsonPointer);
-        this.nodeType = factory.computeNodeType(this.node);
+        this.nodeType = computeNodeType(node);
     }
 
-    public JsonSmartNode(Factory factory, Object node) {
-        this(factory, node, "");
+    public JsonSmartNode(Object node) {
+        this(node, "");
     }
 
     @Override
@@ -79,7 +78,7 @@ public final class JsonSmartNode implements JsonNode {
         JSONArray jsonArray = (JSONArray) node;
         List<JsonNode> result = new ArrayList<>(jsonArray.size());
         for (int i = 0; i < jsonArray.size(); i++) {
-            result.add(new JsonSmartNode(factory, jsonArray.get(i), jsonPointer + "/" + i));
+            result.add(new JsonSmartNode(jsonArray.get(i), jsonPointer + "/" + i));
         }
         return result;
     }
@@ -89,12 +88,27 @@ public final class JsonSmartNode implements JsonNode {
         Set<Map.Entry<String, Object>> objectMap = ((JSONObject) node).entrySet();
         Map<String, JsonNode> result = new HashMap<>(objectMap.size());
         for (Map.Entry<String, Object> entry : objectMap) {
-            result.put(entry.getKey(), new JsonSmartNode(factory, entry.getValue(), jsonPointer + "/" + JsonNode.encodeJsonPointer(entry.getKey())));
+            result.put(entry.getKey(), new JsonSmartNode(entry.getValue(), jsonPointer + "/" + JsonNode.encodeJsonPointer(entry.getKey())));
         }
         return result;
     }
 
-    public static final class Factory extends SimpleJsonNodeFactory {
+    @Override
+    boolean isNull(Object node) {
+        return node == null;
+    }
+
+    @Override
+    boolean isArray(Object node) {
+        return node instanceof JSONArray;
+    }
+
+    @Override
+    boolean isObject(Object node) {
+        return node instanceof JSONObject;
+    }
+
+    public static final class Factory implements JsonNodeFactory {
         private final JSONParser parser;
 
         public Factory() {
@@ -107,37 +121,20 @@ public final class JsonSmartNode implements JsonNode {
 
         @Override
         public JsonSmartNode wrap(Object node) {
-            if (isLiteral(node) || isArray(node) || isObject(node)) {
-                return new JsonSmartNode(this, node);
-            } else if (node instanceof JsonSmartNode) {
+            if (node instanceof JsonSmartNode) {
                 return (JsonSmartNode) node;
             } else {
-                throw new IllegalArgumentException("Cannot wrap object which is not an instance of net.minidev.json.JSONObject, net.minidev.json.JSONArray or simple literal");
+                return new JsonSmartNode(node);
             }
         }
 
         @Override
         public JsonSmartNode create(String rawJson) {
             try {
-                return new JsonSmartNode(this, parser.parse(rawJson));
+                return new JsonSmartNode(parser.parse(rawJson));
             } catch (ParseException e) {
                 throw new IllegalArgumentException(e);
             }
-        }
-
-        @Override
-        boolean isNull(Object node) {
-            return node == null;
-        }
-
-        @Override
-        boolean isArray(Object node) {
-            return node instanceof JSONArray;
-        }
-
-        @Override
-        boolean isObject(Object node) {
-            return node instanceof JSONObject;
         }
     }
 }

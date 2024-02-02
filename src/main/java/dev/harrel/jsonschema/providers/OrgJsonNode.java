@@ -1,6 +1,7 @@
 package dev.harrel.jsonschema.providers;
 
 import dev.harrel.jsonschema.JsonNode;
+import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -10,21 +11,19 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 
-public final class OrgJsonNode implements JsonNode {
-    private final Factory factory;
+public final class OrgJsonNode extends SimpleJsonNode {
     private final Object node;
     private final String jsonPointer;
     private final SimpleType nodeType;
 
-    private OrgJsonNode(Factory factory, Object node, String jsonPointer) {
-        this.factory = Objects.requireNonNull(factory);
+    private OrgJsonNode(Object node, String jsonPointer) {
         this.node = Objects.requireNonNull(node);
         this.jsonPointer = Objects.requireNonNull(jsonPointer);
-        this.nodeType = factory.computeNodeType(node);
+        this.nodeType = computeNodeType(node);
     }
 
-    public OrgJsonNode(Factory factory, Object node) {
-        this(factory, node, "");
+    public OrgJsonNode(Object node) {
+        this(node, "");
     }
 
     @Override
@@ -75,7 +74,7 @@ public final class OrgJsonNode implements JsonNode {
     public List<JsonNode> asArray() {
         List<JsonNode> elements = new ArrayList<>();
         for (Object o : (JSONArray) node) {
-            elements.add(new OrgJsonNode(factory, o, jsonPointer + "/" + elements.size()));
+            elements.add(new OrgJsonNode(o, jsonPointer + "/" + elements.size()));
         }
         return elements;
     }
@@ -85,41 +84,39 @@ public final class OrgJsonNode implements JsonNode {
         Map<String, JsonNode> map = new HashMap<>();
         JSONObject jsonObject = (JSONObject) node;
         for (String key : jsonObject.keySet()) {
-            map.put(key, new OrgJsonNode(factory, jsonObject.get(key), jsonPointer + "/" + JsonNode.encodeJsonPointer(key)));
+            map.put(key, new OrgJsonNode(jsonObject.get(key), jsonPointer + "/" + JsonNode.encodeJsonPointer(key)));
         }
         return map;
     }
 
-    public static final class Factory extends SimpleJsonNodeFactory {
+    @Override
+    boolean isNull(Object node) {
+        return JSONObject.NULL.equals(node);
+    }
+
+    @Override
+    boolean isArray(Object node) {
+        return node instanceof JSONArray;
+    }
+
+    @Override
+    boolean isObject(Object node) {
+        return node instanceof JSONObject;
+    }
+
+    public static final class Factory implements JsonNodeFactory {
         @Override
         public JsonNode wrap(Object node) {
-            if (isLiteral(node) || isArray(node) || isObject(node)) {
-                return new OrgJsonNode(this, node);
-            } else if (node instanceof OrgJsonNode) {
+             if (node instanceof OrgJsonNode) {
                 return (OrgJsonNode) node;
             } else {
-                throw new IllegalArgumentException("Cannot wrap object which is not an instance of org.json.JSONObject, org.json.JSONArray or simple literal");
+                 return new OrgJsonNode(node);
             }
         }
 
         @Override
         public JsonNode create(String rawJson) {
-            return new OrgJsonNode(this, new JSONTokener(rawJson).nextValue());
-        }
-
-        @Override
-        boolean isNull(Object node) {
-            return JSONObject.NULL.equals(node);
-        }
-
-        @Override
-        boolean isArray(Object node) {
-            return node instanceof JSONArray;
-        }
-
-        @Override
-        boolean isObject(Object node) {
-            return node instanceof JSONObject;
+            return new OrgJsonNode(new JSONTokener(rawJson).nextValue());
         }
     }
 }
