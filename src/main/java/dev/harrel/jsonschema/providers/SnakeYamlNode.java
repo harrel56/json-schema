@@ -38,8 +38,9 @@ public final class SnakeYamlNode extends SimpleJsonNode {
 
     @Override
     public List<JsonNode> asArray() {
-        List<JsonNode> elements = new ArrayList<>();
-        for (Object o : (List<?>) node) {
+        List<?> list = (List<?>) node;
+        List<JsonNode> elements = new ArrayList<>(list.size());
+        for (Object o : list) {
             elements.add(new SnakeYamlNode(o, jsonPointer + "/" + elements.size()));
         }
         return elements;
