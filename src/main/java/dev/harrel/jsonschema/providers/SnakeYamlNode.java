@@ -71,6 +71,16 @@ public final class SnakeYamlNode extends SimpleJsonNode {
     }
 
     public static final class Factory implements JsonNodeFactory {
+        private final Yaml yaml;
+
+        public Factory() {
+            this(new Yaml(new BigDecimalConstructor()));
+        }
+
+        public Factory(Yaml yaml) {
+            this.yaml = yaml;
+        }
+
         @Override
         public JsonNode wrap(Object node) {
             if (node instanceof SnakeYamlNode) {
@@ -82,20 +92,20 @@ public final class SnakeYamlNode extends SimpleJsonNode {
 
         @Override
         public JsonNode create(String rawJson) {
-            class CustomConstructor extends SafeConstructor {
-                public CustomConstructor() {
-                    super(new LoaderOptions());
-                    AbstractConstruct constr = new AbstractConstruct() {
-                        @Override
-                        public Object construct(Node node) {
-                            ScalarNode scalar = (ScalarNode) node;
-                            return new BigDecimal(scalar.getValue());
-                        }
-                    };
-                    this.yamlConstructors.put(Tag.FLOAT, constr);
+            return new SnakeYamlNode(this, yaml.load(rawJson));
+        }
+    }
+
+    private static final class BigDecimalConstructor extends SafeConstructor {
+        private BigDecimalConstructor() {
+            super(new LoaderOptions());
+            AbstractConstruct constr = new AbstractConstruct() {
+                @Override
+                public Object construct(Node node) {
+                    return new BigDecimal(((ScalarNode) node).getValue());
                 }
-            }
-            return new SnakeYamlNode(this, new Yaml(new CustomConstructor()).load(rawJson));
+            };
+            this.yamlConstructors.put(Tag.FLOAT, constr);
         }
     }
 }
