@@ -5,8 +5,53 @@ import dev.harrel.jsonschema.SimpleType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Objects;
 
 abstract class SimpleJsonNode implements JsonNode {
+    private final SimpleType nodeType;
+    final Object node;
+    final String jsonPointer;
+
+    SimpleJsonNode(Object node, String jsonPointer) {
+        this.nodeType = computeNodeType(node);
+        this.node = node;
+        this.jsonPointer = Objects.requireNonNull(jsonPointer);
+    }
+
+    @Override
+    public String getJsonPointer() {
+        return jsonPointer;
+    }
+
+    @Override
+    public SimpleType getNodeType() {
+        return nodeType;
+    }
+
+    @Override
+    public BigInteger asInteger() {
+        if (node instanceof BigInteger) {
+            return (BigInteger) node;
+        } else if (node instanceof BigDecimal) {
+            return ((BigDecimal) node).toBigInteger();
+        } else {
+            return BigInteger.valueOf(((Number) node).longValue());
+        }
+    }
+
+    @Override
+    public BigDecimal asNumber() {
+        if (node instanceof BigDecimal) {
+            return (BigDecimal) node;
+        } else if (node instanceof BigInteger) {
+            return new BigDecimal((BigInteger) node);
+        } else if (node instanceof Double) {
+            return BigDecimal.valueOf((Double) node);
+        } else {
+            return BigDecimal.valueOf(((Number) node).longValue());
+        }
+    }
+
     boolean isBoolean(Object node) {
         return node instanceof Boolean;
     }

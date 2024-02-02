@@ -2,38 +2,20 @@ package dev.harrel.jsonschema.providers;
 
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.JsonNodeFactory;
-import dev.harrel.jsonschema.SimpleType;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.*;
 
 public final class OrgJsonNode extends SimpleJsonNode {
-    private final Object node;
-    private final String jsonPointer;
-    private final SimpleType nodeType;
 
     private OrgJsonNode(Object node, String jsonPointer) {
-        this.node = Objects.requireNonNull(node);
-        this.jsonPointer = Objects.requireNonNull(jsonPointer);
-        this.nodeType = computeNodeType(node);
+        super(Objects.requireNonNull(node), jsonPointer);
     }
 
     public OrgJsonNode(Object node) {
         this(node, "");
-    }
-
-    @Override
-    public String getJsonPointer() {
-        return jsonPointer;
-    }
-
-    @Override
-    public SimpleType getNodeType() {
-        return nodeType;
     }
 
     @Override
@@ -44,30 +26,6 @@ public final class OrgJsonNode extends SimpleJsonNode {
     @Override
     public String asString() {
         return node.toString();
-    }
-
-    @Override
-    public BigInteger asInteger() {
-        if (node instanceof BigInteger) {
-            return (BigInteger) node;
-        } else if (node instanceof BigDecimal) {
-            return ((BigDecimal) node).toBigInteger();
-        } else {
-            return BigInteger.valueOf(((Number) node).longValue());
-        }
-    }
-
-    @Override
-    public BigDecimal asNumber() {
-        if (node instanceof BigDecimal) {
-            return (BigDecimal) node;
-        } else if (node instanceof BigInteger) {
-            return new BigDecimal((BigInteger) node);
-        } else if (node instanceof Double) {
-            return BigDecimal.valueOf((Double) node);
-        } else {
-            return BigDecimal.valueOf(((Number) node).longValue());
-        }
     }
 
     @Override
@@ -107,10 +65,10 @@ public final class OrgJsonNode extends SimpleJsonNode {
     public static final class Factory implements JsonNodeFactory {
         @Override
         public JsonNode wrap(Object node) {
-             if (node instanceof OrgJsonNode) {
+            if (node instanceof OrgJsonNode) {
                 return (OrgJsonNode) node;
             } else {
-                 return new OrgJsonNode(node);
+                return new OrgJsonNode(node);
             }
         }
 

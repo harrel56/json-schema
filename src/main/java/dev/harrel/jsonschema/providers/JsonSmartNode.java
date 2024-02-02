@@ -2,41 +2,23 @@ package dev.harrel.jsonschema.providers;
 
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.JsonNodeFactory;
-import dev.harrel.jsonschema.SimpleType;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.*;
 
 import static net.minidev.json.parser.JSONParser.MODE_JSON_SIMPLE;
 
 public final class JsonSmartNode extends SimpleJsonNode {
-    private final Object node;
-    private final String jsonPointer;
-    private final SimpleType nodeType;
 
     private JsonSmartNode(Object node, String jsonPointer) {
-        this.node = node;
-        this.jsonPointer = Objects.requireNonNull(jsonPointer);
-        this.nodeType = computeNodeType(node);
+        super(node, jsonPointer);
     }
 
     public JsonSmartNode(Object node) {
         this(node, "");
-    }
-
-    @Override
-    public String getJsonPointer() {
-        return jsonPointer;
-    }
-
-    @Override
-    public SimpleType getNodeType() {
-        return nodeType;
     }
 
     @Override
@@ -47,30 +29,6 @@ public final class JsonSmartNode extends SimpleJsonNode {
     @Override
     public String asString() {
         return String.valueOf(node);
-    }
-
-    @Override
-    public BigInteger asInteger() {
-        if (node instanceof BigInteger) {
-            return (BigInteger) node;
-        } else if (node instanceof BigDecimal) {
-            return ((BigDecimal) node).toBigInteger();
-        } else {
-            return BigInteger.valueOf(((Number) node).longValue());
-        }
-    }
-
-    @Override
-    public BigDecimal asNumber() {
-        if (node instanceof BigDecimal) {
-            return (BigDecimal) node;
-        } else if (node instanceof BigInteger) {
-            return new BigDecimal((BigInteger) node);
-        } else if (node instanceof Double) {
-            return BigDecimal.valueOf((Double) node);
-        } else {
-            return BigDecimal.valueOf(((Number) node).longValue());
-        }
     }
 
     @Override
