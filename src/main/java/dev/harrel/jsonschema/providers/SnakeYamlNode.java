@@ -85,6 +85,7 @@ public final class SnakeYamlNode implements JsonNode {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Map<String, JsonNode> asObject() {
         Map<String, JsonNode> map = new HashMap<>();
         for (Map.Entry<String, ?> entry : ((Map<String, ?>) node).entrySet()) {
