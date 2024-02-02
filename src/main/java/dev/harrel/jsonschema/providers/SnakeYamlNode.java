@@ -92,7 +92,7 @@ public final class SnakeYamlNode extends SimpleJsonNode {
 
         @Override
         public JsonNode create(String rawJson) {
-            return new SnakeYamlNode(this, yaml.load(rawJson));
+            return new SnakeYamlNode(yaml.load(rawJson));
         }
     }
 
