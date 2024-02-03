@@ -7,6 +7,10 @@ on:
 jobs:
   fetch-changes:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout test suite
         uses: actions/checkout@v4
@@ -35,12 +39,8 @@ jobs:
           rsync -r test-suite/tests json-schema/src/test/resources/suite
 
       - name: Commit changes
-        uses: EndBug/add-and-commit@v9
+        uses: EndBug/add-and-commit@v9.1.4
         with:
           cwd: json-schema
           new_branch: 'chore/update-test-suite'
           message: 'chore(gh-action): update official test suite from json-schema-org/JSON-Schema-Test-Suite'
-
-      - run: |
-          cd json-schema
-          tree
