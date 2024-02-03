@@ -38,7 +38,7 @@ jobs:
         uses: EndBug/add-and-commit@v9
         with:
           cwd: json-schema
-          branch: 'chore/update-test-suite'
+          new_branch: 'chore/update-test-suite'
           message: 'chore(gh-action): update official test suite from json-schema-org/JSON-Schema-Test-Suite'
 
       - run: |
