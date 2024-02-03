@@ -48,3 +48,5 @@ jobs:
           cwd: json-schema
           new_branch: ${{ env.BRANCH_NAME }}
           message: 'chore(gh-action): update official test suite from json-schema-org/JSON-Schema-Test-Suite'
+
+      - run: yq --help
