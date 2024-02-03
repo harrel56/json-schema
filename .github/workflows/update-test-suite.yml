@@ -8,5 +8,16 @@ jobs:
   fetch-changes:
     runs-on: ubuntu-latest
     steps:
-      - name: Git checkout
+      - name: Checkout test suite
         uses: actions/checkout@v4
+        with:
+          repository: json-schema-org/JSON-Schema-Test-Suite
+          path: test-suite
+          sparse-checkout: |
+            remotes
+            tests
+      - name: Checkout json-schema
+        uses: actions/checkout@v4
+        with:
+          path: json-schema
+      - run: tree
