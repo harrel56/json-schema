@@ -15,9 +15,12 @@ jobs:
           path: test-suite
           sparse-checkout: |
             remotes
-            tests
+            tests/draft2019-09
+            tests/draft2020-12
       - name: Checkout json-schema
         uses: actions/checkout@v4
         with:
           path: json-schema
-      - run: tree
+      - run: |
+          cd test-suite
+          tree
