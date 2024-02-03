@@ -1,0 +1,12 @@
+name: update-test-suite
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  fetch-changes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v4
