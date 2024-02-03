@@ -17,10 +17,30 @@ jobs:
             remotes
             tests/draft2019-09
             tests/draft2020-12
+
+      - name: Remove unused draft versions
+        run: |
+          rm -rf test-suite/remotes/draft6
+          rm -rf test-suite/remotes/draft7
+          rm -rf test-suite/remotes/draft-next
+
       - name: Checkout json-schema
         uses: actions/checkout@v4
         with:
           path: json-schema
+
+      - name: Copy new test suite
+        run: |
+          rsync -r test-suite/remotes json-schema/src/test/resources/suite
+          rsync -r test-suite/tests json-schema/src/test/resources/suite
+
+      - name: Commit changes
+        uses: EndBug/add-and-commit@v9
+        with:
+          cwd: json-schema
+          branch: 'chore/update-test-suite'
+          message: 'chore(gh-action): update official test suite from json-schema-org/JSON-Schema-Test-Suite'
+
       - run: |
-          cd test-suite
+          cd json-schema
           tree
