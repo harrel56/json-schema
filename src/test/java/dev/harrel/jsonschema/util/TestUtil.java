@@ -18,10 +18,10 @@ public class TestUtil {
     }
 
     public static void assertError(Error error,
-                            String evaluationPath,
-                            String schemaLocation,
-                            String instanceLocation,
-                            String keyword) {
+                                   String evaluationPath,
+                                   String schemaLocation,
+                                   String instanceLocation,
+                                   String keyword) {
         assertThat(error.getEvaluationPath()).isEqualTo(evaluationPath);
         assertThat(error.getSchemaLocation()).startsWith(schemaLocation);
         assertThat(error.getInstanceLocation()).isEqualTo(instanceLocation);
@@ -30,11 +30,11 @@ public class TestUtil {
     }
 
     public static void assertError(Error error,
-                            String evaluationPath,
-                            String schemaLocation,
-                            String instanceLocation,
-                            String keyword,
-                            String errorMessage) {
+                                   String evaluationPath,
+                                   String schemaLocation,
+                                   String instanceLocation,
+                                   String keyword,
+                                   String errorMessage) {
         assertThat(error.getEvaluationPath()).isEqualTo(evaluationPath);
         assertThat(error.getSchemaLocation()).startsWith(schemaLocation);
         assertThat(error.getInstanceLocation()).isEqualTo(instanceLocation);
@@ -43,11 +43,11 @@ public class TestUtil {
     }
 
     public static void assertAnnotation(Annotation annotation,
-                                 String evaluationPath,
-                                 String schemaLocation,
-                                 String instanceLocation,
-                                 String keyword,
-                                 Object annotationObject) {
+                                        String evaluationPath,
+                                        String schemaLocation,
+                                        String instanceLocation,
+                                        String keyword,
+                                        Object annotationObject) {
         assertThat(annotation.getEvaluationPath()).isEqualTo(evaluationPath);
         assertThat(annotation.getSchemaLocation()).startsWith(schemaLocation);
         assertThat(annotation.getInstanceLocation()).isEqualTo(instanceLocation);
