@@ -11,7 +11,6 @@ jobs:
 
     permissions:
       contents: write
-      pull-requests: write
 
     steps:
       - name: Checkout test suite
@@ -80,4 +79,4 @@ jobs:
           --title 'chore(test-suite): incremental test suite update from upstream'
           --body 'New changes from https://github.com/json-schema-org/JSON-Schema-Test-Suite detected.'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PR_TOKEN }}
