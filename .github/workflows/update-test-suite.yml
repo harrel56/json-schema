@@ -71,6 +71,8 @@ jobs:
           new_branch: ${{ env.BRANCH_NAME }}
           message: 'chore(test-suite): regenerate YAML test suite'
 
+      - run: cd json-schema
+
       - name: Create PR
         run: >
           gh pr create -B master -H ${{ env.BRANCH_NAME }}
