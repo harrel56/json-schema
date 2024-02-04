@@ -73,8 +73,8 @@ jobs:
 
       - name: Create PR
         run: >
-          "gh pr create -B master -H ${{ env.BRANCH_NAME }}"
-          "--title 'chore(test-suite): incremental test suite update from upstream'"
-          "--body 'New changes from https://github.com/json-schema-org/JSON-Schema-Test-Suite detected.'"
+          gh pr create -B master -H ${{ env.BRANCH_NAME }}
+          --title 'chore(test-suite): incremental test suite update from upstream'
+          --body 'New changes from https://github.com/json-schema-org/JSON-Schema-Test-Suite detected.'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
