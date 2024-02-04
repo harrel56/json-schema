@@ -42,7 +42,7 @@ jobs:
       - name: Generate branch name
         run: echo "BRANCH_NAME=chore/update-test-suite-$(date +"%Y%m%d-%H%M%S")" >> $GITHUB_ENV
 
-      - name: Commit changes
+      - name: Commit JSON test suite
         uses: EndBug/add-and-commit@v9.1.4
         with:
           cwd: json-schema
@@ -64,7 +64,7 @@ jobs:
           rsync -r test-suite/remotes json-schema/src/test/resources/suite-yaml
           rsync -r test-suite/tests json-schema/src/test/resources/suite-yaml
 
-      - name: Commit changes
+      - name: Commit YAML test suite
         uses: EndBug/add-and-commit@v9.1.4
         with:
           cwd: json-schema
@@ -73,3 +73,5 @@ jobs:
 
       - name: Create PR
         run: "gh pr create -B master -H ${{ env.BRANCH_NAME }} --title 'chore(test-suite): incremental test suite update from upstream'"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
