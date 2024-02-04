@@ -46,6 +46,7 @@ jobs:
 
       - name: Commit JSON test suite
         uses: EndBug/add-and-commit@v9.1.4
+        id: json-commit
         with:
           cwd: json-schema
           new_branch: ${{ env.BRANCH_NAME }}
@@ -73,13 +74,8 @@ jobs:
           new_branch: ${{ env.BRANCH_NAME }}
           message: 'chore(test-suite): regenerate YAML test suite'
 
-      - name: Check if branch has any changes (exists)
-        run: |
-          cd json-schema
-          echo "BRANCH_EXISTS=$(git branch -l ${{ env.BRANCH_NAME }})" >> $GITHUB_ENV
-
       - name: Create PR
-        if: ${{ env.BRANCH_EXISTS == env.BRANCH_NAME }}
+        if: ${{ steps.json-commit.outputs.pushed }}
         run: >
           gh pr create -B master -H ${{ env.BRANCH_NAME }}
           --repo harrel56/json-schema
