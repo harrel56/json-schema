@@ -74,7 +74,7 @@ jobs:
           message: 'chore(test-suite): regenerate YAML test suite'
 
       - name: Create PR
-        if: ${{ steps.json-commit.outputs.pushed }}
+        if: ${{ steps.json-commit.outputs.pushed == 'true' }}
         run: >
           gh pr create -B master -H ${{ env.BRANCH_NAME }}
           --repo harrel56/json-schema
