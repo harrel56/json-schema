@@ -1,0 +1,83 @@
+name: update-test-suite
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 16 * * 2' # every tuesday 16:00
+
+jobs:
+  update-test-suite:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout test suite
+        uses: actions/checkout@v4
+        with:
+          repository: json-schema-org/JSON-Schema-Test-Suite
+          path: test-suite
+          sparse-checkout: |
+            remotes
+            tests/draft2019-09
+            tests/draft2020-12
+
+      - name: Remove unused draft versions
+        run: |
+          rm -rf test-suite/remotes/draft6
+          rm -rf test-suite/remotes/draft7
+          rm -rf test-suite/remotes/draft-next
+
+      - name: Checkout json-schema
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          path: json-schema
+
+      - name: Copy new test suite
+        run: |
+          rsync -r test-suite/remotes json-schema/src/test/resources/suite
+          rsync -r test-suite/tests json-schema/src/test/resources/suite
+
+      - name: Generate branch name
+        run: echo "BRANCH_NAME=chore/update-test-suite-$(date +"%Y%m%d-%H%M%S")" >> $GITHUB_ENV
+
+      - name: Commit JSON test suite
+        uses: EndBug/add-and-commit@v9.1.4
+        with:
+          cwd: json-schema
+          new_branch: ${{ env.BRANCH_NAME }}
+          message: 'chore(test-suite): update official test suite from json-schema-org/JSON-Schema-Test-Suite'
+
+      - name: Generate YAML files
+        run: |
+          find test-suite/remotes -type f -exec sh -c 'yq -Poy {} > $(echo {} | sed 's/\.[^.]*$//').yml' \;
+          find test-suite/tests -type f -exec sh -c 'yq -Poy {} > $(echo {} | sed 's/\.[^.]*$//').yml' \;
+
+      - name: Delete JSON files
+        run: |
+          find test-suite/remotes -name '*.json' -exec rm {} \;
+          find test-suite/tests -name '*.json' -exec rm {} \;
+
+      - name: Copy new YAML test suite
+        run: |
+          rsync -r test-suite/remotes json-schema/src/test/resources/suite-yaml
+          rsync -r test-suite/tests json-schema/src/test/resources/suite-yaml
+
+      - name: Commit YAML test suite
+        uses: EndBug/add-and-commit@v9.1.4
+        with:
+          cwd: json-schema
+          new_branch: ${{ env.BRANCH_NAME }}
+          message: 'chore(test-suite): regenerate YAML test suite'
+
+      - name: Create PR
+        run: >
+          gh pr create -B master -H ${{ env.BRANCH_NAME }}
+          --repo harrel56/json-schema
+          --title 'chore(test-suite): incremental test suite update from upstream'
+          --body 'New changes from https://github.com/json-schema-org/JSON-Schema-Test-Suite detected.'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
