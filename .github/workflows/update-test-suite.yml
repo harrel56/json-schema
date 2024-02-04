@@ -34,6 +34,7 @@ jobs:
         with:
           ref: master
           path: json-schema
+          fetch-depth: 0 # https://github.com/actions/checkout/issues/335#issuecomment-1007818393
 
       - name: Copy new test suite
         run: |
@@ -72,10 +73,9 @@ jobs:
           new_branch: ${{ env.BRANCH_NAME }}
           message: 'chore(test-suite): regenerate YAML test suite'
 
-      - run: cd json-schema
-
       - name: Check branches SHAs
         run: |
+          cd json-schema
           echo "MASTER_SHA=$(git rev-parse master) >> $GITHUB_ENV
           echo "BRANCH_SHA=$(git rev-parse ${{ env.BRANCH_NAME }}) >> $GITHUB_ENV
 
