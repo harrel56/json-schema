@@ -34,7 +34,6 @@ jobs:
         with:
           ref: master
           path: json-schema
-          fetch-depth: 0 # https://github.com/actions/checkout/issues/335#issuecomment-1007818393
 
       - name: Copy new test suite
         run: |
