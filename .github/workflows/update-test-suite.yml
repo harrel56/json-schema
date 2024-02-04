@@ -1,11 +1,12 @@
 name: update-test-suite
 
 on:
-  pull_request:
   workflow_dispatch:
+  schedule:
+    - cron: '0 16 * * 2' # every tuesday 16:00
 
 jobs:
-  fetch-changes:
+  update-test-suite:
     runs-on: ubuntu-latest
 
     permissions:
