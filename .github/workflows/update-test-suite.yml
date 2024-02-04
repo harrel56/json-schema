@@ -46,8 +46,8 @@ jobs:
 
       - name: Delete JSON files
         run: |
-          'find ./test-suite/remotes -name ''*.json'' #-delete'
-          'find ./test-suite/tests -name ''*.json'' #-delete'
+          find ./test-suite/remotes -name '*.json' -exec rm {}
+          find ./test-suite/tests -name '*.json' -exec rm {}
 
       - name: Copy new YAML test suite
         run: |
