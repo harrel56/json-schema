@@ -71,11 +71,10 @@ jobs:
           new_branch: ${{ env.BRANCH_NAME }}
           message: 'chore(test-suite): regenerate YAML test suite'
 
-      - run: cd json-schema
-
       - name: Create PR
         run: >
           gh pr create -B master -H ${{ env.BRANCH_NAME }}
+          --repo harrel56/json-schema
           --title 'chore(test-suite): incremental test suite update from upstream'
           --body 'New changes from https://github.com/json-schema-org/JSON-Schema-Test-Suite detected.'
         env:
