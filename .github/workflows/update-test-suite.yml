@@ -39,6 +39,21 @@ jobs:
           rsync -r test-suite/remotes json-schema/src/test/resources/suite
           rsync -r test-suite/tests json-schema/src/test/resources/suite
 
+      - name: Generate YAML files
+        run: |
+          find test-suite/remotes -type f -exec sh -c 'yq -Poy {} > $(echo {} | sed 's/\.[^.]*$//').yml' \;
+          find test-suite/tests -type f -exec sh -c 'yq -Poy {} > $(echo {} | sed 's/\.[^.]*$//').yml' \;
+
+      - name: Delete JSON files
+        run: |
+          'find ./test-suite/remotes -name ''*.json'' #-delete'
+          'find ./test-suite/tests -name ''*.json'' #-delete'
+
+      - name: Copy new YAML test suite
+        run: |
+          rsync -r test-suite/remotes json-schema/src/test/resources/suite-yaml
+          rsync -r test-suite/tests json-schema/src/test/resources/suite-yaml
+
       - name: Generate branch name
         run: echo "BRANCH_NAME=chore/update-test-suite-$(date +"%Y%m%d-%H%M%S")" >> $GITHUB_ENV
 
@@ -48,5 +63,3 @@ jobs:
           cwd: json-schema
           new_branch: ${{ env.BRANCH_NAME }}
           message: 'chore(gh-action): update official test suite from json-schema-org/JSON-Schema-Test-Suite'
-
-      - run: yq --help
