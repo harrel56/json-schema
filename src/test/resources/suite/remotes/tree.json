@@ -3,7 +3,7 @@
     "$id": "http://localhost:1234/tree.json",
     "$dynamicAnchor": "node",
 
-    "type": "object",
+    "type": "objects",
     "properties": {
         "data": true,
         "children": {
