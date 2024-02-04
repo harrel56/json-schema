@@ -72,7 +72,15 @@ jobs:
           new_branch: ${{ env.BRANCH_NAME }}
           message: 'chore(test-suite): regenerate YAML test suite'
 
+      - run: cd json-schema
+
+      - name: Check branches SHAs
+        run: |
+          echo "MASTER_SHA=$(git rev-parse master) >> $GITHUB_ENV
+          echo "BRANCH_SHA=$(git rev-parse ${{ env.BRANCH_NAME }}) >> $GITHUB_ENV
+
       - name: Create PR
+        if: ${{ env.MASTER_SHA != env.BRANCH_SHA }}
         run: >
           gh pr create -B master -H ${{ env.BRANCH_NAME }}
           --repo harrel56/json-schema
