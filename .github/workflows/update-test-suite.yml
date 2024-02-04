@@ -79,7 +79,7 @@ jobs:
           echo "BRANCH_EXISTS=$(git branch -l ${{ env.BRANCH_NAME }}) >> $GITHUB_ENV
 
       - name: Create PR
-        if: ${{ env.BRANCH_EXISTS == ${{ env.BRANCH_NAME }} }}
+        if: ${{ env.BRANCH_EXISTS == env.BRANCH_NAME }}
         run: >
           gh pr create -B master -H ${{ env.BRANCH_NAME }}
           --repo harrel56/json-schema
