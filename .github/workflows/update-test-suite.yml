@@ -76,7 +76,7 @@ jobs:
       - name: Check if branch has any changes (exists)
         run: |
           cd json-schema
-          echo "BRANCH_EXISTS=$(git branch -l ${{ env.BRANCH_NAME }}) >> $GITHUB_ENV
+          echo "BRANCH_EXISTS=$(git branch -l ${{ env.BRANCH_NAME }})" >> $GITHUB_ENV
 
       - name: Create PR
         if: ${{ env.BRANCH_EXISTS == env.BRANCH_NAME }}
