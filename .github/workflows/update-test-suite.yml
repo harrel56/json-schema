@@ -48,6 +48,7 @@ jobs:
         id: json-commit
         with:
           cwd: json-schema
+          add: . --no-ignore-removal
           new_branch: ${{ env.BRANCH_NAME }}
           message: 'chore(test-suite): update official test suite from json-schema-org/JSON-Schema-Test-Suite'
 
@@ -70,6 +71,7 @@ jobs:
         uses: EndBug/add-and-commit@v9.1.4
         with:
           cwd: json-schema
+          add: . --no-ignore-removal
           new_branch: ${{ env.BRANCH_NAME }}
           message: 'chore(test-suite): regenerate YAML test suite'
 
