@@ -68,10 +68,10 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
 
         SuiteTestGenerator generator = new SuiteTestGenerator(validator, Map.of());
         return Stream.of(
-                generator.generate(getTestPath() + "/draft2020-12/optional/bignum.json"),
-                generator.generate(getTestPath() + "/draft2020-12/optional/no-schema.json"),
-                generator.generate(getTestPath() + "/draft2020-12/optional/non-bmp-regex.json"),
-                generator.generate(getTestPath() + "/draft2020-12/optional/refOfUnknownKeyword.json")
+                generator.generate(getTestPath() + "/draft2020-12/optional/bignum" + getFileExtension()),
+                generator.generate(getTestPath() + "/draft2020-12/optional/no-schema" + getFileExtension()),
+                generator.generate(getTestPath() + "/draft2020-12/optional/non-bmp-regex" + getFileExtension()),
+                generator.generate(getTestPath() + "/draft2020-12/optional/refOfUnknownKeyword" + getFileExtension())
         ).flatMap(Function.identity());
     }
 
@@ -84,10 +84,10 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
 
         SuiteTestGenerator generator = new SuiteTestGenerator(validator, Map.of());
         return Stream.of(
-                generator.generate(getTestPath() + "/draft2019-09/optional/bignum.json"),
-                generator.generate(getTestPath() + "/draft2019-09/optional/no-schema.json"),
-                generator.generate(getTestPath() + "/draft2019-09/optional/non-bmp-regex.json"),
-                generator.generate(getTestPath() + "/draft2019-09/optional/refOfUnknownKeyword.json")
+                generator.generate(getTestPath() + "/draft2019-09/optional/bignum" + getFileExtension()),
+                generator.generate(getTestPath() + "/draft2019-09/optional/no-schema" + getFileExtension()),
+                generator.generate(getTestPath() + "/draft2019-09/optional/non-bmp-regex" + getFileExtension()),
+                generator.generate(getTestPath() + "/draft2019-09/optional/refOfUnknownKeyword" + getFileExtension())
         ).flatMap(Function.identity());
     }
 
@@ -97,6 +97,10 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
 
     public String getTestPath() {
         return "/suite/tests";
+    }
+
+    public String getFileExtension() {
+        return ".json";
     }
 
     private static Map<String, Map<String, Set<String>>> skippedRequiredTests() {

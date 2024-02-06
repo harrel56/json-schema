@@ -78,6 +78,11 @@ class SnakeYamlTest {
         public String getTestPath() {
             return "/suite-yaml/tests";
         }
+
+        @Override
+        public String getFileExtension() {
+            return ".yml";
+        }
     }
 
     @Nested
