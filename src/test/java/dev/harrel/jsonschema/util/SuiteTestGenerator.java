@@ -82,12 +82,16 @@ public class SuiteTestGenerator {
     }
 
     private DynamicNode readTestCase(String fileName, TestBundle bundle, TestCase testCase) {
-        boolean skipped = skippedTests.getOrDefault(fileName, Map.of())
+        boolean skipped = skippedTests.getOrDefault(stripExtension(fileName), Map.of())
                 .getOrDefault(bundle.description, Set.of())
                 .contains(testCase.description);
 
         return dynamicTest(testCase.description, () ->
                 testValidation(bundle.description, testCase.description, bundle.schema, testCase.data, testCase.valid, skipped));
+    }
+
+    private String stripExtension(String fileName) {
+        return fileName.substring(0, fileName.lastIndexOf('.'));
     }
 
     private record TestBundle(String description, JsonNode schema, List<TestCase> tests) {}

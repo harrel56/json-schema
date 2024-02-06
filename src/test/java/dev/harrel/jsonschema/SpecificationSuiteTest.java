@@ -101,12 +101,12 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
 
     private static Map<String, Map<String, Set<String>>> skippedRequiredTests() {
         return Map.of(
-                "id.json", Map.of(
+                "id", Map.of(
                         "$id inside an enum is not a real identifier", Set.of(
                                 "match $ref to $id"
                         )
                 ),
-                "unknownKeyword.json", Map.of(
+                "unknownKeyword", Map.of(
                         "$id inside an unknown keyword is not a real identifier", Set.of(
                                 "type matches second anyOf, which has a real schema in it",
                                 "type matches non-schema in first anyOf"
@@ -117,14 +117,14 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
 
     private static Map<String, Map<String, Set<String>>> skippedFormatTests() {
         return Map.of(
-                "date-time.json", Map.of(
+                "date-time", Map.of(
                         "validation of date-time strings", Set.of(
                                 /* leap seconds not supported */
                                 "a valid date-time with a leap second, UTC",
                                 "a valid date-time with a leap second, with minus offset"
                         )
                 ),
-                "time.json", Map.of(
+                "time", Map.of(
                         "validation of time strings", Set.of(
                                 /* leap seconds not supported */
                                 "a valid time string with leap second, Zulu",
@@ -138,12 +138,12 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
                                 "no time offset with second fraction"
                         )
                 ),
-                "iri.json", Map.of(
+                "iri", Map.of(
                         "validation of IRIs", Set.of(
                                 "an invalid IRI based on IPv6"
                         )
                 ),
-                "idn-hostname.json", Map.of(
+                "idn-hostname", Map.of(
                         "validation of internationalized host names", Set.of(
                                 "a valid host name (example.test in Hangul)",
                                 "invalid Punycode",
@@ -164,7 +164,7 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
                                 "ZERO WIDTH NON-JOINER not preceded by Virama but matches regexp"
                         )
                 ),
-                "ipv4.json", Map.of(
+                "ipv4", Map.of(
                         "validation of IP addresses", Set.of(
                                 "invalid leading zeroes, as they are treated as octals"
                         )
