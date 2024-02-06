@@ -16,11 +16,11 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
     Stream<DynamicNode> draft2020Required() {
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(getJsonNodeFactory())
-                .withSchemaResolver(new RemoteSchemaResolver())
+                .withSchemaResolver(createSchemaResolver())
                 .createValidator();
 
         SuiteTestGenerator generator = new SuiteTestGenerator(validator, skippedRequiredTests());
-        return generator.generate("/suite/tests/draft2020-12");
+        return generator.generate(getTestPath() + "/draft2020-12");
     }
 
     @TestFactory
@@ -28,11 +28,11 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
         Validator validator = new ValidatorFactory()
                 .withDialect(new Dialects.Draft2019Dialect())
                 .withJsonNodeFactory(getJsonNodeFactory())
-                .withSchemaResolver(new RemoteSchemaResolver())
+                .withSchemaResolver(createSchemaResolver())
                 .createValidator();
 
         SuiteTestGenerator generator = new SuiteTestGenerator(validator, skippedRequiredTests());
-        return generator.generate("/suite/tests/draft2019-09");
+        return generator.generate(getTestPath() + "/draft2019-09");
     }
 
     @TestFactory
@@ -40,11 +40,11 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
         Validator validator = new ValidatorFactory()
                 .withEvaluatorFactory(new FormatEvaluatorFactory())
                 .withJsonNodeFactory(getJsonNodeFactory())
-                .withSchemaResolver(new RemoteSchemaResolver())
+                .withSchemaResolver(createSchemaResolver())
                 .createValidator();
 
         SuiteTestGenerator generator = new SuiteTestGenerator(validator, skippedFormatTests());
-        return generator.generate("/suite/tests/draft2020-12/optional/format");
+        return generator.generate(getTestPath() + "/draft2020-12/optional/format");
     }
 
     @TestFactory
@@ -53,11 +53,11 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
                 .withDialect(new Dialects.Draft2019Dialect())
                 .withEvaluatorFactory(new FormatEvaluatorFactory())
                 .withJsonNodeFactory(getJsonNodeFactory())
-                .withSchemaResolver(new RemoteSchemaResolver())
+                .withSchemaResolver(createSchemaResolver())
                 .createValidator();
 
         SuiteTestGenerator generator = new SuiteTestGenerator(validator, skippedFormatTests());
-        return generator.generate("/suite/tests/draft2019-09/optional/format");
+        return generator.generate(getTestPath() + "/draft2019-09/optional/format");
     }
 
     @TestFactory
@@ -68,10 +68,10 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
 
         SuiteTestGenerator generator = new SuiteTestGenerator(validator, Map.of());
         return Stream.of(
-                generator.generate("/suite/tests/draft2020-12/optional/bignum.json"),
-                generator.generate("/suite/tests/draft2020-12/optional/no-schema.json"),
-                generator.generate("/suite/tests/draft2020-12/optional/non-bmp-regex.json"),
-                generator.generate("/suite/tests/draft2020-12/optional/refOfUnknownKeyword.json")
+                generator.generate(getTestPath() + "/draft2020-12/optional/bignum.json"),
+                generator.generate(getTestPath() + "/draft2020-12/optional/no-schema.json"),
+                generator.generate(getTestPath() + "/draft2020-12/optional/non-bmp-regex.json"),
+                generator.generate(getTestPath() + "/draft2020-12/optional/refOfUnknownKeyword.json")
         ).flatMap(Function.identity());
     }
 
@@ -84,11 +84,19 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
 
         SuiteTestGenerator generator = new SuiteTestGenerator(validator, Map.of());
         return Stream.of(
-                generator.generate("/suite/tests/draft2019-09/optional/bignum.json"),
-                generator.generate("/suite/tests/draft2019-09/optional/no-schema.json"),
-                generator.generate("/suite/tests/draft2019-09/optional/non-bmp-regex.json"),
-                generator.generate("/suite/tests/draft2019-09/optional/refOfUnknownKeyword.json")
+                generator.generate(getTestPath() + "/draft2019-09/optional/bignum.json"),
+                generator.generate(getTestPath() + "/draft2019-09/optional/no-schema.json"),
+                generator.generate(getTestPath() + "/draft2019-09/optional/non-bmp-regex.json"),
+                generator.generate(getTestPath() + "/draft2019-09/optional/refOfUnknownKeyword.json")
         ).flatMap(Function.identity());
+    }
+
+    public SchemaResolver createSchemaResolver() {
+        return new RemoteSchemaResolver();
+    }
+
+    public String getTestPath() {
+        return "/suite/tests";
     }
 
     private static Map<String, Map<String, Set<String>>> skippedRequiredTests() {

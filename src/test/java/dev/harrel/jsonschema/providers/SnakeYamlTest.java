@@ -4,7 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.JsonNodeFactory;
+import dev.harrel.jsonschema.SchemaResolver;
 import dev.harrel.jsonschema.SimpleType;
+import dev.harrel.jsonschema.util.YamlRemoteSchemaResolver;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.yaml.snakeyaml.parser.ParserException;
@@ -57,6 +59,24 @@ class SnakeYamlTest {
         @Override
         public JsonNodeFactory getJsonNodeFactory() {
             return createFactory();
+        }
+    }
+
+    @Nested
+    class YamlSpecificationSuiteTest extends dev.harrel.jsonschema.SpecificationSuiteTest {
+        @Override
+        public JsonNodeFactory getJsonNodeFactory() {
+            return createFactory();
+        }
+
+        @Override
+        public SchemaResolver createSchemaResolver() {
+            return new YamlRemoteSchemaResolver();
+        }
+
+        @Override
+        public String getTestPath() {
+            return "/suite-yaml/tests";
         }
     }
 
