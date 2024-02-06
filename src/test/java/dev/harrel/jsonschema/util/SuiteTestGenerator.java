@@ -1,5 +1,6 @@
 package dev.harrel.jsonschema.util;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -29,14 +30,12 @@ import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 public class SuiteTestGenerator {
     private static final Logger logger = Logger.getLogger("SuiteTestGenerator");
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-    private final YAMLMapper yamlMapper = new YAMLMapper();
+    private final ObjectMapper objectMapper;
     private final Validator validator;
     private final Map<String, Map<String, Set<String>>> skippedTests;
 
-    public SuiteTestGenerator(Validator validator, Map<String, Map<String, Set<String>>> skippedTests) {
-        this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        this.yamlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    public SuiteTestGenerator(ObjectMapper objectMapper, Validator validator, Map<String, Map<String, Set<String>>> skippedTests) {
+        this.objectMapper = objectMapper;
         this.validator = validator;
         this.skippedTests = skippedTests;
     }
@@ -61,13 +60,7 @@ public class SuiteTestGenerator {
 
     private Stream<DynamicNode> readTestFile(Path path) {
         try {
-            List<TestBundle> bundles;
-            String pathString = path.toString().toLowerCase();
-            if (pathString.endsWith(".yml") || pathString.endsWith(".yaml")) {
-                bundles = yamlMapper.readValue(Files.readString(path), new TypeReference<>() {});
-            } else {
-                bundles = objectMapper.readValue(Files.readString(path), new TypeReference<>() {});
-            }
+            List<TestBundle> bundles = objectMapper.readValue(Files.readString(path), new TypeReference<>() {});
             return bundles.stream().map(bundle -> readBundle(path.getFileName().toString(), bundle));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -98,13 +91,13 @@ public class SuiteTestGenerator {
 
     private record TestCase(String description, JsonNode data, boolean valid) {}
 
-    private void testValidation(String bundle, String name, JsonNode schema, JsonNode instance, boolean valid, boolean skipped) {
+    private void testValidation(String bundle, String name, JsonNode schema, JsonNode instance, boolean valid, boolean skipped) throws JsonProcessingException {
         Assumptions.assumeFalse(skipped);
 //        Assumptions.assumeTrue(bundle.equals("unevaluatedProperties with $dynamicRef"));
 //        Assumptions.assumeTrue(name.equals("with no unevaluated properties"));
 
-        String schemaString = schema.toPrettyString();
-        String instanceString = instance.toPrettyString();
+        String schemaString = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(schema);
+        String instanceString = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(instance);
         logger.info("%s: %s".formatted(bundle, name));
         logger.info(schemaString);
         logger.info(instanceString);

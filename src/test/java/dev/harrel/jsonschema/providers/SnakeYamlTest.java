@@ -63,25 +63,10 @@ class SnakeYamlTest {
     }
 
     @Nested
-    class YamlSpecificationSuiteTest extends dev.harrel.jsonschema.SpecificationSuiteTest {
+    class YamlSpecificationSuiteTest extends dev.harrel.jsonschema.YamlSpecificationSuiteTest {
         @Override
         public JsonNodeFactory getJsonNodeFactory() {
             return createFactory();
-        }
-
-        @Override
-        public SchemaResolver createSchemaResolver() {
-            return new YamlRemoteSchemaResolver();
-        }
-
-        @Override
-        public String getTestPath() {
-            return "/suite-yaml/tests";
-        }
-
-        @Override
-        public String getFileExtension() {
-            return ".yml";
         }
     }
 

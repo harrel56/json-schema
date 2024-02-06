@@ -1,5 +1,7 @@
 package dev.harrel.jsonschema;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.harrel.jsonschema.util.RemoteSchemaResolver;
 import dev.harrel.jsonschema.util.SuiteTestGenerator;
 import org.junit.jupiter.api.DynamicNode;
@@ -19,7 +21,7 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
                 .withSchemaResolver(createSchemaResolver())
                 .createValidator();
 
-        SuiteTestGenerator generator = new SuiteTestGenerator(validator, skippedRequiredTests());
+        SuiteTestGenerator generator = new SuiteTestGenerator(createObjectMapper(), validator, skippedRequiredTests());
         return generator.generate(getTestPath() + "/draft2020-12");
     }
 
@@ -31,7 +33,7 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
                 .withSchemaResolver(createSchemaResolver())
                 .createValidator();
 
-        SuiteTestGenerator generator = new SuiteTestGenerator(validator, skippedRequiredTests());
+        SuiteTestGenerator generator = new SuiteTestGenerator(createObjectMapper(), validator, skippedRequiredTests());
         return generator.generate(getTestPath() + "/draft2019-09");
     }
 
@@ -43,7 +45,7 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
                 .withSchemaResolver(createSchemaResolver())
                 .createValidator();
 
-        SuiteTestGenerator generator = new SuiteTestGenerator(validator, skippedFormatTests());
+        SuiteTestGenerator generator = new SuiteTestGenerator(createObjectMapper(), validator, skippedFormatTests());
         return generator.generate(getTestPath() + "/draft2020-12/optional/format");
     }
 
@@ -56,7 +58,7 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
                 .withSchemaResolver(createSchemaResolver())
                 .createValidator();
 
-        SuiteTestGenerator generator = new SuiteTestGenerator(validator, skippedFormatTests());
+        SuiteTestGenerator generator = new SuiteTestGenerator(createObjectMapper(), validator, skippedFormatTests());
         return generator.generate(getTestPath() + "/draft2019-09/optional/format");
     }
 
@@ -66,7 +68,7 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .createValidator();
 
-        SuiteTestGenerator generator = new SuiteTestGenerator(validator, Map.of());
+        SuiteTestGenerator generator = new SuiteTestGenerator(createObjectMapper(), validator, Map.of());
         return Stream.of(
                 generator.generate(getTestPath() + "/draft2020-12/optional/bignum" + getFileExtension()),
                 generator.generate(getTestPath() + "/draft2020-12/optional/no-schema" + getFileExtension()),
@@ -82,7 +84,7 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .createValidator();
 
-        SuiteTestGenerator generator = new SuiteTestGenerator(validator, Map.of());
+        SuiteTestGenerator generator = new SuiteTestGenerator(createObjectMapper(), validator, Map.of());
         return Stream.of(
                 generator.generate(getTestPath() + "/draft2019-09/optional/bignum" + getFileExtension()),
                 generator.generate(getTestPath() + "/draft2019-09/optional/no-schema" + getFileExtension()),
@@ -91,15 +93,19 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
         ).flatMap(Function.identity());
     }
 
-    public SchemaResolver createSchemaResolver() {
+    ObjectMapper createObjectMapper() {
+        return  new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
+
+    SchemaResolver createSchemaResolver() {
         return new RemoteSchemaResolver();
     }
 
-    public String getTestPath() {
+    String getTestPath() {
         return "/suite/tests";
     }
 
-    public String getFileExtension() {
+    String getFileExtension() {
         return ".json";
     }
 

@@ -1,5 +1,7 @@
 package dev.harrel.jsonschema;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.harrel.jsonschema.util.SuiteTestGenerator;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
@@ -16,7 +18,7 @@ public abstract class SupplementarySuiteTest implements ProviderTest {
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .createValidator();
 
-        SuiteTestGenerator generator = new SuiteTestGenerator(validator, Map.of());
+        SuiteTestGenerator generator = new SuiteTestGenerator(createObjectMapper(), validator, Map.of());
         return generator.generate("/suite-supplementary/draft2020-12");
     }
 
@@ -28,7 +30,7 @@ public abstract class SupplementarySuiteTest implements ProviderTest {
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .createValidator();
 
-        SuiteTestGenerator generator = new SuiteTestGenerator(validator, Map.of());
+        SuiteTestGenerator generator = new SuiteTestGenerator(createObjectMapper(), validator, Map.of());
         return generator.generate("/suite-supplementary/draft2019-09");
     }
 
@@ -39,7 +41,7 @@ public abstract class SupplementarySuiteTest implements ProviderTest {
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .createValidator();
 
-        SuiteTestGenerator generator = new SuiteTestGenerator(validator, Map.of());
+        SuiteTestGenerator generator = new SuiteTestGenerator(createObjectMapper(), validator, Map.of());
         return generator.generate("/suite-supplementary/draft2020-12/format");
     }
 
@@ -51,7 +53,11 @@ public abstract class SupplementarySuiteTest implements ProviderTest {
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .createValidator();
 
-        SuiteTestGenerator generator = new SuiteTestGenerator(validator, Map.of());
+        SuiteTestGenerator generator = new SuiteTestGenerator(createObjectMapper(), validator, Map.of());
         return generator.generate("/suite-supplementary/draft2019-09/format");
+    }
+
+    private ObjectMapper createObjectMapper() {
+        return  new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 }
