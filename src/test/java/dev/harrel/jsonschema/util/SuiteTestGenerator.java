@@ -2,10 +2,8 @@ package dev.harrel.jsonschema.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import dev.harrel.jsonschema.Validator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assumptions;
