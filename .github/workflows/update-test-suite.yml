@@ -71,11 +71,12 @@ jobs:
         run: |
           cat test-suite/tests/draft2020-12/unevaluatedItems.yml | yq '((.[] | select(.description == "unevaluatedItems with nested items")).tests[] | select(.description == "with invalid additional item")).data[0] = "yeah"' > json-schema/src/test/resources/suite-yaml/tests/draft2020-12/unevaluatedItems.yml
           cat test-suite/tests/draft2019-09/unevaluatedItems.yml | yq '((.[] | select(.description == "unevaluatedItems with nested items")).tests[] | select(.description == "with invalid additional item")).data[0] = "yeah"' > json-schema/src/test/resources/suite-yaml/tests/draft2019-09/unevaluatedItems.yml
-          cat test-suite/tests/draft2020-12/optional/format/time.yml | yq '((.[] | select(.description == "validation of time strings")).tests[] | select(.description == "no time offset with second fraction")).data = "12:00:00.51"' > json-schema/src/test/resources/suite-yaml/tests/draft2020-12/optional/format/time.yml
-          cat test-suite/tests/draft2019-09/optional/format/time.yml | yq '((.[] | select(.description == "validation of time strings")).tests[] | select(.description == "no time offset with second fraction")).data = "12:00:00.51"' > json-schema/src/test/resources/suite-yaml/tests/draft2019-09/optional/format/time.yml
+          cat test-suite/tests/draft2020-12/optional/format/time.yml | yq '((.[] | select(.description == "validation of time strings")).tests[] | select(.description == "no time offset with second fraction")).data = "12:00:00.52 "' > json-schema/src/test/resources/suite-yaml/tests/draft2020-12/optional/format/time.yml
+          cat test-suite/tests/draft2019-09/optional/format/time.yml | yq '((.[] | select(.description == "validation of time strings")).tests[] | select(.description == "no time offset with second fraction")).data = "12:00:00.52 "' > json-schema/src/test/resources/suite-yaml/tests/draft2019-09/optional/format/time.yml
 
       - name: Commit YAML test suite
         uses: EndBug/add-and-commit@v9.1.4
+        id: yaml-commit
         with:
           cwd: json-schema
           add: . --no-ignore-removal
@@ -83,7 +84,7 @@ jobs:
           message: 'chore(test-suite): regenerate YAML test suite'
 
       - name: Create PR
-        if: ${{ steps.json-commit.outputs.pushed == 'true' }}
+        if: ${{ steps.json-commit.outputs.pushed == 'true' || steps.yaml-commit.outputs.pushed == 'true' }}
         run: >
           gh pr create -B master -H ${{ env.BRANCH_NAME }}
           --repo harrel56/json-schema
