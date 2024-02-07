@@ -59,7 +59,7 @@ jobs:
 
       - name: Fix YAML suite
         run: |
-          cat test-suite/tests/draft2020-12/optional/format/time.yml | yq '((.[] | select(.description == "validation of time strings")).tests[] | select(.description == "no time offset with second fraction")).data = "12:00:00.51"' > test-suite/tests/draft2020-12/optional/format/time.yml
+          cat test-suite/tests/draft2020-12/optional/format/time.yml | yq '((.[] | select(.description == "validation of time strings")).tests[] | select(.description == "no time offset with second fraction")).data = "12:00:00.52"' > test-suite/tests/draft2020-12/optional/format/time2.yml
 
 
       - name: Delete JSON files
