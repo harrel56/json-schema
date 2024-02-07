@@ -3,7 +3,7 @@ name: update-test-suite
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 15 * * 2' # every tuesday 16:00
+    - cron: '0 15 * * 2' # every tuesday 15:00
 
 jobs:
   update-test-suite:
