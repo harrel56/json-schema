@@ -57,6 +57,13 @@ jobs:
           find test-suite/remotes -type f -exec sh -c 'yq -Poy {} > $(echo {} | sed 's/\.[^.]*$//').yml' \;
           find test-suite/tests -type f -exec sh -c 'yq -Poy {} > $(echo {} | sed 's/\.[^.]*$//').yml' \;
 
+      - name: Fix YAML suite
+        run: |
+          cat test-suite/tests/draft2020-12/unevaluatedItems.yml | yq '((.[] | select(.description == "unevaluatedItems with nested items")).tests[] | select(.description == "with invalid additional item")).data[0] = "yeah"' > test-suite/tests/draft2020-12/unevaluatedItems.yml
+          cat test-suite/tests/draft2019-09/unevaluatedItems.yml | yq '((.[] | select(.description == "unevaluatedItems with nested items")).tests[] | select(.description == "with invalid additional item")).data[0] = "yeah"' > test-suite/tests/draft2019-09/unevaluatedItems.yml
+          cat test-suite/tests/draft2020-12/optional/format/time.yml | yq '((.[] | select(.description == "validation of time strings")).tests[] | select(.description == "no time offset with second fraction")).data = "12:00:00.51"' > test-suite/tests/draft2020-12/optional/format/time.yml
+          cat test-suite/tests/draft2019-09/optional/format/time.yml | yq '((.[] | select(.description == "validation of time strings")).tests[] | select(.description == "no time offset with second fraction")).data = "12:00:00.51"' > test-suite/tests/draft2019-09/optional/format/time.yml
+
       - name: Delete JSON files
         run: |
           find test-suite/remotes -name '*.json' -exec rm {} \;
