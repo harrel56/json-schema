@@ -165,7 +165,7 @@
       valid: true
     - description: with invalid additional item
       data:
-        - yes
+        - yeah
         - false
       valid: false
 - description: unevaluatedItems with nested items and additionalItems
