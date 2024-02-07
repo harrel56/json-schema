@@ -69,6 +69,8 @@ jobs:
 
       - name: Fix YAML suite
         run: |
+          rm json-schema/src/test/resources/suite-yaml/tests/draft2020-12/optional/format/time.yml
+          rm json-schema/src/test/resources/suite-yaml/tests/draft2019-09/optional/format/time.yml
           cat test-suite/tests/draft2020-12/optional/format/time.yml | yq '((.[] | select(.description == "validation of time strings")).tests[] | select(.description == "no time offset with second fraction")).data = "12:00:00.52"' > json-schema/src/test/resources/suite-yaml/tests/draft2020-12/optional/format/time.yml
           cat test-suite/tests/draft2019-09/optional/format/time.yml | yq '((.[] | select(.description == "validation of time strings")).tests[] | select(.description == "no time offset with second fraction")).data = "12:00:00.52"' > json-schema/src/test/resources/suite-yaml/tests/draft2019-09/optional/format/time.yml
 
