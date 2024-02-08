@@ -9,7 +9,9 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.yaml.snakeyaml.parser.ParserException;
 
+import java.math.BigInteger;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -50,6 +52,66 @@ class SnakeYamlTest {
         JsonNodeFactory factory = createFactory();
         assertThatThrownBy(() -> factory.create("{"))
                 .isInstanceOf(ParserException.class);
+    }
+
+    @Test
+    void shouldHandleAliases() {
+        String yamlString = """
+                foo: &foo
+                  bar: 
+                    - 1
+                    - 2
+                ref: *foo
+                """;
+        JsonNode node = createFactory().create(yamlString);
+        assertThat(node.isObject()).isTrue();
+        Map<String, JsonNode> nodeMap = node.asObject();
+        assertThat(nodeMap).containsOnlyKeys("foo", "ref");
+        Map<String, JsonNode> fooMap = nodeMap.get("foo").asObject();
+        assertThat(fooMap.get("bar").isArray()).isTrue();
+        List<JsonNode> barArray = fooMap.get("bar").asArray();
+        assertThat(barArray.get(0).isInteger()).isTrue();
+        assertThat(barArray.get(0).asInteger()).isEqualTo(BigInteger.valueOf(1));
+        assertThat(barArray.get(1).isInteger()).isTrue();
+        assertThat(barArray.get(1).asInteger()).isEqualTo(BigInteger.valueOf(2));
+
+        Map<String, JsonNode> refMap = nodeMap.get("ref").asObject();
+        assertThat(refMap.get("bar").isArray()).isTrue();
+        List<JsonNode> barArray2 = refMap.get("bar").asArray();
+        assertThat(barArray2.get(0).isInteger()).isTrue();
+        assertThat(barArray2.get(0).asInteger()).isEqualTo(BigInteger.valueOf(1));
+        assertThat(barArray2.get(1).isInteger()).isTrue();
+        assertThat(barArray2.get(1).asInteger()).isEqualTo(BigInteger.valueOf(2));
+    }
+
+    @Test
+    void shouldHandleAliasOverride() {
+        String yamlString = """
+                foo: &foo
+                  name: foo
+                  bar: bar
+                ref: 
+                  <<: *foo
+                  name: ref
+                  new: true
+                """;
+        JsonNode node = createFactory().create(yamlString);
+        assertThat(node.isObject()).isTrue();
+        Map<String, JsonNode> nodeMap = node.asObject();
+        assertThat(nodeMap).containsOnlyKeys("foo", "ref");
+        Map<String, JsonNode> fooMap = nodeMap.get("foo").asObject();
+        assertThat(fooMap.get("name").isString()).isTrue();
+        assertThat(fooMap.get("name").asString()).isEqualTo("foo");
+        assertThat(fooMap.get("bar").isString()).isTrue();
+        assertThat(fooMap.get("bar").asString()).isEqualTo("bar");
+
+        Map<String, JsonNode> refMap = nodeMap.get("ref").asObject();
+        assertThat(refMap.get("name").isString()).isTrue();
+        assertThat(refMap.get("name").asString()).isEqualTo("ref");
+        assertThat(refMap.get("bar").isString()).isTrue();
+        assertThat(refMap.get("bar").asString()).isEqualTo("bar");
+        assertThat(refMap.get("new").isBoolean()).isTrue();
+        assertThat(refMap.get("new").asBoolean()).isTrue();
     }
 
     @Nested
