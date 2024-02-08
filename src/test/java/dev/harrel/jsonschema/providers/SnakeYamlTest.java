@@ -58,7 +58,7 @@ class SnakeYamlTest {
     void shouldHandleAliases() {
         String yamlString = """
                 foo: &foo
-                  bar: 
+                  bar:
                     - 1
                     - 2
                 ref: *foo
@@ -90,7 +90,7 @@ class SnakeYamlTest {
                 foo: &foo
                   name: foo
                   bar: bar
-                ref: 
+                ref:
                   <<: *foo
                   name: ref
                   new: true
