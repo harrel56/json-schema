@@ -71,8 +71,8 @@ jobs:
         run: |
           cat test-suite/tests/draft2020-12/unevaluatedItems.yml | yq '((.[] | select(.description == "unevaluatedItems with nested items")).tests[] | select(.description == "with invalid additional item")).data[0] style = "single"' > json-schema/src/test/resources/suite-yaml/tests/draft2020-12/unevaluatedItems.yml
           cat test-suite/tests/draft2019-09/unevaluatedItems.yml | yq '((.[] | select(.description == "unevaluatedItems with nested items")).tests[] | select(.description == "with invalid additional item")).data[0] style = "single"' > json-schema/src/test/resources/suite-yaml/tests/draft2019-09/unevaluatedItems.yml
-          cat test-suite/tests/draft2020-12/optional/format/time.yml | yq '((.[] | select(.description == "validation of time strings")).tests[] | select(.description == "no time offset with second fraction")).data = "12:00:00.52 "' > json-schema/src/test/resources/suite-yaml/tests/draft2020-12/optional/format/time.yml
-          cat test-suite/tests/draft2019-09/optional/format/time.yml | yq '((.[] | select(.description == "validation of time strings")).tests[] | select(.description == "no time offset with second fraction")).data = "12:00:00.52 "' > json-schema/src/test/resources/suite-yaml/tests/draft2019-09/optional/format/time.yml
+          cat test-suite/tests/draft2020-12/optional/format/time.yml | yq '((.[] | select(.description == "validation of time strings")).tests[] | select(.description == "no time offset with second fraction")).data style = "single"' > json-schema/src/test/resources/suite-yaml/tests/draft2020-12/optional/format/time.yml
+          cat test-suite/tests/draft2019-09/optional/format/time.yml | yq '((.[] | select(.description == "validation of time strings")).tests[] | select(.description == "no time offset with second fraction")).data style = "single"' > json-schema/src/test/resources/suite-yaml/tests/draft2019-09/optional/format/time.yml
 
       - name: Commit YAML test suite
         uses: EndBug/add-and-commit@v9.1.4
