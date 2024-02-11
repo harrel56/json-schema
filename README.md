@@ -13,7 +13,7 @@ Java library implementing [JSON schema specification](https://json-schema.org/sp
 - support for [custom keywords](#adding-custom-keywords),
 - support for annotation collection,
 - support for [format validation](#format-validation) (for a price of one additional dependency 😉),
-- multiple JSON providers to choose from ([supported JSON libraries](#json-providers))
+- compatible with most of the JSON/YAML libraries ([supported JSON libraries](#json-providers)),
 - and no additional dependencies on top of that.
 
 Check how it compares with other implementations:
@@ -66,8 +66,8 @@ Validator.Result result2 = validator.validate(schemaUri, instance2);
 ```
 This way, schema is parsed only once. You could also register multiple schemas this way and refer to them independently. Keep in mind that the "registration space" for schemas is common for one `Validator` - this can be used to refer dynamically between schemas.
 
-## JSON providers
-Supported providers:
+## JSON/YAML providers
+Supported JSON providers:
 - `com.fasterxml.jackson.core:jackson-databind` (default),
 - `com.google.code.gson:gson`,
 - `jakarta.json:jakarta.json-api`,
@@ -75,13 +75,16 @@ Supported providers:
 - `new.minidev:json-smart`,
 - `org.codehouse.jettison:jettison`.
 
+Supported YAML providers:
+- `org.yaml:snakeyaml`.
+
 The default provider is `com.fasterxml.jackson.core:jackson-databind`, so if you are not planning on changing the `ValidatorFactory` configuration, **you need to have this dependency present in your project**.
 
 Specific version of provider dependencies which were tested can be found in project POM (uploaded to maven central) listed as optional dependencies.
 
 All adapter classes for JSON provider libs can be found in this [package](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/package-summary.html). Anyone is free to add new adapter classes for any JSON lib of their choice, but keep in mind that it is not trivial. If you do so, ensure that test suites for providers pass.
 
-### Changing JSON provider
+### Changing JSON/YAML provider
 
 | Provider                                    | Tested version                                   | Factory class                                | Provider node class                                                                                                                                      |
 |---------------------------------------------|--------------------------------------------------|----------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -91,6 +94,7 @@ All adapter classes for JSON provider libs can be found in this [package](https:
 | org.json:json                               | 20230227                                         | dev.harrel.providers.OrgJsonNode.Factory     | <ul><li>org.json.JSONObject,</li><li>org.json.JSONArray,</li><li>[literal types](#provider-literal-types).</li></ul>                                     |
 | new.minidev:json-smart                      | 2.4.11                                           | dev.harrel.providers.JsonSmartNode.Factory   | <ul><li>net.minidev.json.JSONObject,</li><li>net.minidev.json.JSONArray,</li><li>[literal types](#provider-literal-types).</li></ul>                     |
 | org.codehouse.jettison:jettison             | 1.5.4                                            | dev.harrel.providers.JettisonNode.Factory    | <ul><li>org.codehaus.jettison.json.JSONObject,</li><li>org.codehaus.jettison.json.JSONArray,</li><li>[literal types](#provider-literal-types).</li></ul> |
+| org.yaml:snakeyaml                          | 2.2                                              | dev.harrel.providers.SnakeYamlNode.Factory   | <ul><li>java.util.Map,</li><li>java.util.List,</li><li>[literal types](#provider-literal-types).</li></ul>                                               |
 
 #### com.fasterxml.jackson.core:jackson-databind
 ```java
@@ -124,11 +128,17 @@ new ValidatorFactory().withJsonNodeFactory(new JsonSmartNode.Factory());
 new ValidatorFactory().withJsonNodeFactory(new JettisonNode.Factory());
 ```
 
+#### org.yaml:snakeyaml
+```java
+new ValidatorFactory().withJsonNodeFactory(new SnakeYamlNode.Factory());
+```
+
 ### Provider literal types
 Some providers don't have a single wrapper class for their JSON node representation:
 - `org.json:json`,
 - `new.minidev:json-smart`,
 - `org.codehouse.jettison:jettison`,
+- `org.yaml:snakeyaml`,
 
 and they represent literal nodes with these classes:
 - `java.lang.String`,
