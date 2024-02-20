@@ -6,9 +6,7 @@ import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.AbstractConstruct;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
-import org.yaml.snakeyaml.nodes.Node;
-import org.yaml.snakeyaml.nodes.ScalarNode;
-import org.yaml.snakeyaml.nodes.Tag;
+import org.yaml.snakeyaml.nodes.*;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -99,7 +97,7 @@ public final class SnakeYamlNode extends SimpleJsonNode {
 
     private static final class BigDecimalConstructor extends SafeConstructor {
         private BigDecimalConstructor() {
-            super(new LoaderOptions());
+            super(createLoaderOptions());
             AbstractConstruct constr = new AbstractConstruct() {
                 @Override
                 public Object construct(Node node) {
@@ -107,6 +105,18 @@ public final class SnakeYamlNode extends SimpleJsonNode {
                 }
             };
             this.yamlConstructors.put(Tag.FLOAT, constr);
+            this.yamlClassConstructors.put(NodeId.scalar, new ConstructYamlStr());
+        }
+
+        @Override
+        protected void flattenMapping(MappingNode node) {
+            super.flattenMapping(node, true);
+        }
+
+        private static LoaderOptions createLoaderOptions() {
+            LoaderOptions loaderOptions = new LoaderOptions();
+            loaderOptions.setAllowDuplicateKeys(false);
+            return loaderOptions;
         }
     }
 }

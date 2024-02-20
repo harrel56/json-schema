@@ -7,8 +7,10 @@ import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.yaml.snakeyaml.constructor.DuplicateKeyException;
 import org.yaml.snakeyaml.parser.ParserException;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.List;
@@ -52,6 +54,45 @@ class SnakeYamlTest {
         JsonNodeFactory factory = createFactory();
         assertThatThrownBy(() -> factory.create("{"))
                 .isInstanceOf(ParserException.class);
+    }
+
+    @Test
+    void shouldTreatAllKeysAsStrings() {
+        String yamlString = """
+                1: 1
+                1.2: 1.2
+                true: true
+                null: null
+                nested1:
+                  nested2:
+                    0: 0
+                """;
+        JsonNode node = createFactory().create(yamlString);
+        assertThat(node.isObject()).isTrue();
+        Map<String, JsonNode> nodeMap = node.asObject();
+        assertThat(nodeMap).containsOnlyKeys("1", "1.2", "true", "null", "nested1");
+        assertThat(nodeMap.get("1").isInteger()).isTrue();
+        assertThat(nodeMap.get("1").asInteger()).isEqualTo(1);
+        assertThat(nodeMap.get("1.2").isNumber()).isTrue();
+        assertThat(nodeMap.get("1.2").asNumber()).isEqualTo(BigDecimal.valueOf(1.2));
+        assertThat(nodeMap.get("true").isBoolean()).isTrue();
+        assertThat(nodeMap.get("true").asBoolean()).isTrue();
+        assertThat(nodeMap.get("null").isNull()).isTrue();
+
+        JsonNode nestedNode = nodeMap.get("nested1").asObject().get("nested2").asObject().get("0");
+        assertThat(nestedNode.isInteger()).isTrue();
+        assertThat(nestedNode.asInteger()).isZero();
+    }
+
+    @Test
+    void shouldNotAllowDuplicateKeys() {
+        String yamlString = """
+                1: 1
+                '1': '1'
+                """;
+        JsonNodeFactory factory = createFactory();
+        assertThatThrownBy(() -> factory.create(yamlString))
+                .isInstanceOf(DuplicateKeyException.class);
     }
 
     @Test
