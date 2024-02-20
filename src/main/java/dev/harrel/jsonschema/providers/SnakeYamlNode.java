@@ -73,7 +73,7 @@ public final class SnakeYamlNode extends SimpleJsonNode {
         private final Yaml yaml;
 
         public Factory() {
-            this(new Yaml(new BigDecimalConstructor()));
+            this(new Yaml(new JsonSchemaCompatibleConstructor()));
         }
 
         public Factory(Yaml yaml) {
@@ -95,8 +95,8 @@ public final class SnakeYamlNode extends SimpleJsonNode {
         }
     }
 
-    private static final class BigDecimalConstructor extends SafeConstructor {
-        private BigDecimalConstructor() {
+    private static final class JsonSchemaCompatibleConstructor extends SafeConstructor {
+        private JsonSchemaCompatibleConstructor() {
             super(createLoaderOptions());
             AbstractConstruct constr = new AbstractConstruct() {
                 @Override
