@@ -44,7 +44,7 @@ public final class JsonSmartNode extends SimpleJsonNode {
     @Override
     public Map<String, JsonNode> asObject() {
         Set<Map.Entry<String, Object>> objectMap = ((JSONObject) node).entrySet();
-        Map<String, JsonNode> result = new HashMap<>(objectMap.size());
+        Map<String, JsonNode> result = MapUtil.newHashMap(objectMap.size());
         for (Map.Entry<String, Object> entry : objectMap) {
             result.put(entry.getKey(), new JsonSmartNode(entry.getValue(), jsonPointer + "/" + JsonNode.encodeJsonPointer(entry.getKey())));
         }

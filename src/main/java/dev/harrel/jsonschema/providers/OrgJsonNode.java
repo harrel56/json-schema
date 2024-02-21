@@ -39,8 +39,8 @@ public final class OrgJsonNode extends SimpleJsonNode {
 
     @Override
     public Map<String, JsonNode> asObject() {
-        Map<String, JsonNode> map = new HashMap<>();
         JSONObject jsonObject = (JSONObject) node;
+        Map<String, JsonNode> map = MapUtil.newHashMap(jsonObject.length());
         for (String key : jsonObject.keySet()) {
             map.put(key, new OrgJsonNode(jsonObject.get(key), jsonPointer + "/" + JsonNode.encodeJsonPointer(key)));
         }
