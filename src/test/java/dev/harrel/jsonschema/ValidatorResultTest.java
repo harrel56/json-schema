@@ -4,8 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static dev.harrel.jsonschema.util.TestUtil.assertAnnotation;
-import static dev.harrel.jsonschema.util.TestUtil.assertError;
+import static dev.harrel.jsonschema.util.TestUtil.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ValidatorResultTest {
@@ -21,8 +20,8 @@ class ValidatorResultTest {
 
         assertThat(result.isValid()).isTrue();
         // check if lazy getter return always the same instance
-        List<Annotation> annotations = result.getAnnotations();
-        assertThat(annotations).isSameAs(result.getAnnotations());
+        assertThat(result.getAnnotations()).isSameAs(result.getAnnotations());
+        List<Annotation> annotations = sortAnnotations(result.getAnnotations());
         assertAnnotation(
                 annotations.get(0),
                 "/custom",

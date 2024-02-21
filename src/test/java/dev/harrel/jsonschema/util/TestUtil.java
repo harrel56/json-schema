@@ -5,6 +5,8 @@ import dev.harrel.jsonschema.Error;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.Comparator;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -15,6 +17,10 @@ public class TestUtil {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    public static List<Annotation> sortAnnotations(List<Annotation> annotations) {
+        return annotations.stream().sorted(Comparator.comparing(a -> a.getEvaluationPath())).toList();
     }
 
     public static void assertError(Error error,

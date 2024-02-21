@@ -69,7 +69,7 @@ public final class GsonNode implements JsonNode {
     @Override
     public Map<String, JsonNode> asObject() {
         Set<Map.Entry<String, JsonElement>> objectMap = node.getAsJsonObject().entrySet();
-        Map<String, JsonNode> result = new HashMap<>(objectMap.size());
+        Map<String, JsonNode> result = MapUtil.newHashMap(objectMap.size());
         for (Map.Entry<String, JsonElement> entry : objectMap) {
             result.put(entry.getKey(), new GsonNode(entry.getValue(), this.jsonPointer + "/" + JsonNode.encodeJsonPointer(entry.getKey())));
         }
