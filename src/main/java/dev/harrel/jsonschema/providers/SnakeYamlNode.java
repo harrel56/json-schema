@@ -20,7 +20,7 @@ public final class SnakeYamlNode extends SimpleJsonNode {
         super(node, jsonPointer);
     }
 
-    public SnakeYamlNode(Object node) {
+    private SnakeYamlNode(Object node) {
         this(node, "");
     }
 
@@ -73,11 +73,7 @@ public final class SnakeYamlNode extends SimpleJsonNode {
         private final Yaml yaml;
 
         public Factory() {
-            this(new Yaml(new JsonSchemaCompatibleConstructor()));
-        }
-
-        public Factory(Yaml yaml) {
-            this.yaml = yaml;
+            this.yaml = new Yaml(new JsonSchemaCompatibleConstructor());
         }
 
         @Override
