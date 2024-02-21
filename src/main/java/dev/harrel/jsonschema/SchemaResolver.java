@@ -1,5 +1,6 @@
 package dev.harrel.jsonschema;
 
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
@@ -22,7 +23,7 @@ public interface SchemaResolver {
      * @return composed SchemaResolver
      */
     static SchemaResolver compose(SchemaResolver... resolvers) {
-        return CompositeSchemaResolver.of(resolvers);
+        return new CompositeSchemaResolver(resolvers);
     }
 
     /**
@@ -88,5 +89,22 @@ public interface SchemaResolver {
         Optional<JsonNode> toJsonNode(JsonNodeFactory factory) {
             return isEmpty() ? Optional.empty() : Optional.of(toNodeFunction.apply(factory));
         }
+    }
+}
+
+final class CompositeSchemaResolver implements SchemaResolver {
+    private final SchemaResolver[] resolvers;
+
+    CompositeSchemaResolver(SchemaResolver[] resolvers) {
+        this.resolvers = resolvers;
+    }
+
+    @Override
+    public Result resolve(String uri) {
+        return Arrays.stream(resolvers)
+                .map(resolver -> resolver.resolve(uri))
+                .filter(result -> !result.isEmpty())
+                .findFirst()
+                .orElse(Result.empty());
     }
 }
