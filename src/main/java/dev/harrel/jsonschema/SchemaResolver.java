@@ -1,5 +1,6 @@
 package dev.harrel.jsonschema;
 
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
@@ -14,7 +15,7 @@ public interface SchemaResolver {
      * @param uri URI to be used for resolution
      * @return {@link Result} which contains resolved schema or {@code Result.empty}
      */
-    Result resolve(String uri);
+    Result resolve(URI uri);
 
     /**
      * Composes multiple {@link SchemaResolver}s into one.
@@ -100,7 +101,7 @@ final class CompositeSchemaResolver implements SchemaResolver {
     }
 
     @Override
-    public Result resolve(String uri) {
+    public Result resolve(URI uri) {
         return Arrays.stream(resolvers)
                 .map(resolver -> resolver.resolve(uri))
                 .filter(result -> !result.isEmpty())

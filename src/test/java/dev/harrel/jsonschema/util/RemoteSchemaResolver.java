@@ -8,8 +8,7 @@ import static dev.harrel.jsonschema.util.TestUtil.readResource;
 
 public class RemoteSchemaResolver implements SchemaResolver {
     @Override
-    public Result resolve(String uriString) {
-        URI uri = URI.create(uriString);
+    public Result resolve(URI uri) {
         if (!uri.getHost().equals("localhost")) {
             return Result.empty();
         }

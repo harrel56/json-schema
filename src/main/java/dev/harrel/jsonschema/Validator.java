@@ -158,7 +158,7 @@ public final class Validator {
     }
 
     private Optional<Schema> resolveExternalSchema(URI uri) {
-        return schemaResolver.resolve(uri.toString())
+        return schemaResolver.resolve(uri)
                 .toJsonNode(jsonNodeFactory)
                 .map(node -> {
                     jsonParser.parseRootSchema(uri, node);
