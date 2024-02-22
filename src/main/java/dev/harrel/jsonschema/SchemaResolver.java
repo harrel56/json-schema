@@ -12,7 +12,7 @@ import java.util.function.Function;
 public interface SchemaResolver {
     /**
      * Resolves URI string to schema representation
-     * @param uri URI to be used for resolution
+     * @param uri URI to be used for resolution - cannot be null
      * @return {@link Result} which contains resolved schema or {@code Result.empty}
      */
     Result resolve(URI uri);
