@@ -35,7 +35,7 @@ class FormatEvaluatorFactoryTest {
     }
 
     @Test
-    void shouldRespectVocabulariesSemantics() {
+    void shouldUseDefaultVocabulariesWhenNoMetaSchema() {
         String schema = """
                 {
                   "format": "uri-reference"
@@ -47,7 +47,80 @@ class FormatEvaluatorFactoryTest {
         assertThat(result.isValid()).isFalse();
     }
 
+    @Test
+    void shouldRespectVocabulariesFromMetaSchemaFirst() {
+        String metaSchema = """
+                {
+                    "$id": "https://json-schema.org/draft/2020-12/schema",
+                    "$vocabulary": {
+                        "https://json-schema.org/draft/2020-12/vocab/core": true,
+                        "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+                        "https://json-schema.org/draft/2020-12/vocab/unevaluated": true,
+                        "https://json-schema.org/draft/2020-12/vocab/validation": true,
+                        "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+                        "https://json-schema.org/draft/2020-12/vocab/format-annotation": true,
+                        "https://json-schema.org/draft/2020-12/vocab/content": true
+                    }
+                }""";
+        String schema = """
+                {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "format": "uri-reference"
+                }""";
+        SchemaResolver resolver = uri -> {
+            if (uri.equals(SpecificationVersion.DRAFT2020_12.getId())) {
+                return SchemaResolver.Result.fromString(metaSchema);
+            }
+            return SchemaResolver.Result.empty();
+        };
+        Validator.Result result = new ValidatorFactory()
+                .withDialect(new FormatDialect())
+                .withSchemaResolver(resolver)
+                .validate(schema, "\" \"");
+
+        assertThat(result.isValid()).isTrue();
+    }
+
+    @Test
+    void shouldRespectVocabulariesFromCustomMetaSchema() {
+        String metaSchema = """
+                {
+                    "$id": "https://json-schema.org/draft/2020-12/schema",
+                    "$vocabulary": {
+                        "https://json-schema.org/draft/2020-12/vocab/core": true,
+                        "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+                        "https://json-schema.org/draft/2020-12/vocab/unevaluated": true,
+                        "https://json-schema.org/draft/2020-12/vocab/validation": true,
+                        "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+                        "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+                        "https://json-schema.org/draft/2020-12/vocab/content": true
+                    }
+                }""";
+        String schema = """
+                {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "format": "uri-reference"
+                }""";
+        SchemaResolver resolver = uri -> {
+            if (uri.equals(SpecificationVersion.DRAFT2020_12.getId())) {
+                return SchemaResolver.Result.fromString(metaSchema);
+            }
+            return SchemaResolver.Result.empty();
+        };
+        Validator.Result result = new ValidatorFactory()
+                .withDialect(new FormatDialect())
+                .withSchemaResolver(resolver)
+                .validate(schema, "\" \"");
+
+        assertThat(result.isValid()).isFalse();
+    }
+
     private static class FormatDialect extends Dialects.Draft2020Dialect {
+        @Override
+        public String getMetaSchema() {
+            return null;
+        }
+
         @Override
         public EvaluatorFactory getEvaluatorFactory() {
             return new FormatEvaluatorFactory(Vocabulary.FORMAT_ASSERTION_VOCABULARY);
