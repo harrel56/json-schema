@@ -43,7 +43,7 @@ public final class Dialects {
 
         @Override
         public String getMetaSchema() {
-            return SpecificationVersion.DRAFT2020_12.getId();
+            return SpecificationVersion.DRAFT2020_12.getId().toString();
         }
 
         @Override
@@ -95,7 +95,7 @@ public final class Dialects {
 
         @Override
         public String getMetaSchema() {
-            return SpecificationVersion.DRAFT2019_09.getId();
+            return SpecificationVersion.DRAFT2019_09.getId().toString();
         }
 
         @Override

@@ -18,7 +18,7 @@ class SelfValidatingSchemaTest {
 
         Validator.Result result = validator.validate(
                 URI.create("https://json-schema.org/draft/2020-12/schema"),
-                TestUtil.readResource(SpecificationVersion.DRAFT2020_12.getResourcePath())
+                TestUtil.readResource(SpecificationVersion.DRAFT2020_12.getResourcePath().toString())
         );
 
         assertThat(result.isValid()).isTrue();
@@ -61,7 +61,7 @@ class SelfValidatingSchemaTest {
                 .createValidator();
 
         URI schemaUri = URI.create("https://json-schema.org/draft/2020-12/schema");
-        String instance = TestUtil.readResource(SpecificationVersion.DRAFT2020_12.getResourcePath());
+        String instance = TestUtil.readResource(SpecificationVersion.DRAFT2020_12.getResourcePath().toString());
         InvalidSchemaException exception = catchThrowableOfType(() -> validator.validate(schemaUri, instance), InvalidSchemaException.class);
 
         List<Error> errors = exception.getErrors();
@@ -97,7 +97,7 @@ class SelfValidatingSchemaTest {
                 .createValidator();
 
         URI schemaUri = URI.create("https://json-schema.org/draft/2020-12/schema");
-        String instance = TestUtil.readResource(SpecificationVersion.DRAFT2020_12.getResourcePath());
+        String instance = TestUtil.readResource(SpecificationVersion.DRAFT2020_12.getResourcePath().toString());
         InvalidSchemaException exception = catchThrowableOfType(() -> validator.validate(schemaUri, instance), InvalidSchemaException.class);
 
         List<Error> errors = exception.getErrors();

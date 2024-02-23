@@ -68,7 +68,7 @@ class FormatEvaluatorFactoryTest {
                   "format": "uri-reference"
                 }""";
         SchemaResolver resolver = uri -> {
-            if (uri.toString().equals(SpecificationVersion.DRAFT2020_12.getId())) {
+            if (uri.equals(SpecificationVersion.DRAFT2020_12.getId())) {
                 return SchemaResolver.Result.fromString(metaSchema);
             }
             return SchemaResolver.Result.empty();
