@@ -232,16 +232,16 @@ public final class ValidatorFactory {
     }
 
     static class DefaultSchemaResolver implements SchemaResolver {
-        private final Map<String, String> schemaCache = new HashMap<>();
+        private final Map<URI, String> schemaCache = new HashMap<>();
 
         @Override
-        public Result resolve(String uri) {
+        public Result resolve(URI uri) {
             if (schemaCache.containsKey(uri)) {
                 return Result.fromString(schemaCache.get(uri));
             }
 
             Optional<String> rawSchema = Arrays.stream(SpecificationVersion.values())
-                    .map(spec -> spec.resolveResource(uri))
+                    .map(spec -> spec.resolveResource(uri.toString()))
                     .filter(Optional::isPresent)
                     .map(Optional::get)
                     .findFirst();

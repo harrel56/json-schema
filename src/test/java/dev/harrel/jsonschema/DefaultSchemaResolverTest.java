@@ -19,7 +19,7 @@ class DefaultSchemaResolverTest {
     @EnumSource(SpecificationVersion.class)
     void shouldResolveAllSpecificationMetaSchemas(SpecificationVersion spec) {
         DefaultSchemaResolver resolver = new DefaultSchemaResolver();
-        SchemaResolver.Result result = resolver.resolve(spec.getId());
+        SchemaResolver.Result result = resolver.resolve(URI.create(spec.getId()));
 
         assertThat(result.isEmpty()).isFalse();
         assertThat(result.toJsonNode(new JacksonNode.Factory())).isPresent();
@@ -30,7 +30,7 @@ class DefaultSchemaResolverTest {
     void shouldHandleNonExistentSubSchemas(SpecificationVersion spec) {
         URI uri = URI.create(spec.getId()).resolve("meta/not-found");
         DefaultSchemaResolver resolver = new DefaultSchemaResolver();
-        SchemaResolver.Result result = resolver.resolve(uri.toString());
+        SchemaResolver.Result result = resolver.resolve(uri);
 
         assertThat(result.isEmpty()).isTrue();
     }
@@ -39,7 +39,7 @@ class DefaultSchemaResolverTest {
     @MethodSource("getDraft2019SubSchemas")
     void shouldResolveDraft2019SubSchemas(URI uri) {
         DefaultSchemaResolver resolver = new DefaultSchemaResolver();
-        SchemaResolver.Result result = resolver.resolve(uri.toString());
+        SchemaResolver.Result result = resolver.resolve(uri);
 
         assertThat(result.isEmpty()).isFalse();
         assertThat(result.toJsonNode(new JacksonNode.Factory())).isPresent();
@@ -48,7 +48,7 @@ class DefaultSchemaResolverTest {
     @Test
     void shouldHandleNonExistentResource() {
         DefaultSchemaResolver resolver = new DefaultSchemaResolver();
-        SchemaResolver.Result result = resolver.resolve("unknown");
+        SchemaResolver.Result result = resolver.resolve(URI.create("unknown"));
 
         assertThat(result.isEmpty()).isTrue();
     }
@@ -56,9 +56,9 @@ class DefaultSchemaResolverTest {
     @Test
     void shouldCacheResults() {
         DefaultSchemaResolver resolver = new DefaultSchemaResolver();
-        resolver.resolve(SpecificationVersion.DRAFT2020_12.getId());
-        resolver.resolve(SpecificationVersion.DRAFT2020_12.getId());
-        SchemaResolver.Result result = resolver.resolve(SpecificationVersion.DRAFT2020_12.getId());
+        resolver.resolve(URI.create(SpecificationVersion.DRAFT2020_12.getId()));
+        resolver.resolve(URI.create(SpecificationVersion.DRAFT2020_12.getId()));
+        SchemaResolver.Result result = resolver.resolve(URI.create(SpecificationVersion.DRAFT2020_12.getId()));
 
         assertThat(result.isEmpty()).isFalse();
         assertThat(result.toJsonNode(new JacksonNode.Factory())).isPresent();

@@ -31,9 +31,9 @@ public abstract class MetaSchemaTest implements ProviderTest {
 
 
     private final SchemaResolver resolver = uri -> {
-        if ("custom".equals(uri)) {
+        if ("custom".equals(uri.toString())) {
             return SchemaResolver.Result.fromString(CUSTOM_META_SCHEMA);
-        } else if ("invalid".equals(uri)) {
+        } else if ("invalid".equals(uri.toString())) {
             return SchemaResolver.Result.fromString(INVALID_META_SCHEMA);
         } else {
             return SchemaResolver.Result.empty();

@@ -247,7 +247,7 @@ public final class EvaluationContext {
         if (schemaRegistry.get(resolvedUri.uri) != null) {
             return Optional.empty();
         }
-        return schemaResolver.resolve(resolvedUri.uri.toString())
+        return schemaResolver.resolve(resolvedUri.uri)
                 .toJsonNode(jsonNodeFactory)
                 .flatMap(node -> {
                     jsonParser.parseRootSchema(resolvedUri.uri, node);

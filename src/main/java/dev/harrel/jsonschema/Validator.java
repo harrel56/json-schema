@@ -150,15 +150,16 @@ public final class Validator {
         if (UriUtil.hasNonEmptyFragment(uri)) {
             throw new IllegalArgumentException(String.format("Root schema [%s] cannot contain non-empty fragments", uri));
         }
+        URI uriWithoutFragment = UriUtil.getUriWithoutFragment(uri);
         return OptionalUtil.firstPresent(
-                        () -> Optional.ofNullable(schemaRegistry.get(UriUtil.getUriWithoutFragment(uri))),
-                        () -> resolveExternalSchema(uri)
+                        () -> Optional.ofNullable(schemaRegistry.get(uriWithoutFragment)),
+                        () -> resolveExternalSchema(uriWithoutFragment)
                 )
                 .orElseThrow(() -> new SchemaNotFoundException(new CompoundUri(uri, "")));
     }
 
     private Optional<Schema> resolveExternalSchema(URI uri) {
-        return schemaResolver.resolve(uri.toString())
+        return schemaResolver.resolve(uri)
                 .toJsonNode(jsonNodeFactory)
                 .map(node -> {
                     jsonParser.parseRootSchema(uri, node);

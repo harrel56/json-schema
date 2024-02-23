@@ -125,7 +125,7 @@ class SchemaResolverTest {
     @Test
     void shouldResolveRelativeExternalRefs() {
         SchemaResolver resolver = uri ->
-                switch (uri) {
+                switch (uri.toString()) {
                     case "a/b/root.json" -> SchemaResolver.Result.fromString(
                             """
                                     {
@@ -185,7 +185,7 @@ class SchemaResolverTest {
     @Test
     void shouldResolveExternalRefsChain() {
         SchemaResolver resolver = uri ->
-                switch (uri) {
+                switch (uri.toString()) {
                     case "a/b/x" -> SchemaResolver.Result.fromString(
                             """
                                     {

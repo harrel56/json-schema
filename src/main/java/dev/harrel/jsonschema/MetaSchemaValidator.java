@@ -82,7 +82,7 @@ interface MetaSchemaValidator {
             if (schemaRegistry.get(baseUri) != null) {
                 throw MetaSchemaResolvingException.resolvingFailure(uri.toString());
             }
-            SchemaResolver.Result result = schemaResolver.resolve(baseUri.toString());
+            SchemaResolver.Result result = schemaResolver.resolve(baseUri);
             if (result.isEmpty()) {
                 throw MetaSchemaResolvingException.resolvingFailure(uri.toString());
             }
