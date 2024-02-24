@@ -11,7 +11,7 @@ class CompositeSchemaResolverTest {
     @Test
     void shouldReturnEmptyForNoResolvers() {
         SchemaResolver composedResolver = SchemaResolver.compose();
-        SchemaResolver.Result result = composedResolver.resolve(URI.create(SpecificationVersion.DRAFT2020_12.getId()));
+        SchemaResolver.Result result = composedResolver.resolve(SpecificationVersion.DRAFT2020_12.getId());
         assertThat(result.isEmpty()).isTrue();
     }
 

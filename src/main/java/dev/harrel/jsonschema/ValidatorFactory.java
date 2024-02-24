@@ -241,7 +241,7 @@ public final class ValidatorFactory {
             }
 
             Optional<String> rawSchema = Arrays.stream(SpecificationVersion.values())
-                    .map(spec -> spec.resolveResource(uri.toString()))
+                    .map(spec -> spec.resolveResource(uri))
                     .filter(Optional::isPresent)
                     .map(Optional::get)
                     .findFirst();

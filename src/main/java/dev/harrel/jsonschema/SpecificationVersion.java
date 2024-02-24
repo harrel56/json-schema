@@ -9,27 +9,19 @@ import java.util.stream.Collectors;
  * {@code SpecificationVersion} enum represents JSON Schema specification versions that are supported.
  */
 public enum SpecificationVersion {
-    DRAFT2020_12("https://json-schema.org/draft/2020-12", "/dev/harrel/jsonschema/draft/2020-12/schema.json"),
-    DRAFT2019_09("https://json-schema.org/draft/2019-09", "/dev/harrel/jsonschema/draft/2019-09/schema.json");
-    private final URI baseUri;
-    private final String id;
-    private final String resourcePath;
-    private final URI resourcePathUri;
+    DRAFT2020_12("https://json-schema.org/draft/2020-12/schema"),
+    DRAFT2019_09("https://json-schema.org/draft/2019-09/schema");
+    private final URI id;
 
-    SpecificationVersion(String baseUri, String resourcePath) {
-        this.baseUri = URI.create(baseUri);
-        this.id = baseUri + "/schema";
-        this.resourcePath = resourcePath;
-        this.resourcePathUri = URI.create(resourcePath);
+    SpecificationVersion(String id) {
+        this.id = URI.create(id);
     }
 
-    Optional<String> resolveResource(String uri) {
-        if (!uri.startsWith(getBaseUri().toString())) {
+    Optional<String> resolveResource(URI uri) {
+        if (!uri.toString().startsWith(getId().resolve("").toString())) {
             return Optional.empty();
         }
-        String relativeUri = uri.substring(getBaseUri().toString().length() + 1);
-        URI resolvedUri = getResourcePathUri().resolve(relativeUri);
-        return readFileResource(resolvedUri + ".json");
+        return readFileResource(getResourceLocation(uri));
     }
 
     /**
@@ -37,7 +29,7 @@ public enum SpecificationVersion {
      *
      * @return specification version ID
      */
-    public String getId() {
+    public URI getId() {
         return id;
     }
 
@@ -46,16 +38,12 @@ public enum SpecificationVersion {
      *
      * @return resource path
      */
-    public String getResourcePath() {
-        return resourcePath;
+    public URI getResourcePath() {
+        return URI.create(getResourceLocation(id));
     }
 
-    URI getBaseUri() {
-        return baseUri;
-    }
-
-    URI getResourcePathUri() {
-        return resourcePathUri;
+    private static String getResourceLocation(URI uri) {
+        return "/dev/harrel/jsonschema" +  uri.getPath() + ".json";
     }
 
     private static Optional<String> readFileResource(String uri) {

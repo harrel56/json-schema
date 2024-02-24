@@ -19,7 +19,7 @@ class DefaultSchemaResolverTest {
     @EnumSource(SpecificationVersion.class)
     void shouldResolveAllSpecificationMetaSchemas(SpecificationVersion spec) {
         DefaultSchemaResolver resolver = new DefaultSchemaResolver();
-        SchemaResolver.Result result = resolver.resolve(URI.create(spec.getId()));
+        SchemaResolver.Result result = resolver.resolve(spec.getId());
 
         assertThat(result.isEmpty()).isFalse();
         assertThat(result.toJsonNode(new JacksonNode.Factory())).isPresent();
@@ -28,7 +28,7 @@ class DefaultSchemaResolverTest {
     @ParameterizedTest
     @EnumSource(SpecificationVersion.class)
     void shouldHandleNonExistentSubSchemas(SpecificationVersion spec) {
-        URI uri = URI.create(spec.getId()).resolve("meta/not-found");
+        URI uri = spec.getId().resolve("meta/not-found");
         DefaultSchemaResolver resolver = new DefaultSchemaResolver();
         SchemaResolver.Result result = resolver.resolve(uri);
 
@@ -56,9 +56,9 @@ class DefaultSchemaResolverTest {
     @Test
     void shouldCacheResults() {
         DefaultSchemaResolver resolver = new DefaultSchemaResolver();
-        resolver.resolve(URI.create(SpecificationVersion.DRAFT2020_12.getId()));
-        resolver.resolve(URI.create(SpecificationVersion.DRAFT2020_12.getId()));
-        SchemaResolver.Result result = resolver.resolve(URI.create(SpecificationVersion.DRAFT2020_12.getId()));
+        resolver.resolve(SpecificationVersion.DRAFT2020_12.getId());
+        resolver.resolve(SpecificationVersion.DRAFT2020_12.getId());
+        SchemaResolver.Result result = resolver.resolve(SpecificationVersion.DRAFT2020_12.getId());
 
         assertThat(result.isEmpty()).isFalse();
         assertThat(result.toJsonNode(new JacksonNode.Factory())).isPresent();
@@ -73,7 +73,7 @@ class DefaultSchemaResolverTest {
                         "meta/meta-data",
                         "meta/validation"
                 )
-                .map(uri -> URI.create(SpecificationVersion.DRAFT2019_09.getId()).resolve(uri))
+                .map(uri -> SpecificationVersion.DRAFT2019_09.getId().resolve(uri))
                 .map(Arguments::of);
     }
 }
