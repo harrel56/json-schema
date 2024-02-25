@@ -6,9 +6,7 @@ import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.AbstractConstruct;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
-import org.yaml.snakeyaml.nodes.Node;
-import org.yaml.snakeyaml.nodes.ScalarNode;
-import org.yaml.snakeyaml.nodes.Tag;
+import org.yaml.snakeyaml.nodes.*;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -22,7 +20,7 @@ public final class SnakeYamlNode extends SimpleJsonNode {
         super(node, jsonPointer);
     }
 
-    public SnakeYamlNode(Object node) {
+    private SnakeYamlNode(Object node) {
         this(node, "");
     }
 
@@ -75,11 +73,7 @@ public final class SnakeYamlNode extends SimpleJsonNode {
         private final Yaml yaml;
 
         public Factory() {
-            this(new Yaml(new BigDecimalConstructor()));
-        }
-
-        public Factory(Yaml yaml) {
-            this.yaml = yaml;
+            this.yaml = new Yaml(new JsonSchemaCompatibleConstructor());
         }
 
         @Override
@@ -97,9 +91,9 @@ public final class SnakeYamlNode extends SimpleJsonNode {
         }
     }
 
-    private static final class BigDecimalConstructor extends SafeConstructor {
-        private BigDecimalConstructor() {
-            super(new LoaderOptions());
+    private static final class JsonSchemaCompatibleConstructor extends SafeConstructor {
+        private JsonSchemaCompatibleConstructor() {
+            super(createLoaderOptions());
             AbstractConstruct constr = new AbstractConstruct() {
                 @Override
                 public Object construct(Node node) {
@@ -107,6 +101,18 @@ public final class SnakeYamlNode extends SimpleJsonNode {
                 }
             };
             this.yamlConstructors.put(Tag.FLOAT, constr);
+            this.yamlClassConstructors.put(NodeId.scalar, new ConstructYamlStr());
+        }
+
+        @Override
+        protected void flattenMapping(MappingNode node) {
+            super.flattenMapping(node, true);
+        }
+
+        private static LoaderOptions createLoaderOptions() {
+            LoaderOptions loaderOptions = new LoaderOptions();
+            loaderOptions.setAllowDuplicateKeys(false);
+            return loaderOptions;
         }
     }
 }
