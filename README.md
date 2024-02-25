@@ -189,13 +189,13 @@ By default, the only schemas that are resolved externally, are specification met
 
 Providing custom `SchemaResolver` would look like this:
 ```java
-SchemaResolver resolver = (String uri) -> {
-    if ("urn:my-schema1".equals(uri)) {
+SchemaResolver resolver = (URI uri) -> {
+    if ("urn:my-schema1".equals(uri.toString())) {
         // Here goes the logic to retrieve this schema
         // This may be e.g. HTTP call
         String rawSchema = ...
         return SchemaResolver.Result.fromString(rawSchema);
-    } else if ("urn:my-schema2".equals(uri)) {
+    } else if ("urn:my-schema2".equals(uri.toString())) {
         // Same thing here
         String rawSchema = ...
         return SchemaResolver.Result.fromString(rawSchema);
