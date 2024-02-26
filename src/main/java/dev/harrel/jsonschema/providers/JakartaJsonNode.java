@@ -12,29 +12,13 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 
-public final class JakartaJsonNode implements JsonNode {
-    private final JsonValue node;
-    private final String jsonPointer;
-    private final SimpleType nodeType;
-
+public final class JakartaJsonNode extends AbstractJsonNode<JsonValue> {
     private JakartaJsonNode(JsonValue node, String jsonPointer) {
-        this.node = Objects.requireNonNull(node);
-        this.jsonPointer = Objects.requireNonNull(jsonPointer);
-        this.nodeType = computeNodeType(this.node);
+        super(Objects.requireNonNull(node), jsonPointer);
     }
 
     public JakartaJsonNode(JsonValue node) {
         this(node, "");
-    }
-
-    @Override
-    public String getJsonPointer() {
-        return jsonPointer;
-    }
-
-    @Override
-    public SimpleType getNodeType() {
-        return nodeType;
     }
 
     @Override
@@ -77,7 +61,8 @@ public final class JakartaJsonNode implements JsonNode {
         return result;
     }
 
-    private static SimpleType computeNodeType(JsonValue node) {
+    @Override
+    SimpleType computeNodeType(JsonValue node) {
         switch (node.getValueType()) {
             case NULL:
                 return SimpleType.NULL;

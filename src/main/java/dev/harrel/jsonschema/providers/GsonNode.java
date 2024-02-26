@@ -11,29 +11,13 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 
-public final class GsonNode implements JsonNode {
-    private final JsonElement node;
-    private final String jsonPointer;
-    private final SimpleType nodeType;
-
+public final class GsonNode extends AbstractJsonNode<JsonElement> {
     private GsonNode(JsonElement node, String jsonPointer) {
-        this.node = Objects.requireNonNull(node);
-        this.jsonPointer = Objects.requireNonNull(jsonPointer);
-        this.nodeType = computeNodeType(this.node);
+        super(Objects.requireNonNull(node), jsonPointer);
     }
 
     public GsonNode(JsonElement node) {
         this(node, "");
-    }
-
-    @Override
-    public String getJsonPointer() {
-        return jsonPointer;
-    }
-
-    @Override
-    public SimpleType getNodeType() {
-        return nodeType;
     }
 
     @Override
@@ -81,11 +65,12 @@ public final class GsonNode implements JsonNode {
         if (isNull()) {
             return "null";
         } else {
-            return JsonNode.super.toPrintableString();
+            return super.toPrintableString();
         }
     }
 
-    private static SimpleType computeNodeType(JsonElement node) {
+    @Override
+    SimpleType computeNodeType(JsonElement node) {
         if (node.isJsonNull()) {
             return SimpleType.NULL;
         } else if (node.isJsonArray()) {

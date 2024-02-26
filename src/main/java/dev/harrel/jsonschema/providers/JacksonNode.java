@@ -11,29 +11,13 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 
-public final class JacksonNode implements JsonNode {
-    private final com.fasterxml.jackson.databind.JsonNode node;
-    private final String jsonPointer;
-    private final SimpleType nodeType;
-
+public final class JacksonNode extends AbstractJsonNode<com.fasterxml.jackson.databind.JsonNode> {
     private JacksonNode(com.fasterxml.jackson.databind.JsonNode node, String jsonPointer) {
-        this.node = Objects.requireNonNull(node);
-        this.jsonPointer = Objects.requireNonNull(jsonPointer);
-        this.nodeType = computeNodeType(node);
+        super(Objects.requireNonNull(node), jsonPointer);
     }
 
     public JacksonNode(com.fasterxml.jackson.databind.JsonNode node) {
         this(node, "");
-    }
-
-    @Override
-    public String getJsonPointer() {
-        return jsonPointer;
-    }
-
-    @Override
-    public SimpleType getNodeType() {
-        return nodeType;
     }
 
     @Override
@@ -58,24 +42,33 @@ public final class JacksonNode implements JsonNode {
 
     @Override
     public List<JsonNode> asArray() {
-        List<JsonNode> elements = new ArrayList<>();
+        if (asArray != null) {
+            return asArray;
+        }
+        List<JsonNode> elements = new ArrayList<>(node.size());
         for (Iterator<com.fasterxml.jackson.databind.JsonNode> iterator = node.elements(); iterator.hasNext(); ) {
             elements.add(new JacksonNode(iterator.next(), jsonPointer + "/" + elements.size()));
         }
+        this.asArray = elements;
         return elements;
     }
 
     @Override
     public Map<String, JsonNode> asObject() {
+        if (asObject != null) {
+            return asObject;
+        }
         Map<String, JsonNode> map = MapUtil.newHashMap(node.size());
         for (Iterator<Map.Entry<String, com.fasterxml.jackson.databind.JsonNode>> iterator = node.fields(); iterator.hasNext(); ) {
             Map.Entry<String, com.fasterxml.jackson.databind.JsonNode> entry = iterator.next();
             map.put(entry.getKey(), new JacksonNode(entry.getValue(), jsonPointer + "/" + JsonNode.encodeJsonPointer(entry.getKey())));
         }
+        this.asObject = map;
         return map;
     }
 
-    private static SimpleType computeNodeType(com.fasterxml.jackson.databind.JsonNode node) {
+    @Override
+    SimpleType computeNodeType(com.fasterxml.jackson.databind.JsonNode node) {
         if (node.canConvertToExactIntegral()) {
             return SimpleType.INTEGER;
         }
