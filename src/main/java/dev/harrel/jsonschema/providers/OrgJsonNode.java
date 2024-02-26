@@ -29,16 +29,17 @@ public final class OrgJsonNode extends SimpleJsonNode {
     }
 
     @Override
-    public List<JsonNode> asArray() {
-        List<JsonNode> elements = new ArrayList<>();
-        for (Object o : (JSONArray) node) {
+    List<JsonNode> createArray() {
+        JSONArray jsonArray = (JSONArray) node;
+        List<JsonNode> elements = new ArrayList<>(jsonArray.length());
+        for (Object o : jsonArray) {
             elements.add(new OrgJsonNode(o, jsonPointer + "/" + elements.size()));
         }
         return elements;
     }
 
     @Override
-    public Map<String, JsonNode> asObject() {
+    Map<String, JsonNode> createObject() {
         JSONObject jsonObject = (JSONObject) node;
         Map<String, JsonNode> map = MapUtil.newHashMap(jsonObject.length());
         for (String key : jsonObject.keySet()) {
