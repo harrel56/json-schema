@@ -127,11 +127,12 @@ public final class EvaluationContext {
     }
 
     Optional<Object> getSiblingAnnotation(String sibling, String instanceLocation) {
-        return annotationTree.getNode(evaluationStack.get(1)).annotations.stream()
-                .filter(item -> instanceLocation.equals(item.getInstanceLocation()))
-                .filter(item -> sibling.equals(item.getKeyword()))
-                .map(Annotation::getAnnotation)
-                .findFirst();
+        for (Annotation annotation : annotationTree.getNode(evaluationStack.get(1)).annotations) {
+            if (instanceLocation.equals(annotation.getInstanceLocation()) && sibling.equals(annotation.getKeyword())) {
+                return Optional.of(annotation.getAnnotation());
+            }
+        }
+        return Optional.empty();
     }
 
     AnnotationTree getAnnotationTree() {
