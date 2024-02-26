@@ -30,20 +30,29 @@ public final class OrgJsonNode extends SimpleJsonNode {
 
     @Override
     public List<JsonNode> asArray() {
-        List<JsonNode> elements = new ArrayList<>();
-        for (Object o : (JSONArray) node) {
+        if (asArray != null) {
+            return asArray;
+        }
+        JSONArray jsonArray = (JSONArray) node;
+        List<JsonNode> elements = new ArrayList<>(jsonArray.length());
+        for (Object o : jsonArray) {
             elements.add(new OrgJsonNode(o, jsonPointer + "/" + elements.size()));
         }
+        this.asArray = elements;
         return elements;
     }
 
     @Override
     public Map<String, JsonNode> asObject() {
+        if (asObject != null) {
+            return asObject;
+        }
         JSONObject jsonObject = (JSONObject) node;
         Map<String, JsonNode> map = MapUtil.newHashMap(jsonObject.length());
         for (String key : jsonObject.keySet()) {
             map.put(key, new OrgJsonNode(jsonObject.get(key), jsonPointer + "/" + JsonNode.encodeJsonPointer(key)));
         }
+        this.asObject = map;
         return map;
     }
 
