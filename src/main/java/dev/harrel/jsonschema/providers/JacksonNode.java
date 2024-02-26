@@ -41,29 +41,21 @@ public final class JacksonNode extends AbstractJsonNode<com.fasterxml.jackson.da
     }
 
     @Override
-    public List<JsonNode> asArray() {
-        if (asArray != null) {
-            return asArray;
-        }
+    List<JsonNode> createArray() {
         List<JsonNode> elements = new ArrayList<>(node.size());
         for (Iterator<com.fasterxml.jackson.databind.JsonNode> iterator = node.elements(); iterator.hasNext(); ) {
             elements.add(new JacksonNode(iterator.next(), jsonPointer + "/" + elements.size()));
         }
-        this.asArray = elements;
         return elements;
     }
 
     @Override
-    public Map<String, JsonNode> asObject() {
-        if (asObject != null) {
-            return asObject;
-        }
+    Map<String, JsonNode> createObject() {
         Map<String, JsonNode> map = MapUtil.newHashMap(node.size());
         for (Iterator<Map.Entry<String, com.fasterxml.jackson.databind.JsonNode>> iterator = node.fields(); iterator.hasNext(); ) {
             Map.Entry<String, com.fasterxml.jackson.databind.JsonNode> entry = iterator.next();
             map.put(entry.getKey(), new JacksonNode(entry.getValue(), jsonPointer + "/" + JsonNode.encodeJsonPointer(entry.getKey())));
         }
-        this.asObject = map;
         return map;
     }
 

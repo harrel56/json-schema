@@ -8,12 +8,12 @@ import java.util.Map;
 import java.util.Objects;
 
 abstract class AbstractJsonNode<T> implements JsonNode {
+    private final SimpleType nodeType;
     final T node;
     final String jsonPointer;
-    final SimpleType nodeType;
 
-    Map<String, JsonNode> asObject;
-    List<JsonNode> asArray;
+    private Map<String, JsonNode> asObject;
+    private List<JsonNode> asArray;
 
     AbstractJsonNode(T node, String jsonPointer) {
         this.nodeType = computeNodeType(node);
@@ -31,5 +31,25 @@ abstract class AbstractJsonNode<T> implements JsonNode {
         return nodeType;
     }
 
+    @Override
+    public final List<JsonNode> asArray() {
+        if (this.asArray != null) {
+            return asArray;
+        }
+        this.asArray = createArray();
+        return asArray;
+    }
+
+    @Override
+    public final Map<String, JsonNode> asObject() {
+        if (this.asObject != null) {
+            return asObject;
+        }
+        this.asObject = createObject();
+        return asObject;
+    }
+
+    abstract List<JsonNode> createArray();
+    abstract Map<String, JsonNode> createObject();
     abstract SimpleType computeNodeType(T node);
 }

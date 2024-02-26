@@ -42,30 +42,22 @@ public final class JakartaJsonNode extends AbstractJsonNode<JsonValue> {
     }
 
     @Override
-    public List<JsonNode> asArray() {
-        if (asArray != null) {
-            return asArray;
-        }
+    List<JsonNode> createArray() {
         JsonArray jsonArray = node.asJsonArray();
         List<JsonNode> result = new ArrayList<>(jsonArray.size());
         for (int i = 0; i < jsonArray.size(); i++) {
             result.add(new JakartaJsonNode(jsonArray.get(i), jsonPointer + "/" + i));
         }
-        this.asArray = result;
         return result;
     }
 
     @Override
-    public Map<String, JsonNode> asObject() {
-        if (asObject != null) {
-            return asObject;
-        }
+    Map<String, JsonNode> createObject() {
         Set<Map.Entry<String, JsonValue>> objectMap = node.asJsonObject().entrySet();
         Map<String, JsonNode> result = MapUtil.newHashMap(objectMap.size());
         for (Map.Entry<String, JsonValue> entry : objectMap) {
             result.put(entry.getKey(), new JakartaJsonNode(entry.getValue(), jsonPointer + "/" + JsonNode.encodeJsonPointer(entry.getKey())));
         }
-        this.asObject = result;
         return result;
     }
 

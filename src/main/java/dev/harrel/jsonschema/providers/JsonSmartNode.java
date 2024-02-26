@@ -32,30 +32,22 @@ public final class JsonSmartNode extends SimpleJsonNode {
     }
 
     @Override
-    public List<JsonNode> asArray() {
-        if (asArray != null) {
-            return asArray;
-        }
+    List<JsonNode> createArray() {
         JSONArray jsonArray = (JSONArray) node;
         List<JsonNode> result = new ArrayList<>(jsonArray.size());
         for (int i = 0; i < jsonArray.size(); i++) {
             result.add(new JsonSmartNode(jsonArray.get(i), jsonPointer + "/" + i));
         }
-        this.asArray = result;
         return result;
     }
 
     @Override
-    public Map<String, JsonNode> asObject() {
-        if (asObject != null) {
-            return asObject;
-        }
+    Map<String, JsonNode> createObject() {
         Set<Map.Entry<String, Object>> objectMap = ((JSONObject) node).entrySet();
         Map<String, JsonNode> result = MapUtil.newHashMap(objectMap.size());
         for (Map.Entry<String, Object> entry : objectMap) {
             result.put(entry.getKey(), new JsonSmartNode(entry.getValue(), jsonPointer + "/" + JsonNode.encodeJsonPointer(entry.getKey())));
         }
-        this.asObject = result;
         return result;
     }
 
