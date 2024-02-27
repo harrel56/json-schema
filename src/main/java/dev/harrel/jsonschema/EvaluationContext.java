@@ -157,27 +157,29 @@ public final class EvaluationContext {
         AnnotationTree.Node treeNode = annotationTree.createIfAbsent(parentSchemaLocation, evaluationStack.element());
         int nodesBefore = treeNode.nodes.size();
         int annotationsBefore = treeNode.annotations.size();
-        Stream<EvaluatorWrapper> evaluatorStream = schema.getEvaluators().stream();
-        if (!disabledSchemaValidation) {
-            evaluatorStream = evaluatorStream.filter(ev -> ev.getVocabularies().stream().anyMatch(activeVocabularies::contains) || ev.getVocabularies().isEmpty());
-        }
 
-        boolean valid = evaluatorStream.reduce(true, (validAcc, evaluator) -> {
-                    String evaluationPath = resolveEvaluationPath(evaluator);
-                    evaluationStack.push(evaluationPath);
-                    int errorsBefore = errors.size();
-                    Evaluator.Result result = evaluator.evaluate(this, node);
-                    if (result.isValid()) {
-                        /* Discarding errors that were produced by keywords evaluated to true */
-                        errors.subList(errorsBefore, errors.size()).clear();
-                        Annotation annotation = new Annotation(evaluationPath, schema.getSchemaLocation(), node.getJsonPointer(), evaluator.getKeyword(), result.getAnnotation());
-                        treeNode.annotations.add(annotation);
-                    } else {
-                        errors.add(new Error(evaluationPath, schema.getSchemaLocation(), node.getJsonPointer(), evaluator.getKeyword(), result.getError()));
-                    }
-                    evaluationStack.pop();
-                    return validAcc && result.isValid();
-                }, (v1, v2) -> v1 && v2);
+        boolean valid = true;
+        for (EvaluatorWrapper evaluator : schema.getEvaluators()) {
+            if (!disabledSchemaValidation &&
+                    (!evaluator.getVocabularies().isEmpty() && Collections.disjoint(evaluator.getVocabularies(), activeVocabularies))) {
+                continue;
+            }
+
+            String evaluationPath = resolveEvaluationPath(evaluator);
+            evaluationStack.push(evaluationPath);
+            int errorsBefore = errors.size();
+            Evaluator.Result result = evaluator.evaluate(this, node);
+            if (result.isValid()) {
+                /* Discarding errors that were produced by keywords evaluated to true */
+                errors.subList(errorsBefore, errors.size()).clear();
+                Annotation annotation = new Annotation(evaluationPath, schema.getSchemaLocation(), node.getJsonPointer(), evaluator.getKeyword(), result.getAnnotation());
+                treeNode.annotations.add(annotation);
+            } else {
+                valid = false;
+                errors.add(new Error(evaluationPath, schema.getSchemaLocation(), node.getJsonPointer(), evaluator.getKeyword(), result.getError()));
+            }
+            evaluationStack.pop();
+        }
         if (!valid) {
             /* Discarding annotations */
             treeNode.nodes.subList(nodesBefore, treeNode.nodes.size()).clear();
