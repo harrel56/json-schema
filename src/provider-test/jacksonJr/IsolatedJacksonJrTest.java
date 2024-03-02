@@ -1,5 +1,4 @@
 import dev.harrel.jsonschema.ValidatorFactory;
-import dev.harrel.jsonschema.providers.GsonNode;
 import dev.harrel.jsonschema.providers.JacksonJrNode;
 import org.junit.jupiter.api.Test;
 

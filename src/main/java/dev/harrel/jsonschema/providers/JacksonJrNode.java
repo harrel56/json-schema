@@ -41,7 +41,6 @@ public final class JacksonJrNode extends SimpleJsonNode {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     Map<String, JsonNode> createObject() {
         TreeNode jsonObject = (TreeNode) node;
         Map<String, JsonNode> map = MapUtil.newHashMap(jsonObject.size());
