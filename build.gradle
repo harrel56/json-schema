@@ -37,6 +37,7 @@ repositories {
 
 def jsonProviders = [
         jackson    : 'com.fasterxml.jackson.core:jackson-databind:2.16.1',
+        jacksonJr  : 'com.fasterxml.jackson.jr:jackson-jr-objects:2.15.2',
         gson       : 'com.google.code.gson:gson:2.10.1',
         orgJson    : 'org.json:json:20240205',
         jettison   : 'org.codehaus.jettison:jettison:1.5.4',
