@@ -55,12 +55,34 @@ public abstract class MetaSchemaTest implements ProviderTest {
     void shouldThrowForInvalidSchemaWhenDefaultMetaSchema() {
         String rawSchema = """
                 {
+                    "$id": "urn:test",
                     "type": []
                 }""";
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .createValidator();
         InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawSchema), InvalidSchemaException.class);
+        assertThat(exception.getSchemaUriString()).isEqualTo("urn:test");
+        assertThat(exception.getMetaSchemaUri()).isEqualTo(SpecificationVersion.DRAFT2020_12.getId());
+        assertThat(exception.getErrors()).isNotEmpty();
+    }
+
+    @Test
+    void shouldFailAndContainValidNestedSchemaLocation() {
+        String rawSchema = """
+                {
+                    "$id": "urn:test",
+                    "^": {
+                        "$schema": "https://json-schema.org/draft/2020-12/schema",
+                        "type": []
+                    }
+                }""";
+        Validator validator = new ValidatorFactory()
+                .withJsonNodeFactory(getJsonNodeFactory())
+                .createValidator();
+        InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawSchema), InvalidSchemaException.class);
+        assertThat(exception.getSchemaUriString()).isEqualTo("urn:test#/^");
+        assertThat(exception.getMetaSchemaUri()).isEqualTo(SpecificationVersion.DRAFT2020_12.getId());
         assertThat(exception.getErrors()).isNotEmpty();
     }
 
@@ -91,6 +113,7 @@ public abstract class MetaSchemaTest implements ProviderTest {
                 .withSchemaResolver(resolver)
                 .createValidator();
         InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawSchema), InvalidSchemaException.class);
+        assertThat(exception.getMetaSchemaUri()).hasToString("custom");
         assertThat(exception.getErrors()).isNotEmpty();
     }
 
