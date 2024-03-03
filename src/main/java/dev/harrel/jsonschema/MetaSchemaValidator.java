@@ -46,7 +46,7 @@ interface MetaSchemaValidator {
             EvaluationContext ctx = new EvaluationContext(jsonNodeFactory, jsonParser, schemaRegistry, schemaResolver, schema.getActiveVocabularies(), false);
             if (!ctx.validateAgainstSchema(schema, node)) {
                 throw new InvalidSchemaException(String.format("Schema [%s] failed to validate against meta-schema [%s]", schemaUri, metaSchemaUri),
-                        new Validator.Result(false, ctx).getErrors());
+                        schemaUri, metaSchemaUri, new Validator.Result(false, ctx).getErrors());
             }
             return determineActiveVocabularies(schema.getVocabulariesObject());
         }
@@ -80,16 +80,16 @@ interface MetaSchemaValidator {
         private Schema resolveExternalSchema(JsonParser jsonParser, URI uri) {
             URI baseUri = UriUtil.getUriWithoutFragment(uri);
             if (schemaRegistry.get(baseUri) != null) {
-                throw MetaSchemaResolvingException.resolvingFailure(uri.toString());
+                throw MetaSchemaResolvingException.resolvingFailure(uri);
             }
             SchemaResolver.Result result = schemaResolver.resolve(baseUri);
             if (result.isEmpty()) {
-                throw MetaSchemaResolvingException.resolvingFailure(uri.toString());
+                throw MetaSchemaResolvingException.resolvingFailure(uri);
             }
             try {
                 result.toJsonNode(jsonNodeFactory).ifPresent(node -> jsonParser.parseRootSchema(baseUri, node));
             } catch (Exception e) {
-                throw MetaSchemaResolvingException.parsingFailure(uri.toString(), e);
+                throw MetaSchemaResolvingException.parsingFailure(uri, e);
             }
             return resolveMetaSchema(jsonParser, uri);
         }
