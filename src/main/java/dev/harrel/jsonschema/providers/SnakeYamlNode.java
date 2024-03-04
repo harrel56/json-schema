@@ -35,7 +35,7 @@ public final class SnakeYamlNode extends SimpleJsonNode {
     }
 
     @Override
-    public List<JsonNode> asArray() {
+    public List<JsonNode> createArray() {
         List<?> list = (List<?>) node;
         List<JsonNode> elements = new ArrayList<>(list.size());
         for (Object o : list) {
@@ -46,7 +46,7 @@ public final class SnakeYamlNode extends SimpleJsonNode {
 
     @Override
     @SuppressWarnings("unchecked")
-    public Map<String, JsonNode> asObject() {
+    public Map<String, JsonNode> createObject() {
         Map<String, JsonNode> map = new HashMap<>();
         for (Map.Entry<String, ?> entry : ((Map<String, ?>) node).entrySet()) {
             map.put(entry.getKey(), new SnakeYamlNode(entry.getValue(), jsonPointer + "/" + JsonNode.encodeJsonPointer(entry.getKey())));
