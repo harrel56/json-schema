@@ -65,11 +65,10 @@ class ItemsEvaluator implements Evaluator {
         }
         List<JsonNode> array = node.asArray();
         int prefixItemsSize = ctx.getSiblingAnnotation(Keyword.PREFIX_ITEMS, node.getJsonPointer(), Integer.class).orElse(0);
-        int size = Math.max(array.size() - prefixItemsSize, 0);
-        boolean valid = array.stream()
-                .skip(prefixItemsSize)
-                .filter(element -> ctx.resolveInternalRefAndValidate(schemaRef, element))
-                .count() == size;
+        boolean valid = true;
+        for (int i = prefixItemsSize; i < array.size(); i++) {
+            valid = ctx.resolveInternalRefAndValidate(schemaRef, array.get(i)) && valid;
+        }
         return valid ? Result.success(true) : Result.failure();
     }
 

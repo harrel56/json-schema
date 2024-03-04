@@ -30,9 +30,9 @@ public final class JettisonNode extends SimpleJsonNode {
     }
 
     @Override
-    public List<JsonNode> asArray() {
-        List<JsonNode> elements = new ArrayList<>();
+    List<JsonNode> createArray() {
         JSONArray arrayNode = (JSONArray) node;
+        List<JsonNode> elements = new ArrayList<>(arrayNode.length());
         for (int i = 0; i < arrayNode.length(); ++i) {
             elements.add(new JettisonNode(arrayNode.opt(i), jsonPointer + "/" + elements.size()));
         }
@@ -41,9 +41,9 @@ public final class JettisonNode extends SimpleJsonNode {
 
     @Override
     @SuppressWarnings("unchecked")
-    public Map<String, JsonNode> asObject() {
-        Map<String, JsonNode> map = new HashMap<>();
+    Map<String, JsonNode> createObject() {
         JSONObject jsonObject = (JSONObject) node;
+        Map<String, JsonNode> map = MapUtil.newHashMap(jsonObject.length());
         for (Object object : jsonObject.toMap().entrySet()) {
             Map.Entry<Object, Object> entry = (Map.Entry<Object, Object>) object;
             map.put(entry.getKey().toString(), new JettisonNode(entry.getValue(), jsonPointer + "/" + JsonNode.encodeJsonPointer(entry.getKey().toString())));

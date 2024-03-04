@@ -5,8 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.function.BiFunction;
 
-import static dev.harrel.jsonschema.util.TestUtil.assertAnnotation;
-import static dev.harrel.jsonschema.util.TestUtil.assertError;
+import static dev.harrel.jsonschema.util.TestUtil.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -86,7 +85,7 @@ class EvaluatorFactoryBuilderTest {
 
         Validator.Result result = new ValidatorFactory().withEvaluatorFactory(factory).validate(schema, "\"a\"");
         assertThat(result.isValid()).isTrue();
-        List<Annotation> annotations = result.getAnnotations();
+        List<Annotation> annotations = sortAnnotations(result.getAnnotations());
         assertThat(annotations).hasSize(2);
         assertAnnotation(
                 annotations.get(0),

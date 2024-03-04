@@ -8,8 +8,8 @@
 Java library implementing [JSON schema specification](https://json-schema.org/specification.html):
 - compatible with Java 8,
 - support for the newest [specification versions](#dialects) [![Supported spec](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie-json-schema.github.io%2Fbowtie%2Fbadges%2Fjava-dev.harrel.json-schema%2Fsupported_versions.json)](https://bowtie.report/#/implementations/java-json-schema):
-  - Draft 2020-12 [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie-json-schema.github.io%2Fbowtie%2Fbadges%2Fjava-dev.harrel.json-schema%2Fcompliance%2FDraft_2020-12.json)](https://bowtie.report/#/dialects/draft2020-12),
-  - Draft 2019-09 [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie-json-schema.github.io%2Fbowtie%2Fbadges%2Fjava-dev.harrel.json-schema%2Fcompliance%2FDraft_2019-09.json)](https://bowtie.report/#/dialects/draft2019-09),
+  - Draft 2020-12 [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie.report%2Fbadges%2Fjava-dev.harrel.json-schema%2Fcompliance%2Fdraft2020-12.json)](https://bowtie.report/#/dialects/draft2020-12),
+  - Draft 2019-09 [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie.report%2Fbadges%2Fjava-dev.harrel.json-schema%2Fcompliance%2Fdraft2019-09.json)](https://bowtie.report/#/dialects/draft2019-09),
 - support for [custom keywords](#adding-custom-keywords),
 - support for annotation collection,
 - support for [format validation](#format-validation) (for a price of one additional dependency 😉),
@@ -29,12 +29,12 @@ Please note that you will also need to include at least one of the supported JSO
 <dependency>
     <groupId>dev.harrel</groupId>
     <artifactId>json-schema</artifactId>
-    <version>1.5.0</version>
+    <version>1.5.2</version>
 </dependency>
 ```
 ### Gradle
 ```groovy
-implementation 'dev.harrel:json-schema:1.5.0'
+implementation 'dev.harrel:json-schema:1.5.2'
 ```
 
 ## Usage

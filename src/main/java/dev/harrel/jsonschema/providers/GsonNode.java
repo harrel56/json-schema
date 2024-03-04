@@ -11,29 +11,13 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 
-public final class GsonNode implements JsonNode {
-    private final JsonElement node;
-    private final String jsonPointer;
-    private final SimpleType nodeType;
-
+public final class GsonNode extends AbstractJsonNode<JsonElement> {
     private GsonNode(JsonElement node, String jsonPointer) {
-        this.node = Objects.requireNonNull(node);
-        this.jsonPointer = Objects.requireNonNull(jsonPointer);
-        this.nodeType = computeNodeType(this.node);
+        super(Objects.requireNonNull(node), jsonPointer);
     }
 
     public GsonNode(JsonElement node) {
         this(node, "");
-    }
-
-    @Override
-    public String getJsonPointer() {
-        return jsonPointer;
-    }
-
-    @Override
-    public SimpleType getNodeType() {
-        return nodeType;
     }
 
     @Override
@@ -57,7 +41,7 @@ public final class GsonNode implements JsonNode {
     }
 
     @Override
-    public List<JsonNode> asArray() {
+    List<JsonNode> createArray() {
         List<JsonElement> elements = node.getAsJsonArray().asList();
         List<JsonNode> result = new ArrayList<>(elements.size());
         for (int i = 0; i < elements.size(); i++) {
@@ -67,9 +51,9 @@ public final class GsonNode implements JsonNode {
     }
 
     @Override
-    public Map<String, JsonNode> asObject() {
+    Map<String, JsonNode> createObject() {
         Set<Map.Entry<String, JsonElement>> objectMap = node.getAsJsonObject().entrySet();
-        Map<String, JsonNode> result = new HashMap<>(objectMap.size());
+        Map<String, JsonNode> result = MapUtil.newHashMap(objectMap.size());
         for (Map.Entry<String, JsonElement> entry : objectMap) {
             result.put(entry.getKey(), new GsonNode(entry.getValue(), this.jsonPointer + "/" + JsonNode.encodeJsonPointer(entry.getKey())));
         }
@@ -81,11 +65,12 @@ public final class GsonNode implements JsonNode {
         if (isNull()) {
             return "null";
         } else {
-            return JsonNode.super.toPrintableString();
+            return super.toPrintableString();
         }
     }
 
-    private static SimpleType computeNodeType(JsonElement node) {
+    @Override
+    SimpleType computeNodeType(JsonElement node) {
         if (node.isJsonNull()) {
             return SimpleType.NULL;
         } else if (node.isJsonArray()) {
