@@ -86,8 +86,8 @@ public final class JettisonNode extends SimpleJsonNode {
         }
     }
 
-    static final class BigDecimalTokener extends JSONTokener {
-        BigDecimalTokener(String s) {
+    private static final class BigDecimalTokener extends JSONTokener {
+        private BigDecimalTokener(String s) {
             super(s);
             this.useBigDecimal = true;
         }
