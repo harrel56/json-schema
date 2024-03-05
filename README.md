@@ -94,7 +94,7 @@ All adapter classes for JSON provider libs can be found in this [package](https:
 | org.json:json                               | [OrgJsonNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/OrgJsonNode.Factory.html)         | <ul><li>org.json.JSONObject,</li><li>org.json.JSONArray,</li><li>[literal types](#provider-literal-types).</li></ul>                                     |
 | new.minidev:json-smart                      | [JsonSmartNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/JsonSmartNode.Factory.html)     | <ul><li>net.minidev.json.JSONObject,</li><li>net.minidev.json.JSONArray,</li><li>[literal types](#provider-literal-types).</li></ul>                     |
 | org.codehouse.jettison:jettison             | [JettisonNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/JettisonNode.Factory.html)       | <ul><li>org.codehaus.jettison.json.JSONObject,</li><li>org.codehaus.jettison.json.JSONArray,</li><li>[literal types](#provider-literal-types).</li></ul> |
-| org.yaml:snakeyaml                          | [SnakeYamlNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/SnakeYamlNode.Factory.html)     | <ul><li>java.util.Map,</li><li>java.util.List,</li><li>[literal types](#provider-literal-types).</li></ul>                                               |
+| org.yaml:snakeyaml                          | [SnakeYamlNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/SnakeYamlNode.Factory.html)     | org.yaml.snakeyaml.nodes.Node                                                                                                                            |
 
 #### com.fasterxml.jackson.core:jackson-databind
 ```java
@@ -138,7 +138,6 @@ Some providers don't have a single wrapper class for their JSON node representat
 - `org.json:json`,
 - `new.minidev:json-smart`,
 - `org.codehouse.jettison:jettison`,
-- `org.yaml:snakeyaml`,
 
 and they represent literal nodes with these classes:
 - `java.lang.String`,

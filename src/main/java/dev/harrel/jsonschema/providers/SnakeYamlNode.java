@@ -2,117 +2,127 @@ package dev.harrel.jsonschema.providers;
 
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.JsonNodeFactory;
-import org.yaml.snakeyaml.LoaderOptions;
+import dev.harrel.jsonschema.SimpleType;
 import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.AbstractConstruct;
-import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.nodes.*;
 
+import java.io.StringReader;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public final class SnakeYamlNode extends SimpleJsonNode {
+public final class SnakeYamlNode extends AbstractJsonNode<Node> {
+    private BigDecimal asNumber;
 
-    private SnakeYamlNode(Object node, String jsonPointer) {
+    private SnakeYamlNode(Node node, String jsonPointer) {
         super(node, jsonPointer);
     }
 
-    private SnakeYamlNode(Object node) {
+    private SnakeYamlNode(Node node) {
         this(node, "");
     }
 
     @Override
     public boolean asBoolean() {
-        return (Boolean) node;
+        return Boolean.parseBoolean(((ScalarNode) node).getValue());
     }
 
     @Override
     public String asString() {
-        return String.valueOf(node);
+        return ((ScalarNode) node).getValue();
     }
 
     @Override
-    public List<JsonNode> createArray() {
-        List<?> list = (List<?>) node;
-        List<JsonNode> elements = new ArrayList<>(list.size());
-        for (Object o : list) {
-            elements.add(new SnakeYamlNode(o, jsonPointer + "/" + elements.size()));
+    public BigInteger asInteger() {
+        if (asNumber == null) {
+            asNumber = new BigDecimal(((ScalarNode) node).getValue());
+        }
+        return asNumber.toBigInteger();
+    }
+
+    @Override
+    public BigDecimal asNumber() {
+        if (asNumber == null) {
+            asNumber = new BigDecimal(((ScalarNode) node).getValue());
+        }
+        return asNumber;
+    }
+
+    @Override
+    List<JsonNode> createArray() {
+        List<Node> arrayNode = ((SequenceNode) node).getValue();
+        List<JsonNode> elements = new ArrayList<>(arrayNode.size());
+        for (int i = 0; i < arrayNode.size(); i++) {
+            elements.add(new SnakeYamlNode(arrayNode.get(i), jsonPointer + "/" + i));
         }
         return elements;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public Map<String, JsonNode> createObject() {
-        Map<String, JsonNode> map = new HashMap<>();
-        for (Map.Entry<String, ?> entry : ((Map<String, ?>) node).entrySet()) {
-            map.put(entry.getKey(), new SnakeYamlNode(entry.getValue(), jsonPointer + "/" + JsonNode.encodeJsonPointer(entry.getKey())));
+    Map<String, JsonNode> createObject() {
+        List<NodeTuple> objectNode = ((MappingNode) node).getValue();
+        Map<String, JsonNode> map = MapUtil.newHashMap(objectNode.size());
+        for (NodeTuple entry : objectNode) {
+            String key = ((ScalarNode) entry.getKeyNode()).getValue();
+            map.put(key, new SnakeYamlNode(entry.getValueNode(), jsonPointer + "/" + JsonNode.encodeJsonPointer(key)));
         }
         return map;
     }
 
     @Override
-    boolean isNull(Object node) {
-        return node == null;
-    }
+    SimpleType computeNodeType(Node node) {
+        if (node instanceof SequenceNode) {
+            return SimpleType.ARRAY;
+        } else if (node instanceof MappingNode) {
+            return SimpleType.OBJECT;
+        }
 
-    @Override
-    boolean isArray(Object node) {
-        return node instanceof List;
-    }
-
-    @Override
-    boolean isObject(Object node) {
-        return node instanceof Map;
+        if (node.getTag() == Tag.NULL) {
+            return SimpleType.NULL;
+        } else if (node.getTag() == Tag.BOOL) {
+            return SimpleType.BOOLEAN;
+        } else if (node.getTag() == Tag.INT) {
+            return SimpleType.INTEGER;
+        } else if (node.getTag() == Tag.FLOAT) {
+            String asString = ((ScalarNode) node).getValue();
+            asNumber = new BigDecimal(asString);
+            if (asNumber.scale() <= 0 || asNumber.stripTrailingZeros().scale() <= 0) {
+                return SimpleType.INTEGER;
+            } else {
+                return SimpleType.NUMBER;
+            }
+        } else {
+            return SimpleType.STRING;
+        }
     }
 
     public static final class Factory implements JsonNodeFactory {
         private final Yaml yaml;
 
         public Factory() {
-            this.yaml = new Yaml(new JsonSchemaCompatibleConstructor());
+            this(new Yaml());
+        }
+
+        public Factory(Yaml yaml) {
+            this.yaml = yaml;
         }
 
         @Override
         public JsonNode wrap(Object node) {
             if (node instanceof SnakeYamlNode) {
                 return (SnakeYamlNode) node;
+            } else if (node instanceof Node) {
+                return new SnakeYamlNode((Node) node);
             } else {
-                return new SnakeYamlNode(node);
+                throw new IllegalArgumentException("Cannot wrap object which is not an instance of org.yaml.snakeyaml.nodes.Node");
             }
         }
 
         @Override
         public JsonNode create(String rawJson) {
-            return new SnakeYamlNode(yaml.load(rawJson));
-        }
-    }
-
-    private static final class JsonSchemaCompatibleConstructor extends SafeConstructor {
-        private JsonSchemaCompatibleConstructor() {
-            super(createLoaderOptions());
-            AbstractConstruct constr = new AbstractConstruct() {
-                @Override
-                public Object construct(Node node) {
-                    return new BigDecimal(((ScalarNode) node).getValue());
-                }
-            };
-            this.yamlConstructors.put(Tag.FLOAT, constr);
-            this.yamlClassConstructors.put(NodeId.scalar, new ConstructYamlStr());
-        }
-
-        @Override
-        protected void flattenMapping(MappingNode node) {
-            super.flattenMapping(node, true);
-        }
-
-        private static LoaderOptions createLoaderOptions() {
-            LoaderOptions loaderOptions = new LoaderOptions();
-            loaderOptions.setAllowDuplicateKeys(false);
-            return loaderOptions;
+            return new SnakeYamlNode(yaml.compose(new StringReader(rawJson)));
         }
     }
 }
