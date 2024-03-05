@@ -12,12 +12,13 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public final class SnakeYamlNode extends AbstractJsonNode<Node> {
     private BigDecimal asNumber;
 
     private SnakeYamlNode(Node node, String jsonPointer) {
-        super(node, jsonPointer);
+        super(Objects.requireNonNull(node), jsonPointer);
     }
 
     private SnakeYamlNode(Node node) {
