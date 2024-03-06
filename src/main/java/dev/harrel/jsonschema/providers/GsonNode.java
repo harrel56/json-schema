@@ -84,8 +84,8 @@ public final class GsonNode extends AbstractJsonNode<JsonElement> {
             } else if (jsonPrimitive.isString()) {
                 return SimpleType.STRING;
             } else {
-                String asString = jsonPrimitive.getAsString();
-                if (!asString.contains(".") || asString.split("\\.")[1].matches("^0*$")) {
+                BigDecimal bigDecimal = jsonPrimitive.getAsBigDecimal();
+                if (bigDecimal.scale() <= 0 || bigDecimal.stripTrailingZeros().scale() <= 0) {
                     return SimpleType.INTEGER;
                 } else {
                     return SimpleType.NUMBER;

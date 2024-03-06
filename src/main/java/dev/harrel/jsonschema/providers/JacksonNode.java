@@ -61,9 +61,6 @@ public final class JacksonNode extends AbstractJsonNode<com.fasterxml.jackson.da
 
     @Override
     SimpleType computeNodeType(com.fasterxml.jackson.databind.JsonNode node) {
-        if (node.canConvertToExactIntegral()) {
-            return SimpleType.INTEGER;
-        }
         switch (node.getNodeType()) {
             case NULL:
                 return SimpleType.NULL;
@@ -72,7 +69,11 @@ public final class JacksonNode extends AbstractJsonNode<com.fasterxml.jackson.da
             case STRING:
                 return SimpleType.STRING;
             case NUMBER:
-                return SimpleType.NUMBER;
+                if (node.canConvertToExactIntegral()) {
+                    return SimpleType.INTEGER;
+                } else {
+                    return SimpleType.NUMBER;
+                }
             case ARRAY:
                 return SimpleType.ARRAY;
             case OBJECT:
