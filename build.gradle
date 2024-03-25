@@ -41,7 +41,7 @@ def jsonProviders = [
         orgJson    : 'org.json:json:20240303',
         jettison   : 'org.codehaus.jettison:jettison:1.5.4',
         jakartaJson: 'jakarta.json:jakarta.json-api:2.1.3',
-        jsonSmart  : 'net.minidev:json-smart:2.5.0'
+        jsonSmart  : 'net.minidev:json-smart:2.5.1'
 ]
 
 jsonProviders.entrySet().forEach {
