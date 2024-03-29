@@ -20,10 +20,13 @@ public interface Dialect {
     /**
      * Optional meta-schema URI against which all schemas will be validated (a <i>$schema</i> keyword overrides it).
      * If empty, no validation will be performed by default.
+     * @apiNote Default implementation returns {@code getSpecificationVersion().getId()}.
      *
      * @return optional with meta-schema URI
      */
-    Optional<URI> getMetaSchemaUri();
+    default Optional<URI> getMetaSchemaUri() {
+        return Optional.of(getSpecificationVersion().getId());
+    }
 
     /**
      * Core evaluator factory used by this dialect.

@@ -1,12 +1,11 @@
 package dev.harrel.jsonschema;
 
-import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
-import static dev.harrel.jsonschema.Vocabulary.*;
+import static dev.harrel.jsonschema.Vocabulary.Draft2019;
+import static dev.harrel.jsonschema.Vocabulary.Draft2020;
 import static java.util.Collections.singleton;
 import static java.util.Collections.unmodifiableMap;
 
@@ -41,11 +40,6 @@ public final class Dialects {
         @Override
         public SpecificationVersion getSpecificationVersion() {
             return SpecificationVersion.DRAFT2020_12;
-        }
-
-        @Override
-        public Optional<URI> getMetaSchemaUri() {
-            return Optional.of(SpecificationVersion.DRAFT2020_12.getId());
         }
 
         @Override
@@ -93,11 +87,6 @@ public final class Dialects {
         @Override
         public SpecificationVersion getSpecificationVersion() {
             return SpecificationVersion.DRAFT2019_09;
-        }
-
-        @Override
-        public Optional<URI> getMetaSchemaUri() {
-            return Optional.of(SpecificationVersion.DRAFT2019_09.getId());
         }
 
         @Override
