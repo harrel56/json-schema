@@ -3,6 +3,7 @@ package dev.harrel.jsonschema;
 import dev.harrel.jsonschema.providers.JacksonNode;
 import org.junit.jupiter.api.Test;
 
+import java.net.URI;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -117,8 +118,8 @@ class FormatEvaluatorFactoryTest {
 
     private static class FormatDialect extends Dialects.Draft2020Dialect {
         @Override
-        public String getMetaSchema() {
-            return null;
+        public Optional<URI> getMetaSchemaUri() {
+            return Optional.empty();
         }
 
         @Override

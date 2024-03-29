@@ -13,8 +13,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 public abstract class DisabledSchemaValidationTest implements ProviderTest {
     private final Dialect testDialect = new Dialects.Draft2020Dialect() {
         @Override
-        public String getMetaSchema() {
-            return null;
+        public Optional<URI> getMetaSchemaUri() {
+            return Optional.empty();
         }
     };
 

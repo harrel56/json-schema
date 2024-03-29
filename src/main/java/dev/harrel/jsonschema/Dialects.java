@@ -1,7 +1,9 @@
 package dev.harrel.jsonschema;
 
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import static dev.harrel.jsonschema.Vocabulary.*;
@@ -42,8 +44,8 @@ public final class Dialects {
         }
 
         @Override
-        public String getMetaSchema() {
-            return SpecificationVersion.DRAFT2020_12.getId().toString();
+        public Optional<URI> getMetaSchemaUri() {
+            return Optional.of(SpecificationVersion.DRAFT2020_12.getId());
         }
 
         @Override
@@ -94,8 +96,8 @@ public final class Dialects {
         }
 
         @Override
-        public String getMetaSchema() {
-            return SpecificationVersion.DRAFT2019_09.getId().toString();
+        public Optional<URI> getMetaSchemaUri() {
+            return Optional.of(SpecificationVersion.DRAFT2019_09.getId());
         }
 
         @Override

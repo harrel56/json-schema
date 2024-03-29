@@ -68,8 +68,8 @@ class ValidatorFactoryTest {
         Validator validator = new ValidatorFactory()
                 .withDialect(new Dialects.Draft2020Dialect() {
                     @Override
-                    public String getMetaSchema() {
-                        return null;
+                    public Optional<URI> getMetaSchemaUri() {
+                        return Optional.empty();
                     }
                 })
                 .withSchemaResolver(uri -> SchemaResolver.Result.fromString(RAW_SCHEMA))
