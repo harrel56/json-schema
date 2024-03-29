@@ -17,15 +17,15 @@ public abstract class MetaSchemaTest implements ProviderTest {
 
     static class CustomDialect extends Dialects.Draft2020Dialect {
         @Override
-        public String getMetaSchema() {
-            return "custom";
+        public Optional<URI> getMetaSchemaUri() {
+            return Optional.of(URI.create("custom"));
         }
     }
 
     static class InvalidCustomDialect extends Dialects.Draft2020Dialect {
         @Override
-        public String getMetaSchema() {
-            return "invalid";
+        public Optional<URI> getMetaSchemaUri() {
+            return Optional.of(URI.create("invalid"));
         }
     }
 

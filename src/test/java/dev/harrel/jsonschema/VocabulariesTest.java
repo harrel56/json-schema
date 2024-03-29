@@ -14,8 +14,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 public abstract class VocabulariesTest implements ProviderTest {
     private final Dialect testDialect = new Dialects.Draft2020Dialect() {
         @Override
-        public String getMetaSchema() {
-            return null;
+        public Optional<URI> getMetaSchemaUri() {
+            return Optional.empty();
         }
     };
 

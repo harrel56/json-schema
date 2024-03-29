@@ -1,6 +1,8 @@
 package dev.harrel.jsonschema;
 
+import java.net.URI;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -16,12 +18,15 @@ public interface Dialect {
     SpecificationVersion getSpecificationVersion();
 
     /**
-     * Meta-schema URI against which all schemas will be validated,
-     * unless there is a <i>$schema</i> keyword present.
+     * Optional meta-schema URI against which all schemas will be validated (a <i>$schema</i> keyword overrides it).
+     * If empty, no validation will be performed by default.
+     * @apiNote Default implementation returns {@code getSpecificationVersion().getId()}.
      *
-     * @return meta-schema URI
+     * @return optional with meta-schema URI
      */
-    String getMetaSchema();
+    default Optional<URI> getMetaSchemaUri() {
+        return Optional.of(getSpecificationVersion().getId());
+    }
 
     /**
      * Core evaluator factory used by this dialect.
