@@ -36,7 +36,6 @@ jobs:
           workflow: tests.yml
           commit: ${{ github.event.workflow_run.head_sha }}
           name: report-output
-          path: build/reports
 
       - name: Setup java
         uses: actions/setup-java@v4

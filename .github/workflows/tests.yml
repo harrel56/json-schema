@@ -113,4 +113,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: report-output
-          path: build/reports
+          path: |
+            build/classes
+            build/generated
+            build/jacoco
+            build/reports
+            build/test-results
