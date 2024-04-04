@@ -109,13 +109,6 @@ jobs:
       - name: Gradle jacoco report
         run: ./gradlew jacocoTestReport --no-daemon
 
-      - name: Generate coverage badge
-        uses: cicirello/jacoco-badge-generator@v2
-        with:
-          jacoco-csv-file: build/reports/jacoco/test/jacocoTestReport.csv
-          generate-coverage-badge: true
-          generate-coverage-endpoint: true
-
       - name: Upload report
         uses: actions/upload-artifact@v4
         with:
