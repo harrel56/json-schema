@@ -21,12 +21,14 @@ jobs:
       - uses: octokit/request-action@v2.x
         id: get_latest_release
         with:
-          route: GET /repos/{owner}/{repo}/releases/latest
+          route: GET /repos/{owner}/{repo}/actions/runs/{run_id}
           owner: harrel56
           repo: json-schema
+          run_id: ${{ github.event.workflow_run.id }}
         env:
          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: "echo latest release: '${{ steps.get_latest_release.outputs.data }}'"
+      - run: "echo latest release: '${{ steps.get_latest_release.outputs.data.head_branch }}'"
 
   sonar-cloud:
     if: github.event.workflow_run.conclusion == 'success'
