@@ -154,9 +154,9 @@ public final class EvaluationContext {
 
         List<Annotation> annotations = annotationTree.getNode(parentPath).toList();
         Set<String> all = new HashSet<>(annotations.size() + errors.size());
-        for (Annotation annot : annotations) {
-            if (annot.getEvaluationPath().startsWith(correctedParentPath)) {
-                all.add(annot.getInstanceLocation());
+        for (Annotation annotation : annotations) {
+            if (annotation.getEvaluationPath().startsWith(correctedParentPath)) {
+                all.add(annotation.getInstanceLocation());
             }
         }
         for (Error error : errors) {
