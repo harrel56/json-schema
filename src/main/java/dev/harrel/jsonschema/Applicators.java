@@ -558,9 +558,7 @@ class UnevaluatedItemsEvaluator implements Evaluator {
             return Result.success();
         }
 
-        Set<String> evaluatedInstances = ctx.getAnnotationsFromParent()
-                .map(Annotation::getInstanceLocation)
-                .collect(Collectors.toSet());
+        Set<String> evaluatedInstances = ctx.calculateEvaluatedInstancesFromParent();
         boolean valid = true;
         for (JsonNode arrayNode : node.asArray()) {
             if (!evaluatedInstances.contains(arrayNode.getJsonPointer())) {
@@ -597,9 +595,7 @@ class UnevaluatedPropertiesEvaluator implements Evaluator {
             return Result.success();
         }
 
-        Set<String> evaluatedInstances = ctx.getAnnotationsFromParent()
-                .map(Annotation::getInstanceLocation)
-                .collect(Collectors.toSet());
+        Set<String> evaluatedInstances = ctx.calculateEvaluatedInstancesFromParent();
         boolean valid = true;
         for (JsonNode fieldNode : node.asObject().values()) {
             if (!evaluatedInstances.contains(fieldNode.getJsonPointer())) {

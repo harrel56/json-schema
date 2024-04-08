@@ -2,7 +2,6 @@ package dev.harrel.jsonschema;
 
 import java.net.URI;
 import java.util.*;
-import java.util.stream.Stream;
 
 import static java.util.Collections.unmodifiableList;
 
@@ -147,12 +146,25 @@ public final class EvaluationContext {
         return annotationTree;
     }
 
-    Stream<Annotation> getAnnotationsFromParent() {
+    Set<String> calculateEvaluatedInstancesFromParent() {
         /* As on evaluationStack there are no paths to schemas in arrays (e.g. "/items/0")
-        * this needs to be accounted for with correctedParentPath */
+         * this needs to be accounted for with correctedParentPath */
         String parentPath = evaluationStack.get(1);
         String correctedParentPath = UriUtil.getJsonPointerParent(evaluationStack.element());
-        return annotationTree.getNode(parentPath).stream().filter(item -> item.getEvaluationPath().startsWith(correctedParentPath));
+
+        List<Annotation> annotations = annotationTree.getNode(parentPath).toList();
+        Set<String> all = new HashSet<>(annotations.size() + errors.size());
+        for (Annotation annot : annotations) {
+            if (annot.getEvaluationPath().startsWith(correctedParentPath)) {
+                all.add(annot.getInstanceLocation());
+            }
+        }
+        for (Error error : errors) {
+            if (error.getEvaluationPath().startsWith(correctedParentPath)) {
+                all.add(error.getInstanceLocation());
+            }
+        }
+        return all;
     }
 
     boolean validateAgainstSchema(Schema schema, JsonNode node) {
