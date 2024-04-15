@@ -207,6 +207,7 @@ public final class Validator {
         public List<Annotation> getAnnotations() {
             if (annotations == null) {
                 this.annotations = unmodifiableList(annotationTree.getAllAnnotations()
+                        .stream()
                         .filter(a -> a.getAnnotation() != null)
                         .collect(Collectors.toList()));
             }
