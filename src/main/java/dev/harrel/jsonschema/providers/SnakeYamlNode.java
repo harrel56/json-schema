@@ -128,18 +128,28 @@ public final class SnakeYamlNode extends AbstractJsonNode<Node> {
         }
 
         private static void assertKeyUniqueness(Node node) {
-            if (!(node instanceof MappingNode)) {
+            assertKeyUniqueness(node, Collections.newSetFromMap(new IdentityHashMap<>()));
+        }
+
+        private static void assertKeyUniqueness(Node node, Set<Node> visited) {
+            if (!(node instanceof CollectionNode<?>) || !visited.add(node)) {
                 return;
-            }
-            List<NodeTuple> tuples = ((MappingNode) node).getValue();
-            Set<String> keys = new HashSet<>();
-            for (NodeTuple tuple : tuples) {
-                ScalarNode keyNode = (ScalarNode) tuple.getKeyNode();
-                if (!keys.add(keyNode.getValue())) {
-                    throw new IllegalArgumentException("Mapping key '" + keyNode.getValue() + "' is duplicated" + keyNode.getStartMark());
+            } else if (node instanceof SequenceNode) {
+                for (Node element : ((SequenceNode) node).getValue()) {
+                    assertKeyUniqueness(element, visited);
                 }
-                assertKeyUniqueness(tuple.getValueNode());
+            } else if (node instanceof MappingNode) {
+                List<NodeTuple> tuples = ((MappingNode) node).getValue();
+                Set<String> keys = new HashSet<>();
+                for (NodeTuple tuple : tuples) {
+                    ScalarNode keyNode = (ScalarNode) tuple.getKeyNode();
+                    if (!keys.add(keyNode.getValue())) {
+                        throw new IllegalArgumentException("Mapping key '" + keyNode.getValue() + "' is duplicated" + keyNode.getStartMark());
+                    }
+                    assertKeyUniqueness(tuple.getValueNode(), visited);
+                }
             }
+            visited.remove(node);
         }
     }
 }

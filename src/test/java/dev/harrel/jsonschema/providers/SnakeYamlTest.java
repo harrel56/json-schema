@@ -89,7 +89,7 @@ class SnakeYamlTest {
     @Test
     void shouldNotAllowDuplicateKeys() {
         String yamlString = """
-                '1': 1
+                1: 1
                 '1': '1'
                 """;
         JsonNodeFactory factory = createFactory();
@@ -99,6 +99,27 @@ class SnakeYamlTest {
                         Mapping key '1' is duplicated in 'reader', line 2, column 1:
                             '1': '1'
                             ^""");
+    }
+
+    @Test
+    void shouldNotAllowNestedDuplicateKeys() {
+        String yamlString = """
+                1: 1
+                2:
+                  - 1: 1
+                  - 2:
+                      1: 1
+                      2:
+                        3: 3
+                        3: 3
+                """;
+        JsonNodeFactory factory = createFactory();
+        assertThatThrownBy(() -> factory.create(yamlString))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("""
+                        Mapping key '3' is duplicated in 'reader', line 8, column 9:
+                                    3: 3
+                                    ^""");
     }
 
     @Test
@@ -129,6 +150,44 @@ class SnakeYamlTest {
         assertThat(barArray2.get(0).asInteger()).isEqualTo(BigInteger.valueOf(1));
         assertThat(barArray2.get(1).isInteger()).isTrue();
         assertThat(barArray2.get(1).asInteger()).isEqualTo(BigInteger.valueOf(2));
+    }
+
+    @Test
+    void shouldHandleRecursiveAliases() {
+        String yamlString = """
+                foo: &foo
+                  bar:
+                    - 1
+                    - 2
+                  nested: *foo
+                """;
+        JsonNode node = createFactory().create(yamlString);
+        assertThat(node.isObject()).isTrue();
+        Map<String, JsonNode> nodeMap = node.asObject();
+        assertThat(nodeMap).containsOnlyKeys("foo");
+        Map<String, JsonNode> fooMap = nodeMap.get("foo").asObject();
+        assertThat(fooMap.get("bar").isArray()).isTrue();
+        List<JsonNode> barArray = fooMap.get("bar").asArray();
+        assertThat(barArray.get(0).isInteger()).isTrue();
+        assertThat(barArray.get(0).asInteger()).isEqualTo(BigInteger.valueOf(1));
+        assertThat(barArray.get(1).isInteger()).isTrue();
+        assertThat(barArray.get(1).asInteger()).isEqualTo(BigInteger.valueOf(2));
+
+        Map<String, JsonNode> nestedMap = fooMap.get("nested").asObject();
+        assertThat(nestedMap.get("bar").isArray()).isTrue();
+        List<JsonNode> barArray2 = nestedMap.get("bar").asArray();
+        assertThat(barArray2.get(0).isInteger()).isTrue();
+        assertThat(barArray2.get(0).asInteger()).isEqualTo(BigInteger.valueOf(1));
+        assertThat(barArray2.get(1).isInteger()).isTrue();
+        assertThat(barArray2.get(1).asInteger()).isEqualTo(BigInteger.valueOf(2));
+
+        Map<String, JsonNode> nestedMap2 = nestedMap.get("nested").asObject();
+        assertThat(nestedMap2.get("bar").isArray()).isTrue();
+        List<JsonNode> barArray3 = nestedMap2.get("bar").asArray();
+        assertThat(barArray3.get(0).isInteger()).isTrue();
+        assertThat(barArray3.get(0).asInteger()).isEqualTo(BigInteger.valueOf(1));
+        assertThat(barArray3.get(1).isInteger()).isTrue();
+        assertThat(barArray3.get(1).asInteger()).isEqualTo(BigInteger.valueOf(2));
     }
 
     @Test
