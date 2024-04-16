@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.DuplicateKeyException;
 import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.parser.ParserException;
 
