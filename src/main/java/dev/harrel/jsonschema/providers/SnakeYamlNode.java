@@ -9,10 +9,7 @@ import org.yaml.snakeyaml.nodes.*;
 import java.io.StringReader;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public final class SnakeYamlNode extends AbstractJsonNode<Node> {
     private BigDecimal asNumber;
@@ -115,7 +112,9 @@ public final class SnakeYamlNode extends AbstractJsonNode<Node> {
             if (node instanceof SnakeYamlNode) {
                 return (SnakeYamlNode) node;
             } else if (node instanceof Node) {
-                return new SnakeYamlNode((Node) node);
+                Node providerNode = (Node) node;
+                assertKeyUniqueness(providerNode);
+                return new SnakeYamlNode(providerNode);
             } else {
                 throw new IllegalArgumentException("Cannot wrap object which is not an instance of org.yaml.snakeyaml.nodes.Node");
             }
@@ -123,7 +122,24 @@ public final class SnakeYamlNode extends AbstractJsonNode<Node> {
 
         @Override
         public JsonNode create(String rawJson) {
-            return new SnakeYamlNode(yaml.compose(new StringReader(rawJson)));
+            Node node = yaml.compose(new StringReader(rawJson));
+            assertKeyUniqueness(node);
+            return new SnakeYamlNode(node);
+        }
+
+        private static void assertKeyUniqueness(Node node) {
+            if (!(node instanceof MappingNode)) {
+                return;
+            }
+            List<NodeTuple> tuples = ((MappingNode) node).getValue();
+            Set<String> keys = new HashSet<>();
+            for (NodeTuple tuple : tuples) {
+                ScalarNode keyNode = (ScalarNode) tuple.getKeyNode();
+                if (!keys.add(keyNode.getValue())) {
+                    throw new IllegalArgumentException("Mapping key '" + keyNode.getValue() + "' is duplicated" + keyNode.getStartMark());
+                }
+                assertKeyUniqueness(tuple.getValueNode());
+            }
         }
     }
 }

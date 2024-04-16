@@ -88,15 +88,18 @@ class SnakeYamlTest {
     }
 
     @Test
-    @Disabled("It's hard to enforce key uniqueness, it's not configurable when operating on Node instances")
     void shouldNotAllowDuplicateKeys() {
         String yamlString = """
-                1: 1
+                '1': 1
                 '1': '1'
                 """;
         JsonNodeFactory factory = createFactory();
         assertThatThrownBy(() -> factory.create(yamlString))
-                .isInstanceOf(DuplicateKeyException.class);
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("""
+                        Mapping key '1' is duplicated in 'reader', line 2, column 1:
+                            '1': '1'
+                            ^""");
     }
 
     @Test
