@@ -1,7 +1,7 @@
 package dev.harrel.jsonschema.util;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.harrel.jsonschema.Validator;
@@ -28,11 +28,12 @@ import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 public class SuiteTestGenerator {
     private static final Logger logger = Logger.getLogger("SuiteTestGenerator");
 
-    private final ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    private final ObjectMapper objectMapper;
     private final Validator validator;
     private final Map<String, Map<String, Set<String>>> skippedTests;
 
-    public SuiteTestGenerator(Validator validator, Map<String, Map<String, Set<String>>> skippedTests) {
+    public SuiteTestGenerator(ObjectMapper objectMapper, Validator validator, Map<String, Map<String, Set<String>>> skippedTests) {
+        this.objectMapper = objectMapper;
         this.validator = validator;
         this.skippedTests = skippedTests;
     }
@@ -72,7 +73,7 @@ public class SuiteTestGenerator {
     }
 
     private DynamicNode readTestCase(String fileName, TestBundle bundle, TestCase testCase) {
-        boolean skipped = skippedTests.getOrDefault(fileName, Map.of())
+        boolean skipped = skippedTests.getOrDefault(stripExtension(fileName), Map.of())
                 .getOrDefault(bundle.description, Set.of())
                 .contains(testCase.description);
 
@@ -80,17 +81,21 @@ public class SuiteTestGenerator {
                 testValidation(bundle.description, testCase.description, bundle.schema, testCase.data, testCase.valid, skipped));
     }
 
+    private String stripExtension(String fileName) {
+        return fileName.substring(0, fileName.lastIndexOf('.'));
+    }
+
     private record TestBundle(String description, JsonNode schema, List<TestCase> tests) {}
 
     private record TestCase(String description, JsonNode data, boolean valid) {}
 
-    private void testValidation(String bundle, String name, JsonNode schema, JsonNode instance, boolean valid, boolean skipped) {
+    private void testValidation(String bundle, String name, JsonNode schema, JsonNode instance, boolean valid, boolean skipped) throws JsonProcessingException {
         Assumptions.assumeFalse(skipped);
 //        Assumptions.assumeTrue(bundle.equals("unevaluatedProperties with $dynamicRef"));
 //        Assumptions.assumeTrue(name.equals("with no unevaluated properties"));
 
-        String schemaString = schema.toPrettyString();
-        String instanceString = instance.toPrettyString();
+        String schemaString = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(schema);
+        String instanceString = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(instance);
         logger.info("%s: %s".formatted(bundle, name));
         logger.info(schemaString);
         logger.info(instanceString);

@@ -1,5 +1,7 @@
 package dev.harrel.jsonschema;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.harrel.jsonschema.util.RemoteSchemaResolver;
 import dev.harrel.jsonschema.util.SuiteTestGenerator;
 import org.junit.jupiter.api.DynamicNode;
@@ -16,11 +18,11 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
     Stream<DynamicNode> draft2020Required() {
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(getJsonNodeFactory())
-                .withSchemaResolver(new RemoteSchemaResolver())
+                .withSchemaResolver(createSchemaResolver())
                 .createValidator();
 
-        SuiteTestGenerator generator = new SuiteTestGenerator(validator, skippedRequiredTests());
-        return generator.generate("/suite/tests/draft2020-12");
+        SuiteTestGenerator generator = new SuiteTestGenerator(createObjectMapper(), validator, skippedRequiredTests());
+        return generator.generate(getTestPath() + "/draft2020-12");
     }
 
     @TestFactory
@@ -28,11 +30,11 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
         Validator validator = new ValidatorFactory()
                 .withDialect(new Dialects.Draft2019Dialect())
                 .withJsonNodeFactory(getJsonNodeFactory())
-                .withSchemaResolver(new RemoteSchemaResolver())
+                .withSchemaResolver(createSchemaResolver())
                 .createValidator();
 
-        SuiteTestGenerator generator = new SuiteTestGenerator(validator, skippedRequiredTests());
-        return generator.generate("/suite/tests/draft2019-09");
+        SuiteTestGenerator generator = new SuiteTestGenerator(createObjectMapper(), validator, skippedRequiredTests());
+        return generator.generate(getTestPath() + "/draft2019-09");
     }
 
     @TestFactory
@@ -40,11 +42,11 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
         Validator validator = new ValidatorFactory()
                 .withEvaluatorFactory(new FormatEvaluatorFactory())
                 .withJsonNodeFactory(getJsonNodeFactory())
-                .withSchemaResolver(new RemoteSchemaResolver())
+                .withSchemaResolver(createSchemaResolver())
                 .createValidator();
 
-        SuiteTestGenerator generator = new SuiteTestGenerator(validator, skippedFormatTests());
-        return generator.generate("/suite/tests/draft2020-12/optional/format");
+        SuiteTestGenerator generator = new SuiteTestGenerator(createObjectMapper(), validator, skippedFormatTests());
+        return generator.generate(getTestPath() + "/draft2020-12/optional/format");
     }
 
     @TestFactory
@@ -53,11 +55,11 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
                 .withDialect(new Dialects.Draft2019Dialect())
                 .withEvaluatorFactory(new FormatEvaluatorFactory())
                 .withJsonNodeFactory(getJsonNodeFactory())
-                .withSchemaResolver(new RemoteSchemaResolver())
+                .withSchemaResolver(createSchemaResolver())
                 .createValidator();
 
-        SuiteTestGenerator generator = new SuiteTestGenerator(validator, skippedFormatTests());
-        return generator.generate("/suite/tests/draft2019-09/optional/format");
+        SuiteTestGenerator generator = new SuiteTestGenerator(createObjectMapper(), validator, skippedFormatTests());
+        return generator.generate(getTestPath() + "/draft2019-09/optional/format");
     }
 
     @TestFactory
@@ -66,12 +68,12 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .createValidator();
 
-        SuiteTestGenerator generator = new SuiteTestGenerator(validator, Map.of());
+        SuiteTestGenerator generator = new SuiteTestGenerator(createObjectMapper(), validator, Map.of());
         return Stream.of(
-                generator.generate("/suite/tests/draft2020-12/optional/bignum.json"),
-                generator.generate("/suite/tests/draft2020-12/optional/no-schema.json"),
-                generator.generate("/suite/tests/draft2020-12/optional/non-bmp-regex.json"),
-                generator.generate("/suite/tests/draft2020-12/optional/refOfUnknownKeyword.json")
+                generator.generate(getTestPath() + "/draft2020-12/optional/bignum" + getFileExtension()),
+                generator.generate(getTestPath() + "/draft2020-12/optional/no-schema" + getFileExtension()),
+                generator.generate(getTestPath() + "/draft2020-12/optional/non-bmp-regex" + getFileExtension()),
+                generator.generate(getTestPath() + "/draft2020-12/optional/refOfUnknownKeyword" + getFileExtension())
         ).flatMap(Function.identity());
     }
 
@@ -82,23 +84,39 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .createValidator();
 
-        SuiteTestGenerator generator = new SuiteTestGenerator(validator, Map.of());
+        SuiteTestGenerator generator = new SuiteTestGenerator(createObjectMapper(), validator, Map.of());
         return Stream.of(
-                generator.generate("/suite/tests/draft2019-09/optional/bignum.json"),
-                generator.generate("/suite/tests/draft2019-09/optional/no-schema.json"),
-                generator.generate("/suite/tests/draft2019-09/optional/non-bmp-regex.json"),
-                generator.generate("/suite/tests/draft2019-09/optional/refOfUnknownKeyword.json")
+                generator.generate(getTestPath() + "/draft2019-09/optional/bignum" + getFileExtension()),
+                generator.generate(getTestPath() + "/draft2019-09/optional/no-schema" + getFileExtension()),
+                generator.generate(getTestPath() + "/draft2019-09/optional/non-bmp-regex" + getFileExtension()),
+                generator.generate(getTestPath() + "/draft2019-09/optional/refOfUnknownKeyword" + getFileExtension())
         ).flatMap(Function.identity());
+    }
+
+    ObjectMapper createObjectMapper() {
+        return  new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
+
+    SchemaResolver createSchemaResolver() {
+        return new RemoteSchemaResolver();
+    }
+
+    String getTestPath() {
+        return "/suite/tests";
+    }
+
+    String getFileExtension() {
+        return ".json";
     }
 
     private static Map<String, Map<String, Set<String>>> skippedRequiredTests() {
         return Map.of(
-                "id.json", Map.of(
+                "id", Map.of(
                         "$id inside an enum is not a real identifier", Set.of(
                                 "match $ref to $id"
                         )
                 ),
-                "unknownKeyword.json", Map.of(
+                "unknownKeyword", Map.of(
                         "$id inside an unknown keyword is not a real identifier", Set.of(
                                 "type matches second anyOf, which has a real schema in it",
                                 "type matches non-schema in first anyOf"
@@ -109,14 +127,14 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
 
     private static Map<String, Map<String, Set<String>>> skippedFormatTests() {
         return Map.of(
-                "date-time.json", Map.of(
+                "date-time", Map.of(
                         "validation of date-time strings", Set.of(
                                 /* leap seconds not supported */
                                 "a valid date-time with a leap second, UTC",
                                 "a valid date-time with a leap second, with minus offset"
                         )
                 ),
-                "time.json", Map.of(
+                "time", Map.of(
                         "validation of time strings", Set.of(
                                 /* leap seconds not supported */
                                 "a valid time string with leap second, Zulu",
@@ -130,12 +148,12 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
                                 "no time offset with second fraction"
                         )
                 ),
-                "iri.json", Map.of(
+                "iri", Map.of(
                         "validation of IRIs", Set.of(
                                 "an invalid IRI based on IPv6"
                         )
                 ),
-                "idn-hostname.json", Map.of(
+                "idn-hostname", Map.of(
                         "validation of internationalized host names", Set.of(
                                 "a valid host name (example.test in Hangul)",
                                 "invalid Punycode",
@@ -156,7 +174,7 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
                                 "ZERO WIDTH NON-JOINER not preceded by Virama but matches regexp"
                         )
                 ),
-                "ipv4.json", Map.of(
+                "ipv4", Map.of(
                         "validation of IP addresses", Set.of(
                                 "invalid leading zeroes, as they are treated as octals"
                         )
