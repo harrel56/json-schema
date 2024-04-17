@@ -129,6 +129,10 @@ new ValidatorFactory().withJsonNodeFactory(new JettisonNode.Factory());
 ```
 
 #### org.yaml:snakeyaml
+Library is compatible with YAML 1.1 standard. However, there are few constraints:
+- all object keys are treated as strings,
+- object keys cannot be duplicated,
+- anchors and aliases are supported while override syntax (`<<`) is not.
 ```java
 new ValidatorFactory().withJsonNodeFactory(new SnakeYamlNode.Factory());
 ```
