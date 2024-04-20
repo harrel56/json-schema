@@ -80,7 +80,7 @@ public final class JsonSmartNode extends SimpleJsonNode {
         @Override
         public JsonSmartNode wrap(Object node) {
             if (node instanceof JsonSmartNode) {
-                return (JsonSmartNode) node;
+                return new JsonSmartNode(((JsonSmartNode) node).node);
             } else {
                 return new JsonSmartNode(node);
             }

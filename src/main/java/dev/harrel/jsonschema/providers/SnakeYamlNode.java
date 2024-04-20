@@ -110,7 +110,7 @@ public final class SnakeYamlNode extends AbstractJsonNode<Node> {
         @Override
         public JsonNode wrap(Object node) {
             if (node instanceof SnakeYamlNode) {
-                return (SnakeYamlNode) node;
+                return new SnakeYamlNode(((SnakeYamlNode) node).node);
             } else if (node instanceof Node) {
                 Node providerNode = (Node) node;
                 assertKeyUniqueness(providerNode);

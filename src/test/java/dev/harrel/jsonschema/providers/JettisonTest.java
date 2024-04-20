@@ -27,26 +27,10 @@ class JettisonTest {
     }
 
     @Test
-    void shouldWrapForJsonNode() throws JSONException {
-        JettisonNode.Factory factory = new JettisonNode.Factory();
-        var jsonNode = factory.wrap(new JSONObject("{}"));
-        JsonNode wrap = factory.wrap(jsonNode);
-        assertThat(wrap).isNotNull();
-        assertThat(wrap.getNodeType()).isEqualTo(SimpleType.OBJECT);
-    }
-
-    @Test
     void shouldFailWrapForInvalidArgument() throws JsonProcessingException {
         com.fasterxml.jackson.databind.JsonNode object = new ObjectMapper().readTree("{}");
         JettisonNode.Factory factory = new JettisonNode.Factory();
         assertThatThrownBy(() -> factory.wrap(object))
-                .isInstanceOf(IllegalArgumentException.class);
-    }
-
-    @Test
-    void shouldFailCreateForInvalidArgument() {
-        JettisonNode.Factory factory = new JettisonNode.Factory();
-        assertThatThrownBy(() -> factory.create("{"))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -76,6 +60,14 @@ class JettisonTest {
 
     @Nested
     class Draft2019EvaluatorFactoryTest extends dev.harrel.jsonschema.Draft2019EvaluatorFactoryTest {
+        @Override
+        public JsonNodeFactory getJsonNodeFactory() {
+            return createFactory();
+        }
+    }
+
+    @Nested
+    class JsonNodeFactoryTest extends dev.harrel.jsonschema.JsonNodeFactoryTest {
         @Override
         public JsonNodeFactory getJsonNodeFactory() {
             return createFactory();
