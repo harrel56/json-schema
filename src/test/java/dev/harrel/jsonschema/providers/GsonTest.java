@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;

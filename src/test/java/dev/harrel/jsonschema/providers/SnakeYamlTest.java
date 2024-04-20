@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.nodes.Node;
-import org.yaml.snakeyaml.parser.ParserException;
 
 import java.io.StringReader;
 import java.math.BigDecimal;
