@@ -201,7 +201,6 @@ class ContainsEvaluator implements Evaluator {
     }
 }
 
-@SuppressWarnings("unchecked")
 class AdditionalPropertiesEvaluator implements Evaluator {
     private final CompoundUri schemaRef;
 
