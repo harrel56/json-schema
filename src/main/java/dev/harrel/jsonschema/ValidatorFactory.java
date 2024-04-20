@@ -68,6 +68,7 @@ public final class ValidatorFactory {
 
     /**
      * Sets one {@link JsonNodeFactory} for schema parsing and one for data parsing.
+     * Might be useful when you expect schemas to be in a different format than data (JSON/YAML).
      * In most cases having two different factories is not required,
      * so please just use {@link ValidatorFactory#withJsonNodeFactory} whenever possible.
      * Provided default is {@link JacksonNode.Factory}.
