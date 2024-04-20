@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static java.util.Collections.*;
+
 abstract class AbstractJsonNode<T> implements JsonNode {
     private final SimpleType nodeType;
     final T node;
@@ -36,7 +38,7 @@ abstract class AbstractJsonNode<T> implements JsonNode {
         if (this.asArray != null) {
             return asArray;
         }
-        this.asArray = createArray();
+        this.asArray = unmodifiableList(createArray());
         return asArray;
     }
 
@@ -45,7 +47,7 @@ abstract class AbstractJsonNode<T> implements JsonNode {
         if (this.asObject != null) {
             return asObject;
         }
-        this.asObject = createObject();
+        this.asObject = unmodifiableMap(createObject());
         return asObject;
     }
 
