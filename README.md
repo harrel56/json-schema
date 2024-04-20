@@ -137,6 +137,11 @@ Library is compatible with YAML 1.1 standard. However, there are few constraints
 new ValidatorFactory().withJsonNodeFactory(new SnakeYamlNode.Factory());
 ```
 
+If you expect schemas to be in JSON format and data in YAML format, you can use the following method:
+```java
+new ValidatorFactory().withJsonNodeFactories(otherJsonFactory, new SnakeYamlNode.Factory());
+```
+
 ### Provider literal types
 Some providers don't have a single wrapper class for their JSON node representation:
 - `org.json:json`,
