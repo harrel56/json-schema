@@ -67,7 +67,7 @@ public final class OrgJsonNode extends SimpleJsonNode {
         @Override
         public JsonNode wrap(Object node) {
             if (node instanceof OrgJsonNode) {
-                return (OrgJsonNode) node;
+                return new OrgJsonNode(((OrgJsonNode) node).node);
             } else {
                 return new OrgJsonNode(node);
             }

@@ -28,27 +28,11 @@ class GsonTest {
     }
 
     @Test
-    void shouldWrapForJsonNode() {
-        GsonNode.Factory factory = new GsonNode.Factory();
-        var jsonNode = factory.wrap(JsonParser.parseString("{}"));
-        JsonNode wrap = factory.wrap(jsonNode);
-        assertThat(wrap).isNotNull();
-        assertThat(wrap.getNodeType()).isEqualTo(SimpleType.OBJECT);
-    }
-
-    @Test
     void shouldFailWrapForInvalidArgument() throws JsonProcessingException {
         com.fasterxml.jackson.databind.JsonNode object = new ObjectMapper().readTree("{}");
         GsonNode.Factory factory = new GsonNode.Factory();
         assertThatThrownBy(() -> factory.wrap(object))
                 .isInstanceOf(IllegalArgumentException.class);
-    }
-
-    @Test
-    void shouldFailCreateForInvalidArgument() {
-        GsonNode.Factory factory = new GsonNode.Factory();
-        assertThatThrownBy(() -> factory.create("{"))
-                .isInstanceOf(JsonSyntaxException.class);
     }
 
     @Nested
@@ -77,6 +61,14 @@ class GsonTest {
 
     @Nested
     class Draft2019EvaluatorFactoryTest extends dev.harrel.jsonschema.Draft2019EvaluatorFactoryTest {
+        @Override
+        public JsonNodeFactory getJsonNodeFactory() {
+            return createFactory();
+        }
+    }
+
+    @Nested
+    class JsonNodeFactoryTest extends dev.harrel.jsonschema.JsonNodeFactoryTest {
         @Override
         public JsonNodeFactory getJsonNodeFactory() {
             return createFactory();

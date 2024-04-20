@@ -28,26 +28,10 @@ class JsonSmartTest {
     }
 
     @Test
-    void shouldWrapForJsonNode() throws ParseException {
-        JsonSmartNode.Factory factory = new JsonSmartNode.Factory();
-        var jsonNode = factory.wrap(new JSONParser(MODE_JSON_SIMPLE).parse("{}"));
-        JsonNode wrap = factory.wrap(jsonNode);
-        assertThat(wrap).isNotNull();
-        assertThat(wrap.getNodeType()).isEqualTo(SimpleType.OBJECT);
-    }
-
-    @Test
     void shouldFailWrapForInvalidArgument() throws JsonProcessingException {
         com.fasterxml.jackson.databind.JsonNode object = new ObjectMapper().readTree("{}");
         JsonSmartNode.Factory factory = new JsonSmartNode.Factory();
         assertThatThrownBy(() -> factory.wrap(object))
-                .isInstanceOf(IllegalArgumentException.class);
-    }
-
-    @Test
-    void shouldFailCreateForInvalidArgument() {
-        JsonSmartNode.Factory factory = new JsonSmartNode.Factory();
-        assertThatThrownBy(() -> factory.create("{"))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -77,6 +61,14 @@ class JsonSmartTest {
 
     @Nested
     class Draft2019EvaluatorFactoryTest extends dev.harrel.jsonschema.Draft2019EvaluatorFactoryTest {
+        @Override
+        public JsonNodeFactory getJsonNodeFactory() {
+            return createFactory();
+        }
+    }
+
+    @Nested
+    class JsonNodeFactoryTest extends dev.harrel.jsonschema.JsonNodeFactoryTest {
         @Override
         public JsonNodeFactory getJsonNodeFactory() {
             return createFactory();

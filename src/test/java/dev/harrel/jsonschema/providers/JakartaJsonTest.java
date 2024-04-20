@@ -30,27 +30,11 @@ class JakartaJsonTest {
     }
 
     @Test
-    void shouldWrapForJsonNode() {
-        JakartaJsonNode.Factory factory = new JakartaJsonNode.Factory();
-        var jsonNode = factory.wrap(Json.createReader(new StringReader("{}")).read());
-        JsonNode wrap = factory.wrap(jsonNode);
-        assertThat(wrap).isNotNull();
-        assertThat(wrap.getNodeType()).isEqualTo(SimpleType.OBJECT);
-    }
-
-    @Test
     void shouldFailWrapForInvalidArgument() throws JsonProcessingException {
         com.fasterxml.jackson.databind.JsonNode object = new ObjectMapper().readTree("{}");
         JakartaJsonNode.Factory factory = new JakartaJsonNode.Factory();
         assertThatThrownBy(() -> factory.wrap(object))
                 .isInstanceOf(IllegalArgumentException.class);
-    }
-
-    @Test
-    void shouldFailCreateForInvalidArgument() {
-        JakartaJsonNode.Factory factory = new JakartaJsonNode.Factory();
-        assertThatThrownBy(() -> factory.create("{"))
-                .isInstanceOf(JsonParsingException.class);
     }
 
     @Nested
@@ -79,6 +63,14 @@ class JakartaJsonTest {
 
     @Nested
     class Draft2019EvaluatorFactoryTest extends dev.harrel.jsonschema.Draft2019EvaluatorFactoryTest {
+        @Override
+        public JsonNodeFactory getJsonNodeFactory() {
+            return createFactory();
+        }
+    }
+
+    @Nested
+    class JsonNodeFactoryTest extends dev.harrel.jsonschema.JsonNodeFactoryTest {
         @Override
         public JsonNodeFactory getJsonNodeFactory() {
             return createFactory();

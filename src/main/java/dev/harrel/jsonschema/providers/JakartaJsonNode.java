@@ -101,7 +101,7 @@ public final class JakartaJsonNode extends AbstractJsonNode<JsonValue> {
         @Override
         public JakartaJsonNode wrap(Object node) {
             if (node instanceof JakartaJsonNode) {
-                return (JakartaJsonNode) node;
+                return new JakartaJsonNode(((JakartaJsonNode) node).node);
             } else if (node instanceof JsonValue) {
                 return new JakartaJsonNode((JsonValue) node);
             } else {

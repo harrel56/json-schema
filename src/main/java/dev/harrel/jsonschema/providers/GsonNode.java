@@ -98,7 +98,7 @@ public final class GsonNode extends AbstractJsonNode<JsonElement> {
         @Override
         public GsonNode wrap(Object node) {
             if (node instanceof GsonNode) {
-                return (GsonNode) node;
+                return new GsonNode(((GsonNode) node).node);
             } else if (node instanceof JsonElement) {
                 return new GsonNode((JsonElement) node);
             } else {

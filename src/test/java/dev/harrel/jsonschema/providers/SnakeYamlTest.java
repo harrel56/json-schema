@@ -35,27 +35,11 @@ class SnakeYamlTest {
     }
 
     @Test
-    void shouldWrapForJsonNode() {
-        JsonNodeFactory factory = createFactory();
-        var jsonNode = factory.create("hello:");
-        JsonNode wrap = factory.wrap(jsonNode);
-        assertThat(wrap).isNotNull();
-        assertThat(wrap.getNodeType()).isEqualTo(SimpleType.OBJECT);
-    }
-
-    @Test
     void shouldFailWrapForInvalidArgument() throws JsonProcessingException {
         com.fasterxml.jackson.databind.JsonNode object = new ObjectMapper().readTree("{}");
         JsonNodeFactory factory = createFactory();
         assertThatThrownBy(() -> factory.wrap(object))
                 .isInstanceOf(IllegalArgumentException.class);
-    }
-
-    @Test
-    void shouldFailCreateForInvalidArgument() {
-        JsonNodeFactory factory = createFactory();
-        assertThatThrownBy(() -> factory.create("{"))
-                .isInstanceOf(ParserException.class);
     }
 
     @Test
@@ -255,6 +239,14 @@ class SnakeYamlTest {
 
     @Nested
     class Draft2019EvaluatorFactoryTest extends dev.harrel.jsonschema.Draft2019EvaluatorFactoryTest {
+        @Override
+        public JsonNodeFactory getJsonNodeFactory() {
+            return createFactory();
+        }
+    }
+
+    @Nested
+    class JsonNodeFactoryTest extends dev.harrel.jsonschema.JsonNodeFactoryTest {
         @Override
         public JsonNodeFactory getJsonNodeFactory() {
             return createFactory();
