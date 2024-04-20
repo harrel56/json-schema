@@ -14,7 +14,8 @@ import java.util.function.Supplier;
 public final class ValidatorFactory {
     private Dialect dialect = new Dialects.Draft2020Dialect();
     private EvaluatorFactory evaluatorFactory;
-    private Supplier<JsonNodeFactory> jsonNodeFactory = JacksonNode.Factory::new;
+    private Supplier<JsonNodeFactory> schemaNodeFactory = JacksonNode.Factory::new;
+    private Supplier<JsonNodeFactory> instanceNodeFactory = schemaNodeFactory;
     private SchemaResolver schemaResolver = new DefaultSchemaResolver();
     private boolean disabledSchemaValidation = false;
 
@@ -25,8 +26,9 @@ public final class ValidatorFactory {
      */
     public Validator createValidator() {
         EvaluatorFactory compositeFactory = evaluatorFactory == null ? dialect.getEvaluatorFactory() : EvaluatorFactory.compose(evaluatorFactory, dialect.getEvaluatorFactory());
-        JsonNodeFactory nodeFactory = jsonNodeFactory.get();
-        return new Validator(dialect, compositeFactory, nodeFactory, schemaResolver, disabledSchemaValidation);
+        JsonNodeFactory schemaFactory = schemaNodeFactory.get();
+        JsonNodeFactory instanceFactory = instanceNodeFactory.get();
+        return new Validator(dialect, compositeFactory, schemaFactory, instanceFactory, schemaResolver, disabledSchemaValidation);
     }
 
     /**
@@ -53,14 +55,32 @@ public final class ValidatorFactory {
     }
 
     /**
-     * Sets {@link JsonNodeFactory}. Provided default is {@link JacksonNode.Factory}.
+     * Sets {@link JsonNodeFactory} to be used for both schema and data parsing.
+     * If you require different factories for schemas and data, please use {@link ValidatorFactory#withJsonNodeFactories}
+     * Provided default is {@link JacksonNode.Factory}.
      *
      * @param jsonNodeFactory {@code JsonNodeFactory} to be used
      * @return self
      */
     public ValidatorFactory withJsonNodeFactory(JsonNodeFactory jsonNodeFactory) {
-        Objects.requireNonNull(jsonNodeFactory);
-        this.jsonNodeFactory = () -> jsonNodeFactory;
+        return withJsonNodeFactories(jsonNodeFactory, jsonNodeFactory);
+    }
+
+    /**
+     * Sets one {@link JsonNodeFactory} for schema parsing and one for data parsing.
+     * In most cases having two different factories is not required,
+     * so please just use {@link ValidatorFactory#withJsonNodeFactory} whenever possible.
+     * Provided default is {@link JacksonNode.Factory}.
+     *
+     * @param schemaNodeFactory   {@code JsonNodeFactory} to be used for parsing schemas
+     * @param instanceNodeFactory {@code JsonNodeFactory} to be used for parsing data
+     * @return self
+     */
+    public ValidatorFactory withJsonNodeFactories(JsonNodeFactory schemaNodeFactory, JsonNodeFactory instanceNodeFactory) {
+        Objects.requireNonNull(schemaNodeFactory);
+        Objects.requireNonNull(instanceNodeFactory);
+        this.schemaNodeFactory = () -> schemaNodeFactory;
+        this.instanceNodeFactory = () -> instanceNodeFactory;
         return this;
     }
 
@@ -100,7 +120,7 @@ public final class ValidatorFactory {
      * @return validation result
      */
     public Validator.Result validate(String rawSchema, String rawInstance) {
-        return validate(jsonNodeFactory.get().create(rawSchema), jsonNodeFactory.get().create(rawInstance));
+        return validate(schemaNodeFactory.get().create(rawSchema), instanceNodeFactory.get().create(rawInstance));
     }
 
     /**
@@ -116,7 +136,7 @@ public final class ValidatorFactory {
      * @see ValidatorFactory#validate(String, String)
      */
     public Validator.Result validate(Object schemaProviderNode, String rawInstance) {
-        return validate(jsonNodeFactory.get().wrap(schemaProviderNode), jsonNodeFactory.get().create(rawInstance));
+        return validate(schemaNodeFactory.get().wrap(schemaProviderNode), instanceNodeFactory.get().create(rawInstance));
     }
 
     /**
@@ -131,7 +151,7 @@ public final class ValidatorFactory {
      * @see ValidatorFactory#validate(String, String)
      */
     public Validator.Result validate(JsonNode schemaNode, String rawInstance) {
-        return validate(schemaNode, jsonNodeFactory.get().create(rawInstance));
+        return validate(schemaNode, instanceNodeFactory.get().create(rawInstance));
     }
 
     /**
@@ -147,7 +167,7 @@ public final class ValidatorFactory {
      * @see ValidatorFactory#validate(String, String)
      */
     public Validator.Result validate(String rawSchema, Object instanceProviderNode) {
-        return validate(jsonNodeFactory.get().create(rawSchema), jsonNodeFactory.get().wrap(instanceProviderNode));
+        return validate(schemaNodeFactory.get().create(rawSchema), instanceNodeFactory.get().wrap(instanceProviderNode));
     }
 
     /**
@@ -164,7 +184,7 @@ public final class ValidatorFactory {
      * @see ValidatorFactory#validate(String, String)
      */
     public Validator.Result validate(Object schemaProviderNode, Object instanceProviderNode) {
-        return validate(jsonNodeFactory.get().wrap(schemaProviderNode), jsonNodeFactory.get().wrap(instanceProviderNode));
+        return validate(schemaNodeFactory.get().wrap(schemaProviderNode), instanceNodeFactory.get().wrap(instanceProviderNode));
     }
 
     /**
@@ -180,7 +200,7 @@ public final class ValidatorFactory {
      * @see ValidatorFactory#validate(String, String)
      */
     public Validator.Result validate(JsonNode schemaNode, Object instanceProviderNode) {
-        return validate(schemaNode, jsonNodeFactory.get().wrap(instanceProviderNode));
+        return validate(schemaNode, instanceNodeFactory.get().wrap(instanceProviderNode));
     }
 
     /**
@@ -195,7 +215,7 @@ public final class ValidatorFactory {
      * @see ValidatorFactory#validate(String, String)
      */
     public Validator.Result validate(String rawSchema, JsonNode instanceNode) {
-        return validate(jsonNodeFactory.get().create(rawSchema), instanceNode);
+        return validate(schemaNodeFactory.get().create(rawSchema), instanceNode);
     }
 
     /**
@@ -211,7 +231,7 @@ public final class ValidatorFactory {
      * @see ValidatorFactory#validate(String, String)
      */
     public Validator.Result validate(Object schemaProviderNode, JsonNode instanceNode) {
-        return validate(jsonNodeFactory.get().wrap(schemaProviderNode), instanceNode);
+        return validate(schemaNodeFactory.get().wrap(schemaProviderNode), instanceNode);
     }
 
     /**
