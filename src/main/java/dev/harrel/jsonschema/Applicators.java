@@ -201,7 +201,6 @@ class ContainsEvaluator implements Evaluator {
     }
 }
 
-@SuppressWarnings("unchecked")
 class AdditionalPropertiesEvaluator implements Evaluator {
     private final CompoundUri schemaRef;
 
@@ -225,17 +224,16 @@ class AdditionalPropertiesEvaluator implements Evaluator {
 
         String instanceLocation = node.getJsonPointer();
         Set<String> props = new HashSet<>();
-        props.addAll(ctx.getSiblingAnnotation(Keyword.PROPERTIES, instanceLocation, Set.class).orElse(emptySet()));
-        props.addAll(ctx.getSiblingAnnotation(Keyword.PATTERN_PROPERTIES, instanceLocation, Set.class).orElse(emptySet()));
-        Set<String> processed = new HashSet<>();
+        ctx.getSiblingAnnotation(Keyword.PROPERTIES, instanceLocation, Set.class).ifPresent(props::addAll);
+        ctx.getSiblingAnnotation(Keyword.PATTERN_PROPERTIES, instanceLocation, Set.class).ifPresent(props::addAll);
+
+        Map<String, JsonNode> toBeProcessed = new HashMap<>(node.asObject());
+        toBeProcessed.keySet().removeAll(props);
         boolean valid = true;
-        for (Map.Entry<String, JsonNode> e : node.asObject().entrySet()) {
-            if (!props.contains(e.getKey())) {
-                processed.add(e.getKey());
-                valid = ctx.resolveInternalRefAndValidate(schemaRef, e.getValue()) && valid;
-            }
+        for (JsonNode propNode : toBeProcessed.values()) {
+            valid = ctx.resolveInternalRefAndValidate(schemaRef, propNode) && valid;
         }
-        return valid ? Result.success(unmodifiableSet(processed)) : Result.failure();
+        return valid ? Result.success(unmodifiableSet(toBeProcessed.keySet())) : Result.failure();
     }
 
     @Override

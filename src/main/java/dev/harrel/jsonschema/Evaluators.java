@@ -60,22 +60,25 @@ class ConstEvaluator implements ValidatingEvaluator {
 
 class EnumEvaluator implements ValidatingEvaluator {
     private final List<JsonNode> enumNodes;
+    private final String failMessage;
 
     EnumEvaluator(JsonNode node) {
         if (!node.isArray()) {
             throw new IllegalArgumentException();
         }
         this.enumNodes = unmodifiableList(node.asArray());
+        List<String> printList = enumNodes.stream().map(JsonNode::toPrintableString).collect(Collectors.toList());
+        this.failMessage = String.format("Expected any of [%s]", printList);
     }
 
     @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
-        if (enumNodes.stream().anyMatch(node::isEqualTo)) {
-            return Result.success();
-        } else {
-            List<String> printList = enumNodes.stream().map(JsonNode::toPrintableString).collect(Collectors.toList());
-            return Result.failure(String.format("Expected any of [%s]", printList));
+        for (JsonNode enumNode : enumNodes) {
+            if (enumNode.isEqualTo(node)) {
+                return Result.success();
+            }
         }
+        return Result.failure(failMessage);
     }
 }
 
