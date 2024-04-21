@@ -34,7 +34,7 @@
       data: ::abcef
       valid: false
     - description: an IPv6 address with too many components
-      data: 1:1:1:1:1:1:1:1:1:1:1:1:1:1:1:1
+      data: '1:1:1:1:1:1:1:1:1:1:1:1:1:1:1:1'
       valid: false
     - description: an IPv6 address containing illegal characters
       data: ::laptop
@@ -85,7 +85,7 @@
       data: 1:2:3:4:5:6:7:8
       valid: true
     - description: insufficient octets without double colons
-      data: 1:2:3:4:5:6:7
+      data: '1:2:3:4:5:6:7'
       valid: false
     - description: no colons is invalid
       data: "1"
