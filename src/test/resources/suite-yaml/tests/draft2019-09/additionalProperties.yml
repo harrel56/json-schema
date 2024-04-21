@@ -138,7 +138,7 @@
       data:
         apple: 4
       valid: true
-    - description: Valid against propertyNames, but not unevaluatedProperties
+    - description: Valid against propertyNames, but not additionalProperties
       data:
         fig: 2
         pear: available
