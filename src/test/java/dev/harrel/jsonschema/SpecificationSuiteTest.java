@@ -1,7 +1,6 @@
 package dev.harrel.jsonschema;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.harrel.jsonschema.util.ProviderMapper;
 import dev.harrel.jsonschema.util.RemoteSchemaResolver;
 import dev.harrel.jsonschema.util.SuiteTestGenerator;
 import org.junit.jupiter.api.DynamicNode;
@@ -21,7 +20,7 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
                 .withSchemaResolver(createSchemaResolver())
                 .createValidator();
 
-        SuiteTestGenerator generator = new SuiteTestGenerator(createObjectMapper(), validator, skippedRequiredTests());
+        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, skippedRequiredTests());
         return generator.generate(getTestPath() + "/draft2020-12");
     }
 
@@ -33,7 +32,7 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
                 .withSchemaResolver(createSchemaResolver())
                 .createValidator();
 
-        SuiteTestGenerator generator = new SuiteTestGenerator(createObjectMapper(), validator, skippedRequiredTests());
+        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, skippedRequiredTests());
         return generator.generate(getTestPath() + "/draft2019-09");
     }
 
@@ -45,7 +44,7 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
                 .withSchemaResolver(createSchemaResolver())
                 .createValidator();
 
-        SuiteTestGenerator generator = new SuiteTestGenerator(createObjectMapper(), validator, skippedFormatTests());
+        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, skippedFormatTests());
         return generator.generate(getTestPath() + "/draft2020-12/optional/format");
     }
 
@@ -58,7 +57,7 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
                 .withSchemaResolver(createSchemaResolver())
                 .createValidator();
 
-        SuiteTestGenerator generator = new SuiteTestGenerator(createObjectMapper(), validator, skippedFormatTests());
+        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, skippedFormatTests());
         return generator.generate(getTestPath() + "/draft2019-09/optional/format");
     }
 
@@ -68,7 +67,7 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .createValidator();
 
-        SuiteTestGenerator generator = new SuiteTestGenerator(createObjectMapper(), validator, Map.of());
+        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, Map.of());
         return Stream.of(
                 generator.generate(getTestPath() + "/draft2020-12/optional/bignum" + getFileExtension()),
                 generator.generate(getTestPath() + "/draft2020-12/optional/no-schema" + getFileExtension()),
@@ -84,17 +83,13 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .createValidator();
 
-        SuiteTestGenerator generator = new SuiteTestGenerator(createObjectMapper(), validator, Map.of());
+        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, Map.of());
         return Stream.of(
                 generator.generate(getTestPath() + "/draft2019-09/optional/bignum" + getFileExtension()),
                 generator.generate(getTestPath() + "/draft2019-09/optional/no-schema" + getFileExtension()),
                 generator.generate(getTestPath() + "/draft2019-09/optional/non-bmp-regex" + getFileExtension()),
                 generator.generate(getTestPath() + "/draft2019-09/optional/refOfUnknownKeyword" + getFileExtension())
         ).flatMap(Function.identity());
-    }
-
-    ObjectMapper createObjectMapper() {
-        return  new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     SchemaResolver createSchemaResolver() {

@@ -1,9 +1,6 @@
 package dev.harrel.jsonschema.util;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.Validator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assumptions;
@@ -28,12 +25,12 @@ import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 public class SuiteTestGenerator {
     private static final Logger logger = Logger.getLogger("SuiteTestGenerator");
 
-    private final ObjectMapper objectMapper;
+    private final ProviderMapper mapper;
     private final Validator validator;
     private final Map<String, Map<String, Set<String>>> skippedTests;
 
-    public SuiteTestGenerator(ObjectMapper objectMapper, Validator validator, Map<String, Map<String, Set<String>>> skippedTests) {
-        this.objectMapper = objectMapper;
+    public SuiteTestGenerator(ProviderMapper mapper, Validator validator, Map<String, Map<String, Set<String>>> skippedTests) {
+        this.mapper = mapper;
         this.validator = validator;
         this.skippedTests = skippedTests;
     }
@@ -58,7 +55,8 @@ public class SuiteTestGenerator {
 
     private Stream<DynamicNode> readTestFile(Path path) {
         try {
-            List<TestBundle> bundles = objectMapper.readValue(Files.readString(path), new TypeReference<>() {});
+            System.out.println("Reading file: " + path);
+            List<TestBundle> bundles = mapper.readTestBundles(Files.readString(path));
             return bundles.stream().map(bundle -> readBundle(path.getFileName().toString(), bundle));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -85,23 +83,23 @@ public class SuiteTestGenerator {
         return fileName.substring(0, fileName.lastIndexOf('.'));
     }
 
-    private record TestBundle(String description, JsonNode schema, List<TestCase> tests) {}
+    record TestBundle(String description, JsonNode schema, List<TestCase> tests) {}
 
-    private record TestCase(String description, JsonNode data, boolean valid) {}
+    record TestCase(String description, JsonNode data, boolean valid) {}
 
-    private void testValidation(String bundle, String name, JsonNode schema, JsonNode instance, boolean valid, boolean skipped) throws JsonProcessingException {
+    private void testValidation(String bundle, String name, JsonNode schema, JsonNode instance, boolean valid, boolean skipped) {
         Assumptions.assumeFalse(skipped);
 //        Assumptions.assumeTrue(bundle.equals("unevaluatedProperties with $dynamicRef"));
-//        Assumptions.assumeTrue(name.equals("with no unevaluated properties"));
+//        Assumptions.assumeTrue(name.equals("an IPv6 address with too many components"));
 
-        String schemaString = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(schema);
-        String instanceString = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(instance);
+//        String schemaString = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(schema);
+//        String instanceString = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(instance);
         logger.info("%s: %s".formatted(bundle, name));
-        logger.info(schemaString);
-        logger.info(instanceString);
+        logger.info(mapper.toJsonString(schema));
+        logger.info(mapper.toJsonString(instance));
         logger.info(String.valueOf(valid));
 
-        URI uri = validator.registerSchema(schemaString);
-        Assertions.assertEquals(valid, validator.validate(uri, instanceString).isValid());
+        URI uri = validator.registerSchema(schema);
+        Assertions.assertEquals(valid, validator.validate(uri, instance).isValid());
     }
 }
