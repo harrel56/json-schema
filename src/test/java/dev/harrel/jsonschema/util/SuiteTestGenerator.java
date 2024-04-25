@@ -92,11 +92,7 @@ public class SuiteTestGenerator {
 //        Assumptions.assumeTrue(bundle.equals("unevaluatedProperties with $dynamicRef"));
 //        Assumptions.assumeTrue(name.equals("an IPv6 address with too many components"));
 
-//        String schemaString = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(schema);
-//        String instanceString = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(instance);
         logger.info("%s: %s".formatted(bundle, name));
-        logger.info(mapper.toJsonString(schema));
-        logger.info(mapper.toJsonString(instance));
         logger.info(String.valueOf(valid));
 
         URI uri = validator.registerSchema(schema);

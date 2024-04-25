@@ -37,40 +37,4 @@ public class ProviderMapper {
         }
         return testBundles;
     }
-
-    String toJsonString(JsonNode node) {
-        StringBuilder sb = new StringBuilder();
-        toJsonString(node, sb);
-        return sb.toString();
-    }
-
-    // todo this was just a poc, to be trashed
-    private void toJsonString(JsonNode node, StringBuilder sb) {
-        switch (node.getNodeType()) {
-            case NULL -> sb.append("null");
-            case BOOLEAN -> sb.append(node.asBoolean());
-            case STRING -> sb.append("\"").append(node.asString()).append("\"");
-            case INTEGER -> sb.append(node.asInteger());
-            case NUMBER -> sb.append(node.asNumber());
-            case ARRAY -> {
-                sb.append("[").append(System.lineSeparator());
-                for (JsonNode arrayNode : node.asArray()) {
-                    toJsonString(arrayNode, sb);
-                    sb.append(",").append(System.lineSeparator());
-                }
-                sb.delete(sb.length() - System.lineSeparator().length() - 1, sb.length());
-                sb.append("]");
-            }
-            case OBJECT -> {
-                sb.append("{").append(System.lineSeparator());
-                for (Map.Entry<String, JsonNode> entry : node.asObject().entrySet()) {
-                    sb.append("\"").append(entry.getKey()).append("\": ");
-                    toJsonString(entry.getValue(), sb);
-                    sb.append(",").append(System.lineSeparator());
-                }
-                sb.delete(sb.length() - System.lineSeparator().length() - 1, sb.length());
-                sb.append("}");
-            }
-        }
-    }
 }
