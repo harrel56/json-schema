@@ -23,7 +23,7 @@ Check how it compares with other implementations:
 ## Demo
 You can check out how it works [here](https://harrel.dev/json-schema).
 ## Installation
-Please note that you will also need to include at least one of the supported JSON provider libraries (see [JSON provider setup](#json-providers)).
+Please note that you will also need to include at least one of the supported JSON provider libraries (see [JSON provider setup](#jsonyaml-providers)).
 ### Maven
 ```xml
 <dependency>
