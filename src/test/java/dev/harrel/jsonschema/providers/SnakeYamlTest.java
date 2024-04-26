@@ -8,6 +8,8 @@ import dev.harrel.jsonschema.SimpleType;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.nodes.Node;
 
@@ -202,6 +204,62 @@ class SnakeYamlTest {
         assertThat(refMap.get("bar").asString()).isEqualTo("bar");
         assertThat(refMap.get("new").isBoolean()).isTrue();
         assertThat(refMap.get("new").asBoolean()).isTrue();
+    }
+
+    @Nested
+    class Yaml1_1ComplianceTest {
+        @ParameterizedTest
+        @ValueSource(strings = {"true", "True", "TRUE", "on", "On", "ON", "yes", "Yes", "YES"})
+        void shouldSupportBooleanTruthyValues(String value) {
+            JsonNode node = createFactory().create(value);
+            assertThat(node.isBoolean()).isTrue();
+            assertThat(node.asBoolean()).isTrue();
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"false", "False", "FALSE", "off", "Off", "OFF", "no", "No", "NO"})
+        void shouldSupportBooleanFalsyValues(String value) {
+            JsonNode node = createFactory().create(value);
+            assertThat(node.isBoolean()).isTrue();
+            assertThat(node.asBoolean()).isFalse();
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"0b111111", "077", "0x3f", "1:3"})
+        void shouldSupportIntsInDifferentBase(String value) {
+            JsonNode node = createFactory().create(value);
+            assertThat(node.isInteger()).isTrue();
+            assertThat(node.isNumber()).isTrue();
+            assertThat(node.asInteger()).isEqualTo(63);
+            assertThat(node.asNumber()).isEqualTo(BigDecimal.valueOf(63));
+        }
+
+        @Test
+        void shouldSupportIntInBase60WithFloatingPoint() {
+            JsonNode node = createFactory().create("12:21.0");
+            assertThat(node.isInteger()).isTrue();
+            assertThat(node.isNumber()).isTrue();
+            assertThat(node.asInteger()).isEqualTo(741);
+            assertThat(node.asNumber()).isEqualTo(BigDecimal.valueOf(741.0));
+        }
+
+        @Test
+        void shouldSupportFloatsInBase60() {
+            JsonNode node = createFactory().create("12:21.12");
+            assertThat(node.isInteger()).isFalse();
+            assertThat(node.isNumber()).isTrue();
+            /* I believe it should be 741.2? Well, not sure how floating points should work in different bases */
+            assertThat(node.asNumber()).isEqualTo(BigDecimal.valueOf(741.12));
+        }
+
+        /* This one I guess is kind of against the spec */
+        @ParameterizedTest
+        @ValueSource(strings = {".inf", "-.inf", ".Inf", ".INF", ".nan", "-.nan", ".Nan", ".NAN"})
+        void shouldTreatSpecialFloatsAsStrings(String value) {
+            JsonNode node = createFactory().create(value);
+            assertThat(node.isString()).isTrue();
+            assertThat(node.asString()).isEqualTo(value);
+        }
     }
 
     @Nested
