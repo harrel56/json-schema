@@ -3,7 +3,9 @@ package dev.harrel.jsonschema.providers;
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.nodes.*;
 
 import java.io.StringReader;
@@ -12,6 +14,11 @@ import java.math.BigInteger;
 import java.util.*;
 
 public final class SnakeYamlNode extends AbstractJsonNode<Node> {
+    private static final SafeConstructor CONSTR = new SafeConstructor(new LoaderOptions());
+    private static final SafeConstructor.ConstructYamlBool BOOLEAN_CREATOR = CONSTR.new ConstructYamlBool();
+    private static final SafeConstructor.ConstructYamlInt INT_CREATOR = CONSTR.new ConstructYamlInt();
+    private static final SafeConstructor.ConstructYamlFloat NUMBER_CREATOR = CONSTR.new ConstructYamlFloat();
+
     private BigDecimal asNumber;
 
     private SnakeYamlNode(Node node, String jsonPointer) {
@@ -24,7 +31,7 @@ public final class SnakeYamlNode extends AbstractJsonNode<Node> {
 
     @Override
     public boolean asBoolean() {
-        return Boolean.parseBoolean(((ScalarNode) node).getValue());
+        return (Boolean) BOOLEAN_CREATOR.construct(node);
     }
 
     @Override
@@ -34,17 +41,11 @@ public final class SnakeYamlNode extends AbstractJsonNode<Node> {
 
     @Override
     public BigInteger asInteger() {
-        if (asNumber == null) {
-            asNumber = new BigDecimal(((ScalarNode) node).getValue());
-        }
         return asNumber.toBigInteger();
     }
 
     @Override
     public BigDecimal asNumber() {
-        if (asNumber == null) {
-            asNumber = new BigDecimal(((ScalarNode) node).getValue());
-        }
         return asNumber;
     }
 
@@ -82,10 +83,14 @@ public final class SnakeYamlNode extends AbstractJsonNode<Node> {
         } else if (node.getTag() == Tag.BOOL) {
             return SimpleType.BOOLEAN;
         } else if (node.getTag() == Tag.INT) {
+            asNumber = intToBigDecimal(node);
             return SimpleType.INTEGER;
         } else if (node.getTag() == Tag.FLOAT) {
-            String asString = ((ScalarNode) node).getValue();
-            asNumber = new BigDecimal(asString);
+            String asString = ((ScalarNode) node).getValue().toLowerCase();
+            if (asString.contains(".inf") || asString.contains(".nan")) {
+                return SimpleType.STRING;
+            }
+            asNumber = floatToBigDecimal(node);
             if (asNumber.scale() <= 0 || asNumber.stripTrailingZeros().scale() <= 0) {
                 return SimpleType.INTEGER;
             } else {
@@ -93,6 +98,24 @@ public final class SnakeYamlNode extends AbstractJsonNode<Node> {
             }
         } else {
             return SimpleType.STRING;
+        }
+    }
+
+    private static BigDecimal intToBigDecimal(Node node) {
+        Object intObject = INT_CREATOR.construct(node);
+        if (intObject instanceof Integer || intObject instanceof Long) {
+            return BigDecimal.valueOf(((Number) intObject).longValue());
+        } else {
+            return new BigDecimal((BigInteger) intObject);
+        }
+    }
+
+    private static BigDecimal floatToBigDecimal(Node node) {
+        String asString = ((ScalarNode) node).getValue();
+        if (asString.contains(":")) {
+            return BigDecimal.valueOf(((Double) NUMBER_CREATOR.construct(node)));
+        } else {
+            return new BigDecimal(asString);
         }
     }
 
