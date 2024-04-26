@@ -13,7 +13,7 @@ Java library implementing [JSON schema specification](https://json-schema.org/sp
 - support for [custom keywords](#adding-custom-keywords),
 - support for annotation collection,
 - support for [format validation](#format-validation) (for a price of one additional dependency 😉),
-- compatible with most of the JSON/YAML libraries ([supported libraries](#json-providers)),
+- compatible with most of the JSON/YAML libraries ([supported libraries](#jsonyaml-providers)),
 - and no additional dependencies on top of that.
 
 Check how it compares with other implementations:
