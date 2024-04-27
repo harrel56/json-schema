@@ -277,18 +277,17 @@ class ValidatorFactoryTest {
         assertThat(result.getErrors().get(1).getError()).isEqualTo("custom error");
     }
 
-    @Disabled("To be enabled when thread safety issues are taken care of")
-    @RepeatedTest(500)
+    @Test
     void threadSafetyRegistrationTest() {
         String schema = """
                 {
                   "$schema": "urn:meta"
                 }""";
         Validator validator = new ValidatorFactory()
-                .withDisabledSchemaValidation(true)
                 .withSchemaResolver(uri -> SchemaResolver.Result.fromString("true"))
                 .createValidator();
-        IntStream.range(0, 100).parallel().forEach(i -> validator.registerSchema(schema));
+        // todo make it use normal threads
+        IntStream.range(0, 1000).parallel().forEach(i -> validator.registerSchema(schema));
         URI uri = validator.registerSchema(schema);
         assertThat(validator.validate(uri, "true").isValid()).isTrue();
     }
