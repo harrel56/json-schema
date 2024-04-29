@@ -22,7 +22,7 @@ import static java.util.Collections.unmodifiableList;
 public final class Validator {
     private final JsonNodeFactory schemaNodeFactory;
     private final JsonNodeFactory instanceNodeFactory;
-    private final SchemaResolver schemaResolver;
+    private final ExternalSchemaResolver extResolver;
     private final SchemaRegistry schemaRegistry;
     private final JsonParser jsonParser;
     private final boolean disabledSchemaValidation;
@@ -35,16 +35,17 @@ public final class Validator {
               boolean disabledSchemaValidation) {
         this.schemaNodeFactory = Objects.requireNonNull(schemaNodeFactory);
         this.instanceNodeFactory = Objects.requireNonNull(instanceNodeFactory);
-        this.schemaResolver = Objects.requireNonNull(schemaResolver);
+        this.extResolver = new ExternalSchemaResolver(schemaNodeFactory, schemaResolver);
         this.schemaRegistry = new SchemaRegistry();
         this.disabledSchemaValidation = disabledSchemaValidation;
         MetaSchemaValidator metaSchemaValidator;
         if (disabledSchemaValidation) {
             metaSchemaValidator = new MetaSchemaValidator.NoOpMetaSchemaValidator(dialect.getSupportedVocabularies());
         } else {
-            metaSchemaValidator = new MetaSchemaValidator.DefaultMetaSchemaValidator(dialect, this.schemaNodeFactory, schemaRegistry, schemaResolver);
+            metaSchemaValidator = new MetaSchemaValidator.DefaultMetaSchemaValidator(dialect, this.schemaNodeFactory, schemaRegistry, extResolver);
         }
         this.jsonParser = new JsonParser(dialect, evaluatorFactory, schemaRegistry, metaSchemaValidator);
+        extResolver.setJsonParser(jsonParser);
     }
 
     /**
@@ -161,12 +162,15 @@ public final class Validator {
     }
 
     private Optional<Schema> resolveExternalSchema(URI uri) {
-        return schemaResolver.resolve(uri.toString())
-                .toJsonNode(schemaNodeFactory)
-                .map(node -> {
-                    jsonParser.parseRootSchema(uri, node);
-                    return schemaRegistry.get(uri);
-                });
+        return extResolver.resolve(uri, node -> {
+            return schemaRegistry.get(uri);
+        });
+//        return schemaResolver.resolve(uri.toString())
+//                .toJsonNode(schemaNodeFactory)
+//                .map(node -> {
+//                    jsonParser.parseRootSchema(uri, node);
+//                    return schemaRegistry.get(uri);
+//                });
     }
 
     private URI generateSchemaUri() {
@@ -174,7 +178,7 @@ public final class Validator {
     }
 
     private EvaluationContext createNewEvaluationContext(Schema schema) {
-        return new EvaluationContext(schemaNodeFactory, jsonParser, schemaRegistry, schemaResolver, schema.getActiveVocabularies(), disabledSchemaValidation);
+        return new EvaluationContext(schemaRegistry, extResolver, schema.getActiveVocabularies(), disabledSchemaValidation);
     }
 
     /**
