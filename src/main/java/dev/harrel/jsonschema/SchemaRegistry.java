@@ -2,6 +2,7 @@ package dev.harrel.jsonschema;
 
 import java.net.URI;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.*;
@@ -111,12 +112,12 @@ final class SchemaRegistry {
 
         private State copy() {
             Map<URI, Fragments> copiedMap = this.fragments.entrySet().stream()
-                    .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().copy()));
+                    .collect(Collectors.toConcurrentMap(Map.Entry::getKey, e -> e.getValue().copy()));
             return new State(copiedMap);
         }
 
         private static State empty() {
-            return new State(new HashMap<>());
+            return new State(new ConcurrentHashMap<>());
         }
     }
 
@@ -125,14 +126,16 @@ final class SchemaRegistry {
         private final Map<String, Schema> additionalSchemas;
         private final Map<String, Schema> dynamicSchemas;
 
-        private Fragments(Map<String, Schema> schemas, Map<String, Schema> additionalSchemas, Map<String, Schema> dynamicSchemas) {
+        private Fragments(Map<String, Schema> schemas,
+                          Map<String, Schema> additionalSchemas,
+                          Map<String, Schema> dynamicSchemas) {
             this.schemas = schemas;
             this.additionalSchemas = additionalSchemas;
             this.dynamicSchemas = dynamicSchemas;
         }
 
         private Fragments copy() {
-            return new Fragments(new HashMap<>(this.schemas), new HashMap<>(this.additionalSchemas), new HashMap<>(this.dynamicSchemas));
+            return new Fragments(new ConcurrentHashMap<>(this.schemas), new ConcurrentHashMap<>(this.additionalSchemas), new ConcurrentHashMap<>(this.dynamicSchemas));
         }
 
         private Fragments readOnly() {
@@ -140,7 +143,7 @@ final class SchemaRegistry {
         }
 
         private static Fragments empty() {
-            return new Fragments(new HashMap<>(), new HashMap<>(), new HashMap<>());
+            return new Fragments(new ConcurrentHashMap<>(), new ConcurrentHashMap<>(), new ConcurrentHashMap<>());
         }
     }
 }
