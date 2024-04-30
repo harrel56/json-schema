@@ -291,4 +291,27 @@ class ValidatorFactoryTest {
         URI uri = validator.registerSchema(schema);
         assertThat(validator.validate(uri, "true").isValid()).isTrue();
     }
+
+    @RepeatedTest(20)
+    void threadSafetyRegistrationTest2() {
+        String schema = """
+                {
+                  "$ref": "urn:any"
+                }""";
+        Validator validator = new ValidatorFactory()
+                .withSchemaResolver(uri -> {
+                    try {
+                        System.out.println(uri);
+                        Thread.sleep(400);
+                        return SchemaResolver.Result.fromString("true");
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .createValidator();
+
+        URI uri = validator.registerSchema(schema);
+        IntStream.range(0, 100).parallel().forEach(i -> validator.validate(uri, "{}"));
+        assertThat(validator.validate(uri, "true").isValid()).isTrue();
+    }
 }
