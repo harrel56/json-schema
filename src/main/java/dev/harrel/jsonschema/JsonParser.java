@@ -14,6 +14,8 @@ final class JsonParser {
     private final MetaSchemaValidator metaSchemaValidator;
     private final Map<URI, MetaSchemaData> unfinishedSchemas = new HashMap<>();
 
+    private final ReentrantLock lock = new ReentrantLock();
+
     JsonParser(Dialect dialect,
                EvaluatorFactory evaluatorFactory,
                SchemaRegistry schemaRegistry,
@@ -24,13 +26,18 @@ final class JsonParser {
         this.metaSchemaValidator = Objects.requireNonNull(metaSchemaValidator);
     }
 
-    synchronized URI parseRootSchema(URI baseUri, JsonNode node) {
-        SchemaRegistry.State snapshot = schemaRegistry.createSnapshot();
+    URI parseRootSchema(URI baseUri, JsonNode node) {
+        lock.lock();
         try {
-            return parseRootSchemaInternal(UriUtil.getUriWithoutFragment(baseUri), node);
-        } catch (RuntimeException e) {
-            schemaRegistry.restoreSnapshot(snapshot);
-            throw e;
+            SchemaRegistry.State snapshot = schemaRegistry.createSnapshot();
+            try {
+                return parseRootSchemaInternal(UriUtil.getUriWithoutFragment(baseUri), node);
+            } catch (RuntimeException e) {
+                schemaRegistry.restoreSnapshot(snapshot);
+                throw e;
+            }
+        } finally {
+            lock.unlock();
         }
     }
 

@@ -28,20 +28,22 @@ interface MetaSchemaValidator {
     }
     final class DefaultMetaSchemaValidator implements MetaSchemaValidator {
         private final Dialect dialect;
+        private final JsonNodeFactory jsonNodeFactory;
         private final SchemaRegistry schemaRegistry;
-        private final ExternalSchemaResolver extResolver;
+        private final SchemaResolver schemaResolver;
 
-        DefaultMetaSchemaValidator(Dialect dialect, JsonNodeFactory jsonNodeFactory, SchemaRegistry schemaRegistry, ExternalSchemaResolver extResolver) {
+        DefaultMetaSchemaValidator(Dialect dialect, JsonNodeFactory jsonNodeFactory, SchemaRegistry schemaRegistry, SchemaResolver schemaResolver) {
             this.dialect = Objects.requireNonNull(dialect);
+            this.jsonNodeFactory = Objects.requireNonNull(jsonNodeFactory);
             this.schemaRegistry = Objects.requireNonNull(schemaRegistry);
-            this.extResolver = extResolver;
+            this.schemaResolver = Objects.requireNonNull(schemaResolver);
         }
 
         @Override
         public Set<String> validateSchema(JsonParser jsonParser, URI metaSchemaUri, String schemaUri, JsonNode node) {
             Objects.requireNonNull(metaSchemaUri);
             Schema schema = resolveMetaSchema(jsonParser, metaSchemaUri);
-            EvaluationContext ctx = new EvaluationContext(schemaRegistry, extResolver, schema.getActiveVocabularies(), false);
+            EvaluationContext ctx = new EvaluationContext(jsonNodeFactory, jsonParser, schemaRegistry, schemaResolver, schema.getActiveVocabularies(), false);
             if (!ctx.validateAgainstSchema(schema, node)) {
                 throw new InvalidSchemaException(String.format("Schema [%s] failed to validate against meta-schema [%s]", schemaUri, metaSchemaUri),
                         new Validator.Result(false, ctx).getErrors());
@@ -80,26 +82,16 @@ interface MetaSchemaValidator {
             if (schemaRegistry.get(baseUri) != null) {
                 throw MetaSchemaResolvingException.resolvingFailure(uri.toString());
             }
+            SchemaResolver.Result result = schemaResolver.resolve(baseUri.toString());
+            if (result.isEmpty()) {
+                throw MetaSchemaResolvingException.resolvingFailure(uri.toString());
+            }
             try {
-                return extResolver.resolve(baseUri, (node) -> {
-                            return resolveMetaSchema(jsonParser, uri);
-                        })
-                        .orElseThrow(() -> MetaSchemaResolvingException.resolvingFailure(uri.toString()));
-            } catch (MetaSchemaResolvingException e) {
-                throw e;
+                result.toJsonNode(jsonNodeFactory).ifPresent(node -> jsonParser.parseRootSchema(baseUri, node));
             } catch (Exception e) {
                 throw MetaSchemaResolvingException.parsingFailure(uri.toString(), e);
             }
-//            SchemaResolver.Result result = schemaResolver.resolve(baseUri.toString());
-//            if (result.isEmpty()) {
-//                throw MetaSchemaResolvingException.resolvingFailure(uri.toString());
-//            }
-//            try {
-//                result.toJsonNode(jsonNodeFactory).ifPresent(node -> jsonParser.parseRootSchema(baseUri, node));
-//            } catch (Exception e) {
-//                throw MetaSchemaResolvingException.parsingFailure(uri.toString(), e);
-//            }
-//            return resolveMetaSchema(jsonParser, uri);
+            return resolveMetaSchema(jsonParser, uri);
         }
     }
 }

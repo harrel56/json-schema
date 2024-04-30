@@ -12,7 +12,10 @@ import static java.util.Collections.unmodifiableList;
  * @see Evaluator
  */
 public final class EvaluationContext {
+    private final JsonNodeFactory jsonNodeFactory;
+    private final JsonParser jsonParser;
     private final SchemaRegistry schemaRegistry;
+    private final SchemaResolver schemaResolver;
     private final Set<String> activeVocabularies;
     private final boolean disabledSchemaValidation;
     private final Deque<URI> dynamicScope = new ArrayDeque<>();
@@ -21,15 +24,17 @@ public final class EvaluationContext {
     private final AnnotationTree annotationTree = new AnnotationTree();
     private final List<Error> errors = new ArrayList<>();
 
-    private final ExternalSchemaResolver extResolver;
-
-    EvaluationContext(SchemaRegistry schemaRegistry,
-                      ExternalSchemaResolver extResolver,
+    EvaluationContext(JsonNodeFactory jsonNodeFactory,
+                      JsonParser jsonParser,
+                      SchemaRegistry schemaRegistry,
+                      SchemaResolver schemaResolver,
                       Set<String> activeVocabularies,
                       boolean disabledSchemaValidation) {
+        this.jsonNodeFactory = Objects.requireNonNull(jsonNodeFactory);
+        this.jsonParser = Objects.requireNonNull(jsonParser);
         this.schemaRegistry = Objects.requireNonNull(schemaRegistry);
+        this.schemaResolver = Objects.requireNonNull(schemaResolver);
         this.activeVocabularies = Objects.requireNonNull(activeVocabularies);
-        this.extResolver = extResolver;
         this.disabledSchemaValidation = disabledSchemaValidation;
         this.evaluationStack.push("");
     }
@@ -269,16 +274,12 @@ public final class EvaluationContext {
         if (schemaRegistry.get(resolvedUri.uri) != null) {
             return null;
         }
-        return extResolver.resolve(resolvedUri.uri,
-                (node) -> {
-            return resolveSchema(originalRef);
-        }).orElse(null);
-//        return schemaResolver.resolve(resolvedUri.uri.toString())
-//                .toJsonNode(jsonNodeFactory)
-//                .map(node -> {
-//                    jsonParser.parseRootSchema(resolvedUri.uri, node);
-//                    return resolveSchema(originalRef);
-//                }).orElse(null);
+        return schemaResolver.resolve(resolvedUri.uri.toString())
+                .toJsonNode(jsonNodeFactory)
+                .map(node -> {
+                    jsonParser.parseRootSchema(resolvedUri.uri, node);
+                    return resolveSchema(originalRef);
+                }).orElse(null);
     }
 
     private static class RefStackItem {

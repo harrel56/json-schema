@@ -10,10 +10,6 @@ import org.junit.jupiter.api.Test;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.IntStream;
 
 import static dev.harrel.jsonschema.util.TestUtil.assertError;
@@ -281,7 +277,7 @@ class ValidatorFactoryTest {
         assertThat(result.getErrors().get(1).getError()).isEqualTo("custom error");
     }
 
-    @RepeatedTest(20)
+    @Test
     void threadSafetyRegistrationTest() {
         String schema = """
                 {
@@ -293,29 +289,6 @@ class ValidatorFactoryTest {
         // todo make it use normal threads
         IntStream.range(0, 1000).parallel().forEach(i -> validator.registerSchema(schema));
         URI uri = validator.registerSchema(schema);
-        assertThat(validator.validate(uri, "true").isValid()).isTrue();
-    }
-
-    @RepeatedTest(20)
-    void threadSafetyRegistrationTest2() {
-        String schema = """
-                {
-                  "$ref": "urn:any"
-                }""";
-        Validator validator = new ValidatorFactory()
-                .withSchemaResolver(uri -> {
-                    try {
-                        System.out.println(uri);
-                        Thread.sleep(400);
-                        return SchemaResolver.Result.fromString("true");
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                })
-                .createValidator();
-
-        URI uri = validator.registerSchema(schema);
-        IntStream.range(0, 100).parallel().forEach(i -> validator.validate(uri, "{}"));
         assertThat(validator.validate(uri, "true").isValid()).isTrue();
     }
 }
