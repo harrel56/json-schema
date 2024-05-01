@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import static java.util.Collections.*;
 
 final class SchemaRegistry {
-    private State state = State.empty();
+    private volatile State state = State.empty();
 
     State createSnapshot() {
         return state.copy();
