@@ -90,7 +90,13 @@ class ThreadSafetyTest {
                   "$schema": "urn:ref"
                 }""";
         Validator validator = new ValidatorFactory()
-                .withSchemaResolver(new LatchedSchemaResolver(100))
+                .withDialect(new Dialects.Draft2020Dialect() {
+                    @Override
+                    public String getMetaSchema() {
+                        return null;
+                    }
+                })
+                .withSchemaResolver(new LatchedSchemaResolver(1))
                 .createValidator();
         List<URI> uris = IntStream.range(0, 100)
                 .mapToObj(i -> URI.create("urn:" + i))
@@ -139,7 +145,7 @@ class ThreadSafetyTest {
 
         LatchedSchemaResolver(int latchSize) {
             this.latch = new CountDownLatch(latchSize);
-            String schemaString = TestUtil.readResource(SpecificationVersion.DRAFT2020_12.getResourcePath());
+            String schemaString = TestUtil.readResource("/schema.json");
             this.schemaNode = new JacksonNode.Factory().create(schemaString);
         }
 
