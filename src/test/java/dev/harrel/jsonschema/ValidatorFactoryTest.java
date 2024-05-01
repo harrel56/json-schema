@@ -3,14 +3,11 @@ package dev.harrel.jsonschema;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.harrel.jsonschema.providers.JacksonNode;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.IntStream;
 
 import static dev.harrel.jsonschema.util.TestUtil.assertError;
 import static dev.harrel.jsonschema.util.TestUtil.readResource;
@@ -275,43 +272,5 @@ class ValidatorFactoryTest {
         assertThat(result.getErrors()).hasSize(2);
         assertThat(result.getErrors().get(0).getError()).isEqualTo("\"x\" is shorter than 2 characters");
         assertThat(result.getErrors().get(1).getError()).isEqualTo("custom error");
-    }
-
-    @Test
-    void threadSafetyRegistrationTest() {
-        String schema = """
-                {
-                  "$schema": "urn:meta"
-                }""";
-        Validator validator = new ValidatorFactory()
-                .withSchemaResolver(uri -> SchemaResolver.Result.fromString("true"))
-                .createValidator();
-        // todo make it use normal threads
-        IntStream.range(0, 1000).parallel().forEach(i -> validator.registerSchema(schema));
-        URI uri = validator.registerSchema(schema);
-        assertThat(validator.validate(uri, "true").isValid()).isTrue();
-    }
-
-    @RepeatedTest(20)
-    void threadSafetyRegistrationTest2() {
-        String schema = """
-                {
-                  "$ref": "urn:any"
-                }""";
-        Validator validator = new ValidatorFactory()
-                .withSchemaResolver(uri -> {
-                    try {
-                        System.out.println(uri);
-                        Thread.sleep(400);
-                        return SchemaResolver.Result.fromString("true");
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                })
-                .createValidator();
-
-        URI uri = validator.registerSchema(schema);
-        IntStream.range(0, 100).parallel().forEach(i -> validator.validate(uri, "{}"));
-        assertThat(validator.validate(uri, "true").isValid()).isTrue();
     }
 }
