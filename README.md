@@ -66,6 +66,13 @@ Validator.Result result2 = validator.validate(schemaUri, instance2);
 ```
 This way, schema is parsed only once. You could also register multiple schemas this way and refer to them independently. Keep in mind that the "registration space" for schemas is common for one `Validator` - this can be used to refer dynamically between schemas.
 
+### Thread safety
+- `ValidatorFactory` **IS NOT** thread-safe as it contains mutable configuration elements which may lead to memory visibility issues.
+`validate(...)` methods are however stateless, so if for example, no configuration is changed it could safely be used concurrently, but it's still not recommended.
+- `Validator` **IS** thread-safe as its configuration is immutable. The internal schema registry is configured for multi-threaded usage.
+- All library provided implementations (`SchemaResolver`, `JsonNodeFactory`, `EvaluatorFactory`, `Evaluator`) are thread safe.
+For custom user implementations: if intended for use in multi-threaded environment, the implementation should ensure thread safety.
+
 ## JSON/YAML providers
 Supported JSON providers:
 - `com.fasterxml.jackson.core:jackson-databind` (default),
