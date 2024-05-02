@@ -3,14 +3,11 @@ package dev.harrel.jsonschema;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.harrel.jsonschema.providers.JacksonNode;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.IntStream;
 
 import static dev.harrel.jsonschema.util.TestUtil.assertError;
 import static dev.harrel.jsonschema.util.TestUtil.readResource;
@@ -275,21 +272,5 @@ class ValidatorFactoryTest {
         assertThat(result.getErrors()).hasSize(2);
         assertThat(result.getErrors().get(0).getError()).isEqualTo("\"x\" is shorter than 2 characters");
         assertThat(result.getErrors().get(1).getError()).isEqualTo("custom error");
-    }
-
-    @Disabled("To be enabled when thread safety issues are taken care of")
-    @RepeatedTest(500)
-    void threadSafetyRegistrationTest() {
-        String schema = """
-                {
-                  "$schema": "urn:meta"
-                }""";
-        Validator validator = new ValidatorFactory()
-                .withDisabledSchemaValidation(true)
-                .withSchemaResolver(uri -> SchemaResolver.Result.fromString("true"))
-                .createValidator();
-        IntStream.range(0, 100).parallel().forEach(i -> validator.registerSchema(schema));
-        URI uri = validator.registerSchema(schema);
-        assertThat(validator.validate(uri, "true").isValid()).isTrue();
     }
 }

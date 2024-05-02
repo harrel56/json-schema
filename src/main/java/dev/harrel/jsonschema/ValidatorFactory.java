@@ -4,6 +4,8 @@ import dev.harrel.jsonschema.providers.JacksonNode;
 
 import java.net.URI;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.Supplier;
 
 /**
@@ -253,7 +255,7 @@ public final class ValidatorFactory {
     }
 
     static class DefaultSchemaResolver implements SchemaResolver {
-        private final Map<String, String> schemaCache = new HashMap<>();
+        private final ConcurrentMap<String, String> schemaCache = new ConcurrentHashMap<>();
 
         @Override
         public Result resolve(String uri) {
