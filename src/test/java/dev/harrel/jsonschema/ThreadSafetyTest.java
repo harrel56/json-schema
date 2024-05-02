@@ -8,6 +8,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.*;
 import java.util.stream.IntStream;
 
@@ -121,8 +122,8 @@ abstract class ThreadSafetyTest {
         Validator validator = new ValidatorFactory()
                 .withDialect(new Dialects.Draft2020Dialect() {
                     @Override
-                    public String getMetaSchema() {
-                        return null;
+                    public Optional<URI> getMetaSchemaUri() {
+                        return Optional.empty();
                     }
                 })
                 .withSchemaResolver(new LatchedSchemaResolver(1))
@@ -179,7 +180,7 @@ abstract class ThreadSafetyTest {
         }
 
         @Override
-        public Result resolve(String uri) {
+        public Result resolve(URI uri) {
             try {
                 latch.countDown();
                 if (!latch.await(2, TimeUnit.SECONDS)) {
