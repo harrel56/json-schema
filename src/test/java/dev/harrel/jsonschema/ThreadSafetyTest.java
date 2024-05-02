@@ -13,17 +13,46 @@ import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ThreadSafetyTest {
-    private static ExecutorService threadPool;
+abstract class ThreadSafetyTest {
 
-    @BeforeAll
-    static void beforeAll() {
-        threadPool = Executors.newFixedThreadPool(100);
+    abstract ExecutorService getExecutorService();
+
+    static class PlatformThreadsTest extends ThreadSafetyTest {
+        private static ExecutorService threadPool;
+
+        @BeforeAll
+        static void beforeAll() {
+            threadPool = Executors.newFixedThreadPool(100);
+        }
+
+        @AfterAll
+        static void afterAll() {
+            threadPool.shutdownNow();
+        }
+
+        @Override
+        ExecutorService getExecutorService() {
+            return threadPool;
+        }
     }
 
-    @AfterAll
-    static void afterAll() {
-        threadPool.shutdownNow();
+    static class VirtualThreadsTest extends ThreadSafetyTest {
+        private static ExecutorService threadPool;
+
+        @BeforeAll
+        static void beforeAll() {
+            threadPool = Executors.newVirtualThreadPerTaskExecutor();
+        }
+
+        @AfterAll
+        static void afterAll() {
+            threadPool.shutdownNow();
+        }
+
+        @Override
+        ExecutorService getExecutorService() {
+            return threadPool;
+        }
     }
 
     @Test
@@ -132,8 +161,8 @@ class ThreadSafetyTest {
         completeAll(callables);
     }
 
-    private static <T> void completeAll(List<Callable<T>> callables) throws ExecutionException, InterruptedException {
-        List<Future<T>> futures = threadPool.invokeAll(callables);
+    private <T> void completeAll(List<Callable<T>> callables) throws ExecutionException, InterruptedException {
+        List<Future<T>> futures = getExecutorService().invokeAll(callables);
         for (Future<T> future : futures) {
             future.get();
         }
