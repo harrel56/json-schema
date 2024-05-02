@@ -68,7 +68,7 @@ This way, schema is parsed only once. You could also register multiple schemas t
 
 ### Thread safety
 - `ValidatorFactory` **IS NOT** thread-safe as it contains mutable configuration elements which may lead to memory visibility issues.
-`validate(...)` methods are however stateless, so if for example, no configuration is changed it could safely be used concurrently, but it's still not recommended.
+`validate(...)` methods are however stateless, so if the factory is configured before it has been shared between threads, it can be used concurrently.
 - `Validator` **IS** thread-safe as its configuration is immutable. The internal schema registry is configured for multi-threaded usage.
 - All library provided implementations (`SchemaResolver`, `JsonNodeFactory`, `EvaluatorFactory`, `Evaluator`) are thread safe.
 For custom user implementations: if intended for use in multi-threaded environment, the implementation should ensure thread safety.
