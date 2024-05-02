@@ -1,15 +1,18 @@
 changelog:
   categories:
-    - title: Features
+    - title: Breaking changes 🚨
+      labels:
+        - breaking change
+    - title: New features 🎉
       labels:
         - enhancement
-    - title: Performance related
+    - title: Performance related 📈
       labels:
         - performance
-    - title: Fixes
+    - title: Fixes 🛠️
       labels:
         - bug
-    - title: Dependencies
+    - title: Dependencies 🗃️
       labels:
         - dependencies
     - title: Other

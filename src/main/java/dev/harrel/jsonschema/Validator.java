@@ -20,7 +20,8 @@ import static java.util.Collections.unmodifiableList;
  * @see Validator.Result
  */
 public final class Validator {
-    private final JsonNodeFactory jsonNodeFactory;
+    private final JsonNodeFactory schemaNodeFactory;
+    private final JsonNodeFactory instanceNodeFactory;
     private final SchemaResolver schemaResolver;
     private final SchemaRegistry schemaRegistry;
     private final JsonParser jsonParser;
@@ -28,10 +29,12 @@ public final class Validator {
 
     Validator(Dialect dialect,
               EvaluatorFactory evaluatorFactory,
-              JsonNodeFactory jsonNodeFactory,
+              JsonNodeFactory schemaNodeFactory,
+              JsonNodeFactory instanceNodeFactory,
               SchemaResolver schemaResolver,
               boolean disabledSchemaValidation) {
-        this.jsonNodeFactory = Objects.requireNonNull(jsonNodeFactory);
+        this.schemaNodeFactory = Objects.requireNonNull(schemaNodeFactory);
+        this.instanceNodeFactory = Objects.requireNonNull(instanceNodeFactory);
         this.schemaResolver = Objects.requireNonNull(schemaResolver);
         this.schemaRegistry = new SchemaRegistry();
         this.disabledSchemaValidation = disabledSchemaValidation;
@@ -39,7 +42,7 @@ public final class Validator {
         if (disabledSchemaValidation) {
             metaSchemaValidator = new MetaSchemaValidator.NoOpMetaSchemaValidator(dialect.getSupportedVocabularies());
         } else {
-            metaSchemaValidator = new MetaSchemaValidator.DefaultMetaSchemaValidator(dialect, this.jsonNodeFactory, schemaRegistry, schemaResolver);
+            metaSchemaValidator = new MetaSchemaValidator.DefaultMetaSchemaValidator(dialect, this.schemaNodeFactory, schemaRegistry, schemaResolver);
         }
         this.jsonParser = new JsonParser(dialect, evaluatorFactory, schemaRegistry, metaSchemaValidator);
     }
@@ -51,7 +54,7 @@ public final class Validator {
      * @return automatically generated URI for the registered schema <b>OR</b> value of <i>$id</i> keyword in <i>root</i> schema if present
      */
     public URI registerSchema(String rawSchema) {
-        return registerSchema(jsonNodeFactory.create(rawSchema));
+        return registerSchema(schemaNodeFactory.create(rawSchema));
     }
 
     /**
@@ -62,7 +65,7 @@ public final class Validator {
      * @return automatically generated URI for the registered schema <b>OR</b> value of <i>$id</i> keyword in <i>root</i> schema if present
      */
     public URI registerSchema(Object schemaProviderNode) {
-        return registerSchema(jsonNodeFactory.wrap(schemaProviderNode));
+        return registerSchema(schemaNodeFactory.wrap(schemaProviderNode));
     }
 
     /**
@@ -83,7 +86,7 @@ public final class Validator {
      * @return URI provided by user <b>OR</b> value of <i>$id</i> keyword in <i>root</i> schema if present
      */
     public URI registerSchema(URI uri, String rawSchema) {
-        return registerSchema(uri, jsonNodeFactory.create(rawSchema));
+        return registerSchema(uri, schemaNodeFactory.create(rawSchema));
     }
 
     /**
@@ -95,7 +98,7 @@ public final class Validator {
      * @return URI provided by user <b>OR</b> value of <i>$id</i> keyword in <i>root</i> schema if present
      */
     public URI registerSchema(URI uri, Object schemaProviderNode) {
-        return registerSchema(uri, jsonNodeFactory.wrap(schemaProviderNode));
+        return registerSchema(uri, schemaNodeFactory.wrap(schemaProviderNode));
     }
 
     /**
@@ -117,7 +120,7 @@ public final class Validator {
      * @return validation result
      */
     public Result validate(URI schemaUri, String rawInstance) {
-        return validate(schemaUri, jsonNodeFactory.create(rawInstance));
+        return validate(schemaUri, instanceNodeFactory.create(rawInstance));
     }
 
     /**
@@ -129,7 +132,7 @@ public final class Validator {
      * @return validation result
      */
     public Result validate(URI schemaUri, Object instanceProviderNode) {
-        return validate(schemaUri, jsonNodeFactory.wrap(instanceProviderNode));
+        return validate(schemaUri, instanceNodeFactory.wrap(instanceProviderNode));
     }
 
     /**
@@ -160,7 +163,7 @@ public final class Validator {
 
     private Optional<Schema> resolveExternalSchema(URI uri) {
         return schemaResolver.resolve(uri)
-                .toJsonNode(jsonNodeFactory)
+                .toJsonNode(schemaNodeFactory)
                 .map(node -> {
                     jsonParser.parseRootSchema(uri, node);
                     return schemaRegistry.get(uri);
@@ -172,7 +175,7 @@ public final class Validator {
     }
 
     private EvaluationContext createNewEvaluationContext(Schema schema) {
-        return new EvaluationContext(jsonNodeFactory, jsonParser, schemaRegistry, schemaResolver, schema.getActiveVocabularies(), disabledSchemaValidation);
+        return new EvaluationContext(schemaNodeFactory, jsonParser, schemaRegistry, schemaResolver, schema.getActiveVocabularies(), disabledSchemaValidation);
     }
 
     /**
@@ -208,6 +211,7 @@ public final class Validator {
         public List<Annotation> getAnnotations() {
             if (annotations == null) {
                 this.annotations = unmodifiableList(annotationTree.getAllAnnotations()
+                        .stream()
                         .filter(a -> a.getAnnotation() != null)
                         .collect(Collectors.toList()));
             }

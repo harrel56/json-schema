@@ -13,8 +13,11 @@ public class RemoteSchemaResolver implements SchemaResolver {
             return Result.empty();
         }
 
-        String resourcePath = "/suite/remotes" + uri.getPath();
-        String content = readResource(resourcePath);
+        String content = readResource(uriToResource(uri));
         return Result.fromString(content);
+    }
+
+    String uriToResource(URI uri) {
+        return "/suite/remotes" + uri.getPath();
     }
 }

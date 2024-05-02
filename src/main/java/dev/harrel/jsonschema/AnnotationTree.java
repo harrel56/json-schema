@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 final class AnnotationTree {
     private final Map<String, Node> lookupMap = new HashMap<>();
@@ -13,8 +12,8 @@ final class AnnotationTree {
         lookupMap.put(null, new Node());
     }
 
-    Stream<Annotation> getAllAnnotations() {
-        return lookupMap.get(null).stream();
+    List<Annotation> getAllAnnotations() {
+        return lookupMap.get(null).toList();
     }
 
     Node getNode(String location) {
@@ -33,11 +32,13 @@ final class AnnotationTree {
         final List<Node> nodes = new ArrayList<>();
         final List<Annotation> annotations = new ArrayList<>();
 
-        Stream<Annotation> stream() {
-            return Stream.concat(
-                    nodes.stream().flatMap(Node::stream),
-                    annotations.stream()
-            );
+        List<Annotation> toList() {
+            List<Annotation> result = new ArrayList<>();
+            for (Node node : nodes) {
+                result.addAll(node.toList());
+            }
+            result.addAll(annotations);
+            return result;
         }
     }
 }

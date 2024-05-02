@@ -11,29 +11,13 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 
-public final class JacksonNode implements JsonNode {
-    private final com.fasterxml.jackson.databind.JsonNode node;
-    private final String jsonPointer;
-    private final SimpleType nodeType;
-
+public final class JacksonNode extends AbstractJsonNode<com.fasterxml.jackson.databind.JsonNode> {
     private JacksonNode(com.fasterxml.jackson.databind.JsonNode node, String jsonPointer) {
-        this.node = Objects.requireNonNull(node);
-        this.jsonPointer = Objects.requireNonNull(jsonPointer);
-        this.nodeType = computeNodeType(node);
+        super(Objects.requireNonNull(node), jsonPointer);
     }
 
     public JacksonNode(com.fasterxml.jackson.databind.JsonNode node) {
         this(node, "");
-    }
-
-    @Override
-    public String getJsonPointer() {
-        return jsonPointer;
-    }
-
-    @Override
-    public SimpleType getNodeType() {
-        return nodeType;
     }
 
     @Override
@@ -57,8 +41,8 @@ public final class JacksonNode implements JsonNode {
     }
 
     @Override
-    public List<JsonNode> asArray() {
-        List<JsonNode> elements = new ArrayList<>();
+    List<JsonNode> createArray() {
+        List<JsonNode> elements = new ArrayList<>(node.size());
         for (Iterator<com.fasterxml.jackson.databind.JsonNode> iterator = node.elements(); iterator.hasNext(); ) {
             elements.add(new JacksonNode(iterator.next(), jsonPointer + "/" + elements.size()));
         }
@@ -66,7 +50,7 @@ public final class JacksonNode implements JsonNode {
     }
 
     @Override
-    public Map<String, JsonNode> asObject() {
+    Map<String, JsonNode> createObject() {
         Map<String, JsonNode> map = MapUtil.newHashMap(node.size());
         for (Iterator<Map.Entry<String, com.fasterxml.jackson.databind.JsonNode>> iterator = node.fields(); iterator.hasNext(); ) {
             Map.Entry<String, com.fasterxml.jackson.databind.JsonNode> entry = iterator.next();
@@ -75,10 +59,8 @@ public final class JacksonNode implements JsonNode {
         return map;
     }
 
-    private static SimpleType computeNodeType(com.fasterxml.jackson.databind.JsonNode node) {
-        if (node.canConvertToExactIntegral()) {
-            return SimpleType.INTEGER;
-        }
+    @Override
+    SimpleType computeNodeType(com.fasterxml.jackson.databind.JsonNode node) {
         switch (node.getNodeType()) {
             case NULL:
                 return SimpleType.NULL;
@@ -87,7 +69,11 @@ public final class JacksonNode implements JsonNode {
             case STRING:
                 return SimpleType.STRING;
             case NUMBER:
-                return SimpleType.NUMBER;
+                if (node.canConvertToExactIntegral()) {
+                    return SimpleType.INTEGER;
+                } else {
+                    return SimpleType.NUMBER;
+                }
             case ARRAY:
                 return SimpleType.ARRAY;
             case OBJECT:
@@ -111,7 +97,7 @@ public final class JacksonNode implements JsonNode {
         @Override
         public JacksonNode wrap(Object node) {
             if (node instanceof JacksonNode) {
-                return (JacksonNode) node;
+                return new JacksonNode(((JacksonNode) node).node);
             } else if (node instanceof com.fasterxml.jackson.databind.JsonNode) {
                 return new JacksonNode((com.fasterxml.jackson.databind.JsonNode) node);
             } else {

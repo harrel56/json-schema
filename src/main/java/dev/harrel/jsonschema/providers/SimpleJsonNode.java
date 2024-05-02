@@ -1,31 +1,13 @@
 package dev.harrel.jsonschema.providers;
 
-import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.SimpleType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Objects;
 
-abstract class SimpleJsonNode implements JsonNode {
-    private final SimpleType nodeType;
-    final Object node;
-    final String jsonPointer;
-
+abstract class SimpleJsonNode extends AbstractJsonNode<Object> {
     SimpleJsonNode(Object node, String jsonPointer) {
-        this.nodeType = computeNodeType(node);
-        this.node = node;
-        this.jsonPointer = Objects.requireNonNull(jsonPointer);
-    }
-
-    @Override
-    public String getJsonPointer() {
-        return jsonPointer;
-    }
-
-    @Override
-    public SimpleType getNodeType() {
-        return nodeType;
+        super(node, jsonPointer);
     }
 
     @Override
@@ -74,6 +56,7 @@ abstract class SimpleJsonNode implements JsonNode {
 
     abstract boolean isObject(Object node);
 
+    @Override
     SimpleType computeNodeType(Object node) {
         if (isNull(node)) {
             return SimpleType.NULL;

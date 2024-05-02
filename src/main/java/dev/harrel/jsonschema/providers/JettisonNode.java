@@ -30,9 +30,9 @@ public final class JettisonNode extends SimpleJsonNode {
     }
 
     @Override
-    public List<JsonNode> asArray() {
-        List<JsonNode> elements = new ArrayList<>();
+    List<JsonNode> createArray() {
         JSONArray arrayNode = (JSONArray) node;
+        List<JsonNode> elements = new ArrayList<>(arrayNode.length());
         for (int i = 0; i < arrayNode.length(); ++i) {
             elements.add(new JettisonNode(arrayNode.opt(i), jsonPointer + "/" + elements.size()));
         }
@@ -41,7 +41,7 @@ public final class JettisonNode extends SimpleJsonNode {
 
     @Override
     @SuppressWarnings("unchecked")
-    public Map<String, JsonNode> asObject() {
+    Map<String, JsonNode> createObject() {
         JSONObject jsonObject = (JSONObject) node;
         Map<String, JsonNode> map = MapUtil.newHashMap(jsonObject.length());
         for (Object object : jsonObject.toMap().entrySet()) {
@@ -70,7 +70,7 @@ public final class JettisonNode extends SimpleJsonNode {
         @Override
         public JsonNode wrap(Object node) {
             if (node instanceof JettisonNode) {
-                return (JettisonNode) node;
+                return new JettisonNode(((JettisonNode) node).node);
             } else {
                 return new JettisonNode(node);
             }
@@ -86,8 +86,8 @@ public final class JettisonNode extends SimpleJsonNode {
         }
     }
 
-    static final class BigDecimalTokener extends JSONTokener {
-        BigDecimalTokener(String s) {
+    private static final class BigDecimalTokener extends JSONTokener {
+        private BigDecimalTokener(String s) {
             super(s);
             this.useBigDecimal = true;
         }

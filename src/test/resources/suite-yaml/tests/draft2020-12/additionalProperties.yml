@@ -1,4 +1,7 @@
 - description: additionalProperties being false does not allow other properties
+  specification:
+    - core: 10.3.2.3
+      quote: The value of "additionalProperties" MUST be a valid JSON Schema. Boolean "false" forbids everything.
   schema:
     $schema: https://json-schema.org/draft/2020-12/schema
     properties:
@@ -36,6 +39,8 @@
         vroom: 2
       valid: true
 - description: non-ASCII pattern with additionalProperties
+  specification:
+    - core: 10.3.2.3
   schema:
     $schema: https://json-schema.org/draft/2020-12/schema
     patternProperties:
@@ -51,6 +56,9 @@
         élmény: 2
       valid: false
 - description: additionalProperties with schema
+  specification:
+    - core: 10.3.2.3
+      quote: The value of "additionalProperties" MUST be a valid JSON Schema.
   schema:
     $schema: https://json-schema.org/draft/2020-12/schema
     properties:
@@ -76,6 +84,9 @@
         quux: 12
       valid: false
 - description: additionalProperties can exist by itself
+  specification:
+    - core: 10.3.2.3
+      quote: With no other applicator applying to object instances. This validates all the instance values irrespective of their property names
   schema:
     $schema: https://json-schema.org/draft/2020-12/schema
     additionalProperties:
@@ -90,6 +101,9 @@
         foo: 1
       valid: false
 - description: additionalProperties are allowed by default
+  specification:
+    - core: 10.3.2.3
+      quote: Omitting this keyword has the same assertion behavior as an empty schema.
   schema:
     $schema: https://json-schema.org/draft/2020-12/schema
     properties:
@@ -103,6 +117,9 @@
         quux: true
       valid: true
 - description: additionalProperties does not look in applicators
+  specification:
+    - core: "10.2"
+      quote: Subschemas of applicator keywords evaluate the instance completely independently such that the results of one such subschema MUST NOT impact the results of sibling subschemas.
   schema:
     $schema: https://json-schema.org/draft/2020-12/schema
     allOf:
@@ -117,6 +134,8 @@
         bar: true
       valid: false
 - description: additionalProperties with null valued instance properties
+  specification:
+    - core: 10.3.2.3
   schema:
     $schema: https://json-schema.org/draft/2020-12/schema
     additionalProperties:
@@ -126,3 +145,45 @@
       data:
         foo: null
       valid: true
+- description: additionalProperties with propertyNames
+  schema:
+    $schema: https://json-schema.org/draft/2020-12/schema
+    propertyNames:
+      maxLength: 5
+    additionalProperties:
+      type: number
+  tests:
+    - description: Valid against both keywords
+      data:
+        apple: 4
+      valid: true
+    - description: Valid against propertyNames, but not additionalProperties
+      data:
+        fig: 2
+        pear: available
+      valid: false
+- description: dependentSchemas with additionalProperties
+  schema:
+    $schema: https://json-schema.org/draft/2020-12/schema
+    properties:
+      foo2: {}
+    dependentSchemas:
+      foo: {}
+      foo2:
+        properties:
+          bar: {}
+    additionalProperties: false
+  tests:
+    - description: additionalProperties doesn't consider dependentSchemas
+      data:
+        foo: ""
+      valid: false
+    - description: additionalProperties can't see bar
+      data:
+        bar: ""
+      valid: false
+    - description: additionalProperties can't see bar even when foo2 is present
+      data:
+        foo2: ""
+        bar: ""
+      valid: false

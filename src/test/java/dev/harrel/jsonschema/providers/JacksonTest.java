@@ -25,26 +25,10 @@ class JacksonTest {
     }
 
     @Test
-    void shouldWrapForJsonNode() throws JsonProcessingException {
-        JacksonNode.Factory factory = new JacksonNode.Factory();
-        var jsonNode = factory.wrap(new ObjectMapper().readTree("{}"));
-        JacksonNode wrap = factory.wrap(jsonNode);
-        assertThat(wrap).isNotNull();
-        assertThat(wrap.getNodeType()).isEqualTo(SimpleType.OBJECT);
-    }
-
-    @Test
     void shouldFailWrapForInvalidArgument() throws JsonProcessingException {
         Integer object = new ObjectMapper().readValue("1", Integer.class);
         JacksonNode.Factory factory = new JacksonNode.Factory();
         assertThatThrownBy(() -> factory.wrap(object))
-                .isInstanceOf(IllegalArgumentException.class);
-    }
-
-    @Test
-    void shouldFailCreateForInvalidArgument() {
-        JacksonNode.Factory factory = new JacksonNode.Factory();
-        assertThatThrownBy(() -> factory.create("{"))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -74,6 +58,14 @@ class JacksonTest {
 
     @Nested
     class Draft2019EvaluatorFactoryTest extends dev.harrel.jsonschema.Draft2019EvaluatorFactoryTest {
+        @Override
+        public JsonNodeFactory getJsonNodeFactory() {
+            return createFactory();
+        }
+    }
+
+    @Nested
+    class JsonNodeFactoryTest extends dev.harrel.jsonschema.JsonNodeFactoryTest {
         @Override
         public JsonNodeFactory getJsonNodeFactory() {
             return createFactory();

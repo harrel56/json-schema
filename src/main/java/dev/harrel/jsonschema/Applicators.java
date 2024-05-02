@@ -65,11 +65,10 @@ class ItemsEvaluator implements Evaluator {
         }
         List<JsonNode> array = node.asArray();
         int prefixItemsSize = ctx.getSiblingAnnotation(Keyword.PREFIX_ITEMS, node.getJsonPointer(), Integer.class).orElse(0);
-        int size = Math.max(array.size() - prefixItemsSize, 0);
-        boolean valid = array.stream()
-                .skip(prefixItemsSize)
-                .filter(element -> ctx.resolveInternalRefAndValidate(schemaRef, element))
-                .count() == size;
+        boolean valid = true;
+        for (int i = prefixItemsSize; i < array.size(); i++) {
+            valid = ctx.resolveInternalRefAndValidate(schemaRef, array.get(i)) && valid;
+        }
         return valid ? Result.success(true) : Result.failure();
     }
 
@@ -202,7 +201,6 @@ class ContainsEvaluator implements Evaluator {
     }
 }
 
-@SuppressWarnings("unchecked")
 class AdditionalPropertiesEvaluator implements Evaluator {
     private final CompoundUri schemaRef;
 
@@ -226,17 +224,16 @@ class AdditionalPropertiesEvaluator implements Evaluator {
 
         String instanceLocation = node.getJsonPointer();
         Set<String> props = new HashSet<>();
-        props.addAll(ctx.getSiblingAnnotation(Keyword.PROPERTIES, instanceLocation, Set.class).orElse(emptySet()));
-        props.addAll(ctx.getSiblingAnnotation(Keyword.PATTERN_PROPERTIES, instanceLocation, Set.class).orElse(emptySet()));
-        Set<String> processed = new HashSet<>();
+        ctx.getSiblingAnnotation(Keyword.PROPERTIES, instanceLocation, Set.class).ifPresent(props::addAll);
+        ctx.getSiblingAnnotation(Keyword.PATTERN_PROPERTIES, instanceLocation, Set.class).ifPresent(props::addAll);
+
+        Map<String, JsonNode> toBeProcessed = new HashMap<>(node.asObject());
+        toBeProcessed.keySet().removeAll(props);
         boolean valid = true;
-        for (Map.Entry<String, JsonNode> e : node.asObject().entrySet()) {
-            if (!props.contains(e.getKey())) {
-                processed.add(e.getKey());
-                valid = ctx.resolveInternalRefAndValidate(schemaRef, e.getValue()) && valid;
-            }
+        for (JsonNode propNode : toBeProcessed.values()) {
+            valid = ctx.resolveInternalRefAndValidate(schemaRef, propNode) && valid;
         }
-        return valid ? Result.success(unmodifiableSet(processed)) : Result.failure();
+        return valid ? Result.success(unmodifiableSet(toBeProcessed.keySet())) : Result.failure();
     }
 
     @Override
@@ -559,9 +556,7 @@ class UnevaluatedItemsEvaluator implements Evaluator {
             return Result.success();
         }
 
-        Set<String> evaluatedInstances = ctx.getAnnotationsFromParent()
-                .map(Annotation::getInstanceLocation)
-                .collect(Collectors.toSet());
+        Set<String> evaluatedInstances = ctx.calculateEvaluatedInstancesFromParent();
         boolean valid = true;
         for (JsonNode arrayNode : node.asArray()) {
             if (!evaluatedInstances.contains(arrayNode.getJsonPointer())) {
@@ -598,9 +593,7 @@ class UnevaluatedPropertiesEvaluator implements Evaluator {
             return Result.success();
         }
 
-        Set<String> evaluatedInstances = ctx.getAnnotationsFromParent()
-                .map(Annotation::getInstanceLocation)
-                .collect(Collectors.toSet());
+        Set<String> evaluatedInstances = ctx.calculateEvaluatedInstancesFromParent();
         boolean valid = true;
         for (JsonNode fieldNode : node.asObject().values()) {
             if (!evaluatedInstances.contains(fieldNode.getJsonPointer())) {

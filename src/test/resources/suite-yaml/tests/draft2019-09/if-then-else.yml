@@ -154,7 +154,7 @@
       data: other
       valid: true
     - description: no redirects to then and fails
-      data: no
+      data: 'no'
       valid: false
     - description: invalid redirects to else and fails
       data: invalid

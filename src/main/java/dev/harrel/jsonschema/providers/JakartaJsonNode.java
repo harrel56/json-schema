@@ -12,29 +12,13 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 
-public final class JakartaJsonNode implements JsonNode {
-    private final JsonValue node;
-    private final String jsonPointer;
-    private final SimpleType nodeType;
-
+public final class JakartaJsonNode extends AbstractJsonNode<JsonValue> {
     private JakartaJsonNode(JsonValue node, String jsonPointer) {
-        this.node = Objects.requireNonNull(node);
-        this.jsonPointer = Objects.requireNonNull(jsonPointer);
-        this.nodeType = computeNodeType(this.node);
+        super(Objects.requireNonNull(node), jsonPointer);
     }
 
     public JakartaJsonNode(JsonValue node) {
         this(node, "");
-    }
-
-    @Override
-    public String getJsonPointer() {
-        return jsonPointer;
-    }
-
-    @Override
-    public SimpleType getNodeType() {
-        return nodeType;
     }
 
     @Override
@@ -58,7 +42,7 @@ public final class JakartaJsonNode implements JsonNode {
     }
 
     @Override
-    public List<JsonNode> asArray() {
+    List<JsonNode> createArray() {
         JsonArray jsonArray = node.asJsonArray();
         List<JsonNode> result = new ArrayList<>(jsonArray.size());
         for (int i = 0; i < jsonArray.size(); i++) {
@@ -68,7 +52,7 @@ public final class JakartaJsonNode implements JsonNode {
     }
 
     @Override
-    public Map<String, JsonNode> asObject() {
+    Map<String, JsonNode> createObject() {
         Set<Map.Entry<String, JsonValue>> objectMap = node.asJsonObject().entrySet();
         Map<String, JsonNode> result = MapUtil.newHashMap(objectMap.size());
         for (Map.Entry<String, JsonValue> entry : objectMap) {
@@ -77,7 +61,8 @@ public final class JakartaJsonNode implements JsonNode {
         return result;
     }
 
-    private static SimpleType computeNodeType(JsonValue node) {
+    @Override
+    SimpleType computeNodeType(JsonValue node) {
         switch (node.getValueType()) {
             case NULL:
                 return SimpleType.NULL;
@@ -116,7 +101,7 @@ public final class JakartaJsonNode implements JsonNode {
         @Override
         public JakartaJsonNode wrap(Object node) {
             if (node instanceof JakartaJsonNode) {
-                return (JakartaJsonNode) node;
+                return new JakartaJsonNode(((JakartaJsonNode) node).node);
             } else if (node instanceof JsonValue) {
                 return new JakartaJsonNode((JsonValue) node);
             } else {

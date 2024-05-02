@@ -23,7 +23,7 @@ final class JsonParser {
         this.metaSchemaValidator = Objects.requireNonNull(metaSchemaValidator);
     }
 
-    URI parseRootSchema(URI baseUri, JsonNode node) {
+    synchronized URI parseRootSchema(URI baseUri, JsonNode node) {
         SchemaRegistry.State snapshot = schemaRegistry.createSnapshot();
         try {
             return parseRootSchemaInternal(UriUtil.getUriWithoutFragment(baseUri), node);

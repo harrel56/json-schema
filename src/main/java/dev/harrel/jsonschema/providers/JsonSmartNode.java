@@ -32,7 +32,7 @@ public final class JsonSmartNode extends SimpleJsonNode {
     }
 
     @Override
-    public List<JsonNode> asArray() {
+    List<JsonNode> createArray() {
         JSONArray jsonArray = (JSONArray) node;
         List<JsonNode> result = new ArrayList<>(jsonArray.size());
         for (int i = 0; i < jsonArray.size(); i++) {
@@ -42,7 +42,7 @@ public final class JsonSmartNode extends SimpleJsonNode {
     }
 
     @Override
-    public Map<String, JsonNode> asObject() {
+    Map<String, JsonNode> createObject() {
         Set<Map.Entry<String, Object>> objectMap = ((JSONObject) node).entrySet();
         Map<String, JsonNode> result = MapUtil.newHashMap(objectMap.size());
         for (Map.Entry<String, Object> entry : objectMap) {
@@ -80,7 +80,7 @@ public final class JsonSmartNode extends SimpleJsonNode {
         @Override
         public JsonSmartNode wrap(Object node) {
             if (node instanceof JsonSmartNode) {
-                return (JsonSmartNode) node;
+                return new JsonSmartNode(((JsonSmartNode) node).node);
             } else {
                 return new JsonSmartNode(node);
             }

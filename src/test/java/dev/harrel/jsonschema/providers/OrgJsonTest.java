@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -27,27 +26,11 @@ class OrgJsonTest {
     }
 
     @Test
-    void shouldWrapForJsonNode() {
-        OrgJsonNode.Factory factory = new OrgJsonNode.Factory();
-        var jsonNode = factory.wrap(new JSONObject("{}"));
-        JsonNode wrap = factory.wrap(jsonNode);
-        assertThat(wrap).isNotNull();
-        assertThat(wrap.getNodeType()).isEqualTo(SimpleType.OBJECT);
-    }
-
-    @Test
     void shouldFailWrapForInvalidArgument() throws JsonProcessingException {
         com.fasterxml.jackson.databind.JsonNode object = new ObjectMapper().readTree("{}");
         OrgJsonNode.Factory factory = new OrgJsonNode.Factory();
         assertThatThrownBy(() -> factory.wrap(object))
                 .isInstanceOf(IllegalArgumentException.class);
-    }
-
-    @Test
-    void shouldFailCreateForInvalidArgument() {
-        OrgJsonNode.Factory factory = new OrgJsonNode.Factory();
-        assertThatThrownBy(() -> factory.create("{"))
-                .isInstanceOf(JSONException.class);
     }
 
     @Nested
@@ -76,6 +59,14 @@ class OrgJsonTest {
 
     @Nested
     class Draft2019EvaluatorFactoryTest extends dev.harrel.jsonschema.Draft2019EvaluatorFactoryTest {
+        @Override
+        public JsonNodeFactory getJsonNodeFactory() {
+            return createFactory();
+        }
+    }
+
+    @Nested
+    class JsonNodeFactoryTest extends dev.harrel.jsonschema.JsonNodeFactoryTest {
         @Override
         public JsonNodeFactory getJsonNodeFactory() {
             return createFactory();
