@@ -12,47 +12,47 @@ public abstract class SupplementarySuiteTest implements ProviderTest {
 
     @TestFactory
     Stream<DynamicNode> draft2020Supplementary() {
-        Validator validator = new ValidatorFactory()
+        ValidatorFactory factory = new ValidatorFactory()
+                .withDisabledSchemaValidation(true)
                 .withEvaluatorFactory(new FormatEvaluatorFactory())
-                .withJsonNodeFactory(getJsonNodeFactory())
-                .createValidator();
+                .withJsonNodeFactory(getJsonNodeFactory());
 
-        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, Map.of());
+        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), factory, Map.of());
         return generator.generate("/suite-supplementary/draft2020-12");
     }
 
     @TestFactory
     Stream<DynamicNode> draft2019Supplementary() {
-        Validator validator = new ValidatorFactory()
+        ValidatorFactory factory = new ValidatorFactory()
+                .withDisabledSchemaValidation(true)
                 .withDialect(new Dialects.Draft2019Dialect())
                 .withEvaluatorFactory(new FormatEvaluatorFactory())
-                .withJsonNodeFactory(getJsonNodeFactory())
-                .createValidator();
+                .withJsonNodeFactory(getJsonNodeFactory());
 
-        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, Map.of());
+        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), factory, Map.of());
         return generator.generate("/suite-supplementary/draft2019-09");
     }
 
     @TestFactory
     Stream<DynamicNode> draft2020FormatSupplementary() {
-        Validator validator = new ValidatorFactory()
+        ValidatorFactory factory = new ValidatorFactory()
+                .withDisabledSchemaValidation(true)
                 .withEvaluatorFactory(new FormatEvaluatorFactory())
-                .withJsonNodeFactory(getJsonNodeFactory())
-                .createValidator();
+                .withJsonNodeFactory(getJsonNodeFactory());
 
-        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, Map.of());
+        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), factory, Map.of());
         return generator.generate("/suite-supplementary/draft2020-12/format");
     }
 
     @TestFactory
     Stream<DynamicNode> draft2019FormatSupplementary() {
-        Validator validator = new ValidatorFactory()
+        ValidatorFactory factory = new ValidatorFactory()
+                .withDisabledSchemaValidation(true)
                 .withDialect(new Dialects.Draft2019Dialect())
                 .withEvaluatorFactory(new FormatEvaluatorFactory())
-                .withJsonNodeFactory(getJsonNodeFactory())
-                .createValidator();
+                .withJsonNodeFactory(getJsonNodeFactory());
 
-        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, Map.of());
+        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), factory, Map.of());
         return generator.generate("/suite-supplementary/draft2019-09/format");
     }
 }

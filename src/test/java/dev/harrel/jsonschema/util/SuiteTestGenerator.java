@@ -2,6 +2,7 @@ package dev.harrel.jsonschema.util;
 
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.Validator;
+import dev.harrel.jsonschema.ValidatorFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.DynamicNode;
@@ -26,12 +27,12 @@ public class SuiteTestGenerator {
     private static final Logger logger = Logger.getLogger("SuiteTestGenerator");
 
     private final ProviderMapper mapper;
-    private final Validator validator;
+    private final ValidatorFactory validatorFactory;
     private final Map<String, Map<String, Set<String>>> skippedTests;
 
-    public SuiteTestGenerator(ProviderMapper mapper, Validator validator, Map<String, Map<String, Set<String>>> skippedTests) {
+    public SuiteTestGenerator(ProviderMapper mapper, ValidatorFactory validatorFactory, Map<String, Map<String, Set<String>>> skippedTests) {
         this.mapper = mapper;
-        this.validator = validator;
+        this.validatorFactory = validatorFactory;
         this.skippedTests = skippedTests;
     }
 
@@ -95,6 +96,7 @@ public class SuiteTestGenerator {
         logger.info("%s: %s".formatted(bundle, name));
         logger.info(String.valueOf(valid));
 
+        Validator validator = validatorFactory.createValidator();
         URI uri = validator.registerSchema(schema);
         Assertions.assertEquals(valid, validator.validate(uri, instance).isValid());
     }

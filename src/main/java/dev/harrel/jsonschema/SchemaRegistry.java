@@ -55,6 +55,9 @@ final class SchemaRegistry {
 
     void registerSchema(SchemaParsingContext ctx, JsonNode schemaNode, List<EvaluatorWrapper> evaluators, Set<String> activeVocabularies) {
         Schema schema = new Schema(ctx.getParentUri(), ctx.getAbsoluteUri(schemaNode), evaluators, activeVocabularies, ctx.getVocabulariesObject());
+        if (state.createIfAbsent(ctx.getBaseUri()).schemas.containsKey(schemaNode.getJsonPointer())) {
+            throw new IllegalArgumentException(ctx.getBaseUri() + schemaNode.getJsonPointer());
+        }
         state.createIfAbsent(ctx.getBaseUri()).schemas.put(schemaNode.getJsonPointer(), schema);
         registerAnchorsIfPresent(ctx, schemaNode, schema);
     }
