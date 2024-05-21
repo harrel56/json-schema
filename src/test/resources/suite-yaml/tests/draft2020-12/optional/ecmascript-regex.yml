@@ -243,11 +243,10 @@
 - description: \a is not an ECMA 262 control escape
   schema:
     $schema: https://json-schema.org/draft/2020-12/schema
-    $ref: https://json-schema.org/draft/2020-12/schema
+    format: regex
   tests:
     - description: when used as a pattern
-      data:
-        pattern: \a
+      data: \a
       valid: false
 - description: pattern with non-ASCII digits
   schema:
