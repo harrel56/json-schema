@@ -78,7 +78,7 @@ public final class KotlinxJsonNode extends AbstractJsonNode<JsonElement> {
                 return SimpleType.BOOLEAN;
             }
             asNumber = new BigDecimal(content);
-            if (asNumber.scale() <= 0 || asNumber.stripTrailingZeros().scale() <= 0) {
+            if (canConvertToInteger(asNumber)) {
                 return SimpleType.INTEGER;
             } else {
                 return SimpleType.NUMBER;
