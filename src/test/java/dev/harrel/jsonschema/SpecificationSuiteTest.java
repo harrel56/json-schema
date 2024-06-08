@@ -39,7 +39,7 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
     @TestFactory
     Stream<DynamicNode> draft7Required() {
         Validator validator = new ValidatorFactory()
-                .withDialect(new Dialects.Draft2019Dialect())
+                .withDialect(new Dialects.Draft7Dialect())
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .withSchemaResolver(createSchemaResolver())
                 .createValidator();

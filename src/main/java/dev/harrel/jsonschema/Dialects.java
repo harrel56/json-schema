@@ -1,5 +1,6 @@
 package dev.harrel.jsonschema;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -116,6 +117,47 @@ public final class Dialects {
         @Override
         public Map<String, Boolean> getDefaultVocabularyObject() {
             return defaultVocabularyObject;
+        }
+    }
+
+    /**
+     * Dialect corresponding to <i>draft7</i> specification.
+     */
+    public static class Draft7Dialect implements Dialect {
+        private final EvaluatorFactory evaluatorFactory;
+
+        public Draft7Dialect() {
+            this.evaluatorFactory = new Draft7EvaluatorFactory();
+        }
+
+        @Override
+        public SpecificationVersion getSpecificationVersion() {
+            return SpecificationVersion.DRAFT7;
+        }
+
+        @Override
+        public String getMetaSchema() {
+            return SpecificationVersion.DRAFT7.getId();
+        }
+
+        @Override
+        public EvaluatorFactory getEvaluatorFactory() {
+            return evaluatorFactory;
+        }
+
+        @Override
+        public Set<String> getSupportedVocabularies() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public Set<String> getRequiredVocabularies() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public Map<String, Boolean> getDefaultVocabularyObject() {
+            return Collections.emptyMap();
         }
     }
 }
