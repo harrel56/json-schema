@@ -39,7 +39,7 @@ final class JsonParser {
                         () -> objectMapOptional.flatMap(obj -> JsonNodeUtil.getStringField(obj, Keyword.SCHEMA)),
                         () -> Optional.ofNullable(dialect.getMetaSchema())
                 )
-                .map(URI::create)
+                .map(UriUtil::removeEmptyFragment)
                 .orElse(null);
         Optional<URI> providedSchemaId = objectMapOptional
                 .flatMap(obj -> JsonNodeUtil.getStringField(obj, Keyword.ID))
@@ -101,7 +101,7 @@ final class JsonParser {
     private void parseObject(SchemaParsingContext ctx, JsonNode node) {
         Map<String, JsonNode> objectMap = node.asObject();
         URI metaSchemaUri = JsonNodeUtil.getStringField(objectMap, Keyword.SCHEMA)
-                .map(URI::create)
+                .map(UriUtil::removeEmptyFragment)
                 .orElse(null);
         Optional<URI> providedSchemaId = JsonNodeUtil.getStringField(objectMap, Keyword.ID)
                 .filter(JsonNodeUtil::validateIdField)
