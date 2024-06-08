@@ -15,7 +15,8 @@ public enum SpecificationVersion {
             return getId().equals(uri) ? readFileResource(getResourcePath()) : Optional.empty();
         }
     },
-    DRAFT2019_09("https://json-schema.org/draft/2019-09", "/dev/harrel/jsonschema/draft/2019-09/schema.json");
+    DRAFT2019_09("https://json-schema.org/draft/2019-09", "/dev/harrel/jsonschema/draft/2019-09/schema.json"),
+    DRAFT7("https://json-schema.org/draft-07", "/dev/harrel/jsonschema/draft-07/schema.json");
     private final URI baseUri;
     private final String id;
     private final String resourcePath;
