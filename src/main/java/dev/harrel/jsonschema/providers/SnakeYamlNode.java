@@ -91,7 +91,7 @@ public final class SnakeYamlNode extends AbstractJsonNode<Node> {
                 return SimpleType.STRING;
             }
             asNumber = floatToBigDecimal(node);
-            if (canConvertToInteger(asNumber)) {
+            if (asNumber.scale() <= 0 || asNumber.stripTrailingZeros().scale() <= 0) {
                 return SimpleType.INTEGER;
             } else {
                 return SimpleType.NUMBER;
