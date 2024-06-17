@@ -4,10 +4,18 @@ import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 
-interface MetaSchemaValidator {
-    Set<String> validateSchema(JsonParser jsonParser, URI metaSchemaUri, String schemaUri, JsonNode node);
+class MetaSchemaData {
+    final Set<String> activeVocabularies;
+    final SpecificationVersion specificationVersion;
 
-    Set<String> determineActiveVocabularies(Map<String, Boolean> vocabulariesObject);
+    public MetaSchemaData(Set<String> activeVocabularies, SpecificationVersion specificationVersion) {
+        this.activeVocabularies = activeVocabularies;
+        this.specificationVersion = specificationVersion;
+    }
+}
+
+interface MetaSchemaValidator {
+    Dialect validateSchema(JsonParser jsonParser, URI metaSchemaUri, String schemaUri, JsonNode node);
 
     final class NoOpMetaSchemaValidator implements MetaSchemaValidator {
         private final Set<String> activeVocabularies;
@@ -17,13 +25,8 @@ interface MetaSchemaValidator {
         }
 
         @Override
-        public Set<String> validateSchema(JsonParser jsonParser, URI metaSchemaUri, String schemaUri, JsonNode node) {
-            return activeVocabularies;
-        }
-
-        @Override
-        public Set<String> determineActiveVocabularies(Map<String, Boolean> vocabulariesObject) {
-            return activeVocabularies;
+        public Dialect validateSchema(JsonParser jsonParser, URI metaSchemaUri, String schemaUri, JsonNode node) {
+            return new Dialects.Draft2020Dialect();
         }
     }
     final class DefaultMetaSchemaValidator implements MetaSchemaValidator {
@@ -40,7 +43,7 @@ interface MetaSchemaValidator {
         }
 
         @Override
-        public Set<String> validateSchema(JsonParser jsonParser, URI metaSchemaUri, String schemaUri, JsonNode node) {
+        public Dialect validateSchema(JsonParser jsonParser, URI metaSchemaUri, String schemaUri, JsonNode node) {
             Objects.requireNonNull(metaSchemaUri);
             Schema schema = resolveMetaSchema(jsonParser, metaSchemaUri);
             EvaluationContext ctx = new EvaluationContext(jsonNodeFactory, jsonParser, schemaRegistry, schemaResolver, schema.getActiveVocabularies(), false);
@@ -48,27 +51,27 @@ interface MetaSchemaValidator {
                 throw new InvalidSchemaException(String.format("Schema [%s] failed to validate against meta-schema [%s]", schemaUri, metaSchemaUri),
                         new Validator.Result(false, ctx).getErrors());
             }
-            return determineActiveVocabularies(schema.getVocabulariesObject());
+            return schema.getDialect();
         }
 
-        @Override
-        public Set<String> determineActiveVocabularies(Map<String, Boolean> vocabulariesObject) {
-            List<String> missingRequiredVocabularies = dialect.getRequiredVocabularies().stream()
-                    .filter(vocab -> !vocabulariesObject.getOrDefault(vocab, false))
-                    .collect(Collectors.toList());
-            if (!missingRequiredVocabularies.isEmpty()) {
-                throw new VocabularyException(String.format("Required vocabularies [%s] were missing or marked optional in $vocabulary object", missingRequiredVocabularies));
-            }
-            List<String> unsupportedRequiredVocabularies = vocabulariesObject.entrySet().stream()
-                    .filter(Map.Entry::getValue)
-                    .map(Map.Entry::getKey)
-                    .filter(vocab -> !dialect.getSupportedVocabularies().contains(vocab))
-                    .collect(Collectors.toList());
-            if (!unsupportedRequiredVocabularies.isEmpty()) {
-                throw new VocabularyException(String.format("Following vocabularies [%s] are required but not supported", unsupportedRequiredVocabularies));
-            }
-            return vocabulariesObject.keySet();
-        }
+//        @Override
+//        public MetaSchemaData determineActiveVocabularies(Map<String, Boolean> vocabulariesObject) {
+//            List<String> missingRequiredVocabularies = dialect.getRequiredVocabularies().stream()
+//                    .filter(vocab -> !vocabulariesObject.getOrDefault(vocab, false))
+//                    .collect(Collectors.toList());
+//            if (!missingRequiredVocabularies.isEmpty()) {
+//                throw new VocabularyException(String.format("Required vocabularies [%s] were missing or marked optional in $vocabulary object", missingRequiredVocabularies));
+//            }
+//            List<String> unsupportedRequiredVocabularies = vocabulariesObject.entrySet().stream()
+//                    .filter(Map.Entry::getValue)
+//                    .map(Map.Entry::getKey)
+//                    .filter(vocab -> !dialect.getSupportedVocabularies().contains(vocab))
+//                    .collect(Collectors.toList());
+//            if (!unsupportedRequiredVocabularies.isEmpty()) {
+//                throw new VocabularyException(String.format("Following vocabularies [%s] are required but not supported", unsupportedRequiredVocabularies));
+//            }
+//            return vocabulariesObject.keySet();
+//        }
 
         private Schema resolveMetaSchema(JsonParser jsonParser, URI uri) {
             return OptionalUtil.firstPresent(

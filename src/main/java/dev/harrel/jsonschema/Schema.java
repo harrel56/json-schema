@@ -13,19 +13,16 @@ final class Schema {
     private final String schemaLocation;
     private final String schemaLocationFragment;
     private final List<EvaluatorWrapper> evaluators;
-    private final Set<String> activeVocabularies;
-    private final Map<String, Boolean> vocabulariesObject;
+    private final Dialect dialect;
 
     Schema(URI parentUri,
            String schemaLocation,
            List<EvaluatorWrapper> evaluators,
-           Set<String> activeVocabularies,
-           Map<String, Boolean> vocabulariesObject) {
+           Dialect dialect) {
         this.parentUri = Objects.requireNonNull(parentUri);
         this.schemaLocation = Objects.requireNonNull(schemaLocation);
         this.schemaLocationFragment = UriUtil.getJsonPointer(schemaLocation);
-        this.activeVocabularies = Objects.requireNonNull(activeVocabularies);
-        this.vocabulariesObject = Objects.requireNonNull(vocabulariesObject);
+        this.dialect = Objects.requireNonNull(dialect);
         List<EvaluatorWrapper> unsortedEvaluators = new ArrayList<>(Objects.requireNonNull(evaluators));
         unsortedEvaluators.sort(Comparator.comparingInt(Evaluator::getOrder));
         this.evaluators = Collections.unmodifiableList(unsortedEvaluators);
@@ -52,10 +49,10 @@ final class Schema {
     }
 
     Set<String> getActiveVocabularies() {
-        return activeVocabularies;
+        return dialect.getDefaultVocabularyObject().keySet();
     }
 
-    Map<String, Boolean> getVocabulariesObject() {
-        return vocabulariesObject;
+    Dialect getDialect() {
+        return dialect;
     }
 }

@@ -14,7 +14,7 @@ import static java.util.Collections.unmodifiableMap;
 public final class SchemaParsingContext {
     private final Dialect dialect;
     private final URI baseUri;
-    private final URI parentUri;
+    private final URI parentUri; // todo this should contain more metadata: $schema value, explicit or one assumed from parent
     private final SchemaRegistry schemaRegistry;
     private final Map<String, JsonNode> currentSchemaObject;
 
