@@ -35,36 +35,66 @@ class FormatEvaluatorFactoryTest {
     }
 
     @Test
-    void shouldRespectVocabulariesSemantics() {
+    void shouldBeTurnedOnWhenNoVocabulariesWithAdditionalFactory() {
         String schema = """
                 {
                   "format": "uri-reference"
                 }""";
         Validator.Result result = new ValidatorFactory()
-                .withDialect(new FormatDialect())
+                .withEvaluatorFactory(new FormatEvaluatorFactory())
                 .validate(schema, "\" \"");
 
         assertThat(result.isValid()).isFalse();
     }
 
-    private static class FormatDialect extends Dialects.Draft2020Dialect {
-        @Override
-        public EvaluatorFactory getEvaluatorFactory() {
-            return new FormatEvaluatorFactory(Vocabulary.FORMAT_ASSERTION_VOCABULARY);
-        }
+    @Test
+    void shouldBeTurnedOnWhenNoVocabulariesWithDialect() {
+        String schema = """
+                {
+                  "format": "uri-reference"
+                }""";
+        Validator.Result result = new ValidatorFactory()
+                .withDialect(new Dialects.Draft2020Dialect() {
+                    @Override
+                    public EvaluatorFactory getEvaluatorFactory() {
+                        return new FormatEvaluatorFactory();
+                    }
+                })
+                .validate(schema, "\" \"");
 
-        @Override
-        public Set<String> getSupportedVocabularies() {
-            HashSet<String> vocabs = new HashSet<>(super.getSupportedVocabularies());
-            vocabs.add(Vocabulary.Draft2020.FORMAT_ASSERTION);
-            return vocabs;
-        }
-
-        @Override
-        public Map<String, Boolean> getDefaultVocabularyObject() {
-            HashMap<String, Boolean> obj = new HashMap<>(super.getDefaultVocabularyObject());
-            obj.put(Vocabulary.Draft2020.FORMAT_ASSERTION, true);
-            return obj;
-        }
+        assertThat(result.isValid()).isFalse();
     }
+
+    @Test
+    void shouldBeTurnedOffWithFormatVocabulariesWithAdditionalFactory() {
+        String schema = """
+                {
+                  "format": "uri-reference"
+                }""";
+        Validator.Result result = new ValidatorFactory()
+                .withEvaluatorFactory(new FormatEvaluatorFactory(Vocabulary.FORMAT_ASSERTION_VOCABULARY))
+                .validate(schema, "\" \"");
+
+        assertThat(result.isValid()).isTrue();
+    }
+
+    // TODO add test with custom meta-schema which turns on this vocab so validation actually occurs
+    @Test
+    void shouldBeTurnedOffWithFormatVocabulariesWithDialect() {
+        String schema = """
+                {
+                  "format": "uri-reference"
+                }""";
+        Validator.Result result = new ValidatorFactory()
+                .withDialect(new Dialects.Draft2020Dialect() {
+                    @Override
+                    public EvaluatorFactory getEvaluatorFactory() {
+                        return new FormatEvaluatorFactory(Vocabulary.FORMAT_ASSERTION_VOCABULARY);
+                    }
+                })
+                .validate(schema, "\" \"");
+
+        assertThat(result.isValid()).isTrue();
+    }
+
 }
