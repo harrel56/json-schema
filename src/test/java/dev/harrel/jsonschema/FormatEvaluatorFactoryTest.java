@@ -78,7 +78,6 @@ class FormatEvaluatorFactoryTest {
         assertThat(result.isValid()).isTrue();
     }
 
-    // TODO add test with custom meta-schema which turns on this vocab so validation actually occurs
     @Test
     void shouldBeTurnedOffWithFormatVocabulariesWithDialect() {
         String schema = """
@@ -97,4 +96,35 @@ class FormatEvaluatorFactoryTest {
         assertThat(result.isValid()).isTrue();
     }
 
+    @Test
+    void shouldBeTurnedOnWithValidationVocabulariesWithAdditionalFactory() {
+        String schema = """
+                {
+                  "format": "uri-reference"
+                }""";
+        Validator.Result result = new ValidatorFactory()
+                .withEvaluatorFactory(new FormatEvaluatorFactory(Vocabulary.VALIDATION_VOCABULARY))
+                .validate(schema, "\" \"");
+
+        assertThat(result.isValid()).isFalse();
+    }
+
+    // TODO add test with custom meta-schema which turns on this vocab so validation actually occurs
+    @Test
+    void shouldBeTurnedOnWithValidationVocabulariesWithDialect() {
+        String schema = """
+                {
+                  "format": "uri-reference"
+                }""";
+        Validator.Result result = new ValidatorFactory()
+                .withDialect(new Dialects.Draft2020Dialect() {
+                    @Override
+                    public EvaluatorFactory getEvaluatorFactory() {
+                        return new FormatEvaluatorFactory(Vocabulary.VALIDATION_VOCABULARY);
+                    }
+                })
+                .validate(schema, "\" \"");
+
+        assertThat(result.isValid()).isFalse();
+    }
 }
