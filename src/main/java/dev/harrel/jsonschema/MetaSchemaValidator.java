@@ -50,7 +50,7 @@ interface MetaSchemaValidator {
                 throw new InvalidSchemaException(String.format("Schema [%s] failed to validate against meta-schema [%s]", schemaUri, metaSchemaUri),
                         new Validator.Result(false, ctx).getErrors());
             }
-            return schema.getMetaValidationData();
+            return new MetaValidationData(schema.getSpecificationVersion(), schema.getVocabularies());
         }
 
 //        @Override

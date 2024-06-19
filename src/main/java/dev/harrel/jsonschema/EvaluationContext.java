@@ -177,10 +177,11 @@ public final class EvaluationContext {
 
         boolean valid = true;
         for (EvaluatorWrapper evaluator : schema.getEvaluators()) {
-            if (!disabledSchemaValidation &&
-                    (!evaluator.getVocabularies().isEmpty() && Collections.disjoint(evaluator.getVocabularies(), schema.getMetaValidationData().activeVocabularies))) {
-                continue;
-            }
+            // todo this actually is filtering upon Schema creation
+//            if (!disabledSchemaValidation &&
+//                    (!evaluator.getVocabularies().isEmpty() && Collections.disjoint(evaluator.getVocabularies(), schema.getMetaValidationData().activeVocabularies))) {
+//                continue;
+//            }
 
             String evaluationPath = resolveEvaluationPath(evaluator);
             evaluationStack.push(evaluationPath);

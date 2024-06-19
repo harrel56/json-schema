@@ -2,8 +2,9 @@ package dev.harrel.jsonschema;
 
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 
-import static dev.harrel.jsonschema.Evaluator.*;
+import static dev.harrel.jsonschema.Evaluator.Result;
 
 final class Schema {
     private static final Evaluator TRUE_EVALUATOR = (ctx, node) -> Result.success();
@@ -13,19 +14,29 @@ final class Schema {
     private final String schemaLocation;
     private final String schemaLocationFragment;
     private final List<EvaluatorWrapper> evaluators;
-    private final MetaValidationData metaValidationData; //todo rename
+    private final SpecificationVersion specificationVersion;
+    private final Set<String> vocabularies;
 
     Schema(URI parentUri,
            String schemaLocation,
            List<EvaluatorWrapper> evaluators,
-           MetaValidationData metaValidationData) {
+           MetaValidationData metaValidationData,
+           Map<String, JsonNode> objectMap) {
         this.parentUri = Objects.requireNonNull(parentUri);
         this.schemaLocation = Objects.requireNonNull(schemaLocation);
         this.schemaLocationFragment = UriUtil.getJsonPointer(schemaLocation);
-        this.metaValidationData = Objects.requireNonNull(metaValidationData);
-        List<EvaluatorWrapper> unsortedEvaluators = new ArrayList<>(Objects.requireNonNull(evaluators));
-        unsortedEvaluators.sort(Comparator.comparingInt(Evaluator::getOrder));
-        this.evaluators = Collections.unmodifiableList(unsortedEvaluators);
+        this.specificationVersion = metaValidationData.specificationVersion;
+        this.evaluators = Collections.unmodifiableList(
+                evaluators.stream()
+                        .filter(evaluator -> !evaluator.getVocabularies().isEmpty() &&
+                                Collections.disjoint(evaluator.getVocabularies(), metaValidationData.activeVocabularies))
+                        .sorted(Comparator.comparingInt(Evaluator::getOrder))
+                        .collect(Collectors.toList())
+        );
+
+        this.vocabularies = JsonNodeUtil.getVocabulariesObject(objectMap)
+                .map(Map::keySet)
+                .orElse(metaValidationData.activeVocabularies);
     }
 
     static Evaluator getBooleanEvaluator(boolean val) {
@@ -48,7 +59,11 @@ final class Schema {
         return evaluators;
     }
 
-    MetaValidationData getMetaValidationData() {
-        return metaValidationData;
+    public SpecificationVersion getSpecificationVersion() {
+        return specificationVersion;
+    }
+
+    public Set<String> getVocabularies() {
+        return vocabularies;
     }
 }
