@@ -174,7 +174,7 @@ public final class Validator {
     }
 
     private EvaluationContext createNewEvaluationContext(Schema schema) {
-        return new EvaluationContext(schemaNodeFactory, jsonParser, schemaRegistry, schemaResolver, schema.getActiveVocabularies(), disabledSchemaValidation);
+        return new EvaluationContext(schemaNodeFactory, jsonParser, schemaRegistry, schemaResolver, disabledSchemaValidation);
     }
 
     /**

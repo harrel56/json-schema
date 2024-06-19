@@ -16,7 +16,6 @@ public final class EvaluationContext {
     private final JsonParser jsonParser;
     private final SchemaRegistry schemaRegistry;
     private final SchemaResolver schemaResolver;
-    private final Set<String> activeVocabularies;
     private final boolean disabledSchemaValidation;
     private final Deque<URI> dynamicScope = new ArrayDeque<>();
     private final Deque<RefStackItem> refStack = new ArrayDeque<>();
@@ -28,13 +27,11 @@ public final class EvaluationContext {
                       JsonParser jsonParser,
                       SchemaRegistry schemaRegistry,
                       SchemaResolver schemaResolver,
-                      Set<String> activeVocabularies,
                       boolean disabledSchemaValidation) {
         this.jsonNodeFactory = Objects.requireNonNull(jsonNodeFactory);
         this.jsonParser = Objects.requireNonNull(jsonParser);
         this.schemaRegistry = Objects.requireNonNull(schemaRegistry);
         this.schemaResolver = Objects.requireNonNull(schemaResolver);
-        this.activeVocabularies = Objects.requireNonNull(activeVocabularies);
         this.disabledSchemaValidation = disabledSchemaValidation;
         this.evaluationStack.push("");
     }
@@ -181,7 +178,7 @@ public final class EvaluationContext {
         boolean valid = true;
         for (EvaluatorWrapper evaluator : schema.getEvaluators()) {
             if (!disabledSchemaValidation &&
-                    (!evaluator.getVocabularies().isEmpty() && Collections.disjoint(evaluator.getVocabularies(), activeVocabularies))) {
+                    (!evaluator.getVocabularies().isEmpty() && Collections.disjoint(evaluator.getVocabularies(), schema.getMetaValidationData().activeVocabularies))) {
                 continue;
             }
 

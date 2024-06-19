@@ -2,20 +2,19 @@ package dev.harrel.jsonschema;
 
 import java.net.URI;
 import java.util.*;
-import java.util.stream.Collectors;
 
-class MetaSchemaData {
+class MetaValidationData {
     final Set<String> activeVocabularies;
     final SpecificationVersion specificationVersion;
 
-    public MetaSchemaData(Set<String> activeVocabularies, SpecificationVersion specificationVersion) {
-        this.activeVocabularies = activeVocabularies;
+    public MetaValidationData(SpecificationVersion specificationVersion, Set<String> activeVocabularies) {
         this.specificationVersion = specificationVersion;
+        this.activeVocabularies = activeVocabularies;
     }
 }
 
 interface MetaSchemaValidator {
-    Dialect validateSchema(JsonParser jsonParser, URI metaSchemaUri, String schemaUri, JsonNode node);
+    MetaValidationData validateSchema(JsonParser jsonParser, URI metaSchemaUri, String schemaUri, JsonNode node);
 
     final class NoOpMetaSchemaValidator implements MetaSchemaValidator {
         private final Set<String> activeVocabularies;
@@ -25,8 +24,8 @@ interface MetaSchemaValidator {
         }
 
         @Override
-        public Dialect validateSchema(JsonParser jsonParser, URI metaSchemaUri, String schemaUri, JsonNode node) {
-            return new Dialects.Draft2020Dialect();
+        public MetaValidationData validateSchema(JsonParser jsonParser, URI metaSchemaUri, String schemaUri, JsonNode node) {
+            throw new UnsupportedOperationException(); //todo
         }
     }
     final class DefaultMetaSchemaValidator implements MetaSchemaValidator {
@@ -43,15 +42,15 @@ interface MetaSchemaValidator {
         }
 
         @Override
-        public Dialect validateSchema(JsonParser jsonParser, URI metaSchemaUri, String schemaUri, JsonNode node) {
+        public MetaValidationData validateSchema(JsonParser jsonParser, URI metaSchemaUri, String schemaUri, JsonNode node) {
             Objects.requireNonNull(metaSchemaUri);
             Schema schema = resolveMetaSchema(jsonParser, metaSchemaUri);
-            EvaluationContext ctx = new EvaluationContext(jsonNodeFactory, jsonParser, schemaRegistry, schemaResolver, schema.getActiveVocabularies(), false);
+            EvaluationContext ctx = new EvaluationContext(jsonNodeFactory, jsonParser, schemaRegistry, schemaResolver, false);
             if (!ctx.validateAgainstSchema(schema, node)) {
                 throw new InvalidSchemaException(String.format("Schema [%s] failed to validate against meta-schema [%s]", schemaUri, metaSchemaUri),
                         new Validator.Result(false, ctx).getErrors());
             }
-            return schema.getDialect();
+            return schema.getMetaValidationData();
         }
 
 //        @Override

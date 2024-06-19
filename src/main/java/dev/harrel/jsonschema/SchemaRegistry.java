@@ -55,9 +55,8 @@ final class SchemaRegistry {
 
     void registerSchema(SchemaParsingContext ctx,
                         JsonNode schemaNode,
-                        List<EvaluatorWrapper> evaluators,
-                        Dialect dialect) {
-        Schema schema = new Schema(ctx.getParentUri(), ctx.getAbsoluteUri(schemaNode), evaluators, dialect);
+                        List<EvaluatorWrapper> evaluators) {
+        Schema schema = new Schema(ctx.getParentUri(), ctx.getAbsoluteUri(schemaNode), evaluators, ctx.getMetaValidationData());
         state.createIfAbsent(ctx.getBaseUri()).schemas.put(schemaNode.getJsonPointer(), schema);
         registerAnchorsIfPresent(ctx, schemaNode, schema);
     }
@@ -65,8 +64,7 @@ final class SchemaRegistry {
     void registerEmbeddedSchema(SchemaParsingContext ctx,
                                 URI id,
                                 JsonNode schemaNode,
-                                List<EvaluatorWrapper> evaluators,
-                                Dialect dialect) {
+                                List<EvaluatorWrapper> evaluators) {
         Fragments baseFragments = state.createIfAbsent(ctx.getBaseUri());
         Fragments idFragments = state.createIfAbsent(UriUtil.getUriWithoutFragment(id));
 
@@ -76,7 +74,7 @@ final class SchemaRegistry {
                     String newJsonPointer = e.getKey().substring(schemaNode.getJsonPointer().length());
                     idFragments.additionalSchemas.put(newJsonPointer, e.getValue());
                 });
-        Schema identifiableSchema = new Schema(ctx.getParentUri(), ctx.getAbsoluteUri(schemaNode), evaluators, dialect);
+        Schema identifiableSchema = new Schema(ctx.getParentUri(), ctx.getAbsoluteUri(schemaNode), evaluators, ctx.getMetaValidationData());
         idFragments.schemas.put("", identifiableSchema);
         baseFragments.schemas.put(schemaNode.getJsonPointer(), identifiableSchema);
         registerAnchorsIfPresent(ctx, schemaNode, identifiableSchema);

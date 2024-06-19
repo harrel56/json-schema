@@ -55,17 +55,17 @@ final class JsonParser {
         providedSchemaId.ifPresent(id -> unfinishedSchemas.put(id, metaSchemaData));
 
         URI finalUri = providedSchemaId.orElse(baseUri);
-        Dialect dialect = validateAgainstMetaSchema(node, metaSchemaUri, finalUri.toString());
+        MetaValidationData metaValidationData = validateAgainstMetaSchema(node, metaSchemaUri, finalUri.toString());
 
         if (node.isBoolean()) {
-            SchemaParsingContext ctx = new SchemaParsingContext(dialect, schemaRegistry, baseUri, emptyMap());
+            SchemaParsingContext ctx = new SchemaParsingContext(metaValidationData, schemaRegistry, baseUri, emptyMap());
             List<EvaluatorWrapper> evaluators = singletonList(new EvaluatorWrapper(null, node, Schema.getBooleanEvaluator(node.asBoolean())));
-            schemaRegistry.registerSchema(ctx, node, evaluators, dialect);
+            schemaRegistry.registerSchema(ctx, node, evaluators);
         } else if (objectMapOptional.isPresent()) {
             Map<String, JsonNode> objectMap = objectMapOptional.get();
-            SchemaParsingContext ctx = new SchemaParsingContext(dialect, schemaRegistry, finalUri, objectMap);
+            SchemaParsingContext ctx = new SchemaParsingContext(metaValidationData, schemaRegistry, finalUri, objectMap);
             List<EvaluatorWrapper> evaluators = parseEvaluators(ctx, objectMap, node.getJsonPointer());
-            schemaRegistry.registerSchema(ctx, node, evaluators, dialect);
+            schemaRegistry.registerSchema(ctx, node, evaluators);
             providedSchemaId.ifPresent(id -> schemaRegistry.registerAlias(id, baseUri));
         }
 
@@ -89,7 +89,7 @@ final class JsonParser {
     private void parseBoolean(SchemaParsingContext ctx, JsonNode node) {
         Evaluator booleanEvaluator = Schema.getBooleanEvaluator(node.asBoolean());
         List<EvaluatorWrapper> evaluators = singletonList(new EvaluatorWrapper(null, node, booleanEvaluator));
-        schemaRegistry.registerSchema(ctx, node, evaluators, dialect);
+        schemaRegistry.registerSchema(ctx, node, evaluators);
     }
 
     private void parseArray(SchemaParsingContext ctx, JsonNode node) {
@@ -114,29 +114,30 @@ final class JsonParser {
 
         String absoluteUri = ctx.getAbsoluteUri(node);
         String finalUri = providedSchemaId.map(URI::toString).orElse(absoluteUri);
-        Dialect activeDialect = validateAgainstMetaSchema(node, metaSchemaUri, finalUri);
+        // todo validate embedded schemas only if $id is present
+        MetaValidationData metaValidationData = validateAgainstMetaSchema(node, metaSchemaUri, finalUri);
 
         if (providedSchemaId.isPresent()) {
             URI idUri = providedSchemaId.get();
             URI uri = ctx.getParentUri().resolve(idUri);
-            SchemaParsingContext newCtx = ctx.withParentUri(uri);
+            SchemaParsingContext newCtx = ctx.forChild(metaValidationData, objectMap, uri);
             List<EvaluatorWrapper> evaluators = parseEvaluators(newCtx, objectMap, node.getJsonPointer());
-            schemaRegistry.registerEmbeddedSchema(newCtx, uri, node, evaluators, activeDialect);
+            schemaRegistry.registerEmbeddedSchema(newCtx, uri, node, evaluators);
             metaSchemaData.parsed();
             unfinishedSchemas.remove(idUri);
         } else {
-            schemaRegistry.registerSchema(ctx, node, parseEvaluators(ctx, objectMap, node.getJsonPointer()), activeDialect);
+            SchemaParsingContext newCtx = ctx.forChild(metaValidationData, objectMap);
+            schemaRegistry.registerSchema(ctx, node, parseEvaluators(newCtx, objectMap, node.getJsonPointer()));
         }
     }
 
     private List<EvaluatorWrapper> parseEvaluators(SchemaParsingContext ctx, Map<String, JsonNode> object, String objectPath) {
-        SchemaParsingContext newCtx = ctx.withCurrentSchemaContext(object);
         List<EvaluatorWrapper> evaluators = new ArrayList<>();
         for (Map.Entry<String, JsonNode> entry : object.entrySet()) {
-            evaluatorFactory.create(newCtx, entry.getKey(), entry.getValue())
+            evaluatorFactory.create(ctx, entry.getKey(), entry.getValue())
                     .map(evaluator -> new EvaluatorWrapper(entry.getKey(), entry.getValue(), evaluator))
                     .ifPresent(evaluators::add);
-            parseNode(newCtx, entry.getValue());
+            parseNode(ctx, entry.getValue());
         }
         if (evaluators.isEmpty()) {
             evaluators.add(new EvaluatorWrapper(null, objectPath, Schema.getBooleanEvaluator(true)));
@@ -145,19 +146,19 @@ final class JsonParser {
     }
 
     /* If meta-schema is the same as schema or is currently being processed, its validation needs to be postponed */
-    private Dialect validateAgainstMetaSchema(JsonNode node, URI metaSchemaUri, String uri) {
+    private MetaValidationData validateAgainstMetaSchema(JsonNode node, URI metaSchemaUri, String uri) {
         if (metaSchemaUri == null) {
-            return dialect;
+            return new MetaValidationData(dialect.getSpecificationVersion(), dialect.getSpecificationVersion().getActiveVocabularies());
         }
         if (!unfinishedSchemas.containsKey(metaSchemaUri)) {
             return metaSchemaValidator.validateSchema(this, metaSchemaUri, uri, node);
         }
 
-        Dialect officialDialect = Dialects.fromUri(metaSchemaUri).orElseThrow(() -> new RuntimeException("custom dialects cannot be recursive"));
+        SpecificationVersion schemaVersion = SpecificationVersion.fromUri(metaSchemaUri).orElseThrow(() -> new RuntimeException("custom dialects cannot be recursive"));
 
         MetaSchemaData metaSchemaData = unfinishedSchemas.get(metaSchemaUri);
         metaSchemaData.callbacks.add(() -> metaSchemaValidator.validateSchema(this, metaSchemaUri, uri, node));
-        return officialDialect;
+        return new MetaValidationData(schemaVersion, schemaVersion.getActiveVocabularies());
     }
 
     private static final class MetaSchemaData {

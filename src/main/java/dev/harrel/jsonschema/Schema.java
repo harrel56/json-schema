@@ -13,16 +13,16 @@ final class Schema {
     private final String schemaLocation;
     private final String schemaLocationFragment;
     private final List<EvaluatorWrapper> evaluators;
-    private final Dialect dialect;
+    private final MetaValidationData metaValidationData; //todo rename
 
     Schema(URI parentUri,
            String schemaLocation,
            List<EvaluatorWrapper> evaluators,
-           Dialect dialect) {
+           MetaValidationData metaValidationData) {
         this.parentUri = Objects.requireNonNull(parentUri);
         this.schemaLocation = Objects.requireNonNull(schemaLocation);
         this.schemaLocationFragment = UriUtil.getJsonPointer(schemaLocation);
-        this.dialect = Objects.requireNonNull(dialect);
+        this.metaValidationData = Objects.requireNonNull(metaValidationData);
         List<EvaluatorWrapper> unsortedEvaluators = new ArrayList<>(Objects.requireNonNull(evaluators));
         unsortedEvaluators.sort(Comparator.comparingInt(Evaluator::getOrder));
         this.evaluators = Collections.unmodifiableList(unsortedEvaluators);
@@ -48,11 +48,7 @@ final class Schema {
         return evaluators;
     }
 
-    Set<String> getActiveVocabularies() {
-        return dialect.getDefaultVocabularyObject().keySet();
-    }
-
-    Dialect getDialect() {
-        return dialect;
+    MetaValidationData getMetaValidationData() {
+        return metaValidationData;
     }
 }
