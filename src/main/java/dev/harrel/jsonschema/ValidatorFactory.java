@@ -27,10 +27,9 @@ public final class ValidatorFactory {
      * @return new {@link Validator} instance
      */
     public Validator createValidator() {
-        EvaluatorFactory compositeFactory = evaluatorFactory == null ? dialect.getEvaluatorFactory() : EvaluatorFactory.compose(evaluatorFactory, dialect.getEvaluatorFactory());
         JsonNodeFactory schemaFactory = schemaNodeFactory.get();
         JsonNodeFactory instanceFactory = instanceNodeFactory.get();
-        return new Validator(dialect, compositeFactory, schemaFactory, instanceFactory, schemaResolver, disabledSchemaValidation);
+        return new Validator(dialect, evaluatorFactory, schemaFactory, instanceFactory, schemaResolver, disabledSchemaValidation);
     }
 
     /**

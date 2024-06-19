@@ -18,7 +18,7 @@ final class JsonParser {
                SchemaRegistry schemaRegistry,
                MetaSchemaValidator metaSchemaValidator) {
         this.dialect = Objects.requireNonNull(dialect);
-        this.evaluatorFactory = Objects.requireNonNull(evaluatorFactory);
+        this.evaluatorFactory = evaluatorFactory;
         this.schemaRegistry = Objects.requireNonNull(schemaRegistry);
         this.metaSchemaValidator = Objects.requireNonNull(metaSchemaValidator);
     }
@@ -134,7 +134,7 @@ final class JsonParser {
     private List<EvaluatorWrapper> parseEvaluators(SchemaParsingContext ctx, Map<String, JsonNode> object, String objectPath) {
         List<EvaluatorWrapper> evaluators = new ArrayList<>();
         for (Map.Entry<String, JsonNode> entry : object.entrySet()) {
-            evaluatorFactory.create(ctx, entry.getKey(), entry.getValue())
+            createEvaluatorFactory(ctx).create(ctx, entry.getKey(), entry.getValue())
                     .map(evaluator -> new EvaluatorWrapper(entry.getKey(), entry.getValue(), evaluator))
                     .ifPresent(evaluators::add);
             parseNode(ctx, entry.getValue());
@@ -159,6 +159,14 @@ final class JsonParser {
         MetaSchemaData metaSchemaData = unfinishedSchemas.get(metaSchemaUri);
         metaSchemaData.callbacks.add(() -> metaSchemaValidator.validateSchema(this, metaSchemaUri, uri, node));
         return new MetaValidationData(schemaVersion, schemaVersion.getActiveVocabularies());
+    }
+
+    private EvaluatorFactory createEvaluatorFactory(SchemaParsingContext ctx) {
+        if (evaluatorFactory != null) {
+            return EvaluatorFactory.compose(evaluatorFactory, ctx.getMetaValidationData().specificationVersion.getEvaluatorFactory());
+        } else {
+            return ctx.getMetaValidationData().specificationVersion.getEvaluatorFactory();
+        }
     }
 
     private static final class MetaSchemaData {
