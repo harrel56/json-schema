@@ -28,8 +28,8 @@ final class Schema {
         this.specificationVersion = metaValidationData.specificationVersion;
         this.evaluators = Collections.unmodifiableList(
                 evaluators.stream()
-                        .filter(evaluator -> !evaluator.getVocabularies().isEmpty() &&
-                                Collections.disjoint(evaluator.getVocabularies(), metaValidationData.activeVocabularies))
+                        .filter(evaluator -> evaluator.getVocabularies().isEmpty() ||
+                                !Collections.disjoint(evaluator.getVocabularies(), metaValidationData.activeVocabularies))
                         .sorted(Comparator.comparingInt(Evaluator::getOrder))
                         .collect(Collectors.toList())
         );
