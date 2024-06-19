@@ -17,15 +17,15 @@ interface MetaSchemaValidator {
     MetaValidationData validateSchema(JsonParser jsonParser, URI metaSchemaUri, String schemaUri, JsonNode node);
 
     final class NoOpMetaSchemaValidator implements MetaSchemaValidator {
-        private final Set<String> activeVocabularies;
+        private final MetaValidationData metaValidationData;
 
-        public NoOpMetaSchemaValidator(Set<String> activeVocabularies) {
-            this.activeVocabularies = activeVocabularies;
+        NoOpMetaSchemaValidator(MetaValidationData metaValidationData) {
+            this.metaValidationData = metaValidationData;
         }
 
         @Override
         public MetaValidationData validateSchema(JsonParser jsonParser, URI metaSchemaUri, String schemaUri, JsonNode node) {
-            throw new UnsupportedOperationException(); //todo
+            return metaValidationData; //todo
         }
     }
     final class DefaultMetaSchemaValidator implements MetaSchemaValidator {

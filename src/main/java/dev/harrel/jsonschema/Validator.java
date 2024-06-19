@@ -40,7 +40,8 @@ public final class Validator {
         this.disabledSchemaValidation = disabledSchemaValidation;
         MetaSchemaValidator metaSchemaValidator;
         if (disabledSchemaValidation) {
-            metaSchemaValidator = new MetaSchemaValidator.NoOpMetaSchemaValidator(dialect.getSupportedVocabularies());
+            MetaValidationData data = new MetaValidationData(dialect.getSpecificationVersion(), dialect.getSpecificationVersion().getActiveVocabularies());
+            metaSchemaValidator = new MetaSchemaValidator.NoOpMetaSchemaValidator(data);
         } else {
             metaSchemaValidator = new MetaSchemaValidator.DefaultMetaSchemaValidator(dialect, this.schemaNodeFactory, schemaRegistry, schemaResolver);
         }
