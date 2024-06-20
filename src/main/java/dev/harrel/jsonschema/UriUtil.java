@@ -33,10 +33,6 @@ final class CompoundUri {
 final class UriUtil {
     private UriUtil() {}
 
-    static boolean hasNonEmptyFragment(URI uri) {
-        return uri.getFragment() != null && !uri.getFragment().isEmpty();
-    }
-
     static URI getUriWithoutFragment(URI uri) {
         if (uri.getFragment() == null) {
             return uri;
