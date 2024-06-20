@@ -243,6 +243,36 @@ class ValidatorTest {
     }
 
     @Test
+    void shouldFallbackToSchemaResolverWithAnchor() {
+        Validator validator = new ValidatorFactory()
+                .withDisabledSchemaValidation(true)
+                .withSchemaResolver(uri -> SchemaResolver.Result.fromString("""
+                        {
+                          "$defs": {
+                            "sub": {
+                              "$anchor": "anchor",
+                              "type": "string"
+                            }
+                          }
+                        }"""))
+                .createValidator();
+
+        Validator.Result result = validator.validate(URI.create("urn:test#anchor"), "{}");
+        assertThat(result.isValid()).isFalse();
+
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(1);
+        assertError(
+                errors.get(0),
+                "/$defs/sub/type",
+                "urn:test#/$defs/sub",
+                "",
+                "type",
+                "Value is [object] but should be [string]"
+        );
+    }
+
+    @Test
     void shouldFailResolvingExternalSchemaWithInvalidFragment() {
         Validator validator = new ValidatorFactory()
                 .withDisabledSchemaValidation(true)
