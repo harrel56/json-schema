@@ -15,6 +15,10 @@ public class MetaSchemaResolvingException extends JsonSchemaException {
         return new MetaSchemaResolvingException(String.format("Cannot resolve meta-schema [%s]", uri), null, uri);
     }
 
+    static MetaSchemaResolvingException recursiveFailure(String uri) {
+        return new MetaSchemaResolvingException(String.format("Parsing meta-schema [%s] failed - only specification meta-schemas can be recursive", uri), null, uri);
+    }
+
     static MetaSchemaResolvingException parsingFailure(String uri, Throwable cause) {
         return new MetaSchemaResolvingException(String.format("Parsing meta-schema [%s] failed", uri), cause, uri);
     }

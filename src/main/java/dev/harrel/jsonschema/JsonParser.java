@@ -154,7 +154,8 @@ final class JsonParser {
             return metaSchemaValidator.validateSchema(this, metaSchemaUri, uri, node);
         }
 
-        SpecificationVersion schemaVersion = SpecificationVersion.fromUri(metaSchemaUri).orElseThrow(() -> new RuntimeException("custom dialects cannot be recursive"));
+        SpecificationVersion schemaVersion = SpecificationVersion.fromUri(metaSchemaUri)
+                .orElseThrow(() -> MetaSchemaResolvingException.recursiveFailure(metaSchemaUri.toString()));
 
         MetaSchemaData metaSchemaData = unfinishedSchemas.get(metaSchemaUri);
         metaSchemaData.callbacks.add(() -> metaSchemaValidator.validateSchema(this, metaSchemaUri, uri, node));

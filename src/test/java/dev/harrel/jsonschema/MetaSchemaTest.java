@@ -231,25 +231,12 @@ public abstract class MetaSchemaTest implements ProviderTest {
     }
 
     @Test
-    void shouldPassForValidRecursiveSchema() {
+    void shouldFailForInvalidRecursiveMetaSchema() {
+        // only official meta-schemas can be recursive, thus the overriding
         String rawSchema = """
                 {
-                    "$schema": "urn:recursive-schema",
-                    "$id": "urn:recursive-schema",
-                    "type": "object"
-                }""";
-        new ValidatorFactory()
-                .withJsonNodeFactory(getJsonNodeFactory())
-                .withSchemaResolver(resolver)
-                .validate(rawSchema, "{}");
-    }
-
-    @Test
-    void shouldFailForInvalidRecursiveSchema() {
-        String rawSchema = """
-                {
-                    "$schema": "urn:recursive-schema",
-                    "$id": "urn:recursive-schema",
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "$id": "https://json-schema.org/draft/2020-12/schema",
                     "type": "null"
                 }""";
         Validator validator = new ValidatorFactory()
@@ -261,41 +248,40 @@ public abstract class MetaSchemaTest implements ProviderTest {
     }
 
     @Test
-    void shouldPassForValidRecursiveEmbeddedSchema() {
+    void shouldNotSupportRecursiveCustomMetaSchemas() {
         String rawSchema = """
                 {
-                    "properties": {
-                      "prop": {
-                        "$schema": "urn:recursive-schema",
-                        "$id": "urn:recursive-schema",
-                        "type": "object"
-                      }
-                    }
+                    "$schema": "urn:meta",
+                    "$id": "urn:meta",
+                    "type": "null"
                 }""";
-        new ValidatorFactory()
+        Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .withSchemaResolver(resolver)
-                .validate(rawSchema, "{}");
+                .createValidator();
+        MetaSchemaResolvingException exception = catchThrowableOfType(MetaSchemaResolvingException.class, () -> validator.registerSchema(rawSchema));
+        assertThat(exception).hasMessage("Parsing meta-schema [urn:meta] failed - only specification meta-schemas can be recursive");
     }
 
     @Test
-    void shouldFailForInvalidRecursiveEmbeddedSchema() {
+    void shouldNotSupportRecursiveCustomMetaSchemasEmbeddedSchema() {
         String rawSchema = """
                 {
-                    "properties": {
-                      "prop": {
-                        "$schema": "urn:recursive-schema",
-                        "$id": "urn:recursive-schema",
-                        "type": "null"
-                      }
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "$defs": {
+                        "embedded": {
+                            "$schema": "urn:meta",
+                            "$id": "urn:meta",
+                            "type": "null"
+                        }
                     }
                 }""";
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .withSchemaResolver(resolver)
                 .createValidator();
-        InvalidSchemaException exception = catchThrowableOfType(InvalidSchemaException.class, () -> validator.registerSchema(rawSchema));
-        assertThat(exception.getErrors()).isNotEmpty();
+        MetaSchemaResolvingException exception = catchThrowableOfType(MetaSchemaResolvingException.class, () -> validator.registerSchema(rawSchema));
+        assertThat(exception).hasMessage("Parsing meta-schema [urn:meta] failed - only specification meta-schemas can be recursive");
     }
 
     @Test
