@@ -61,7 +61,7 @@ public abstract class MetaSchemaTest implements ProviderTest {
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .createValidator();
-        InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawSchema), InvalidSchemaException.class);
+        InvalidSchemaException exception = catchThrowableOfType(InvalidSchemaException.class, () -> validator.registerSchema(rawSchema));
         assertThat(exception.getErrors()).isNotEmpty();
     }
 
@@ -91,7 +91,7 @@ public abstract class MetaSchemaTest implements ProviderTest {
                 .withDialect(new CustomDialect())
                 .withSchemaResolver(resolver)
                 .createValidator();
-        InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawSchema), InvalidSchemaException.class);
+        InvalidSchemaException exception = catchThrowableOfType(InvalidSchemaException.class, () -> validator.registerSchema(rawSchema));
         assertThat(exception.getErrors()).isNotEmpty();
     }
 
@@ -169,7 +169,7 @@ public abstract class MetaSchemaTest implements ProviderTest {
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .withSchemaResolver(resolver)
                 .createValidator();
-        InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawSchema), InvalidSchemaException.class);
+        InvalidSchemaException exception = catchThrowableOfType(InvalidSchemaException.class, () -> validator.registerSchema(rawSchema));
         assertThat(exception.getErrors()).isNotEmpty();
     }
 
@@ -198,7 +198,7 @@ public abstract class MetaSchemaTest implements ProviderTest {
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .withSchemaResolver(resolver)
                 .createValidator();
-        InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawSchema), InvalidSchemaException.class);
+        InvalidSchemaException exception = catchThrowableOfType(InvalidSchemaException.class, () -> validator.registerSchema(rawSchema));
         assertThat(exception.getErrors()).isNotEmpty();
     }
 
@@ -209,7 +209,7 @@ public abstract class MetaSchemaTest implements ProviderTest {
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .withSchemaResolver(resolver)
                 .createValidator();
-        InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawSchema), InvalidSchemaException.class);
+        InvalidSchemaException exception = catchThrowableOfType(InvalidSchemaException.class, () -> validator.registerSchema(rawSchema));
         assertThat(exception.getErrors()).isNotEmpty();
     }
 
@@ -225,7 +225,7 @@ public abstract class MetaSchemaTest implements ProviderTest {
                 .withSchemaResolver(resolver)
                 .createValidator();
 
-        InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawSchema), InvalidSchemaException.class);
+        InvalidSchemaException exception = catchThrowableOfType(InvalidSchemaException.class, () -> validator.registerSchema(rawSchema));
         assertThat(exception.getErrors()).isNotEmpty();
         assertThat(exception.getMessage()).contains("urn:my-schema");
     }
@@ -256,7 +256,7 @@ public abstract class MetaSchemaTest implements ProviderTest {
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .withSchemaResolver(resolver)
                 .createValidator();
-        InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawSchema), InvalidSchemaException.class);
+        InvalidSchemaException exception = catchThrowableOfType(InvalidSchemaException.class, () -> validator.registerSchema(rawSchema));
         assertThat(exception.getErrors()).isNotEmpty();
     }
 
@@ -294,7 +294,7 @@ public abstract class MetaSchemaTest implements ProviderTest {
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .withSchemaResolver(resolver)
                 .createValidator();
-        InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawSchema), InvalidSchemaException.class);
+        InvalidSchemaException exception = catchThrowableOfType(InvalidSchemaException.class, () -> validator.registerSchema(rawSchema));
         assertThat(exception.getErrors()).isNotEmpty();
     }
 
@@ -319,11 +319,11 @@ public abstract class MetaSchemaTest implements ProviderTest {
         assertThat(validator.validate(URI.create("urn:schema1"), "{}").isValid()).isTrue();
         assertThat(validator.validate(URI.create("urn:passing"), "{}").isValid()).isTrue();
 
-        InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawFailingSchema), InvalidSchemaException.class);
+        InvalidSchemaException exception = catchThrowableOfType(InvalidSchemaException.class, () -> validator.registerSchema(rawFailingSchema));
         assertThat(exception.getErrors()).isNotEmpty();
         URI failingUri = URI.create("urn:recursive-schema");
 
-        SchemaNotFoundException notFoundException = catchThrowableOfType(() -> validator.validate(failingUri, "null"), SchemaNotFoundException.class);
+        SchemaNotFoundException notFoundException = catchThrowableOfType(SchemaNotFoundException.class, () -> validator.validate(failingUri, "null"));
         assertThat(notFoundException).hasMessage("Couldn't find schema with uri [urn:recursive-schema]");
         assertThat(notFoundException.getRef()).isEqualTo("urn:recursive-schema");
         assertThat(validator.validate(URI.create("urn:schema1"), "{}").isValid()).isTrue();
@@ -370,10 +370,10 @@ public abstract class MetaSchemaTest implements ProviderTest {
         URI rootUri = URI.create("urn:root-schema");
         URI failingUri = URI.create("urn:recursive-schema");
 
-        SchemaNotFoundException notFoundException1 = catchThrowableOfType(() -> validator.validate(failingUri, "null"), SchemaNotFoundException.class);
+        SchemaNotFoundException notFoundException1 = catchThrowableOfType(SchemaNotFoundException.class, () -> validator.validate(failingUri, "null"));
         assertThat(notFoundException1).hasMessage("Couldn't find schema with uri [urn:recursive-schema]");
         assertThat(notFoundException1.getRef()).isEqualTo("urn:recursive-schema");
-        SchemaNotFoundException notFoundException2 = catchThrowableOfType(() -> validator.validate(rootUri, "null"), SchemaNotFoundException.class);
+        SchemaNotFoundException notFoundException2 = catchThrowableOfType(SchemaNotFoundException.class, () -> validator.validate(rootUri, "null"));
         assertThat(notFoundException2).hasMessage("Couldn't find schema with uri [urn:root-schema]");
         assertThat(notFoundException2.getRef()).isEqualTo("urn:root-schema");
         assertThat(validator.validate(URI.create("urn:schema1"), "{}").isValid()).isTrue();
