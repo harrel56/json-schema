@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.net.URI;
 import java.util.Optional;
 
+import static dev.harrel.jsonschema.util.TestUtil.assertError;
 import static org.assertj.core.api.Assertions.*;
 
 public abstract class MetaSchemaTest implements ProviderTest {
@@ -377,5 +378,39 @@ public abstract class MetaSchemaTest implements ProviderTest {
         assertThat(notFoundException2.getRef()).isEqualTo("urn:root-schema");
         assertThat(validator.validate(URI.create("urn:schema1"), "{}").isValid()).isTrue();
         assertThat(validator.validate(URI.create("urn:passing"), "{}").isValid()).isTrue();
+    }
+
+    @Test
+    void validatesAgainstCustomMetaSchema() {
+        String failingMetaSchema = """
+                {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "$id": "urn:meta",
+                  "type": "null"
+                }""";
+        String schema = """
+                {
+                  "$schema": "urn:meta",
+                  "$id": "urn:schema"
+                }""";
+        Validator validator = new ValidatorFactory().withSchemaResolver(uri -> {
+            if ("urn:meta".equals(uri)) {
+                return SchemaResolver.Result.fromString(failingMetaSchema);
+            } else {
+                return SchemaResolver.Result.empty();
+            }
+        }).createValidator();
+
+        InvalidSchemaException exception = catchThrowableOfType(InvalidSchemaException.class, () -> validator.registerSchema(schema));
+        assertThat(exception).hasMessage("Schema [urn:schema] failed to validate against meta-schema [urn:meta]");
+        assertThat(exception.getErrors()).hasSize(1);
+        assertError(
+                exception.getErrors().getFirst(),
+                "/type",
+                "urn:meta",
+                "",
+                "type",
+                "Value is [object] but should be [null]"
+        );
     }
 }

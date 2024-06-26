@@ -3,9 +3,15 @@ package dev.harrel.jsonschema;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import java.net.URI;
+
+import static dev.harrel.jsonschema.util.TestUtil.assertError;
+import static org.assertj.core.api.Assertions.*;
+
 class CrossDialectTest {
     @Test
     @Disabled
+    // fixme
     void compoundSchemaDoesntValidateEmbeddedSchemas() {
         String schema = """
                 {
