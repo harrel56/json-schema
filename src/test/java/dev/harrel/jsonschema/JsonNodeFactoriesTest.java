@@ -46,7 +46,7 @@ class JsonNodeFactoriesTest {
         public JsonNode create(String rawJson) {
             return factory.create(rawJson);
         }
-    };
+    }
     JsonNode jsonNode = mock(JsonNode.class);
     Object providerNode = new ObjectMapper().readTree("{}");
 
