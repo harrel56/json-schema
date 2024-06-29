@@ -46,11 +46,8 @@ final class JsonParser {
                 .filter(JsonNodeUtil::validateIdField)
                 .map(UriUtil::getUriWithoutFragment)
                 .filter(id -> !baseUri.equals(id));
-        Map<String, Boolean> vocabulariesObject = objectMapOptional
-                .flatMap(JsonNodeUtil::getVocabulariesObject)
-                .orElse(dialect.getDefaultVocabularyObject());
 
-        MetaSchemaData metaSchemaData = new MetaSchemaData(vocabulariesObject);
+        MetaSchemaData metaSchemaData = new MetaSchemaData();
         unfinishedSchemas.put(baseUri, metaSchemaData);
         providedSchemaId.ifPresent(id -> unfinishedSchemas.put(id, metaSchemaData));
 
@@ -106,10 +103,8 @@ final class JsonParser {
         Optional<URI> providedSchemaId = JsonNodeUtil.getStringField(objectMap, Keyword.ID)
                 .filter(JsonNodeUtil::validateIdField)
                 .map(URI::create);
-        Map<String, Boolean> vocabularyObject = JsonNodeUtil.getVocabulariesObject(objectMap)
-                .orElse(dialect.getDefaultVocabularyObject());
 
-        MetaSchemaData metaSchemaData = new MetaSchemaData(vocabularyObject);
+        MetaSchemaData metaSchemaData = new MetaSchemaData();
         providedSchemaId.ifPresent(id -> unfinishedSchemas.put(id, metaSchemaData));
 
         String absoluteUri = ctx.getAbsoluteUri(node);
@@ -170,14 +165,9 @@ final class JsonParser {
         }
     }
 
+    // todo is this class necessary?
     private static final class MetaSchemaData {
-        private final Map<String, Boolean> vocabularyObject;
-        private final List<Runnable> callbacks;
-
-        private MetaSchemaData(Map<String, Boolean> vocabularyObject) {
-            this.vocabularyObject = vocabularyObject;
-            this.callbacks = new ArrayList<>();
-        }
+        private final List<Runnable> callbacks = new ArrayList<>();
 
         void parsed() {
             /* old good for loop to avoid ConcurrentModificationException */
