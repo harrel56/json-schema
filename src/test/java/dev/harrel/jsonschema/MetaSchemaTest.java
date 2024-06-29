@@ -290,8 +290,8 @@ public abstract class MetaSchemaTest implements ProviderTest {
                 }""";
         String rawFailingSchema = """
                 {
-                    "$schema": "urn:recursive-schema",
-                    "$id": "urn:recursive-schema",
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "$id": "https://json-schema.org/draft/2020-12/schema",
                     "type": "null"
                 }""";
         Validator validator = new ValidatorFactory()
@@ -304,12 +304,23 @@ public abstract class MetaSchemaTest implements ProviderTest {
         assertThat(validator.validate(URI.create("urn:passing"), "{}").isValid()).isTrue();
 
         InvalidSchemaException exception = catchThrowableOfType(InvalidSchemaException.class, () -> validator.registerSchema(rawFailingSchema));
-        assertThat(exception.getErrors()).isNotEmpty();
-        URI failingUri = URI.create("urn:recursive-schema");
+        assertThat(exception.getErrors()).hasSize(1);
+        assertError(
+                exception.getErrors().getFirst(),
+                "/type",
+                "https://json-schema.org/draft/2020-12/schema#",
+                "",
+                "type",
+                "Value is [object] but should be [null]"
+        );
 
-        SchemaNotFoundException notFoundException = catchThrowableOfType(SchemaNotFoundException.class, () -> validator.validate(failingUri, "null"));
-        assertThat(notFoundException).hasMessage("Couldn't find schema with uri [urn:recursive-schema]");
-        assertThat(notFoundException.getRef()).isEqualTo("urn:recursive-schema");
+        // check that draft2020 meta-schema was not overwritten
+        URI emptySchemaUri = validator.registerSchema("""
+                {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema"
+                }""");
+
+        assertThat(validator.validate(emptySchemaUri, "{}").isValid()).isTrue();
         assertThat(validator.validate(URI.create("urn:schema1"), "{}").isValid()).isTrue();
         assertThat(validator.validate(URI.create("urn:passing"), "{}").isValid()).isTrue();
     }
