@@ -39,6 +39,7 @@ class MetaSchemaValidator {
         }
     }
 
+    // todo actually perform vocabularies validation. Spec version need to have a field with requiredVocabs. IDK about supported vocabs
 //        @Override
 //        public MetaSchemaData determineActiveVocabularies(Map<String, Boolean> vocabulariesObject) {
 //            List<String> missingRequiredVocabularies = dialect.getRequiredVocabularies().stream()
