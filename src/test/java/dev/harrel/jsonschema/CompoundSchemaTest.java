@@ -5,10 +5,9 @@ import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 
-import static dev.harrel.jsonschema.util.TestUtil.assertError;
 import static org.assertj.core.api.Assertions.*;
 
-class CrossDialectTest {
+class CompoundSchemaTest {
     @Test
     @Disabled
     // fixme
