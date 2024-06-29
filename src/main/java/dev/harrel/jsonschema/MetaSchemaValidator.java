@@ -59,9 +59,10 @@ class MetaSchemaValidator {
 //        }
 
     private Schema resolveMetaSchema(JsonParser jsonParser, URI uri) {
+        CompoundUri compoundUri = CompoundUri.fromString(uri.toString());
         return OptionalUtil.firstPresent(
-                () -> Optional.ofNullable(schemaRegistry.get(uri)),
-                () -> Optional.ofNullable(schemaRegistry.getDynamic(uri))
+                () -> Optional.ofNullable(schemaRegistry.get(compoundUri)),
+                () -> Optional.ofNullable(schemaRegistry.getDynamic(compoundUri))
         ).orElseGet(() -> resolveExternalSchema(jsonParser, uri));
     }
 
