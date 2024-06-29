@@ -158,6 +158,7 @@ public abstract class MetaSchemaTest implements ProviderTest {
                     "properties": {
                         "embedded": {
                             "$schema": "urn:custom",
+                            "$id": "urn:embedded",
                             "type": "string",
                             "maxLength": 1
                         }
