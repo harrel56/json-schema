@@ -79,20 +79,18 @@ public abstract class MetaSchemaTest implements ProviderTest {
     }
 
     @Test
-    void shouldFailForInvalidSchemaWhenCustomMetaSchema() {
-        String rawSchema = """
-                {
-                    "type": "string",
-                    "maxLength": 1,
-                    "minLength": 1
-                }""";
+    // This actually unnecessarily wraps "recursive" exception - is it desired behavior? tbd
+    void shouldFailRecursiveCustomMetaSchemaFromDialect() {
+        String rawSchema = "{}";
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .withDialect(new CustomDialect())
                 .withSchemaResolver(resolver)
                 .createValidator();
-        InvalidSchemaException exception = catchThrowableOfType(InvalidSchemaException.class, () -> validator.registerSchema(rawSchema));
-        assertThat(exception.getErrors()).isNotEmpty();
+        MetaSchemaResolvingException exception = catchThrowableOfType(MetaSchemaResolvingException.class, () -> validator.registerSchema(rawSchema));
+        assertThat(exception).hasMessage("Parsing meta-schema [custom] failed");
+        assertThat(exception).hasCauseInstanceOf(MetaSchemaResolvingException.class);
+        assertThat(exception.getCause()).hasMessage("Parsing meta-schema [custom] failed - only specification meta-schemas can be recursive");
     }
 
     @Test
