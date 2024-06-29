@@ -3,6 +3,7 @@ package dev.harrel.jsonschema;
 import dev.harrel.jsonschema.providers.JacksonNode;
 import org.junit.jupiter.api.Test;
 
+import java.net.URI;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,7 +36,7 @@ class FormatEvaluatorFactoryTest {
     }
 
     @Test
-    void shouldBeTurnedOnWhenNoVocabulariesWithAdditionalFactory() {
+    void shouldBeTurnedOnWhenNoVocabularies() {
         String schema = """
                 {
                   "format": "uri-reference"
@@ -48,25 +49,7 @@ class FormatEvaluatorFactoryTest {
     }
 
     @Test
-    void shouldBeTurnedOnWhenNoVocabulariesWithDialect() {
-        String schema = """
-                {
-                  "format": "uri-reference"
-                }""";
-        Validator.Result result = new ValidatorFactory()
-                .withDialect(new Dialects.Draft2020Dialect() {
-                    @Override
-                    public EvaluatorFactory getEvaluatorFactory() {
-                        return new FormatEvaluatorFactory();
-                    }
-                })
-                .validate(schema, "\" \"");
-
-        assertThat(result.isValid()).isFalse();
-    }
-
-    @Test
-    void shouldBeTurnedOffWithFormatVocabulariesWithAdditionalFactory() {
+    void shouldBeTurnedOffWithFormatVocabularies() {
         String schema = """
                 {
                   "format": "uri-reference"
@@ -79,25 +62,7 @@ class FormatEvaluatorFactoryTest {
     }
 
     @Test
-    void shouldBeTurnedOffWithFormatVocabulariesWithDialect() {
-        String schema = """
-                {
-                  "format": "uri-reference"
-                }""";
-        Validator.Result result = new ValidatorFactory()
-                .withDialect(new Dialects.Draft2020Dialect() {
-                    @Override
-                    public EvaluatorFactory getEvaluatorFactory() {
-                        return new FormatEvaluatorFactory(Vocabulary.FORMAT_ASSERTION_VOCABULARY);
-                    }
-                })
-                .validate(schema, "\" \"");
-
-        assertThat(result.isValid()).isTrue();
-    }
-
-    @Test
-    void shouldBeTurnedOnWithValidationVocabulariesWithAdditionalFactory() {
+    void shouldBeTurnedOnWithValidationVocabularies() {
         String schema = """
                 {
                   "format": "uri-reference"
@@ -109,21 +74,28 @@ class FormatEvaluatorFactoryTest {
         assertThat(result.isValid()).isFalse();
     }
 
-    // TODO add test with custom meta-schema which turns on this vocab so validation actually occurs
     @Test
-    void shouldBeTurnedOnWithValidationVocabulariesWithDialect() {
+    void shouldBeTurnedOnWithFormatVocabulariesWithCustomVocabs() {
+        String metaSchema = """
+                {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "$id": "urn:meta-schema",
+                  "$vocabulary": {
+                    "https://json-schema.org/draft/2020-12/vocab/core": true,
+                    "https://json-schema.org/draft/2020-12/vocab/format-assertion": true
+                  }
+                }""";
         String schema = """
                 {
+                  "$schema": "urn:meta-schema",
                   "format": "uri-reference"
                 }""";
-        Validator.Result result = new ValidatorFactory()
-                .withDialect(new Dialects.Draft2020Dialect() {
-                    @Override
-                    public EvaluatorFactory getEvaluatorFactory() {
-                        return new FormatEvaluatorFactory(Vocabulary.VALIDATION_VOCABULARY);
-                    }
-                })
-                .validate(schema, "\" \"");
+        Validator validator = new ValidatorFactory()
+                .withEvaluatorFactory(new FormatEvaluatorFactory(Vocabulary.FORMAT_ASSERTION_VOCABULARY))
+                .createValidator();
+        validator.registerSchema(metaSchema);
+        URI schemaUri = validator.registerSchema(schema);
+        Validator.Result result = validator.validate(schemaUri, "\" \"");
 
         assertThat(result.isValid()).isFalse();
     }
