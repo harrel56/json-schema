@@ -104,16 +104,12 @@ final class JsonParser {
                 .filter(JsonNodeUtil::validateIdField)
                 .map(URI::create);
 
-        MetaSchemaData metaSchemaData = new MetaSchemaData();
-        providedSchemaId.ifPresent(id -> unfinishedSchemas.put(id, metaSchemaData));
-
-        String absoluteUri = ctx.getAbsoluteUri(node);
-        String finalUri = providedSchemaId.map(URI::toString).orElse(absoluteUri);
-        // todo validate embedded schemas only if $id is present
-        MetaValidationData metaValidationData = validateAgainstMetaSchema(node, metaSchemaUri, finalUri);
-
         if (providedSchemaId.isPresent()) {
             URI idUri = providedSchemaId.get();
+            MetaSchemaData metaSchemaData = new MetaSchemaData();
+            unfinishedSchemas.put(idUri, metaSchemaData);
+            MetaValidationData metaValidationData = validateAgainstMetaSchema(node, metaSchemaUri, idUri.toString());
+
             URI uri = ctx.getParentUri().resolve(idUri);
             SchemaParsingContext newCtx = ctx.forChild(metaValidationData, objectMap, uri);
             List<EvaluatorWrapper> evaluators = parseEvaluators(newCtx, objectMap, node.getJsonPointer());
@@ -121,7 +117,7 @@ final class JsonParser {
             metaSchemaData.parsed();
             unfinishedSchemas.remove(idUri);
         } else {
-            SchemaParsingContext newCtx = ctx.forChild(metaValidationData, objectMap);
+            SchemaParsingContext newCtx = ctx.forChild(objectMap);
             schemaRegistry.registerSchema(ctx, node, parseEvaluators(newCtx, objectMap, node.getJsonPointer()));
         }
     }

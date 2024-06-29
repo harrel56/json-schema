@@ -34,7 +34,7 @@ public final class SchemaParsingContext {
         return new SchemaParsingContext(metaValidationData, baseUri, parentUri, schemaRegistry, currentSchemaObject);
     }
 
-    SchemaParsingContext forChild(MetaValidationData metaValidationData, Map<String, JsonNode> currentSchemaObject) {
+    SchemaParsingContext forChild(Map<String, JsonNode> currentSchemaObject) {
         return forChild(metaValidationData, currentSchemaObject, parentUri);
     }
 
