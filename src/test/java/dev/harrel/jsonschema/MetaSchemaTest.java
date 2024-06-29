@@ -19,22 +19,22 @@ public abstract class MetaSchemaTest implements ProviderTest {
     static class CustomDialect extends Dialects.Draft2020Dialect {
         @Override
         public String getMetaSchema() {
-            return "custom";
+            return "urn:custom";
         }
     }
 
     static class InvalidCustomDialect extends Dialects.Draft2020Dialect {
         @Override
         public String getMetaSchema() {
-            return "invalid";
+            return "urn:invalid";
         }
     }
 
 
     private final SchemaResolver resolver = uri -> {
-        if ("custom".equals(uri)) {
+        if ("urn:custom".equals(uri)) {
             return SchemaResolver.Result.fromString(CUSTOM_META_SCHEMA);
-        } else if ("invalid".equals(uri)) {
+        } else if ("urn:invalid".equals(uri)) {
             return SchemaResolver.Result.fromString(INVALID_META_SCHEMA);
         } else {
             return SchemaResolver.Result.empty();
@@ -69,11 +69,11 @@ public abstract class MetaSchemaTest implements ProviderTest {
     void shouldPassForValidSchemaWhenCustomMetaSchema() {
         String rawSchema = """
                 {
+                    "$schema": "urn:custom",
                     "type": ["null"]
                 }""";
         new ValidatorFactory()
                 .withJsonNodeFactory(getJsonNodeFactory())
-                .withDialect(new CustomDialect())
                 .withSchemaResolver(resolver)
                 .validate(rawSchema, "null");
     }
@@ -88,9 +88,9 @@ public abstract class MetaSchemaTest implements ProviderTest {
                 .withSchemaResolver(resolver)
                 .createValidator();
         MetaSchemaResolvingException exception = catchThrowableOfType(MetaSchemaResolvingException.class, () -> validator.registerSchema(rawSchema));
-        assertThat(exception).hasMessage("Parsing meta-schema [custom] failed");
+        assertThat(exception).hasMessage("Parsing meta-schema [urn:custom] failed");
         assertThat(exception).hasCauseInstanceOf(MetaSchemaResolvingException.class);
-        assertThat(exception.getCause()).hasMessage("Parsing meta-schema [custom] failed - only specification meta-schemas can be recursive");
+        assertThat(exception.getCause()).hasMessage("Parsing meta-schema [urn:custom] failed - only specification meta-schemas can be recursive");
     }
 
     @Test
@@ -140,7 +140,7 @@ public abstract class MetaSchemaTest implements ProviderTest {
                     "type": "object",
                     "properties": {
                         "embedded": {
-                            "$schema": "custom"
+                            "$schema": "urn:custom"
                         }
                     }
                 }""";
@@ -157,7 +157,7 @@ public abstract class MetaSchemaTest implements ProviderTest {
                     "type": "object",
                     "properties": {
                         "embedded": {
-                            "$schema": "custom",
+                            "$schema": "urn:custom",
                             "type": "string",
                             "maxLength": 1
                         }
@@ -175,7 +175,7 @@ public abstract class MetaSchemaTest implements ProviderTest {
     void shouldPassForOverriddenDefaultMetaSchema() {
         String rawSchema = """
                 {
-                    "$schema": "custom",
+                    "$schema": "urn:custom",
                     "type": 1
                 }""";
         new ValidatorFactory()
@@ -188,7 +188,7 @@ public abstract class MetaSchemaTest implements ProviderTest {
     void shouldFailForOverriddenDefaultMetaSchema() {
         String rawSchema = """
                 {
-                    "$schema": "custom",
+                    "$schema": "urn:custom",
                     "maxLength": 1,
                     "minLength": 1
                 }""";
