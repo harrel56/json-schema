@@ -325,8 +325,7 @@ public abstract class MetaSchemaTest implements ProviderTest {
                   "$id": "urn:root-schema",
                   "$defs": {
                     "x": {
-                      "$schema": "urn:recursive-schema",
-                      "$id": "urn:recursive-schema",
+                      "$id": "urn:embedded-schema",
                       "fail": null
                     }
                   }
@@ -352,11 +351,11 @@ public abstract class MetaSchemaTest implements ProviderTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("failing");
         URI rootUri = URI.create("urn:root-schema");
-        URI failingUri = URI.create("urn:recursive-schema");
+        URI failingUri = URI.create("urn:embedded-schema");
 
         SchemaNotFoundException notFoundException1 = catchThrowableOfType(SchemaNotFoundException.class, () -> validator.validate(failingUri, "null"));
-        assertThat(notFoundException1).hasMessage("Couldn't find schema with uri [urn:recursive-schema]");
-        assertThat(notFoundException1.getRef()).isEqualTo("urn:recursive-schema");
+        assertThat(notFoundException1).hasMessage("Couldn't find schema with uri [urn:embedded-schema]");
+        assertThat(notFoundException1.getRef()).isEqualTo("urn:embedded-schema");
         SchemaNotFoundException notFoundException2 = catchThrowableOfType(SchemaNotFoundException.class, () -> validator.validate(rootUri, "null"));
         assertThat(notFoundException2).hasMessage("Couldn't find schema with uri [urn:root-schema]");
         assertThat(notFoundException2.getRef()).isEqualTo("urn:root-schema");
