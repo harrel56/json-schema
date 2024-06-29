@@ -7,7 +7,9 @@ import org.junit.jupiter.api.Test;
 import java.net.URI;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class JsonParserTest {
     private final JsonNodeFactory nodeFactory = new JacksonNode.Factory();
@@ -19,6 +21,8 @@ class JsonParserTest {
         var evaluatorFactory = mock(EvaluatorFactory.class);
         SchemaRegistry schemaRegistry = new SchemaRegistry();
         var metaSchemaValidator = mock(MetaSchemaValidator.class);
+        when(metaSchemaValidator.processMetaSchema(any(), any(), any(), any()))
+                .thenReturn(new MetaValidationData(SpecificationVersion.DRAFT2020_12, SpecificationVersion.DRAFT2020_12.getActiveVocabularies()));
         this.jsonParser = new JsonParser(dialect, evaluatorFactory, schemaRegistry, metaSchemaValidator);
     }
 
