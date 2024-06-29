@@ -97,17 +97,21 @@ final class JsonParser {
 
     private void parseObject(SchemaParsingContext ctx, JsonNode node) {
         Map<String, JsonNode> objectMap = node.asObject();
-        URI metaSchemaUri = JsonNodeUtil.getStringField(objectMap, Keyword.SCHEMA)
-                .map(URI::create)
-                .orElse(null);
         Optional<URI> providedSchemaId = JsonNodeUtil.getStringField(objectMap, Keyword.ID)
                 .filter(JsonNodeUtil::validateIdField)
                 .map(URI::create);
 
-        if (providedSchemaId.isPresent()) {
+        if (!providedSchemaId.isPresent()) {
+            SchemaParsingContext newCtx = ctx.forChild(objectMap);
+            schemaRegistry.registerSchema(ctx, node, parseEvaluators(newCtx, objectMap, node.getJsonPointer()));
+        } else {
+            /* Embedded schema handling */
             URI idUri = providedSchemaId.get();
             MetaSchemaData metaSchemaData = new MetaSchemaData();
             unfinishedSchemas.put(idUri, metaSchemaData);
+            URI metaSchemaUri = JsonNodeUtil.getStringField(objectMap, Keyword.SCHEMA)
+                    .map(URI::create)
+                    .orElse(null);
             MetaValidationData metaValidationData = validateAgainstMetaSchema(node, metaSchemaUri, idUri.toString());
 
             URI uri = ctx.getParentUri().resolve(idUri);
@@ -116,9 +120,6 @@ final class JsonParser {
             schemaRegistry.registerEmbeddedSchema(newCtx, uri, node, evaluators);
             metaSchemaData.parsed();
             unfinishedSchemas.remove(idUri);
-        } else {
-            SchemaParsingContext newCtx = ctx.forChild(objectMap);
-            schemaRegistry.registerSchema(ctx, node, parseEvaluators(newCtx, objectMap, node.getJsonPointer()));
         }
     }
 
