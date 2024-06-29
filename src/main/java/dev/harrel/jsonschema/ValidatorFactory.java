@@ -100,8 +100,7 @@ public final class ValidatorFactory {
     }
 
     /**
-     * Disables schema validation against meta-schemas. This also disables vocabulary specific semantics.
-     * <i>$schema</i> keyword will be ignored.
+     * Disables schema validation against meta-schemas.
      *
      * @param disabledSchemaValidation if schema validation should be disabled
      * @return self

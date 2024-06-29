@@ -151,14 +151,14 @@ final class JsonParser {
             return new MetaValidationData(dialect.getSpecificationVersion(), dialect.getSpecificationVersion().getActiveVocabularies());
         }
         if (!unfinishedSchemas.containsKey(metaSchemaUri)) {
-            return metaSchemaValidator.validateSchema(this, metaSchemaUri, uri, node);
+            return metaSchemaValidator.processMetaSchema(this, metaSchemaUri, uri, node);
         }
 
         SpecificationVersion schemaVersion = SpecificationVersion.fromUri(metaSchemaUri)
                 .orElseThrow(() -> MetaSchemaResolvingException.recursiveFailure(metaSchemaUri.toString()));
 
         MetaSchemaData metaSchemaData = unfinishedSchemas.get(metaSchemaUri);
-        metaSchemaData.callbacks.add(() -> metaSchemaValidator.validateSchema(this, metaSchemaUri, uri, node));
+        metaSchemaData.callbacks.add(() -> metaSchemaValidator.processMetaSchema(this, metaSchemaUri, uri, node));
         return new MetaValidationData(schemaVersion, schemaVersion.getActiveVocabularies());
     }
 

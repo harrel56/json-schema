@@ -249,7 +249,7 @@ If validation fails [InvalidSchemaException](https://javadoc.io/doc/dev.harrel/j
 
 For each specific schema this behaviour can be overridden by providing *$schema* keyword with desired meta-schema URI. Resolution of meta-schema follows the same [rules](#resolving-external-schemas) as for a regular schema.
 
-There is a configuration option that disables all schema validations (affects *$schema* and vocabularies semantics too):
+There is a configuration option that disables all schema validations:
 ```java
 new ValidatorFactory().withDisabledSchemaValidation(true);
 ```
