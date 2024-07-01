@@ -145,7 +145,14 @@ final class JsonParser {
         Dialect dialect = dialects.get(metaSchemaUri);
         if (!unfinishedSchemas.containsKey(metaSchemaUri)) {
             MetaValidationData metaValidationData =  metaSchemaValidator.processMetaSchema(this, metaSchemaUri, uri, node);
-            return dialect == null ? metaValidationData : new MetaValidationData(dialect, metaValidationData.activeVocabularies);
+            if (dialect == null) {
+                return metaValidationData;
+            }
+            if (metaValidationData.vocabularyObject == null) {
+                return new MetaValidationData(dialect, dialect.getDefaultVocabularyObject(), dialect.getDefaultVocabularyObject().keySet());
+            } else {
+                return new MetaValidationData(dialect, metaValidationData.vocabularyObject, metaValidationData.activeVocabularies);
+            }
         }
 
         if (dialect == null) {

@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CustomDialectTest {
     // todo add more cases with different vocab setups
     @Test
-    void registersCustomDialect() {
+    void takesActiveVocabsFromKeyword() {
         CustomDialect dialect = new CustomDialect();
         Validator validator = new ValidatorFactory()
                 .withDialect(dialect)
@@ -48,6 +48,104 @@ class CustomDialectTest {
                 "custom",
                 "custom keyword failed"
         );
+    }
+
+    @Test
+    void takesActiveVocabsFromDialect() {
+        CustomDialect dialect = new CustomDialect() {
+            @Override
+            public Map<String, Boolean> getDefaultVocabularyObject() {
+                return Map.of("urn:custom-vocab", true);
+            }
+        };
+        Validator validator = new ValidatorFactory()
+                .withDialect(dialect)
+                .withDefaultDialect(dialect)
+                .createValidator();
+        String metaSchema = """
+            {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "https://harrel.dev/schema",
+              "type": "object"
+            }""";
+        String schema = """
+            {
+              "$schema": "https://harrel.dev/schema",
+              "$id": "urn:test",
+              "custom": "invalid"
+            }""";
+        validator.registerSchema(metaSchema);
+        validator.registerSchema(schema);
+
+        Validator.Result result = validator.validate(URI.create("urn:test"), schema);
+        assertThat(result.isValid()).isFalse();
+        assertThat(result.getErrors()).hasSize(1);
+        assertError(
+                result.getErrors().getFirst(),
+                "/custom",
+                "urn:test#",
+                "",
+                "custom",
+                "custom keyword failed"
+        );
+    }
+
+    @Test
+    void noActiveVocabsFromKeywordNorDialect() {
+        CustomDialect dialect = new CustomDialect();
+        Validator validator = new ValidatorFactory()
+                .withDialect(dialect)
+                .withDefaultDialect(dialect)
+                .createValidator();
+        String metaSchema = """
+            {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "https://harrel.dev/schema",
+              "type": "object"
+            }""";
+        String schema = """
+            {
+              "$schema": "https://harrel.dev/schema",
+              "$id": "urn:test",
+              "custom": "invalid"
+            }""";
+        validator.registerSchema(metaSchema);
+        validator.registerSchema(schema);
+
+        Validator.Result result = validator.validate(URI.create("urn:test"), schema);
+        assertThat(result.isValid()).isTrue();
+    }
+
+    @Test
+    void emptyKeywordOverridesDialect() {
+        CustomDialect dialect = new CustomDialect() {
+            @Override
+            public Map<String, Boolean> getDefaultVocabularyObject() {
+                return Map.of("urn:custom-vocab", true);
+            }
+        };
+        Validator validator = new ValidatorFactory()
+                .withDialect(dialect)
+                .withDefaultDialect(dialect)
+                .createValidator();
+        String metaSchema = """
+            {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "https://harrel.dev/schema",
+              "$vocabulary": {},
+              "type": "object"
+            }""";
+        String schema = """
+            {
+              "$schema": "https://harrel.dev/schema",
+              "$id": "urn:test",
+              "custom": "invalid"
+            }""";
+        validator.registerSchema(metaSchema);
+        validator.registerSchema(schema);
+
+        Validator.Result result = validator.validate(URI.create("urn:test"), schema);
+        assertThat(result.isValid()).isTrue();
     }
 
     static class CustomEvaluatorFactory implements EvaluatorFactory {
@@ -91,7 +189,7 @@ class CustomDialectTest {
 
         @Override
         public Set<String> getSupportedVocabularies() {
-            return Set.of("urn:custom-vocab");
+            return Set.of();
         }
 
         @Override
@@ -101,7 +199,7 @@ class CustomDialectTest {
 
         @Override
         public Map<String, Boolean> getDefaultVocabularyObject() {
-            return Map.of("urn:custom-vocab", true);
+            return Map.of();
         }
     }
 }

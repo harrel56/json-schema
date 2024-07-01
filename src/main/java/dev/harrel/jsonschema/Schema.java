@@ -35,7 +35,8 @@ final class Schema {
         Set<String> vocabularies = JsonNodeUtil.getVocabulariesObject(objectMap)
                 .map(Map::keySet)
                 .orElse(metaValidationData.activeVocabularies);
-        this.metaValidationData = new MetaValidationData(metaValidationData.dialect, vocabularies);
+        this.metaValidationData = new MetaValidationData(metaValidationData.dialect,
+                JsonNodeUtil.getVocabulariesObject(objectMap).orElse(null), vocabularies);
     }
 
     static Evaluator getBooleanEvaluator(boolean val) {

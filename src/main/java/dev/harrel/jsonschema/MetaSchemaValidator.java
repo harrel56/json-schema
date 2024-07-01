@@ -5,15 +5,17 @@ import java.util.*;
 
 class MetaValidationData {
     final Dialect dialect;
+    final Map<String, Boolean> vocabularyObject;
     final Set<String> activeVocabularies;
 
-    MetaValidationData(Dialect dialect, Set<String> activeVocabularies) {
+    MetaValidationData(Dialect dialect, Map<String, Boolean> vocabularyObject, Set<String> activeVocabularies) {
         this.dialect = dialect;
+        this.vocabularyObject = vocabularyObject;
         this.activeVocabularies = activeVocabularies;
     }
 
     MetaValidationData(Dialect dialect) {
-        this(dialect, dialect.getDefaultVocabularyObject().keySet());
+        this(dialect, dialect.getDefaultVocabularyObject(), dialect.getDefaultVocabularyObject().keySet());
     }
 }
 
