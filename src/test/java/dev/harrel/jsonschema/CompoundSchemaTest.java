@@ -9,6 +9,8 @@ import static dev.harrel.jsonschema.util.TestUtil.assertError;
 import static org.assertj.core.api.Assertions.*;
 
 class CompoundSchemaTest {
+    // todo add tests for deeply embedded schemas - check if dialect is resolved correctly (either from $schema or nearest parent)
+
     @Test
     @Disabled
     // fixme
