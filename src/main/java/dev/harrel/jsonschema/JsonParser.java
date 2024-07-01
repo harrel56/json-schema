@@ -147,7 +147,9 @@ final class JsonParser {
         }
 
         Dialect dialect = dialects.get(metaSchemaUri);
-        // todo do we actually allow now recursive custom meta-schemas?
+        if (dialect == null) {
+            throw MetaSchemaResolvingException.recursiveFailure(metaSchemaUri.toString());
+        }
 
         MetaSchemaData metaSchemaData = unfinishedSchemas.get(metaSchemaUri);
         metaSchemaData.callbacks.add(() -> metaSchemaValidator.processMetaSchema(this, metaSchemaUri, uri, node));
