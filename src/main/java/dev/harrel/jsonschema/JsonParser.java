@@ -140,28 +140,29 @@ final class JsonParser {
         return evaluators;
     }
 
-    /* If meta-schema is the same as schema or is currently being processed, its validation needs to be postponed */
     private MetaValidationData validateAgainstMetaSchema(JsonNode node, URI metaSchemaUri, String uri) {
         Dialect dialect = dialects.get(metaSchemaUri);
-        if (!unfinishedSchemas.containsKey(metaSchemaUri)) {
-            MetaValidationData metaValidationData =  metaSchemaValidator.processMetaSchema(this, metaSchemaUri, uri, node);
+        MetaSchemaData unfinishedSchema = unfinishedSchemas.get(metaSchemaUri);
+        /* If meta-schema is the same as schema or is currently being processed, its validation needs to be postponed */
+        if (unfinishedSchema != null) {
             if (dialect == null) {
-                return metaValidationData;
+                throw MetaSchemaResolvingException.recursiveFailure(metaSchemaUri.toString());
             }
-            if (metaValidationData.vocabularyObject == null) {
-                return new MetaValidationData(dialect, dialect.getDefaultVocabularyObject(), dialect.getDefaultVocabularyObject().keySet());
-            } else {
-                return new MetaValidationData(dialect, metaValidationData.vocabularyObject, metaValidationData.activeVocabularies);
-            }
+            unfinishedSchema.callbacks.add(() -> metaSchemaValidator.processMetaSchema(this, metaSchemaUri, uri, node));
+            return new MetaValidationData(dialect);
         }
 
+        MetaValidationData metaValidationData =  metaSchemaValidator.processMetaSchema(this, metaSchemaUri, uri, node);
         if (dialect == null) {
-            throw MetaSchemaResolvingException.recursiveFailure(metaSchemaUri.toString());
+            return metaValidationData;
         }
 
-        MetaSchemaData metaSchemaData = unfinishedSchemas.get(metaSchemaUri);
-        metaSchemaData.callbacks.add(() -> metaSchemaValidator.processMetaSchema(this, metaSchemaUri, uri, node));
-        return new MetaValidationData(dialect);
+        /* If this is a registered dialect and meta-schema defines no vocabs, use vocabs from dialect */
+        if (metaValidationData.vocabularyObject == null) {
+            return new MetaValidationData(dialect, dialect.getDefaultVocabularyObject(), dialect.getDefaultVocabularyObject().keySet());
+        } else {
+            return new MetaValidationData(dialect, metaValidationData.vocabularyObject, metaValidationData.activeVocabularies);
+        }
     }
 
     private EvaluatorFactory createEvaluatorFactory(SchemaParsingContext ctx) {
