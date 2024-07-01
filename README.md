@@ -236,10 +236,15 @@ new ValidatorFactory().withSchemaResolver(resolver);
 For more information about return type please refer to the [documentation](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/SchemaResolver.Result.html).
 
 ### Dialects
-By default, [draft 2020-12 dialect](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/Dialects.Draft2020Dialect.html) is used,
-but it can be changed with:
+Officially supported dialects:
+- Draft 2020-12,
+- Draft 2019-09
+
+It is automatically inferred (by content of `$schema` keyword) which dialect to use.
+If a schema does not contain `$schema` keyword, the default dialect will be used, which is [draft 2020-12 dialect](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/Dialects.Draft2020Dialect.html).
+It's possible to change the default by calling:
 ```java
-new ValidatorFactory().withDialect(new Dialects.Draft2019Dialect()); // or any other dialect
+new ValidatorFactory().withDefaultDialect(new Dialects.Draft2019Dialect()); // or any other dialect
 ```
 Custom dialects are also supported, see more [here](#custom-dialects).
 
@@ -399,5 +404,7 @@ Dialect customDialect = new Dialect() {
 };
 new ValidatorFactory().withDialect(customDialect);
 ```
+This way, whenever `$schema` has value `https://example.com/custom/schema` this custom dialect will be used.
+Please note that it is still required to provide a meta-schema which could be resolved from the given URI.
+You can provide multiple custom dialects by multiple `withDialect()` calls.
 See the [documentation](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/Dialect.html) for more details.
-

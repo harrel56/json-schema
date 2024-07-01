@@ -142,11 +142,12 @@ final class JsonParser {
 
     /* If meta-schema is the same as schema or is currently being processed, its validation needs to be postponed */
     private MetaValidationData validateAgainstMetaSchema(JsonNode node, URI metaSchemaUri, String uri) {
+        Dialect dialect = dialects.get(metaSchemaUri);
         if (!unfinishedSchemas.containsKey(metaSchemaUri)) {
-            return metaSchemaValidator.processMetaSchema(this, metaSchemaUri, uri, node);
+            MetaValidationData metaValidationData =  metaSchemaValidator.processMetaSchema(this, metaSchemaUri, uri, node);
+            return dialect == null ? metaValidationData : new MetaValidationData(dialect, metaValidationData.activeVocabularies);
         }
 
-        Dialect dialect = dialects.get(metaSchemaUri);
         if (dialect == null) {
             throw MetaSchemaResolvingException.recursiveFailure(metaSchemaUri.toString());
         }
