@@ -3,10 +3,7 @@ package dev.harrel.jsonschema;
 import dev.harrel.jsonschema.providers.JacksonNode;
 
 import java.net.URI;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.unmodifiableList;
@@ -27,7 +24,8 @@ public final class Validator {
     private final JsonParser jsonParser;
     private final boolean disabledSchemaValidation;
 
-    Validator(Dialect dialect,
+    Validator(Map<URI, Dialect> dialects,
+              Dialect defaultDialect,
               EvaluatorFactory evaluatorFactory,
               JsonNodeFactory schemaNodeFactory,
               JsonNodeFactory instanceNodeFactory,
@@ -44,7 +42,7 @@ public final class Validator {
         } else {
             metaSchemaValidator = new MetaSchemaValidator(this.schemaNodeFactory, schemaRegistry, schemaResolver);
         }
-        this.jsonParser = new JsonParser(dialect, evaluatorFactory, schemaRegistry, metaSchemaValidator);
+        this.jsonParser = new JsonParser(dialects, defaultDialect, evaluatorFactory, schemaRegistry, metaSchemaValidator);
     }
 
     /**

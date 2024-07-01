@@ -4,12 +4,16 @@ import java.net.URI;
 import java.util.*;
 
 class MetaValidationData {
+    final Dialect dialect;
     final Set<String> activeVocabularies;
-    final SpecificationVersion specificationVersion;
 
-    public MetaValidationData(SpecificationVersion specificationVersion, Set<String> activeVocabularies) {
-        this.specificationVersion = specificationVersion;
+    MetaValidationData(Dialect dialect, Set<String> activeVocabularies) {
+        this.dialect = dialect;
         this.activeVocabularies = activeVocabularies;
+    }
+
+    MetaValidationData(Dialect dialect) {
+        this(dialect, dialect.getDefaultVocabularyObject().keySet());
     }
 }
 
@@ -28,7 +32,7 @@ class MetaSchemaValidator {
         Objects.requireNonNull(metaSchemaUri);
         Schema schema = resolveMetaSchema(jsonParser, metaSchemaUri);
         validateSchema(schema, jsonParser, metaSchemaUri, schemaUri, node);
-        return new MetaValidationData(schema.getSpecificationVersion(), schema.getVocabularies());
+        return schema.getMetaValidationData();
     }
 
     void validateSchema(Schema schema, JsonParser jsonParser, URI metaSchemaUri, String schemaUri, JsonNode node) throws InvalidSchemaException {

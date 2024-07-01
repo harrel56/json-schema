@@ -14,8 +14,7 @@ final class Schema {
     private final String schemaLocation;
     private final String schemaLocationFragment;
     private final List<EvaluatorWrapper> evaluators;
-    private final SpecificationVersion specificationVersion;
-    private final Set<String> vocabularies;
+    private final MetaValidationData metaValidationData;
 
     Schema(URI parentUri,
            String schemaLocation,
@@ -25,7 +24,6 @@ final class Schema {
         this.parentUri = Objects.requireNonNull(parentUri);
         this.schemaLocation = Objects.requireNonNull(schemaLocation);
         this.schemaLocationFragment = UriUtil.getJsonPointer(schemaLocation);
-        this.specificationVersion = metaValidationData.specificationVersion;
         this.evaluators = Collections.unmodifiableList(
                 evaluators.stream()
                         .filter(evaluator -> evaluator.getVocabularies().isEmpty() ||
@@ -34,9 +32,10 @@ final class Schema {
                         .collect(Collectors.toList())
         );
 
-        this.vocabularies = JsonNodeUtil.getVocabulariesObject(objectMap)
+        Set<String> vocabularies = JsonNodeUtil.getVocabulariesObject(objectMap)
                 .map(Map::keySet)
                 .orElse(metaValidationData.activeVocabularies);
+        this.metaValidationData = new MetaValidationData(metaValidationData.dialect, vocabularies);
     }
 
     static Evaluator getBooleanEvaluator(boolean val) {
@@ -59,11 +58,7 @@ final class Schema {
         return evaluators;
     }
 
-    public SpecificationVersion getSpecificationVersion() {
-        return specificationVersion;
-    }
-
-    public Set<String> getVocabularies() {
-        return vocabularies;
+    MetaValidationData getMetaValidationData() {
+        return metaValidationData;
     }
 }

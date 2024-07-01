@@ -22,8 +22,8 @@ class JsonParserTest {
         SchemaRegistry schemaRegistry = new SchemaRegistry();
         var metaSchemaValidator = mock(MetaSchemaValidator.class);
         when(metaSchemaValidator.processMetaSchema(any(), any(), any(), any()))
-                .thenReturn(new MetaValidationData(SpecificationVersion.DRAFT2020_12, SpecificationVersion.DRAFT2020_12.getActiveVocabularies()));
-        this.jsonParser = new JsonParser(dialect, evaluatorFactory, schemaRegistry, metaSchemaValidator);
+                .thenReturn(new MetaValidationData(new Dialects.Draft2020Dialect()));
+        this.jsonParser = new JsonParser(Dialects.createOfficialDialectsMap(), dialect, evaluatorFactory, schemaRegistry, metaSchemaValidator);
     }
 
     @Test

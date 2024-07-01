@@ -8,6 +8,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.*;
 import java.util.stream.IntStream;
 
@@ -166,6 +167,7 @@ abstract class ThreadSafetyTest {
     }
 
     private static class LatchedSchemaResolver implements SchemaResolver {
+        private final Map<URI, Dialect> dialects = Dialects.createOfficialDialectsMap();
         private final CountDownLatch latch;
         private final JsonNode schemaNode;
 
@@ -177,7 +179,7 @@ abstract class ThreadSafetyTest {
 
         @Override
         public Result resolve(String uri) {
-            if (SpecificationVersion.fromUri(URI.create(uri)).isPresent()) {
+            if (dialects.containsKey(URI.create(uri))) {
                 return Result.empty();
             }
 

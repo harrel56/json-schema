@@ -7,17 +7,20 @@ import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 
 final class JsonParser {
-    private final Dialect dialect;
+    private final Map<URI, Dialect> dialects;
+    private final Dialect defaultDialect;
     private final EvaluatorFactory evaluatorFactory;
     private final SchemaRegistry schemaRegistry;
     private final MetaSchemaValidator metaSchemaValidator;
     private final Map<URI, MetaSchemaData> unfinishedSchemas = new HashMap<>();
 
-    JsonParser(Dialect dialect,
+    JsonParser(Map<URI, Dialect> dialects,
+               Dialect defaultDialect,
                EvaluatorFactory evaluatorFactory,
                SchemaRegistry schemaRegistry,
                MetaSchemaValidator metaSchemaValidator) {
-        this.dialect = Objects.requireNonNull(dialect);
+        this.dialects = Objects.requireNonNull(dialects);
+        this.defaultDialect = Objects.requireNonNull(defaultDialect);
         this.evaluatorFactory = evaluatorFactory;
         this.schemaRegistry = Objects.requireNonNull(schemaRegistry);
         this.metaSchemaValidator = Objects.requireNonNull(metaSchemaValidator);
@@ -37,7 +40,7 @@ final class JsonParser {
         Optional<Map<String, JsonNode>> objectMapOptional = JsonNodeUtil.getAsObject(node);
         URI metaSchemaUri = OptionalUtil.firstPresent(
                         () -> objectMapOptional.flatMap(obj -> JsonNodeUtil.getStringField(obj, Keyword.SCHEMA)),
-                        () -> Optional.ofNullable(dialect.getMetaSchema())
+                        () -> Optional.ofNullable(defaultDialect.getMetaSchema())
                 )
                 .map(URI::create)
                 .orElse(null);
@@ -140,25 +143,26 @@ final class JsonParser {
     /* If meta-schema is the same as schema or is currently being processed, its validation needs to be postponed */
     private MetaValidationData validateAgainstMetaSchema(JsonNode node, URI metaSchemaUri, String uri) {
         if (metaSchemaUri == null) {
-            return new MetaValidationData(dialect.getSpecificationVersion(), dialect.getSpecificationVersion().getActiveVocabularies());
+            // todo get spec version & active vocabs from parent schema
+            return new MetaValidationData(defaultDialect);
         }
         if (!unfinishedSchemas.containsKey(metaSchemaUri)) {
             return metaSchemaValidator.processMetaSchema(this, metaSchemaUri, uri, node);
         }
 
-        SpecificationVersion schemaVersion = SpecificationVersion.fromUri(metaSchemaUri)
-                .orElseThrow(() -> MetaSchemaResolvingException.recursiveFailure(metaSchemaUri.toString()));
+        Dialect dialect = dialects.get(metaSchemaUri);
+        // todo do we actually allow now recursive custom meta-schemas?
 
         MetaSchemaData metaSchemaData = unfinishedSchemas.get(metaSchemaUri);
         metaSchemaData.callbacks.add(() -> metaSchemaValidator.processMetaSchema(this, metaSchemaUri, uri, node));
-        return new MetaValidationData(schemaVersion, schemaVersion.getActiveVocabularies());
+        return new MetaValidationData(dialect);
     }
 
     private EvaluatorFactory createEvaluatorFactory(SchemaParsingContext ctx) {
         if (evaluatorFactory != null) {
-            return EvaluatorFactory.compose(evaluatorFactory, ctx.getMetaValidationData().specificationVersion.getEvaluatorFactory());
+            return EvaluatorFactory.compose(evaluatorFactory, ctx.getMetaValidationData().dialect.getEvaluatorFactory());
         } else {
-            return ctx.getMetaValidationData().specificationVersion.getEvaluatorFactory();
+            return ctx.getMetaValidationData().dialect.getEvaluatorFactory();
         }
     }
 

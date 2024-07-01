@@ -17,14 +17,11 @@ import static java.util.Collections.unmodifiableMap;
 public final class Dialects {
     private Dialects() {}
 
-    static Optional<Dialect> fromUri(URI uri) {
-        if (uri.toString().equals(SpecificationVersion.DRAFT2020_12.getId())) {
-            return Optional.of(new Draft2020Dialect());
-        } else if (uri.toString().equals(SpecificationVersion.DRAFT2019_09.getId())) {
-            return Optional.of(new Draft2019Dialect());
-        } else {
-            return Optional.empty();
-        }
+    static Map<URI, Dialect> createOfficialDialectsMap() {
+        Map<URI, Dialect> map = new HashMap<>();
+        map.put(URI.create(SpecificationVersion.DRAFT2020_12.getId()), new Draft2020Dialect());
+        map.put(URI.create(SpecificationVersion.DRAFT2019_09.getId()), new Draft2019Dialect());
+        return map;
     }
 
     /**

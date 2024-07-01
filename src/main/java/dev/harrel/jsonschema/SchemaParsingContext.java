@@ -42,10 +42,6 @@ public final class SchemaParsingContext {
         return metaValidationData;
     }
 
-    //    Map<String, Boolean> getVocabulariesObject() {
-//        return JsonNodeUtil.getVocabulariesObject(currentSchemaObject).orElse(metaValidationData.getDefaultVocabularyObject());
-//    }
-
     URI getBaseUri() {
         return baseUri;
     }

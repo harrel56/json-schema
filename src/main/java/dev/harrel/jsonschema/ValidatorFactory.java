@@ -14,7 +14,8 @@ import java.util.function.Supplier;
  * @see Validator
  */
 public final class ValidatorFactory {
-    private Dialect dialect = new Dialects.Draft2020Dialect();
+    private final Map<URI, Dialect> dialects = Dialects.createOfficialDialectsMap();
+    private Dialect defaultDialect = new Dialects.Draft2020Dialect();
     private EvaluatorFactory evaluatorFactory;
     private Supplier<JsonNodeFactory> schemaNodeFactory = JacksonNode.Factory::new;
     private Supplier<JsonNodeFactory> instanceNodeFactory = schemaNodeFactory;
@@ -27,9 +28,19 @@ public final class ValidatorFactory {
      * @return new {@link Validator} instance
      */
     public Validator createValidator() {
+        Map<URI, Dialect> dialectsCopy = Collections.unmodifiableMap(new HashMap<>(dialects));
         JsonNodeFactory schemaFactory = schemaNodeFactory.get();
         JsonNodeFactory instanceFactory = instanceNodeFactory.get();
-        return new Validator(dialect, evaluatorFactory, schemaFactory, instanceFactory, schemaResolver, disabledSchemaValidation);
+        return new Validator(dialectsCopy, defaultDialect, evaluatorFactory, schemaFactory, instanceFactory, schemaResolver, disabledSchemaValidation);
+    }
+
+    // todo doc
+    public ValidatorFactory withDialect(Dialect dialect) {
+        // todo lets make meta-schema non-nullable at some point
+        if (dialect.getMetaSchema() != null) {
+            dialects.put(URI.create(dialect.getMetaSchema()), dialect);
+        }
+        return this;
     }
 
     /**
@@ -38,8 +49,9 @@ public final class ValidatorFactory {
      * @param dialect {@code Dialect} to be used
      * @return self
      */
-    public ValidatorFactory withDialect(Dialect dialect) {
-        this.dialect = Objects.requireNonNull(dialect);
+    // todo doc
+    public ValidatorFactory withDefaultDialect(Dialect dialect) {
+        this.defaultDialect = Objects.requireNonNull(dialect);
         return this;
     }
 
