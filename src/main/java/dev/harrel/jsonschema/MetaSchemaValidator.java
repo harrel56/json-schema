@@ -3,18 +3,18 @@ package dev.harrel.jsonschema;
 import java.net.URI;
 import java.util.*;
 
-class MetaValidationData {
+class MetaSchemaData {
     final Dialect dialect;
     final Map<String, Boolean> vocabularyObject;
     final Set<String> activeVocabularies;
 
-    MetaValidationData(Dialect dialect, Map<String, Boolean> vocabularyObject, Set<String> activeVocabularies) {
+    MetaSchemaData(Dialect dialect, Map<String, Boolean> vocabularyObject, Set<String> activeVocabularies) {
         this.dialect = dialect;
         this.vocabularyObject = vocabularyObject;
         this.activeVocabularies = activeVocabularies;
     }
 
-    MetaValidationData(Dialect dialect) {
+    MetaSchemaData(Dialect dialect) {
         this(dialect, dialect.getDefaultVocabularyObject(), dialect.getDefaultVocabularyObject().keySet());
     }
 }
@@ -30,7 +30,7 @@ class MetaSchemaValidator {
         this.schemaResolver = Objects.requireNonNull(schemaResolver);
     }
 
-    MetaValidationData processMetaSchema(JsonParser jsonParser, URI metaSchemaUri, String schemaUri, JsonNode node) {
+    MetaSchemaData processMetaSchema(JsonParser jsonParser, URI metaSchemaUri, String schemaUri, JsonNode node) {
         Objects.requireNonNull(metaSchemaUri);
         Schema schema = resolveMetaSchema(jsonParser, metaSchemaUri);
         validateSchema(schema, jsonParser, metaSchemaUri, schemaUri, node);

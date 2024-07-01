@@ -12,34 +12,34 @@ import static java.util.Collections.unmodifiableMap;
  * @see EvaluatorFactory
  */
 public final class SchemaParsingContext {
-    private final MetaValidationData metaValidationData;
+    private final MetaSchemaData metaSchemaData;
     private final URI baseUri;
     private final URI parentUri; // todo this should contain more metadata: $schema value, explicit or one assumed from parent
     private final SchemaRegistry schemaRegistry;
     private final Map<String, JsonNode> currentSchemaObject;
 
-    private SchemaParsingContext(MetaValidationData metaValidationData, URI baseUri, URI parentUri, SchemaRegistry schemaRegistry, Map<String, JsonNode> currentSchemaObject) {
-        this.metaValidationData = metaValidationData;
+    private SchemaParsingContext(MetaSchemaData metaSchemaData, URI baseUri, URI parentUri, SchemaRegistry schemaRegistry, Map<String, JsonNode> currentSchemaObject) {
+        this.metaSchemaData = metaSchemaData;
         this.baseUri = baseUri;
         this.parentUri = parentUri;
         this.schemaRegistry = schemaRegistry;
         this.currentSchemaObject = currentSchemaObject;
     }
 
-    SchemaParsingContext(MetaValidationData metaValidationData, SchemaRegistry schemaRegistry, URI baseUri, Map<String, JsonNode> currentSchemaObject) {
-        this(metaValidationData, baseUri, baseUri, schemaRegistry, currentSchemaObject);
+    SchemaParsingContext(MetaSchemaData metaSchemaData, SchemaRegistry schemaRegistry, URI baseUri, Map<String, JsonNode> currentSchemaObject) {
+        this(metaSchemaData, baseUri, baseUri, schemaRegistry, currentSchemaObject);
     }
 
-    SchemaParsingContext forChild(MetaValidationData metaValidationData, Map<String, JsonNode> currentSchemaObject, URI parentUri) {
-        return new SchemaParsingContext(metaValidationData, baseUri, parentUri, schemaRegistry, currentSchemaObject);
+    SchemaParsingContext forChild(MetaSchemaData metaSchemaData, Map<String, JsonNode> currentSchemaObject, URI parentUri) {
+        return new SchemaParsingContext(metaSchemaData, baseUri, parentUri, schemaRegistry, currentSchemaObject);
     }
 
     SchemaParsingContext forChild(Map<String, JsonNode> currentSchemaObject) {
-        return forChild(metaValidationData, currentSchemaObject, parentUri);
+        return forChild(metaSchemaData, currentSchemaObject, parentUri);
     }
 
-    MetaValidationData getMetaValidationData() {
-        return metaValidationData;
+    MetaSchemaData getMetaValidationData() {
+        return metaSchemaData;
     }
 
     URI getBaseUri() {

@@ -14,12 +14,12 @@ final class Schema {
     private final String schemaLocation;
     private final String schemaLocationFragment;
     private final List<EvaluatorWrapper> evaluators;
-    private final MetaValidationData metaValidationData;
+    private final MetaSchemaData metaSchemaData;
 
     Schema(URI parentUri,
            String schemaLocation,
            List<EvaluatorWrapper> evaluators,
-           MetaValidationData metaValidationData,
+           MetaSchemaData metaSchemaData,
            Map<String, JsonNode> objectMap) {
         this.parentUri = Objects.requireNonNull(parentUri);
         this.schemaLocation = Objects.requireNonNull(schemaLocation);
@@ -27,15 +27,15 @@ final class Schema {
         this.evaluators = Collections.unmodifiableList(
                 evaluators.stream()
                         .filter(evaluator -> evaluator.getVocabularies().isEmpty() ||
-                                !Collections.disjoint(evaluator.getVocabularies(), metaValidationData.activeVocabularies))
+                                !Collections.disjoint(evaluator.getVocabularies(), metaSchemaData.activeVocabularies))
                         .sorted(Comparator.comparingInt(Evaluator::getOrder))
                         .collect(Collectors.toList())
         );
 
         Set<String> vocabularies = JsonNodeUtil.getVocabulariesObject(objectMap)
                 .map(Map::keySet)
-                .orElse(metaValidationData.activeVocabularies);
-        this.metaValidationData = new MetaValidationData(metaValidationData.dialect,
+                .orElse(metaSchemaData.activeVocabularies);
+        this.metaSchemaData = new MetaSchemaData(metaSchemaData.dialect,
                 JsonNodeUtil.getVocabulariesObject(objectMap).orElse(null), vocabularies);
     }
 
@@ -59,7 +59,7 @@ final class Schema {
         return evaluators;
     }
 
-    MetaValidationData getMetaValidationData() {
-        return metaValidationData;
+    MetaSchemaData getMetaValidationData() {
+        return metaSchemaData;
     }
 }
