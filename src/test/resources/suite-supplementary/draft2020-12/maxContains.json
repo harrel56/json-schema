@@ -2,6 +2,7 @@
   {
     "description": "maxContains inside items keyword",
     "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "items": {
         "contains": {
           "type": "number"
@@ -51,6 +52,7 @@
   {
     "description": "maxContains inside properties keyword",
     "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "properties": {
         "x": {
           "contains": {

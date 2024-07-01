@@ -2,6 +2,7 @@
   {
     "description": "additionalItems inside items keyword",
     "schema": {
+      "$schema": "https://json-schema.org/draft/2019-09/schema",
       "items": {
         "items": [
           { "type": "number" },
@@ -51,6 +52,7 @@
   {
     "description": "additionalItems inside properties keyword",
     "schema": {
+      "$schema": "https://json-schema.org/draft/2019-09/schema",
       "properties": {
         "x": {
           "items": [{ "type": "number" }],

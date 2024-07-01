@@ -2,6 +2,7 @@
   {
     "description": "additionalProperties inside items keyword",
     "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "items": {
         "properties": {
           "x": {
@@ -88,6 +89,7 @@
   {
     "description": "additionalProperties inside properties keyword field",
     "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "properties": {
         "x": {
           "properties": {
