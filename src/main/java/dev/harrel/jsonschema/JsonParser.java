@@ -112,10 +112,10 @@ final class JsonParser {
             URI idUri = providedSchemaId.get();
             MetaSchemaData metaSchemaData = new MetaSchemaData();
             unfinishedSchemas.put(idUri, metaSchemaData);
-            URI metaSchemaUri = JsonNodeUtil.getStringField(objectMap, Keyword.SCHEMA)
+            MetaValidationData metaValidationData = JsonNodeUtil.getStringField(objectMap, Keyword.SCHEMA)
                     .map(URI::create)
-                    .orElse(null);
-            MetaValidationData metaValidationData = validateAgainstMetaSchema(node, metaSchemaUri, idUri.toString());
+                    .map(metaSchemaUri -> validateAgainstMetaSchema(node, metaSchemaUri, idUri.toString()))
+                    .orElse(ctx.getMetaValidationData());
 
             URI uri = ctx.getParentUri().resolve(idUri);
             SchemaParsingContext newCtx = ctx.forChild(metaValidationData, objectMap, uri);
@@ -142,10 +142,6 @@ final class JsonParser {
 
     /* If meta-schema is the same as schema or is currently being processed, its validation needs to be postponed */
     private MetaValidationData validateAgainstMetaSchema(JsonNode node, URI metaSchemaUri, String uri) {
-        if (metaSchemaUri == null) {
-            // todo get spec version & active vocabs from parent schema
-            return new MetaValidationData(defaultDialect);
-        }
         if (!unfinishedSchemas.containsKey(metaSchemaUri)) {
             return metaSchemaValidator.processMetaSchema(this, metaSchemaUri, uri, node);
         }
