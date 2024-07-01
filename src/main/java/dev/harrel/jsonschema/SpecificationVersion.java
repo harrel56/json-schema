@@ -5,8 +5,6 @@ import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static dev.harrel.jsonschema.Vocabulary.*;
-
 /**
  * {@code SpecificationVersion} enum represents JSON Schema specification versions that are supported.
  */

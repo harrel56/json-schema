@@ -3,7 +3,6 @@ package dev.harrel.jsonschema;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import static dev.harrel.jsonschema.Vocabulary.Draft2019;
