@@ -11,6 +11,7 @@ import static dev.harrel.jsonschema.util.TestUtil.assertError;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class CustomDialectTest {
+    // todo add more cases with different vocab setups
     @Test
     void registersCustomDialect() {
         CustomDialect dialect = new CustomDialect();
