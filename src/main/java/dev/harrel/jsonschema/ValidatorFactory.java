@@ -31,7 +31,10 @@ public final class ValidatorFactory {
         Map<URI, Dialect> dialectsCopy = Collections.unmodifiableMap(new HashMap<>(dialects));
         JsonNodeFactory schemaFactory = schemaNodeFactory.get();
         JsonNodeFactory instanceFactory = instanceNodeFactory.get();
-        return new Validator(dialectsCopy, defaultDialect, evaluatorFactory, schemaFactory, instanceFactory, schemaResolver, disabledSchemaValidation);
+        SchemaRegistry schemaRegistry = new SchemaRegistry();
+        MetaSchemaValidator metaSchemaValidator = new MetaSchemaValidator(schemaFactory, schemaRegistry, schemaResolver);
+        JsonParser jsonParser = new JsonParser(dialectsCopy, defaultDialect, evaluatorFactory, schemaRegistry, metaSchemaValidator, disabledSchemaValidation);
+        return new Validator(schemaFactory, instanceFactory, schemaResolver, schemaRegistry, jsonParser);
     }
 
     // todo doc

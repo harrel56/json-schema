@@ -23,20 +23,16 @@ public final class Validator {
     private final SchemaRegistry schemaRegistry;
     private final JsonParser jsonParser;
 
-    Validator(Map<URI, Dialect> dialects,
-              Dialect defaultDialect,
-              EvaluatorFactory evaluatorFactory,
-              JsonNodeFactory schemaNodeFactory,
+    Validator(JsonNodeFactory schemaNodeFactory,
               JsonNodeFactory instanceNodeFactory,
               SchemaResolver schemaResolver,
-              boolean disabledSchemaValidation) {
+              SchemaRegistry schemaRegistry,
+              JsonParser jsonParser) {
         this.schemaNodeFactory = Objects.requireNonNull(schemaNodeFactory);
         this.instanceNodeFactory = Objects.requireNonNull(instanceNodeFactory);
         this.schemaResolver = Objects.requireNonNull(schemaResolver);
-        this.schemaRegistry = new SchemaRegistry();
-        // todo move some creation up to ValidatorFactory
-        MetaSchemaValidator metaSchemaValidator = new MetaSchemaValidator(this.schemaNodeFactory, schemaRegistry, schemaResolver);
-        this.jsonParser = new JsonParser(dialects, defaultDialect, evaluatorFactory, schemaRegistry, metaSchemaValidator, disabledSchemaValidation);
+        this.schemaRegistry = Objects.requireNonNull(schemaRegistry);
+        this.jsonParser = Objects.requireNonNull(jsonParser);
     }
 
     /**
