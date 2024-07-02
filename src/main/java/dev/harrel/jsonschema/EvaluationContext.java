@@ -16,7 +16,6 @@ public final class EvaluationContext {
     private final JsonParser jsonParser;
     private final SchemaRegistry schemaRegistry;
     private final SchemaResolver schemaResolver;
-    private final boolean disabledSchemaValidation;
     private final Deque<URI> dynamicScope = new ArrayDeque<>();
     private final Deque<RefStackItem> refStack = new ArrayDeque<>();
     private final LinkedList<String> evaluationStack = new LinkedList<>();
@@ -26,13 +25,11 @@ public final class EvaluationContext {
     EvaluationContext(JsonNodeFactory jsonNodeFactory,
                       JsonParser jsonParser,
                       SchemaRegistry schemaRegistry,
-                      SchemaResolver schemaResolver,
-                      boolean disabledSchemaValidation) {
+                      SchemaResolver schemaResolver) {
         this.jsonNodeFactory = Objects.requireNonNull(jsonNodeFactory);
         this.jsonParser = Objects.requireNonNull(jsonParser);
         this.schemaRegistry = Objects.requireNonNull(schemaRegistry);
         this.schemaResolver = Objects.requireNonNull(schemaResolver);
-        this.disabledSchemaValidation = disabledSchemaValidation;
         this.evaluationStack.push("");
     }
 

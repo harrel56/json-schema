@@ -38,7 +38,7 @@ class MetaSchemaValidator {
     }
 
     void validateSchema(Schema schema, JsonParser jsonParser, URI metaSchemaUri, String schemaUri, JsonNode node) throws InvalidSchemaException {
-        EvaluationContext ctx = new EvaluationContext(jsonNodeFactory, jsonParser, schemaRegistry, schemaResolver, false);
+        EvaluationContext ctx = new EvaluationContext(jsonNodeFactory, jsonParser, schemaRegistry, schemaResolver);
         if (!ctx.validateAgainstSchema(schema, node)) {
             throw new InvalidSchemaException(String.format("Schema [%s] failed to validate against meta-schema [%s]", schemaUri, metaSchemaUri),
                     new Validator.Result(false, ctx).getErrors());

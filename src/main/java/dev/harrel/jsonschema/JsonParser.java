@@ -12,18 +12,21 @@ final class JsonParser {
     private final EvaluatorFactory evaluatorFactory;
     private final SchemaRegistry schemaRegistry;
     private final MetaSchemaValidator metaSchemaValidator;
+    private final boolean disabledSchemaValidation;
     private final Map<URI, UnfinishedSchema> unfinishedSchemas = new HashMap<>();
 
     JsonParser(Map<URI, Dialect> dialects,
                Dialect defaultDialect,
                EvaluatorFactory evaluatorFactory,
                SchemaRegistry schemaRegistry,
-               MetaSchemaValidator metaSchemaValidator) {
+               MetaSchemaValidator metaSchemaValidator,
+               boolean disabledSchemaValidation) {
         this.dialects = Objects.requireNonNull(dialects);
         this.defaultDialect = Objects.requireNonNull(defaultDialect);
         this.evaluatorFactory = evaluatorFactory;
         this.schemaRegistry = Objects.requireNonNull(schemaRegistry);
         this.metaSchemaValidator = Objects.requireNonNull(metaSchemaValidator);
+        this.disabledSchemaValidation = disabledSchemaValidation;
     }
 
     synchronized URI parseRootSchema(URI baseUri, JsonNode node) {
@@ -141,6 +144,10 @@ final class JsonParser {
     }
 
     private MetaSchemaData validateAgainstMetaSchema(JsonNode node, URI metaSchemaUri, String uri) {
+        if (disabledSchemaValidation) {
+            return new MetaSchemaData(dialects.getOrDefault(metaSchemaUri, defaultDialect));
+        }
+
         Dialect dialect = dialects.get(metaSchemaUri);
         UnfinishedSchema unfinishedSchema = unfinishedSchemas.get(metaSchemaUri);
         /* If meta-schema is the same as schema or is currently being processed, its validation needs to be postponed */

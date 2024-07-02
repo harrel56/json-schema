@@ -167,7 +167,6 @@ abstract class ThreadSafetyTest {
     }
 
     private static class LatchedSchemaResolver implements SchemaResolver {
-        private final Map<URI, Dialect> dialects = Dialects.createOfficialDialectsMap();
         private final CountDownLatch latch;
         private final JsonNode schemaNode;
 
@@ -179,7 +178,7 @@ abstract class ThreadSafetyTest {
 
         @Override
         public Result resolve(String uri) {
-            if (dialects.containsKey(URI.create(uri))) {
+            if (Dialects.OFFICIAL_DIALECTS.containsKey(URI.create(uri))) {
                 return Result.empty();
             }
 

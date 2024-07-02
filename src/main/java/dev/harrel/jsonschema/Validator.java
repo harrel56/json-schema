@@ -22,7 +22,6 @@ public final class Validator {
     private final SchemaResolver schemaResolver;
     private final SchemaRegistry schemaRegistry;
     private final JsonParser jsonParser;
-    private final boolean disabledSchemaValidation;
 
     Validator(Map<URI, Dialect> dialects,
               Dialect defaultDialect,
@@ -35,14 +34,9 @@ public final class Validator {
         this.instanceNodeFactory = Objects.requireNonNull(instanceNodeFactory);
         this.schemaResolver = Objects.requireNonNull(schemaResolver);
         this.schemaRegistry = new SchemaRegistry();
-        this.disabledSchemaValidation = disabledSchemaValidation;
-        MetaSchemaValidator metaSchemaValidator;
-        if (disabledSchemaValidation) {
-            metaSchemaValidator = new NoOpMetaSchemaValidator(this.schemaNodeFactory, schemaRegistry, schemaResolver);
-        } else {
-            metaSchemaValidator = new MetaSchemaValidator(this.schemaNodeFactory, schemaRegistry, schemaResolver);
-        }
-        this.jsonParser = new JsonParser(dialects, defaultDialect, evaluatorFactory, schemaRegistry, metaSchemaValidator);
+        // todo move some creation up to ValidatorFactory
+        MetaSchemaValidator metaSchemaValidator = new MetaSchemaValidator(this.schemaNodeFactory, schemaRegistry, schemaResolver);
+        this.jsonParser = new JsonParser(dialects, defaultDialect, evaluatorFactory, schemaRegistry, metaSchemaValidator, disabledSchemaValidation);
     }
 
     /**
@@ -172,7 +166,7 @@ public final class Validator {
     }
 
     private EvaluationContext createNewEvaluationContext() {
-        return new EvaluationContext(schemaNodeFactory, jsonParser, schemaRegistry, schemaResolver, disabledSchemaValidation);
+        return new EvaluationContext(schemaNodeFactory, jsonParser, schemaRegistry, schemaResolver);
     }
 
     /**
