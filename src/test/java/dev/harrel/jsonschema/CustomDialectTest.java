@@ -154,7 +154,7 @@ class CustomDialectTest {
         assertThat(result.isValid()).isTrue();
     }
 
-    static Stream<Named> cases() {
+    static Stream<Named<String>> cases() {
         return Stream.of(
                 Named.of("basic", "\"$schema\": \"https://json-schema.org/draft/2020-12/schema\","),
                 Named.of("recursive", "\"$schema\": \"https://harrel.dev/schema\","),
