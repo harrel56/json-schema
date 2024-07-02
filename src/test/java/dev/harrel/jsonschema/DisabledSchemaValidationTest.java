@@ -11,6 +11,7 @@ import static dev.harrel.jsonschema.util.TestUtil.assertError;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public abstract class DisabledSchemaValidationTest implements ProviderTest {
+    // todo tests for a bit new disabledSchemaValidation behavior
     private final Dialect testDialect = new Dialects.Draft2020Dialect() {
         @Override
         public String getMetaSchema() {
