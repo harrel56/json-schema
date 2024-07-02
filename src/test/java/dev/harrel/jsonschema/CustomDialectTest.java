@@ -1,19 +1,22 @@
 package dev.harrel.jsonschema;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static dev.harrel.jsonschema.util.TestUtil.assertError;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class CustomDialectTest {
-    // todo add more with default dialect and recursive dialect
-    @Test
-    void takesActiveVocabsFromKeyword() {
+    @ParameterizedTest
+    @MethodSource("cases")
+    void takesActiveVocabsFromKeyword(String name, String schemaKeyword) {
         CustomDialect dialect = new CustomDialect();
         Validator validator = new ValidatorFactory()
                 .withDialect(dialect)
@@ -21,13 +24,13 @@ class CustomDialectTest {
                 .createValidator();
         String metaSchema = """
             {
-              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              %s
               "$id": "https://harrel.dev/schema",
               "$vocabulary": {
                 "urn:custom-vocab": true
               },
               "type": "object"
-            }""";
+            }""".formatted(schemaKeyword);
         String schema = """
             {
               "$schema": "https://harrel.dev/schema",
@@ -50,8 +53,9 @@ class CustomDialectTest {
         );
     }
 
-    @Test
-    void takesActiveVocabsFromDialect() {
+    @ParameterizedTest
+    @MethodSource("cases")
+    void takesActiveVocabsFromDialect(String name, String schemaKeyword) {
         CustomDialect dialect = new CustomDialect() {
             @Override
             public Map<String, Boolean> getDefaultVocabularyObject() {
@@ -64,10 +68,10 @@ class CustomDialectTest {
                 .createValidator();
         String metaSchema = """
             {
-              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              %s
               "$id": "https://harrel.dev/schema",
               "type": "object"
-            }""";
+            }""".formatted(schemaKeyword);
         String schema = """
             {
               "$schema": "https://harrel.dev/schema",
@@ -90,8 +94,9 @@ class CustomDialectTest {
         );
     }
 
-    @Test
-    void noActiveVocabsFromKeywordNorDialect() {
+    @ParameterizedTest
+    @MethodSource("cases")
+    void noActiveVocabsFromKeywordNorDialect(String name, String schemaKeyword) {
         CustomDialect dialect = new CustomDialect();
         Validator validator = new ValidatorFactory()
                 .withDialect(dialect)
@@ -99,10 +104,10 @@ class CustomDialectTest {
                 .createValidator();
         String metaSchema = """
             {
-              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              %s
               "$id": "https://harrel.dev/schema",
               "type": "object"
-            }""";
+            }""".formatted(schemaKeyword);
         String schema = """
             {
               "$schema": "https://harrel.dev/schema",
@@ -116,8 +121,9 @@ class CustomDialectTest {
         assertThat(result.isValid()).isTrue();
     }
 
-    @Test
-    void emptyKeywordOverridesDialect() {
+    @ParameterizedTest
+    @MethodSource("cases")
+    void emptyKeywordOverridesDialect(String name, String schemaKeyword) {
         CustomDialect dialect = new CustomDialect() {
             @Override
             public Map<String, Boolean> getDefaultVocabularyObject() {
@@ -130,11 +136,11 @@ class CustomDialectTest {
                 .createValidator();
         String metaSchema = """
             {
-              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              %s
               "$id": "https://harrel.dev/schema",
               "$vocabulary": {},
               "type": "object"
-            }""";
+            }""".formatted(schemaKeyword);
         String schema = """
             {
               "$schema": "https://harrel.dev/schema",
@@ -146,6 +152,14 @@ class CustomDialectTest {
 
         Validator.Result result = validator.validate(URI.create("urn:test"), schema);
         assertThat(result.isValid()).isTrue();
+    }
+
+    static Stream<Arguments> cases() {
+        return Stream.of(
+                Arguments.of("basic", "\"$schema\": \"https://json-schema.org/draft/2020-12/schema\","),
+                Arguments.of("recursive", "\"$schema\": \"https://harrel.dev/schema\","),
+                Arguments.of("default", "")
+        );
     }
 
     static class CustomEvaluatorFactory implements EvaluatorFactory {
