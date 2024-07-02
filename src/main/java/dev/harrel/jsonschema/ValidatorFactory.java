@@ -14,7 +14,7 @@ import java.util.function.Supplier;
  * @see Validator
  */
 public final class ValidatorFactory {
-    private final Map<URI, Dialect> dialects = Dialects.createOfficialDialectsMap();
+    private final Map<URI, Dialect> dialects = new HashMap<>(Dialects.OFFICIAL_DIALECTS);
     private Dialect defaultDialect = new Dialects.Draft2020Dialect();
     private EvaluatorFactory evaluatorFactory;
     private Supplier<JsonNodeFactory> schemaNodeFactory = JacksonNode.Factory::new;

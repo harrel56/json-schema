@@ -1,6 +1,7 @@
 package dev.harrel.jsonschema;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -16,11 +17,13 @@ import static java.util.Collections.unmodifiableMap;
 public final class Dialects {
     private Dialects() {}
 
-    static Map<URI, Dialect> createOfficialDialectsMap() {
+    static final Map<URI, Dialect> OFFICIAL_DIALECTS;
+
+    static {
         Map<URI, Dialect> map = new HashMap<>();
         map.put(URI.create(SpecificationVersion.DRAFT2020_12.getId()), new Draft2020Dialect());
         map.put(URI.create(SpecificationVersion.DRAFT2019_09.getId()), new Draft2019Dialect());
-        return map;
+        OFFICIAL_DIALECTS = Collections.unmodifiableMap(map);
     }
 
     /**
