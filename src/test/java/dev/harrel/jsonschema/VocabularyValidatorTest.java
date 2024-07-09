@@ -1,7 +1,10 @@
 package dev.harrel.jsonschema;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
+import java.net.URI;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -124,6 +127,13 @@ class VocabularyValidatorTest {
         assertThatThrownBy(() -> new VocabularyValidator().validateVocabularies(dialect, vocabs))
                 .isInstanceOf(VocabularyException.class)
                 .hasMessage("Following vocabularies [urn:a, urn:b] are required but not supported");
+    }
+
+    @ParameterizedTest
+    @EnumSource(SpecificationVersion.class)
+    void allOfficialDialectsShouldBeInternallyValid(SpecificationVersion version) {
+        Dialect dialect = Dialects.OFFICIAL_DIALECTS.get(URI.create(version.getId()));
+        new VocabularyValidator().validateVocabularies(dialect, dialect.getDefaultVocabularyObject());
     }
 
     private static Set<String> orderedSet(String... values) {
