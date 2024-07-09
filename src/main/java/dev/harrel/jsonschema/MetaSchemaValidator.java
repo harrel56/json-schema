@@ -90,14 +90,3 @@ class MetaSchemaValidator {
         return resolveMetaSchema(jsonParser, uri);
     }
 }
-
-final class NoOpMetaSchemaValidator extends MetaSchemaValidator {
-    public NoOpMetaSchemaValidator(JsonNodeFactory jsonNodeFactory, SchemaRegistry schemaRegistry, SchemaResolver schemaResolver) {
-        super(jsonNodeFactory, schemaRegistry, schemaResolver);
-    }
-
-    @Override
-    void validateSchema(Schema schema, JsonParser jsonParser, URI metaSchemaUri, String schemaUri, JsonNode node) throws InvalidSchemaException {
-        /* no validation */
-    }
-}
