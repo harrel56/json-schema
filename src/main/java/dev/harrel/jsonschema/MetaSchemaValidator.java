@@ -2,7 +2,6 @@ package dev.harrel.jsonschema;
 
 import java.net.URI;
 import java.util.*;
-import java.util.stream.Collectors;
 
 class MetaSchemaData {
     final Dialect dialect;
