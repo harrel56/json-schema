@@ -37,7 +37,21 @@ public final class ValidatorFactory {
         return new Validator(schemaFactory, instanceFactory, schemaResolver, schemaRegistry, jsonParser);
     }
 
-    // todo doc
+    /**
+     * Registers a {@link Dialect} using {@link Dialect#getMetaSchema()} value.
+     * If {@link Dialect#getMetaSchema()} returns null, the dialect will not be registered.
+     * This method can be called multiple times to register multiple dialects.
+     * Keep in mind that overriding an official dialect is also possible if you provide the same meta-schema.
+     * Generally, this method should be used only when:
+     * <ul>
+     *     <li>You need your meta-schema to be recursive (same value in <code>$schema</code> and <code>$id</code>).</li>
+     *     <li>You want to validate vocabularies integrity based on your dialect's required and supported vocabularies.</li>
+     *     <li>You use <code>withDisabledSchemaValidation()</code> and want to define active vocabularies for your meta-schema.</li>
+     * </ul>
+     *
+     * @param dialect {@code Dialect} to be registered
+     * @return self
+     */
     public ValidatorFactory withDialect(Dialect dialect) {
         // todo lets make meta-schema non-nullable at some point
         if (dialect.getMetaSchema() != null) {
@@ -47,12 +61,12 @@ public final class ValidatorFactory {
     }
 
     /**
-     * Sets {@link Dialect}. Provided default is {@link Dialects.Draft2020Dialect}.
+     * Sets default {@link Dialect} which will be used when {@code $schema} keyword is absent.
+     * Provided default is {@link Dialects.Draft2020Dialect}.
      *
-     * @param dialect {@code Dialect} to be used
+     * @param dialect {@code Dialect} to be used as default
      * @return self
      */
-    // todo doc
     public ValidatorFactory withDefaultDialect(Dialect dialect) {
         this.defaultDialect = Objects.requireNonNull(dialect);
         return this;
