@@ -3,27 +3,46 @@ package dev.harrel.jsonschema;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static dev.harrel.jsonschema.util.TestUtil.assertError;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public abstract class DisabledSchemaValidationTest implements ProviderTest {
-    // todo tests for a bit new disabledSchemaValidation behavior
-    private final Dialect testDialect = new Dialects.Draft2020Dialect() {
-        @Override
-        public String getMetaSchema() {
-            return null;
-        }
-    };
-
     @Test
-    void shouldIgnoreTurnedOffVocabularies() {
+    void shouldNotResolveMetaSchemas() {
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(getJsonNodeFactory())
-                .withDialect(testDialect)
+                .withDisabledSchemaValidation(true)
+                .createValidator();
+
+        String schema = """
+                {
+                  "$schema": "urn:meta",
+                  "type": "null"
+                }""";
+
+        URI schemaUri = URI.create("urn:schema");
+        validator.registerSchema(schemaUri, schema);
+        Validator.Result result = validator.validate(schemaUri, "{}");
+
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(1);
+        assertError(
+                errors.getFirst(),
+                "/type",
+                "urn:schema#",
+                "",
+                "type",
+                "Value is [object] but should be [null]"
+        );
+    }
+
+    @Test
+    void shouldIgnoreTurnedOffVocabulariesBecauseMetaSchemaIsNotResolved() {
+        Validator validator = new ValidatorFactory()
+                .withJsonNodeFactory(getJsonNodeFactory())
                 .withDisabledSchemaValidation(true)
                 .createValidator();
 
@@ -49,7 +68,7 @@ public abstract class DisabledSchemaValidationTest implements ProviderTest {
         List<Error> errors = result.getErrors();
         assertThat(errors).hasSize(1);
         assertError(
-                errors.get(0),
+                errors.getFirst(),
                 "/type",
                 "urn:schema#",
                 "",
@@ -59,10 +78,9 @@ public abstract class DisabledSchemaValidationTest implements ProviderTest {
     }
 
     @Test
-    void shouldIgnoreOptionalUnsupportedVocabularies() {
+    void shouldIgnoreOptionalUnsupportedVocabulariesBecauseMetaSchemaIsNotResolved() {
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(getJsonNodeFactory())
-                .withDialect(testDialect)
                 .withDisabledSchemaValidation(true)
                 .createValidator();
 
@@ -87,10 +105,9 @@ public abstract class DisabledSchemaValidationTest implements ProviderTest {
     }
 
     @Test
-    void shouldNotFailForUnsupportedRequiredVocabularies() {
+    void shouldNotFailForUnsupportedRequiredVocabulariesBecauseMetaSchemaIsNotResolved() {
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(getJsonNodeFactory())
-                .withDialect(testDialect)
                 .withDisabledSchemaValidation(true)
                 .createValidator();
 
@@ -115,10 +132,9 @@ public abstract class DisabledSchemaValidationTest implements ProviderTest {
     }
 
     @Test
-    void shouldNotFailForMissingRequiredVocabularies() {
+    void shouldNotFailForMissingRequiredVocabulariesBecauseMetaSchemaIsNotResolved() {
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(getJsonNodeFactory())
-                .withDialect(testDialect)
                 .withDisabledSchemaValidation(true)
                 .createValidator();
 
@@ -141,29 +157,9 @@ public abstract class DisabledSchemaValidationTest implements ProviderTest {
 
     @Test
     void shouldSupportEvaluatorWithEmptyVocabularies() {
-        Evaluator evaluator = new Evaluator() {
-            @Override
-            public Result evaluate(EvaluationContext ctx, JsonNode node) {
-                return Evaluator.Result.failure("custom message");
-            }
-
-            @Override
-            public Set<String> getVocabularies() {
-                return Set.of();
-            }
-        };
-        EvaluatorFactory evaluatorFactory = (ctx, name, schemaNode) -> {
-            if (name.equals("custom")) {
-                return Optional.of(evaluator);
-            } else {
-                return Optional.empty();
-            }
-        };
-
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(getJsonNodeFactory())
-                .withDialect(testDialect)
-                .withEvaluatorFactory(evaluatorFactory)
+                .withEvaluatorFactory(new CustomEvaluatorFactory(Set.of()))
                 .withDisabledSchemaValidation(true)
                 .createValidator();
 
@@ -179,7 +175,7 @@ public abstract class DisabledSchemaValidationTest implements ProviderTest {
         List<Error> errors = result.getErrors();
         assertThat(errors).hasSize(1);
         assertError(
-                errors.get(0),
+                errors.getFirst(),
                 "/custom",
                 "urn:schema#",
                 "",
@@ -189,30 +185,29 @@ public abstract class DisabledSchemaValidationTest implements ProviderTest {
     }
 
     @Test
-    void shouldSupportEvaluatorWithUnknownVocabularies() {
-        Evaluator evaluator = new Evaluator() {
-            @Override
-            public Result evaluate(EvaluationContext ctx, JsonNode node) {
-                return Evaluator.Result.failure("custom message");
-            }
-
-            @Override
-            public Set<String> getVocabularies() {
-                return Set.of("vocab1", "vocab2");
-            }
-        };
-        EvaluatorFactory evaluatorFactory = (ctx, name, schemaNode) -> {
-            if (name.equals("custom")) {
-                return Optional.of(evaluator);
-            } else {
-                return Optional.empty();
-            }
-        };
-
+    void shouldNotSupportEvaluatorWithUnknownVocabularies() {
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(getJsonNodeFactory())
-                .withDialect(testDialect)
-                .withEvaluatorFactory(evaluatorFactory)
+                .withEvaluatorFactory(new CustomEvaluatorFactory(Set.of("urn:vocab1", "urn:vocab2")))
+                .withDisabledSchemaValidation(true)
+                .createValidator();
+
+        String schema = """
+                {
+                  "custom": "null"
+                }""";
+
+        URI schemaUri = URI.create("urn:schema");
+        validator.registerSchema(schemaUri, schema);
+        Validator.Result result = validator.validate(schemaUri, "{}");
+        assertThat(result.isValid()).isTrue();
+    }
+
+    @Test
+    void shouldUseDefaultDialectWhenNoSchemaKeyword() {
+        Validator validator = new ValidatorFactory()
+                .withDefaultDialect(new CustomDialect())
+                .withJsonNodeFactory(getJsonNodeFactory())
                 .withDisabledSchemaValidation(true)
                 .createValidator();
 
@@ -228,12 +223,103 @@ public abstract class DisabledSchemaValidationTest implements ProviderTest {
         List<Error> errors = result.getErrors();
         assertThat(errors).hasSize(1);
         assertError(
-                errors.get(0),
+                errors.getFirst(),
                 "/custom",
                 "urn:schema#",
                 "",
                 "custom",
                 "custom message"
         );
+    }
+
+    @Test
+    void shouldUseDefaultDialectWhenUnknownSchema() {
+        Validator validator = new ValidatorFactory()
+                .withDefaultDialect(new CustomDialect())
+                .withJsonNodeFactory(getJsonNodeFactory())
+                .withDisabledSchemaValidation(true)
+                .createValidator();
+
+        String schema = """
+                {
+                  "$schema": "http://json-schema.org/draft-03/schema",
+                  "custom": "null"
+                }""";
+
+        URI schemaUri = URI.create("urn:schema");
+        validator.registerSchema(schemaUri, schema);
+        Validator.Result result = validator.validate(schemaUri, "{}");
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(1);
+        assertError(
+                errors.getFirst(),
+                "/custom",
+                "urn:schema#",
+                "",
+                "custom",
+                "custom message"
+        );
+    }
+
+    static class CustomEvaluator implements Evaluator {
+        private final Set<String> vocabs;
+
+        CustomEvaluator(Set<String> vocabs) {
+            this.vocabs = vocabs;
+        }
+
+        @Override
+        public Result evaluate(EvaluationContext ctx, JsonNode node) {
+            return Evaluator.Result.failure("custom message");
+        }
+
+        @Override
+        public Set<String> getVocabularies() {
+            return vocabs;
+        }
+    }
+
+    static class CustomEvaluatorFactory implements EvaluatorFactory {
+        private final Set<String> vocabs;
+
+        CustomEvaluatorFactory(Set<String> vocabs) {
+            this.vocabs = vocabs;
+        }
+
+        @Override
+        public Optional<Evaluator> create(SchemaParsingContext ctx, String fieldName, JsonNode fieldNode) {
+            if (fieldName.equals("custom")) {
+                return Optional.of(new CustomEvaluator(vocabs));
+            } else {
+                return Optional.empty();
+            }
+        }
+    }
+
+    static class CustomDialect extends Dialects.Draft2020Dialect {
+        @Override
+        public String getMetaSchema() {
+            return "urn:meta";
+        }
+
+        @Override
+        public EvaluatorFactory getEvaluatorFactory() {
+            return new CustomEvaluatorFactory(Set.of("urn:vocab1", "urn:vocab2"));
+        }
+
+        @Override
+        public Set<String> getSupportedVocabularies() {
+            Set<String> vocabs = new HashSet<>(super.getSupportedVocabularies());
+            vocabs.add("urn:vocab1");
+            return vocabs;
+        }
+
+        @Override
+        public Map<String, Boolean> getDefaultVocabularyObject() {
+            Map<String, Boolean> map = new HashMap<>(super.getDefaultVocabularyObject());
+            map.put("urn:vocab1", true);
+            return map;
+        }
     }
 }
