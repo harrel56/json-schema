@@ -144,6 +144,12 @@ final class JsonParser {
     }
 
     private MetaSchemaData validateAgainstMetaSchema(JsonNode node, URI metaSchemaUri, String uri) {
+        MetaSchemaData data = resolveMetaSchemaData(node, metaSchemaUri, uri);
+        new VocabularyValidator().validateVocabularies(data.dialect, data.vocabularyObject);
+        return data;
+    }
+
+    private MetaSchemaData resolveMetaSchemaData(JsonNode node, URI metaSchemaUri, String uri) {
         if (disabledSchemaValidation) {
             return new MetaSchemaData(dialects.getOrDefault(metaSchemaUri, defaultDialect));
         }

@@ -203,7 +203,7 @@ class CustomDialectTest {
 
         @Override
         public Set<String> getSupportedVocabularies() {
-            return Set.of();
+            return Set.of("urn:custom-vocab");
         }
 
         @Override

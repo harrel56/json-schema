@@ -2,6 +2,7 @@ package dev.harrel.jsonschema;
 
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 
 class MetaSchemaData {
     final Dialect dialect;
@@ -44,26 +45,6 @@ class MetaSchemaValidator {
                     new Validator.Result(false, ctx).getErrors());
         }
     }
-
-    // todo actually perform vocabularies validation. Spec version need to have a field with requiredVocabs. IDK about supported vocabs
-//        @Override
-//        public MetaSchemaData determineActiveVocabularies(Map<String, Boolean> vocabulariesObject) {
-//            List<String> missingRequiredVocabularies = dialect.getRequiredVocabularies().stream()
-//                    .filter(vocab -> !vocabulariesObject.getOrDefault(vocab, false))
-//                    .collect(Collectors.toList());
-//            if (!missingRequiredVocabularies.isEmpty()) {
-//                throw new VocabularyException(String.format("Required vocabularies [%s] were missing or marked optional in $vocabulary object", missingRequiredVocabularies));
-//            }
-//            List<String> unsupportedRequiredVocabularies = vocabulariesObject.entrySet().stream()
-//                    .filter(Map.Entry::getValue)
-//                    .map(Map.Entry::getKey)
-//                    .filter(vocab -> !dialect.getSupportedVocabularies().contains(vocab))
-//                    .collect(Collectors.toList());
-//            if (!unsupportedRequiredVocabularies.isEmpty()) {
-//                throw new VocabularyException(String.format("Following vocabularies [%s] are required but not supported", unsupportedRequiredVocabularies));
-//            }
-//            return vocabulariesObject.keySet();
-//        }
 
     private Schema resolveMetaSchema(JsonParser jsonParser, URI uri) {
         CompoundUri compoundUri = CompoundUri.fromString(uri.toString());

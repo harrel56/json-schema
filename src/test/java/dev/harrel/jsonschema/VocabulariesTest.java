@@ -97,7 +97,7 @@ public abstract class VocabulariesTest implements ProviderTest {
         URI schemaUri = URI.create("urn:schema");
         assertThatThrownBy(() -> validator.registerSchema(schemaUri, schema))
                 .isInstanceOf(VocabularyException.class)
-                .hasMessage("Following vocabularies [[urn:unknown]] are required but not supported");
+                .hasMessage("Following vocabularies [urn:unknown] are required but not supported");
     }
 
     @Test
@@ -121,7 +121,7 @@ public abstract class VocabulariesTest implements ProviderTest {
         URI schemaUri = URI.create("urn:schema");
         assertThatThrownBy(() -> validator.registerSchema(schemaUri, schema))
                 .isInstanceOf(VocabularyException.class)
-                .hasMessage("Required vocabularies [[https://json-schema.org/draft/2020-12/vocab/core]] were missing or marked optional in $vocabulary object");
+                .hasMessage("Required vocabularies [https://json-schema.org/draft/2020-12/vocab/core] were missing or marked optional in $vocabulary object");
     }
 
     @Test
