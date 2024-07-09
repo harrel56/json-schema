@@ -78,6 +78,7 @@ Supported JSON providers:
 - `com.fasterxml.jackson.core:jackson-databind` (default),
 - `com.google.code.gson:gson`,
 - `jakarta.json:jakarta.json-api`,
+- `org.jetbrains.kotlinx:kotlinx-serialization-json`,
 - `org.json:json`,
 - `new.minidev:json-smart`,
 - `org.codehouse.jettison:jettison`.
@@ -93,15 +94,16 @@ All adapter classes for JSON provider libs can be found in this [package](https:
 
 ### Changing JSON/YAML provider
 
-| Provider                                    | Factory class                                                                                                                                | Provider node class                                                                                                                                      |
-|---------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
-| com.fasterxml.jackson.core:jackson-databind | [JacksonNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/JacksonNode.Factory.html)         | com.fasterxml.jackson.databind.JsonNode                                                                                                                  |
-| com.google.code.gson:gson                   | [GsonNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/GsonNode.Factory.html)               | com.google.gson.JsonElement                                                                                                                              |
-| jakarta.json:jakarta.json-api               | [JakartaJsonNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/JakartaJsonNode.Factory.html) | jakarta.json.JsonValue                                                                                                                                   |
-| org.json:json                               | [OrgJsonNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/OrgJsonNode.Factory.html)         | <ul><li>org.json.JSONObject,</li><li>org.json.JSONArray,</li><li>[literal types](#provider-literal-types).</li></ul>                                     |
-| new.minidev:json-smart                      | [JsonSmartNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/JsonSmartNode.Factory.html)     | <ul><li>net.minidev.json.JSONObject,</li><li>net.minidev.json.JSONArray,</li><li>[literal types](#provider-literal-types).</li></ul>                     |
-| org.codehouse.jettison:jettison             | [JettisonNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/JettisonNode.Factory.html)       | <ul><li>org.codehaus.jettison.json.JSONObject,</li><li>org.codehaus.jettison.json.JSONArray,</li><li>[literal types](#provider-literal-types).</li></ul> |
-| org.yaml:snakeyaml                          | [SnakeYamlNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/SnakeYamlNode.Factory.html)     | org.yaml.snakeyaml.nodes.Node                                                                                                                            |
+| Provider                                         | Factory class                                                                                                                                | Provider node class                                                                                                                                      |
+|--------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| com.fasterxml.jackson.core:jackson-databind      | [JacksonNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/JacksonNode.Factory.html)         | com.fasterxml.jackson.databind.JsonNode                                                                                                                  |
+| com.google.code.gson:gson                        | [GsonNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/GsonNode.Factory.html)               | com.google.gson.JsonElement                                                                                                                              |
+| jakarta.json:jakarta.json-api                    | [JakartaJsonNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/JakartaJsonNode.Factory.html) | jakarta.json.JsonValue                                                                                                                                   |
+| org.jetbrains.kotlinx:kotlinx-serialization-json | [KotlinxJsonFactory.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/KotlinxJson.Factory.html)  | kotlinx.serialization.json.JsonElement                                                                                                                   |
+| org.json:json                                    | [OrgJsonNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/OrgJsonNode.Factory.html)         | <ul><li>org.json.JSONObject,</li><li>org.json.JSONArray,</li><li>[literal types](#provider-literal-types).</li></ul>                                     |
+| new.minidev:json-smart                           | [JsonSmartNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/JsonSmartNode.Factory.html)     | <ul><li>net.minidev.json.JSONObject,</li><li>net.minidev.json.JSONArray,</li><li>[literal types](#provider-literal-types).</li></ul>                     |
+| org.codehouse.jettison:jettison                  | [JettisonNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/JettisonNode.Factory.html)       | <ul><li>org.codehaus.jettison.json.JSONObject,</li><li>org.codehaus.jettison.json.JSONArray,</li><li>[literal types](#provider-literal-types).</li></ul> |
+| org.yaml:snakeyaml                               | [SnakeYamlNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/SnakeYamlNode.Factory.html)     | org.yaml.snakeyaml.nodes.Node                                                                                                                            |
 
 #### com.fasterxml.jackson.core:jackson-databind
 ```java
@@ -118,6 +120,11 @@ It would be required to also have e.g. `org.glassfish:jakarta.json` dependency i
 Although, it was tested with newest `jakarta.json-api` version, it should be compatible down to `1.1` version.
 ```java
 new ValidatorFactory().withJsonNodeFactory(new JakartaJsonNode.Factory());
+```
+
+#### org.jetbrains.kotlinx:kotlinx-serialization-json
+```java
+new ValidatorFactory().withJsonNodeFactory(new KotlinxJsonNode.Factory());
 ```
 
 #### org.json:json
