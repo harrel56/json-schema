@@ -88,8 +88,8 @@ public abstract class MetaSchemaTest implements ProviderTest {
                 .withSchemaResolver(resolver)
                 .createValidator();
         MetaSchemaResolvingException exception = catchThrowableOfType(MetaSchemaResolvingException.class, () -> validator.registerSchema(rawSchema));
-        assertThat(exception).hasMessage("Parsing meta-schema [urn:custom] failed");
-        assertThat(exception).hasCauseInstanceOf(MetaSchemaResolvingException.class);
+        assertThat(exception).hasMessage("Parsing meta-schema [urn:custom] failed")
+                .hasCauseInstanceOf(MetaSchemaResolvingException.class);
         assertThat(exception.getCause()).hasMessage("Parsing meta-schema [urn:custom] failed - only dialects explicitly added to a validator can be recursive");
     }
 

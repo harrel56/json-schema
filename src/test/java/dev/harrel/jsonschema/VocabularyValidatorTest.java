@@ -10,9 +10,11 @@ import java.util.*;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class VocabularyValidatorTest {
+    private final VocabularyValidator validator = new VocabularyValidator();
+
     @Test
     void shouldAlwaysPassForNullVocabs() {
-        new VocabularyValidator().validateVocabularies(new Dialects.Draft2020Dialect(), null);
+        validator.validateVocabularies(new Dialects.Draft2020Dialect(), null);
     }
 
     @Test
@@ -30,7 +32,7 @@ class VocabularyValidatorTest {
         };
         Map<String, Boolean> vocabs = orderedMap(Map.entry("urn:a", true), Map.entry("urn:b", false));
 
-        new VocabularyValidator().validateVocabularies(dialect, vocabs);
+        validator.validateVocabularies(dialect, vocabs);
     }
 
     @Test
@@ -43,7 +45,7 @@ class VocabularyValidatorTest {
         };
         Map<String, Boolean> vocabs = orderedMap();
 
-        assertThatThrownBy(() -> new VocabularyValidator().validateVocabularies(dialect, vocabs))
+        assertThatThrownBy(() -> validator.validateVocabularies(dialect, vocabs))
                 .isInstanceOf(VocabularyException.class)
                 .hasMessage("Required vocabularies [urn:a, urn:b] were missing or marked optional in $vocabulary object");
     }
@@ -58,7 +60,7 @@ class VocabularyValidatorTest {
         };
         Map<String, Boolean> vocabs = orderedMap(Map.entry("urn:a", false), Map.entry("urn:b", false));
 
-        assertThatThrownBy(() -> new VocabularyValidator().validateVocabularies(dialect, vocabs))
+        assertThatThrownBy(() -> validator.validateVocabularies(dialect, vocabs))
                 .isInstanceOf(VocabularyException.class)
                 .hasMessage("Required vocabularies [urn:a, urn:b] were missing or marked optional in $vocabulary object");
     }
@@ -73,7 +75,7 @@ class VocabularyValidatorTest {
         };
         Map<String, Boolean> vocabs = orderedMap(Map.entry("urn:a", false), Map.entry("urn:b", false));
 
-        assertThatThrownBy(() -> new VocabularyValidator().validateVocabularies(dialect, vocabs))
+        assertThatThrownBy(() -> validator.validateVocabularies(dialect, vocabs))
                 .isInstanceOf(VocabularyException.class)
                 .hasMessage("Required vocabularies [urn:a, urn:b, urn:c] were missing or marked optional in $vocabulary object");
     }
@@ -88,7 +90,7 @@ class VocabularyValidatorTest {
         };
         Map<String, Boolean> vocabs = orderedMap(Map.entry(Vocabulary.Draft2020.CORE, true));
 
-        new VocabularyValidator().validateVocabularies(dialect, vocabs);
+        validator.validateVocabularies(dialect, vocabs);
     }
 
     @Test
@@ -106,7 +108,7 @@ class VocabularyValidatorTest {
         };
         Map<String, Boolean> vocabs = orderedMap(Map.entry("urn:a", false), Map.entry("urn:b", false));
 
-        new VocabularyValidator().validateVocabularies(dialect, vocabs);
+        validator.validateVocabularies(dialect, vocabs);
     }
 
     @Test
@@ -124,7 +126,7 @@ class VocabularyValidatorTest {
         };
         Map<String, Boolean> vocabs = orderedMap(Map.entry("urn:a", true), Map.entry("urn:b", true));
 
-        assertThatThrownBy(() -> new VocabularyValidator().validateVocabularies(dialect, vocabs))
+        assertThatThrownBy(() -> validator.validateVocabularies(dialect, vocabs))
                 .isInstanceOf(VocabularyException.class)
                 .hasMessage("Following vocabularies [urn:a, urn:b] are required but not supported");
     }
@@ -133,7 +135,7 @@ class VocabularyValidatorTest {
     @EnumSource(SpecificationVersion.class)
     void allOfficialDialectsShouldBeInternallyValid(SpecificationVersion version) {
         Dialect dialect = Dialects.OFFICIAL_DIALECTS.get(URI.create(version.getId()));
-        new VocabularyValidator().validateVocabularies(dialect, dialect.getDefaultVocabularyObject());
+        validator.validateVocabularies(dialect, dialect.getDefaultVocabularyObject());
     }
 
     private static Set<String> orderedSet(String... values) {
