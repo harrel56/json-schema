@@ -9,7 +9,15 @@ import static dev.harrel.jsonschema.util.TestUtil.assertError;
 import static org.assertj.core.api.Assertions.*;
 
 class CompoundSchemaTest {
-    // todo add tests for deeply embedded schemas - check if dialect is resolved correctly (either from $schema or nearest parent)
+    private static final String FORMAT_META_SCHEMA = """
+                {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "$id": "urn:format",
+                  "$vocabulary": {
+                    "https://json-schema.org/draft/2020-12/vocab/core": true,
+                    "https://json-schema.org/draft/2020-12/vocab/format-assertion": false
+                  }
+                }""";
 
     @Test
     @Disabled
@@ -124,5 +132,249 @@ class CompoundSchemaTest {
                 "type",
                 "Value is [object] but should be [null]"
         );
+    }
+
+    @Test
+    void nestedSchemaTakesVocabsFromItsMetaSchema() {
+        String compoundSchema = """
+                {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "$id": "urn:root",
+                  "format": "ipv4",
+                  "$defs": {
+                    "nested": {
+                      "$schema": "urn:format",
+                      "$id": "urn:nested",
+                      "format": "ipv4"
+                    }
+                  }
+                }""";
+
+        Validator validator = new ValidatorFactory()
+                .withEvaluatorFactory(new FormatEvaluatorFactory(Vocabulary.FORMAT_ASSERTION_VOCABULARY))
+                .createValidator();
+        validator.registerSchema(FORMAT_META_SCHEMA);
+        validator.registerSchema(compoundSchema);
+
+        Validator.Result result = validator.validate(URI.create("urn:root"), "\"hello\"");
+        assertThat(result.isValid()).isTrue();
+
+        result = validator.validate(URI.create("urn:nested"), "\"hello\"");
+        assertThat(result.isValid()).isFalse();
+    }
+
+    @Test
+    void nestedSchemaInheritsVocabsFromParent() {
+        String compoundSchema = """
+                {
+                  "$schema": "urn:format",
+                  "$id": "urn:root",
+                  "format": "ipv4",
+                  "$defs": {
+                    "nested": {
+                      "$id": "urn:nested",
+                      "format": "ipv4"
+                    }
+                  }
+                }""";
+
+        Validator validator = new ValidatorFactory()
+                .withEvaluatorFactory(new FormatEvaluatorFactory(Vocabulary.FORMAT_ASSERTION_VOCABULARY))
+                .createValidator();
+        validator.registerSchema(FORMAT_META_SCHEMA);
+        validator.registerSchema(compoundSchema);
+
+        Validator.Result result = validator.validate(URI.create("urn:root"), "\"hello\"");
+        assertThat(result.isValid()).isFalse();
+
+        result = validator.validate(URI.create("urn:nested"), "\"hello\"");
+        assertThat(result.isValid()).isFalse();
+    }
+
+    @Test
+    void deeplyNestedSchemaTakesVocabsFromItsMetaSchema() {
+        String compoundSchema = """
+                {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "$id": "urn:root",
+                  "format": "ipv4",
+                  "$defs": {
+                    "nested": {
+                      "$id": "urn:nested",
+                      "format": "ipv4",
+                      "$defs": {
+                        "nested2": {
+                          "$schema": "urn:format",
+                          "$id": "urn:nested2",
+                          "format": "ipv4"
+                        }
+                      }
+                    }
+                  }
+                }""";
+
+        Validator validator = new ValidatorFactory()
+                .withEvaluatorFactory(new FormatEvaluatorFactory(Vocabulary.FORMAT_ASSERTION_VOCABULARY))
+                .createValidator();
+        validator.registerSchema(FORMAT_META_SCHEMA);
+        validator.registerSchema(compoundSchema);
+
+        Validator.Result result = validator.validate(URI.create("urn:root"), "\"hello\"");
+        assertThat(result.isValid()).isTrue();
+
+        result = validator.validate(URI.create("urn:nested"), "\"hello\"");
+        assertThat(result.isValid()).isTrue();
+
+        result = validator.validate(URI.create("urn:nested2"), "\"hello\"");
+        assertThat(result.isValid()).isFalse();
+    }
+
+    @Test
+    void deeplyNestedSchemaTakesVocabsFromNearestParent() {
+        String compoundSchema = """
+                {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "$id": "urn:root",
+                  "format": "ipv4",
+                  "$defs": {
+                    "nested": {
+                      "$schema": "urn:format",
+                      "$id": "urn:nested",
+                      "format": "ipv4",
+                      "$defs": {
+                        "nested2": {
+                          "$id": "urn:nested2",
+                          "format": "ipv4"
+                        }
+                      }
+                    }
+                  }
+                }""";
+
+        Validator validator = new ValidatorFactory()
+                .withEvaluatorFactory(new FormatEvaluatorFactory(Vocabulary.FORMAT_ASSERTION_VOCABULARY))
+                .createValidator();
+        validator.registerSchema(FORMAT_META_SCHEMA);
+        validator.registerSchema(compoundSchema);
+
+        Validator.Result result = validator.validate(URI.create("urn:root"), "\"hello\"");
+        assertThat(result.isValid()).isTrue();
+
+        result = validator.validate(URI.create("urn:nested"), "\"hello\"");
+        assertThat(result.isValid()).isFalse();
+
+        result = validator.validate(URI.create("urn:nested2"), "\"hello\"");
+        assertThat(result.isValid()).isFalse();
+    }
+
+    @Test
+    void deeplyNestedSchemaTakesVocabsFromNearestParentIgnoringFakeSubSchemas() {
+        String compoundSchema = """
+                {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "$id": "urn:root",
+                  "format": "ipv4",
+                  "$defs": {
+                    "nested": {
+                      "$schema": "urn:format",
+                      "format": "ipv4",
+                      "$defs": {
+                        "nested2": {
+                          "$id": "urn:nested2",
+                          "format": "ipv4"
+                        }
+                      }
+                    }
+                  }
+                }""";
+
+        Validator validator = new ValidatorFactory()
+                .withEvaluatorFactory(new FormatEvaluatorFactory(Vocabulary.FORMAT_ASSERTION_VOCABULARY))
+                .createValidator();
+        validator.registerSchema(FORMAT_META_SCHEMA);
+        validator.registerSchema(compoundSchema);
+
+        Validator.Result result = validator.validate(URI.create("urn:root"), "\"hello\"");
+        assertThat(result.isValid()).isTrue();
+
+        result = validator.validate(URI.create("urn:nested2"), "\"hello\"");
+        assertThat(result.isValid()).isTrue();
+    }
+
+    @Test
+    void deeplyNestedSchemaInheritDefaultVocabs() {
+        String compoundSchema = """
+                {
+                  "$id": "urn:root",
+                  "format": "ipv4",
+                  "$defs": {
+                    "nested": {
+                      "$id": "urn:nested",
+                      "format": "ipv4",
+                      "$defs": {
+                        "nested2": {
+                          "$id": "urn:nested2",
+                          "format": "ipv4"
+                        }
+                      }
+                    }
+                  }
+                }""";
+
+        Validator validator = new ValidatorFactory()
+                .withEvaluatorFactory(new FormatEvaluatorFactory(Vocabulary.FORMAT_ASSERTION_VOCABULARY))
+                .createValidator();
+        validator.registerSchema(FORMAT_META_SCHEMA);
+        validator.registerSchema(compoundSchema);
+
+        Validator.Result result = validator.validate(URI.create("urn:root"), "\"hello\"");
+        assertThat(result.isValid()).isTrue();
+
+        result = validator.validate(URI.create("urn:nested"), "\"hello\"");
+        assertThat(result.isValid()).isTrue();
+
+        result = validator.validate(URI.create("urn:nested2"), "\"hello\"");
+        assertThat(result.isValid()).isTrue();
+    }
+
+    @Test
+    void deeplyNestedRefChainUsesProperVocabs() {
+        String compoundSchema = """
+                {
+                  "$id": "urn:root",
+                  "$ref": "urn:nested",
+                  "$defs": {
+                    "another": {
+                      "$id": "urn:another",
+                      "format": "ipv4"
+                    },
+                    "nested": {
+                      "$id": "urn:nested",
+                      "$ref": "urn:nested2",
+                      "$defs": {
+                        "nested2": {
+                          "$schema": "urn:format",
+                          "$id": "urn:nested2",
+                          "$ref": "urn:another"
+                        }
+                      }
+                    }
+                  }
+                }""";
+
+        Validator validator = new ValidatorFactory()
+                .withEvaluatorFactory(new FormatEvaluatorFactory(Vocabulary.FORMAT_ASSERTION_VOCABULARY))
+                .createValidator();
+        validator.registerSchema(FORMAT_META_SCHEMA);
+        validator.registerSchema(compoundSchema);
+
+        Validator.Result result = validator.validate(URI.create("urn:root"), "\"hello\"");
+        assertThat(result.isValid()).isTrue();
+
+        result = validator.validate(URI.create("urn:nested"), "\"hello\"");
+        assertThat(result.isValid()).isTrue();
+
+        result = validator.validate(URI.create("urn:nested2"), "\"hello\"");
+        assertThat(result.isValid()).isTrue();
     }
 }
