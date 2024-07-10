@@ -2,6 +2,7 @@
   {
     "description": "items inside items keyword",
     "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "items": {
         "prefixItems": [
           { "type": "number" },
@@ -51,6 +52,7 @@
   {
     "description": "items inside properties keyword",
     "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "properties": {
         "x": {
           "prefixItems": [{ "type": "number" }],

@@ -1,10 +1,13 @@
 package dev.harrel.jsonschema;
 
+import java.net.URI;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static dev.harrel.jsonschema.Vocabulary.*;
+import static dev.harrel.jsonschema.Vocabulary.Draft2019;
+import static dev.harrel.jsonschema.Vocabulary.Draft2020;
 import static java.util.Collections.singleton;
 import static java.util.Collections.unmodifiableMap;
 
@@ -13,6 +16,15 @@ import static java.util.Collections.unmodifiableMap;
  */
 public final class Dialects {
     private Dialects() {}
+
+    static final Map<URI, Dialect> OFFICIAL_DIALECTS;
+
+    static {
+        Map<URI, Dialect> map = new HashMap<>();
+        map.put(URI.create(SpecificationVersion.DRAFT2020_12.getId()), new Draft2020Dialect());
+        map.put(URI.create(SpecificationVersion.DRAFT2019_09.getId()), new Draft2019Dialect());
+        OFFICIAL_DIALECTS = Collections.unmodifiableMap(map);
+    }
 
     /**
      * Dialect corresponding to <i>draft2020-12</i> specification.

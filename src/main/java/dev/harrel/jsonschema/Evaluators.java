@@ -29,7 +29,7 @@ class TypeEvaluator implements ValidatingEvaluator {
             this.types = node.asArray().stream()
                     .map(JsonNode::asString)
                     .map(SimpleType::fromName)
-                    .collect(Collectors.toSet());
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
         }
     }
 

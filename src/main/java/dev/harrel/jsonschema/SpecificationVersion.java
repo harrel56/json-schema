@@ -2,7 +2,7 @@ package dev.harrel.jsonschema;
 
 import java.io.*;
 import java.net.URI;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**

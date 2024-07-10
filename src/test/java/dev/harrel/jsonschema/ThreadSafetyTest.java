@@ -79,7 +79,6 @@ abstract class ThreadSafetyTest {
                   "$ref": "urn:ref"
                 }""";
         Validator validator = new ValidatorFactory()
-                .withDisabledSchemaValidation(true)
                 .withSchemaResolver(new LatchedSchemaResolver(100))
                 .createValidator();
         URI uri = validator.registerSchema(schema);
@@ -95,7 +94,6 @@ abstract class ThreadSafetyTest {
     @Test
     void concurrentRootResolutions() throws InterruptedException, ExecutionException {
         Validator validator = new ValidatorFactory()
-                .withDisabledSchemaValidation(true)
                 .withSchemaResolver(new LatchedSchemaResolver(100))
                 .createValidator();
         List<URI> uris = IntStream.range(0, 100)
@@ -119,12 +117,6 @@ abstract class ThreadSafetyTest {
                   "$schema": "urn:ref"
                 }""";
         Validator validator = new ValidatorFactory()
-                .withDialect(new Dialects.Draft2020Dialect() {
-                    @Override
-                    public String getMetaSchema() {
-                        return null;
-                    }
-                })
                 .withSchemaResolver(new LatchedSchemaResolver(1))
                 .createValidator();
         List<URI> uris = IntStream.range(0, 100)
@@ -144,7 +136,6 @@ abstract class ThreadSafetyTest {
     @Test
     void concurrentRegistersWithValidates() throws InterruptedException, ExecutionException {
         Validator validator = new ValidatorFactory()
-                .withDisabledSchemaValidation(true)
                 .withSchemaResolver(new LatchedSchemaResolver(1))
                 .createValidator();
         URI validationUri = validator.registerSchema("{}");
@@ -180,6 +171,10 @@ abstract class ThreadSafetyTest {
 
         @Override
         public Result resolve(String uri) {
+            if (Dialects.OFFICIAL_DIALECTS.containsKey(URI.create(uri))) {
+                return Result.empty();
+            }
+
             try {
                 latch.countDown();
                 if (!latch.await(2, TimeUnit.SECONDS)) {
