@@ -256,10 +256,10 @@ new ValidatorFactory().withDefaultDialect(new Dialects.Draft2019Dialect()); // o
 Custom dialects are also supported, see more [here](#custom-dialects).
 
 ### Meta-schemas
-Dialects come with their meta-schemas. Each schema will be validated by meta-schema provided by used *dialect*.
-If validation fails [InvalidSchemaException](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/InvalidSchemaException.html) is thrown.
-
-For each specific schema this behaviour can be overridden by providing *$schema* keyword with desired meta-schema URI. Resolution of meta-schema follows the same [rules](#resolving-external-schemas) as for a regular schema.
+Each schema is recommended to contain `$schema` keyword to properly infer which dialect to use.
+`$schema` keyword must refer to a meta-schema against which the current schema will be validated.
+Resolution of meta-schemas follows the same [rules](#resolving-external-schemas) as for a regular schemas.
+If validation against meta-schema fails [InvalidSchemaException](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/InvalidSchemaException.html) is thrown.
 
 There is a configuration option that disables all schema validations:
 ```java
