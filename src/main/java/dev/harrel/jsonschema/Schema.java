@@ -32,11 +32,12 @@ final class Schema {
                         .collect(Collectors.toList())
         );
 
-        Set<String> vocabularies = JsonNodeUtil.getVocabulariesObject(objectMap)
+        Optional<Map<String, Boolean>> vocabulariesObject = JsonNodeUtil.getVocabulariesObject(objectMap);
+        Set<String> vocabularies = vocabulariesObject
                 .map(Map::keySet)
                 .orElse(metaSchemaData.activeVocabularies);
         this.metaSchemaData = new MetaSchemaData(metaSchemaData.dialect,
-                JsonNodeUtil.getVocabulariesObject(objectMap).orElse(null), vocabularies);
+                vocabulariesObject.orElse(null), vocabularies);
     }
 
     static Evaluator getBooleanEvaluator(boolean val) {
