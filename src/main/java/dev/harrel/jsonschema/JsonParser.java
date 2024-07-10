@@ -161,11 +161,11 @@ final class JsonParser {
             if (dialect == null) {
                 throw MetaSchemaResolvingException.recursiveFailure(metaSchemaUri.toString());
             }
-            unfinishedSchema.callbacks.add(() -> metaSchemaValidator.processMetaSchema(this, metaSchemaUri, uri, node));
+            unfinishedSchema.callbacks.add(() -> metaSchemaValidator.validateSchema(this, metaSchemaUri, uri, node));
             return new MetaSchemaData(dialect);
         }
 
-        MetaSchemaData metaSchemaData =  metaSchemaValidator.processMetaSchema(this, metaSchemaUri, uri, node);
+        MetaSchemaData metaSchemaData =  metaSchemaValidator.validateSchema(this, metaSchemaUri, uri, node);
         if (dialect == null) {
             return metaSchemaData;
         }

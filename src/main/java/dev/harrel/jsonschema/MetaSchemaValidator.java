@@ -30,19 +30,15 @@ class MetaSchemaValidator {
         this.schemaResolver = Objects.requireNonNull(schemaResolver);
     }
 
-    MetaSchemaData processMetaSchema(JsonParser jsonParser, URI metaSchemaUri, String schemaUri, JsonNode node) {
+    MetaSchemaData validateSchema(JsonParser jsonParser, URI metaSchemaUri, String schemaUri, JsonNode node) {
         Objects.requireNonNull(metaSchemaUri);
         Schema schema = resolveMetaSchema(jsonParser, metaSchemaUri);
-        validateSchema(schema, jsonParser, metaSchemaUri, schemaUri, node);
-        return schema.getMetaValidationData();
-    }
-
-    void validateSchema(Schema schema, JsonParser jsonParser, URI metaSchemaUri, String schemaUri, JsonNode node) throws InvalidSchemaException {
         EvaluationContext ctx = new EvaluationContext(jsonNodeFactory, jsonParser, schemaRegistry, schemaResolver);
         if (!ctx.validateAgainstSchema(schema, node)) {
             throw new InvalidSchemaException(String.format("Schema [%s] failed to validate against meta-schema [%s]", schemaUri, metaSchemaUri),
                     new Validator.Result(false, ctx).getErrors());
         }
+        return schema.getMetaValidationData();
     }
 
     private Schema resolveMetaSchema(JsonParser jsonParser, URI uri) {
