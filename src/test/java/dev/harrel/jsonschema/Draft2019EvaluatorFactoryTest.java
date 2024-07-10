@@ -30,7 +30,8 @@ public abstract class Draft2019EvaluatorFactoryTest implements ProviderTest {
     void shouldCreateEvaluatorOnlyForSupportedTypes(String keyword, Set<SimpleType> supportedTypes) {
         Dialect dialect = new Dialects.Draft2019Dialect();
         EvaluatorFactory evaluatorFactory = dialect.getEvaluatorFactory();
-        SchemaParsingContext ctx = new SchemaParsingContext(dialect, new SchemaRegistry(), URI.create("urn:CoreEvaluatorFactoryTest"), emptyMap());
+        MetaSchemaData metaData = new MetaSchemaData(new Dialects.Draft2019Dialect());
+        SchemaParsingContext ctx = new SchemaParsingContext(metaData, new SchemaRegistry(), URI.create("urn:CoreEvaluatorFactoryTest"), emptyMap());
 
         for (var entry : TYPE_MAP.entrySet()) {
             JsonNode wrappedNode = getJsonNodeFactory().create("{\"%s\": %s}".formatted(keyword, entry.getValue()));

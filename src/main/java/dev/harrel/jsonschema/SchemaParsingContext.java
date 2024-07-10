@@ -12,34 +12,34 @@ import static java.util.Collections.unmodifiableMap;
  * @see EvaluatorFactory
  */
 public final class SchemaParsingContext {
-    private final Dialect dialect;
+    private final MetaSchemaData metaSchemaData;
     private final URI baseUri;
     private final URI parentUri;
     private final SchemaRegistry schemaRegistry;
     private final Map<String, JsonNode> currentSchemaObject;
 
-    private SchemaParsingContext(Dialect dialect, URI baseUri, URI parentUri, SchemaRegistry schemaRegistry, Map<String, JsonNode> currentSchemaObject) {
-        this.dialect = dialect;
+    private SchemaParsingContext(MetaSchemaData metaSchemaData, URI baseUri, URI parentUri, SchemaRegistry schemaRegistry, Map<String, JsonNode> currentSchemaObject) {
+        this.metaSchemaData = metaSchemaData;
         this.baseUri = baseUri;
         this.parentUri = parentUri;
         this.schemaRegistry = schemaRegistry;
         this.currentSchemaObject = currentSchemaObject;
     }
 
-    SchemaParsingContext(Dialect dialect, SchemaRegistry schemaRegistry, URI baseUri, Map<String, JsonNode> currentSchemaObject) {
-        this(dialect, baseUri, baseUri, schemaRegistry, currentSchemaObject);
+    SchemaParsingContext(MetaSchemaData metaSchemaData, SchemaRegistry schemaRegistry, URI baseUri, Map<String, JsonNode> currentSchemaObject) {
+        this(metaSchemaData, baseUri, baseUri, schemaRegistry, currentSchemaObject);
     }
 
-    SchemaParsingContext withParentUri(URI parentUri) {
-        return new SchemaParsingContext(dialect, baseUri, parentUri, schemaRegistry, currentSchemaObject);
+    SchemaParsingContext forChild(MetaSchemaData metaSchemaData, Map<String, JsonNode> currentSchemaObject, URI parentUri) {
+        return new SchemaParsingContext(metaSchemaData, baseUri, parentUri, schemaRegistry, currentSchemaObject);
     }
 
-    SchemaParsingContext withCurrentSchemaContext(Map<String, JsonNode> currentSchemaObject) {
-        return new SchemaParsingContext(dialect, baseUri, parentUri, schemaRegistry, unmodifiableMap(currentSchemaObject));
+    SchemaParsingContext forChild(Map<String, JsonNode> currentSchemaObject) {
+        return forChild(metaSchemaData, currentSchemaObject, parentUri);
     }
 
-    Map<String, Boolean> getVocabulariesObject() {
-        return JsonNodeUtil.getVocabulariesObject(currentSchemaObject).orElse(dialect.getDefaultVocabularyObject());
+    MetaSchemaData getMetaValidationData() {
+        return metaSchemaData;
     }
 
     URI getBaseUri() {

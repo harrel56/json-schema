@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.net.URI;
 import java.util.Optional;
 
+import static dev.harrel.jsonschema.util.TestUtil.assertError;
 import static org.assertj.core.api.Assertions.*;
 
 public abstract class MetaSchemaTest implements ProviderTest {
@@ -18,22 +19,22 @@ public abstract class MetaSchemaTest implements ProviderTest {
     static class CustomDialect extends Dialects.Draft2020Dialect {
         @Override
         public String getMetaSchema() {
-            return "custom";
+            return "urn:custom";
         }
     }
 
     static class InvalidCustomDialect extends Dialects.Draft2020Dialect {
         @Override
         public String getMetaSchema() {
-            return "invalid";
+            return "urn:invalid";
         }
     }
 
 
     private final SchemaResolver resolver = uri -> {
-        if ("custom".equals(uri)) {
+        if ("urn:custom".equals(uri)) {
             return SchemaResolver.Result.fromString(CUSTOM_META_SCHEMA);
-        } else if ("invalid".equals(uri)) {
+        } else if ("urn:invalid".equals(uri)) {
             return SchemaResolver.Result.fromString(INVALID_META_SCHEMA);
         } else {
             return SchemaResolver.Result.empty();
@@ -60,7 +61,7 @@ public abstract class MetaSchemaTest implements ProviderTest {
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .createValidator();
-        InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawSchema), InvalidSchemaException.class);
+        InvalidSchemaException exception = catchThrowableOfType(InvalidSchemaException.class, () -> validator.registerSchema(rawSchema));
         assertThat(exception.getErrors()).isNotEmpty();
     }
 
@@ -68,30 +69,28 @@ public abstract class MetaSchemaTest implements ProviderTest {
     void shouldPassForValidSchemaWhenCustomMetaSchema() {
         String rawSchema = """
                 {
+                    "$schema": "urn:custom",
                     "type": ["null"]
                 }""";
         new ValidatorFactory()
                 .withJsonNodeFactory(getJsonNodeFactory())
-                .withDialect(new CustomDialect())
                 .withSchemaResolver(resolver)
                 .validate(rawSchema, "null");
     }
 
     @Test
-    void shouldFailForInvalidSchemaWhenCustomMetaSchema() {
-        String rawSchema = """
-                {
-                    "type": "string",
-                    "maxLength": 1,
-                    "minLength": 1
-                }""";
+    // This actually unnecessarily wraps "recursive" exception - is it desired behavior? tbd
+    void shouldFailRecursiveCustomMetaSchemaFromDialect() {
+        String rawSchema = "{}";
         Validator validator = new ValidatorFactory()
+                .withDefaultDialect(new CustomDialect())
                 .withJsonNodeFactory(getJsonNodeFactory())
-                .withDialect(new CustomDialect())
                 .withSchemaResolver(resolver)
                 .createValidator();
-        InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawSchema), InvalidSchemaException.class);
-        assertThat(exception.getErrors()).isNotEmpty();
+        MetaSchemaResolvingException exception = catchThrowableOfType(MetaSchemaResolvingException.class, () -> validator.registerSchema(rawSchema));
+        assertThat(exception).hasMessage("Parsing meta-schema [urn:custom] failed")
+                .hasCauseInstanceOf(MetaSchemaResolvingException.class);
+        assertThat(exception.getCause()).hasMessage("Parsing meta-schema [urn:custom] failed - only dialects explicitly added to a validator can be recursive");
     }
 
     @Test
@@ -113,8 +112,8 @@ public abstract class MetaSchemaTest implements ProviderTest {
                     "type": 1
                 }""";
         Validator validator = new ValidatorFactory()
+                .withDefaultDialect(new CustomDialect())
                 .withJsonNodeFactory(getJsonNodeFactory())
-                .withDialect(new CustomDialect())
                 .createValidator();
         assertThatThrownBy(() -> validator.registerSchema(rawSchema))
                 .isInstanceOf(MetaSchemaResolvingException.class);
@@ -127,8 +126,8 @@ public abstract class MetaSchemaTest implements ProviderTest {
                     "type": "string"
                 }""";
         Validator validator = new ValidatorFactory()
+                .withDefaultDialect(new InvalidCustomDialect())
                 .withJsonNodeFactory(getJsonNodeFactory())
-                .withDialect(new InvalidCustomDialect())
                 .createValidator();
         assertThatThrownBy(() -> validator.registerSchema(rawSchema))
                 .isInstanceOf(MetaSchemaResolvingException.class);
@@ -141,7 +140,7 @@ public abstract class MetaSchemaTest implements ProviderTest {
                     "type": "object",
                     "properties": {
                         "embedded": {
-                            "$schema": "custom"
+                            "$schema": "urn:custom"
                         }
                     }
                 }""";
@@ -158,7 +157,8 @@ public abstract class MetaSchemaTest implements ProviderTest {
                     "type": "object",
                     "properties": {
                         "embedded": {
-                            "$schema": "custom",
+                            "$schema": "urn:custom",
+                            "$id": "urn:embedded",
                             "type": "string",
                             "maxLength": 1
                         }
@@ -168,7 +168,7 @@ public abstract class MetaSchemaTest implements ProviderTest {
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .withSchemaResolver(resolver)
                 .createValidator();
-        InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawSchema), InvalidSchemaException.class);
+        InvalidSchemaException exception = catchThrowableOfType(InvalidSchemaException.class, () -> validator.registerSchema(rawSchema));
         assertThat(exception.getErrors()).isNotEmpty();
     }
 
@@ -176,7 +176,7 @@ public abstract class MetaSchemaTest implements ProviderTest {
     void shouldPassForOverriddenDefaultMetaSchema() {
         String rawSchema = """
                 {
-                    "$schema": "custom",
+                    "$schema": "urn:custom",
                     "type": 1
                 }""";
         new ValidatorFactory()
@@ -189,7 +189,7 @@ public abstract class MetaSchemaTest implements ProviderTest {
     void shouldFailForOverriddenDefaultMetaSchema() {
         String rawSchema = """
                 {
-                    "$schema": "custom",
+                    "$schema": "urn:custom",
                     "maxLength": 1,
                     "minLength": 1
                 }""";
@@ -197,7 +197,7 @@ public abstract class MetaSchemaTest implements ProviderTest {
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .withSchemaResolver(resolver)
                 .createValidator();
-        InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawSchema), InvalidSchemaException.class);
+        InvalidSchemaException exception = catchThrowableOfType(InvalidSchemaException.class, () -> validator.registerSchema(rawSchema));
         assertThat(exception.getErrors()).isNotEmpty();
     }
 
@@ -208,7 +208,7 @@ public abstract class MetaSchemaTest implements ProviderTest {
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .withSchemaResolver(resolver)
                 .createValidator();
-        InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawSchema), InvalidSchemaException.class);
+        InvalidSchemaException exception = catchThrowableOfType(InvalidSchemaException.class, () -> validator.registerSchema(rawSchema));
         assertThat(exception.getErrors()).isNotEmpty();
     }
 
@@ -224,77 +224,131 @@ public abstract class MetaSchemaTest implements ProviderTest {
                 .withSchemaResolver(resolver)
                 .createValidator();
 
-        InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawSchema), InvalidSchemaException.class);
+        InvalidSchemaException exception = catchThrowableOfType(InvalidSchemaException.class, () -> validator.registerSchema(rawSchema));
         assertThat(exception.getErrors()).isNotEmpty();
         assertThat(exception.getMessage()).contains("urn:my-schema");
     }
 
     @Test
-    void shouldPassForValidRecursiveSchema() {
+    void shouldFailForInvalidRecursiveMetaSchema() {
+        // only official meta-schemas can be recursive, thus the overriding
         String rawSchema = """
                 {
-                    "$schema": "urn:recursive-schema",
-                    "$id": "urn:recursive-schema",
-                    "type": "object"
-                }""";
-        new ValidatorFactory()
-                .withJsonNodeFactory(getJsonNodeFactory())
-                .withSchemaResolver(resolver)
-                .validate(rawSchema, "{}");
-    }
-
-    @Test
-    void shouldFailForInvalidRecursiveSchema() {
-        String rawSchema = """
-                {
-                    "$schema": "urn:recursive-schema",
-                    "$id": "urn:recursive-schema",
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "$id": "https://json-schema.org/draft/2020-12/schema",
                     "type": "null"
                 }""";
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .withSchemaResolver(resolver)
                 .createValidator();
-        InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawSchema), InvalidSchemaException.class);
+        InvalidSchemaException exception = catchThrowableOfType(InvalidSchemaException.class, () -> validator.registerSchema(rawSchema));
         assertThat(exception.getErrors()).isNotEmpty();
     }
 
     @Test
-    void shouldPassForValidRecursiveEmbeddedSchema() {
+    void shouldSupportRecursiveRegisteredCustomMetaSchemas() {
         String rawSchema = """
                 {
-                    "properties": {
-                      "prop": {
-                        "$schema": "urn:recursive-schema",
-                        "$id": "urn:recursive-schema",
-                        "type": "object"
-                      }
-                    }
+                    "$schema": "urn:meta",
+                    "$id": "urn:meta",
+                    "type": "null"
                 }""";
-        new ValidatorFactory()
+        Validator validator = new ValidatorFactory()
+                .withDialect(new Dialects.Draft2020Dialect() {
+                    @Override
+                    public String getMetaSchema() {
+                        return "urn:meta";
+                    }
+                })
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .withSchemaResolver(resolver)
-                .validate(rawSchema, "{}");
+                .createValidator();
+        InvalidSchemaException exception = catchThrowableOfType(InvalidSchemaException.class, () -> validator.registerSchema(rawSchema));
+        assertThat(exception).hasMessage("Schema [urn:meta] failed to validate against meta-schema [urn:meta]");
+        assertThat(exception.getErrors()).hasSize(1);
+        assertError(
+                exception.getErrors().getFirst(),
+                "/type",
+                "urn:meta#",
+                "",
+                "type",
+                "Value is [object] but should be [null]"
+        );
     }
 
     @Test
-    void shouldFailForInvalidRecursiveEmbeddedSchema() {
+    void shouldNotSupportRecursiveUnregisteredCustomMetaSchemas() {
         String rawSchema = """
                 {
-                    "properties": {
-                      "prop": {
-                        "$schema": "urn:recursive-schema",
-                        "$id": "urn:recursive-schema",
-                        "type": "null"
-                      }
+                    "$schema": "urn:meta",
+                    "$id": "urn:meta",
+                    "type": "null"
+                }""";
+        Validator validator = new ValidatorFactory()
+                .withJsonNodeFactory(getJsonNodeFactory())
+                .withSchemaResolver(resolver)
+                .createValidator();
+        MetaSchemaResolvingException exception = catchThrowableOfType(MetaSchemaResolvingException.class, () -> validator.registerSchema(rawSchema));
+        assertThat(exception).hasMessage("Parsing meta-schema [urn:meta] failed - only dialects explicitly added to a validator can be recursive");
+    }
+
+    @Test
+    void shouldSupportRecursiveRegisteredCustomMetaSchemasEmbeddedSchema() {
+        String rawSchema = """
+                {
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "$id": "urn:compound",
+                    "$defs": {
+                        "embedded": {
+                            "$schema": "urn:meta",
+                            "$id": "urn:meta",
+                            "type": "null"
+                        }
+                    }
+                }""";
+        Validator validator = new ValidatorFactory()
+                .withDialect(new Dialects.Draft2020Dialect() {
+                    @Override
+                    public String getMetaSchema() {
+                        return "urn:meta";
+                    }
+                })
+                .withJsonNodeFactory(getJsonNodeFactory())
+                .withSchemaResolver(resolver)
+                .createValidator();
+        InvalidSchemaException exception = catchThrowableOfType(InvalidSchemaException.class, () -> validator.registerSchema(rawSchema));
+        assertThat(exception).hasMessage("Schema [urn:meta] failed to validate against meta-schema [urn:meta]");
+        assertThat(exception.getErrors()).hasSize(1);
+        assertError(
+                exception.getErrors().getFirst(),
+                "/$defs/embedded/type",
+                "urn:compound#/$defs/embedded",
+                "/$defs/embedded",
+                "type",
+                "Value is [object] but should be [null]"
+        );
+    }
+
+    @Test
+    void shouldNotSupportRecursiveUnregisteredCustomMetaSchemasEmbeddedSchema() {
+        String rawSchema = """
+                {
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "$defs": {
+                        "embedded": {
+                            "$schema": "urn:meta",
+                            "$id": "urn:meta",
+                            "type": "null"
+                        }
                     }
                 }""";
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .withSchemaResolver(resolver)
                 .createValidator();
-        InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawSchema), InvalidSchemaException.class);
-        assertThat(exception.getErrors()).isNotEmpty();
+        MetaSchemaResolvingException exception = catchThrowableOfType(MetaSchemaResolvingException.class, () -> validator.registerSchema(rawSchema));
+        assertThat(exception).hasMessage("Parsing meta-schema [urn:meta] failed - only dialects explicitly added to a validator can be recursive");
     }
 
     @Test
@@ -305,8 +359,8 @@ public abstract class MetaSchemaTest implements ProviderTest {
                 }""";
         String rawFailingSchema = """
                 {
-                    "$schema": "urn:recursive-schema",
-                    "$id": "urn:recursive-schema",
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "$id": "https://json-schema.org/draft/2020-12/schema",
                     "type": "null"
                 }""";
         Validator validator = new ValidatorFactory()
@@ -318,13 +372,24 @@ public abstract class MetaSchemaTest implements ProviderTest {
         assertThat(validator.validate(URI.create("urn:schema1"), "{}").isValid()).isTrue();
         assertThat(validator.validate(URI.create("urn:passing"), "{}").isValid()).isTrue();
 
-        InvalidSchemaException exception = catchThrowableOfType(() -> validator.registerSchema(rawFailingSchema), InvalidSchemaException.class);
-        assertThat(exception.getErrors()).isNotEmpty();
-        URI failingUri = URI.create("urn:recursive-schema");
+        InvalidSchemaException exception = catchThrowableOfType(InvalidSchemaException.class, () -> validator.registerSchema(rawFailingSchema));
+        assertThat(exception.getErrors()).hasSize(1);
+        assertError(
+                exception.getErrors().getFirst(),
+                "/type",
+                "https://json-schema.org/draft/2020-12/schema#",
+                "",
+                "type",
+                "Value is [object] but should be [null]"
+        );
 
-        SchemaNotFoundException notFoundException = catchThrowableOfType(() -> validator.validate(failingUri, "null"), SchemaNotFoundException.class);
-        assertThat(notFoundException).hasMessage("Couldn't find schema with uri [urn:recursive-schema]");
-        assertThat(notFoundException.getRef()).isEqualTo("urn:recursive-schema");
+        // check that draft2020 meta-schema was not overwritten
+        URI emptySchemaUri = validator.registerSchema("""
+                {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema"
+                }""");
+
+        assertThat(validator.validate(emptySchemaUri, "{}").isValid()).isTrue();
         assertThat(validator.validate(URI.create("urn:schema1"), "{}").isValid()).isTrue();
         assertThat(validator.validate(URI.create("urn:passing"), "{}").isValid()).isTrue();
     }
@@ -340,8 +405,7 @@ public abstract class MetaSchemaTest implements ProviderTest {
                   "$id": "urn:root-schema",
                   "$defs": {
                     "x": {
-                      "$schema": "urn:recursive-schema",
-                      "$id": "urn:recursive-schema",
+                      "$id": "urn:embedded-schema",
                       "fail": null
                     }
                   }
@@ -367,15 +431,49 @@ public abstract class MetaSchemaTest implements ProviderTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("failing");
         URI rootUri = URI.create("urn:root-schema");
-        URI failingUri = URI.create("urn:recursive-schema");
+        URI failingUri = URI.create("urn:embedded-schema");
 
-        SchemaNotFoundException notFoundException1 = catchThrowableOfType(() -> validator.validate(failingUri, "null"), SchemaNotFoundException.class);
-        assertThat(notFoundException1).hasMessage("Couldn't find schema with uri [urn:recursive-schema]");
-        assertThat(notFoundException1.getRef()).isEqualTo("urn:recursive-schema");
-        SchemaNotFoundException notFoundException2 = catchThrowableOfType(() -> validator.validate(rootUri, "null"), SchemaNotFoundException.class);
+        SchemaNotFoundException notFoundException1 = catchThrowableOfType(SchemaNotFoundException.class, () -> validator.validate(failingUri, "null"));
+        assertThat(notFoundException1).hasMessage("Couldn't find schema with uri [urn:embedded-schema]");
+        assertThat(notFoundException1.getRef()).isEqualTo("urn:embedded-schema");
+        SchemaNotFoundException notFoundException2 = catchThrowableOfType(SchemaNotFoundException.class, () -> validator.validate(rootUri, "null"));
         assertThat(notFoundException2).hasMessage("Couldn't find schema with uri [urn:root-schema]");
         assertThat(notFoundException2.getRef()).isEqualTo("urn:root-schema");
         assertThat(validator.validate(URI.create("urn:schema1"), "{}").isValid()).isTrue();
         assertThat(validator.validate(URI.create("urn:passing"), "{}").isValid()).isTrue();
+    }
+
+    @Test
+    void validatesAgainstCustomMetaSchema() {
+        String failingMetaSchema = """
+                {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "$id": "urn:meta",
+                  "type": "null"
+                }""";
+        String schema = """
+                {
+                  "$schema": "urn:meta",
+                  "$id": "urn:schema"
+                }""";
+        Validator validator = new ValidatorFactory().withSchemaResolver(uri -> {
+            if ("urn:meta".equals(uri)) {
+                return SchemaResolver.Result.fromString(failingMetaSchema);
+            } else {
+                return SchemaResolver.Result.empty();
+            }
+        }).createValidator();
+
+        InvalidSchemaException exception = catchThrowableOfType(InvalidSchemaException.class, () -> validator.registerSchema(schema));
+        assertThat(exception).hasMessage("Schema [urn:schema] failed to validate against meta-schema [urn:meta]");
+        assertThat(exception.getErrors()).hasSize(1);
+        assertError(
+                exception.getErrors().getFirst(),
+                "/type",
+                "urn:meta",
+                "",
+                "type",
+                "Value is [object] but should be [null]"
+        );
     }
 }

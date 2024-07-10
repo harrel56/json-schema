@@ -53,8 +53,10 @@ final class SchemaRegistry {
         state.fragments.put(aliasUri, originalFragments.readOnly());
     }
 
-    void registerSchema(SchemaParsingContext ctx, JsonNode schemaNode, List<EvaluatorWrapper> evaluators, Set<String> activeVocabularies) {
-        Schema schema = new Schema(ctx.getParentUri(), ctx.getAbsoluteUri(schemaNode), evaluators, activeVocabularies, ctx.getVocabulariesObject());
+    void registerSchema(SchemaParsingContext ctx,
+                        JsonNode schemaNode,
+                        List<EvaluatorWrapper> evaluators) {
+        Schema schema = new Schema(ctx.getParentUri(), ctx.getAbsoluteUri(schemaNode), evaluators, ctx.getMetaValidationData(), ctx.getCurrentSchemaObject());
         state.createIfAbsent(ctx.getBaseUri()).schemas.put(schemaNode.getJsonPointer(), schema);
         registerAnchorsIfPresent(ctx, schemaNode, schema);
     }
@@ -62,8 +64,7 @@ final class SchemaRegistry {
     void registerEmbeddedSchema(SchemaParsingContext ctx,
                                 URI id,
                                 JsonNode schemaNode,
-                                List<EvaluatorWrapper> evaluators,
-                                Set<String> activeVocabularies) {
+                                List<EvaluatorWrapper> evaluators) {
         Fragments baseFragments = state.createIfAbsent(ctx.getBaseUri());
         Fragments idFragments = state.createIfAbsent(UriUtil.getUriWithoutFragment(id));
 
@@ -73,7 +74,7 @@ final class SchemaRegistry {
                     String newJsonPointer = e.getKey().substring(schemaNode.getJsonPointer().length());
                     idFragments.additionalSchemas.put(newJsonPointer, e.getValue());
                 });
-        Schema identifiableSchema = new Schema(ctx.getParentUri(), ctx.getAbsoluteUri(schemaNode), evaluators, activeVocabularies, ctx.getVocabulariesObject());
+        Schema identifiableSchema = new Schema(ctx.getParentUri(), ctx.getAbsoluteUri(schemaNode), evaluators, ctx.getMetaValidationData(), ctx.getCurrentSchemaObject());
         idFragments.schemas.put("", identifiableSchema);
         baseFragments.schemas.put(schemaNode.getJsonPointer(), identifiableSchema);
         registerAnchorsIfPresent(ctx, schemaNode, identifiableSchema);
