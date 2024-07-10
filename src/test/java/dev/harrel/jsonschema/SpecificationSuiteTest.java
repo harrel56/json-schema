@@ -39,12 +39,12 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
     @TestFactory
     Stream<DynamicNode> draft7Required() {
         Validator validator = new ValidatorFactory()
-                .withDialect(new Dialects.Draft7Dialect())
+                .withDefaultDialect(new Dialects.Draft7Dialect())
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .withSchemaResolver(createSchemaResolver())
                 .createValidator();
 
-        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, skippedRequiredTests());
+        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, Map.of());
         return generator.generate(getTestPath() + "/draft7");
     }
 

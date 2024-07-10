@@ -22,6 +22,7 @@ public final class Dialects {
         Map<URI, Dialect> map = new HashMap<>();
         map.put(URI.create(SpecificationVersion.DRAFT2020_12.getId()), new Draft2020Dialect());
         map.put(URI.create(SpecificationVersion.DRAFT2019_09.getId()), new Draft2019Dialect());
+        map.put(URI.create(SpecificationVersion.DRAFT7.getId()), new Draft7Dialect());
         OFFICIAL_DIALECTS = Collections.unmodifiableMap(map);
     }
 
@@ -165,6 +166,7 @@ public final class Dialects {
             return Collections.emptySet();
         }
 
+        // todo: this needs to be postponed after Evaluators don't care about its vocabs
         @Override
         public Map<String, Boolean> getDefaultVocabularyObject() {
             return Collections.emptyMap();
