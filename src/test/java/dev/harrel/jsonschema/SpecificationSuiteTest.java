@@ -20,7 +20,7 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
                 .withSchemaResolver(createSchemaResolver())
                 .createValidator();
 
-        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, skippedRequiredTests());
+        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, Map.of());
         return generator.generate(getTestPath() + "/draft2020-12");
     }
 
@@ -32,7 +32,7 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
                 .withSchemaResolver(createSchemaResolver())
                 .createValidator();
 
-        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, skippedRequiredTests());
+        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, Map.of());
         return generator.generate(getTestPath() + "/draft2019-09");
     }
 
@@ -70,6 +70,7 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
         SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, Map.of());
         return Stream.of(
                 generator.generate(getTestPath() + "/draft2020-12/optional/bignum" + getFileExtension()),
+                generator.generate(getTestPath() + "/draft2020-12/optional/cross-draft" + getFileExtension()),
                 generator.generate(getTestPath() + "/draft2020-12/optional/no-schema" + getFileExtension()),
                 generator.generate(getTestPath() + "/draft2020-12/optional/non-bmp-regex" + getFileExtension()),
                 generator.generate(getTestPath() + "/draft2020-12/optional/refOfUnknownKeyword" + getFileExtension())
@@ -86,6 +87,7 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
         SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, Map.of());
         return Stream.of(
                 generator.generate(getTestPath() + "/draft2019-09/optional/bignum" + getFileExtension()),
+                generator.generate(getTestPath() + "/draft2019-09/optional/cross-draft" + getFileExtension()),
                 generator.generate(getTestPath() + "/draft2019-09/optional/no-schema" + getFileExtension()),
                 generator.generate(getTestPath() + "/draft2019-09/optional/non-bmp-regex" + getFileExtension()),
                 generator.generate(getTestPath() + "/draft2019-09/optional/refOfUnknownKeyword" + getFileExtension())
@@ -102,22 +104,6 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
 
     String getFileExtension() {
         return ".json";
-    }
-
-    private static Map<String, Map<String, Set<String>>> skippedRequiredTests() {
-        return Map.of(
-                "id", Map.of(
-                        "$id inside an enum is not a real identifier", Set.of(
-                                "match $ref to $id"
-                        )
-                ),
-                "unknownKeyword", Map.of(
-                        "$id inside an unknown keyword is not a real identifier", Set.of(
-                                "type matches second anyOf, which has a real schema in it",
-                                "type matches non-schema in first anyOf"
-                        )
-                )
-        );
     }
 
     private static Map<String, Map<String, Set<String>>> skippedFormatTests() {
