@@ -118,12 +118,6 @@ abstract class ThreadSafetyTest {
                   "$schema": "urn:ref"
                 }""";
         Validator validator = new ValidatorFactory()
-                .withDialect(new Dialects.Draft2020Dialect() {
-                    @Override
-                    public String getMetaSchema() {
-                        return null;
-                    }
-                })
                 .withSchemaResolver(new LatchedSchemaResolver(1))
                 .createValidator();
         List<URI> uris = IntStream.range(0, 100)
