@@ -122,6 +122,7 @@ final class JsonParser {
 
             URI uri = ctx.getParentUri().resolve(idUri);
             SchemaParsingContext newCtx = ctx.forChild(metaSchemaData, objectMap, uri);
+            System.out.println(metaSchemaData.activeVocabularies);
             List<EvaluatorWrapper> evaluators = parseEvaluators(newCtx, objectMap, node.getJsonPointer());
             schemaRegistry.registerEmbeddedSchema(newCtx, uri, node, evaluators);
             unfinishedSchema.parsed();

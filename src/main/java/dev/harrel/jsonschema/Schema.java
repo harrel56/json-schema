@@ -24,10 +24,9 @@ final class Schema {
         this.parentUri = Objects.requireNonNull(parentUri);
         this.schemaLocation = Objects.requireNonNull(schemaLocation);
         this.schemaLocationFragment = UriUtil.getJsonPointer(schemaLocation);
+        // todo - try priority queue?
         this.evaluators = Collections.unmodifiableList(
                 evaluators.stream()
-                        .filter(evaluator -> evaluator.getVocabularies().isEmpty() ||
-                                !Collections.disjoint(evaluator.getVocabularies(), metaSchemaData.activeVocabularies))
                         .sorted(Comparator.comparingInt(Evaluator::getOrder))
                         .collect(Collectors.toList())
         );

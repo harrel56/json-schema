@@ -5,11 +5,9 @@ import com.sanctionco.jmail.net.InternetProtocolAddress;
 
 import java.net.URI;
 import java.time.format.DateTimeFormatter;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.regex.Pattern;
 
@@ -77,11 +75,9 @@ import static java.util.Collections.unmodifiableSet;
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public final class FormatEvaluatorFactory implements EvaluatorFactory {
     private static final class FormatEvaluator implements Evaluator {
-        private final Set<String> vocabularies;
         private final UnaryOperator<String> operator;
 
-        private FormatEvaluator(Set<String> vocabularies, UnaryOperator<String> operator) {
-            this.vocabularies = vocabularies;
+        private FormatEvaluator(UnaryOperator<String> operator) {
             this.operator = operator;
         }
 
@@ -94,11 +90,6 @@ public final class FormatEvaluatorFactory implements EvaluatorFactory {
             String err = operator.apply(value);
             return err == null ? Result.success(value) : Result.failure(err);
         }
-
-        @Override
-        public Set<String> getVocabularies() {
-            return vocabularies;
-        }
     }
 
     private static final Pattern DURATION_PATTERN = Pattern.compile(
@@ -110,13 +101,13 @@ public final class FormatEvaluatorFactory implements EvaluatorFactory {
             Pattern.CASE_INSENSITIVE
     );
 
-    private final Set<String> vocabularies;
+    private final Predicate<SchemaParsingContext> vocabPredicate;
 
     /**
      * Creates a default instance without vocabularies support.
      */
     public FormatEvaluatorFactory() {
-        this.vocabularies = emptySet();
+        this.vocabPredicate = ctx -> true;
     }
 
     /**
@@ -124,16 +115,17 @@ public final class FormatEvaluatorFactory implements EvaluatorFactory {
      * Validation will only be run when at least one of provided vocabularies is active during validation process.
      */
     public FormatEvaluatorFactory(Set<String> vocabularies) {
-        this.vocabularies = unmodifiableSet(new HashSet<>(vocabularies));
+        Set<String> vocabsCopy = unmodifiableSet(new HashSet<>(vocabularies));
+        this.vocabPredicate = ctx -> !Collections.disjoint(vocabsCopy, ctx.getMetaValidationData().activeVocabularies);
     }
 
     @Override
-    public Optional<Evaluator> create(SchemaParsingContext parsingCtx, String fieldName, JsonNode fieldNode) {
-        if (!"format".equals(fieldName) || !fieldNode.isString()) {
+    public Optional<Evaluator> create(SchemaParsingContext ctx, String fieldName, JsonNode fieldNode) {
+        if (!"format".equals(fieldName) || !fieldNode.isString() || !vocabPredicate.test(ctx)) {
             return Optional.empty();
         }
         return Optional.ofNullable(getOperator(fieldNode.asString()))
-                .map(op -> new FormatEvaluator(vocabularies, op));
+                .map(FormatEvaluator::new);
     }
 
     private UnaryOperator<String> getOperator(String format) {
