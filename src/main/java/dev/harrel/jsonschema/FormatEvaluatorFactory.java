@@ -11,7 +11,6 @@ import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.regex.Pattern;
 
-import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableSet;
 
 /**

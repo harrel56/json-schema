@@ -1,7 +1,6 @@
 package dev.harrel.jsonschema;
 
 import java.util.*;
-import java.util.function.BiFunction;
 
 import static dev.harrel.jsonschema.Keyword.*;
 import static dev.harrel.jsonschema.Vocabulary.*;
