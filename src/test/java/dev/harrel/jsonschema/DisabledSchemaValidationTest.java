@@ -185,7 +185,7 @@ public abstract class DisabledSchemaValidationTest implements ProviderTest {
     }
 
     @Test
-    void shouldNotSupportEvaluatorWithUnknownVocabularies() {
+    void shouldSupportEvaluatorWithUnknownVocabularies() {
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .withEvaluatorFactory(new CustomEvaluatorFactory(Set.of("urn:vocab1", "urn:vocab2")))
@@ -200,7 +200,17 @@ public abstract class DisabledSchemaValidationTest implements ProviderTest {
         URI schemaUri = URI.create("urn:schema");
         validator.registerSchema(schemaUri, schema);
         Validator.Result result = validator.validate(schemaUri, "{}");
-        assertThat(result.isValid()).isTrue();
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(1);
+        assertError(
+                errors.getFirst(),
+                "/custom",
+                "urn:schema#",
+                "",
+                "custom",
+                "custom message"
+        );
     }
 
     @Test
