@@ -12,18 +12,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public abstract class VocabulariesTest implements ProviderTest {
-    private final Dialect testDialect = new Dialects.Draft2020Dialect() {
-        @Override
-        public String getMetaSchema() {
-            return null;
-        }
-    };
-
     @Test
     void shouldRunEvaluatorsOnlyFromActiveVocabularies() {
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(getJsonNodeFactory())
-                .withDialect(testDialect)
                 .createValidator();
 
         String metaSchema = """
@@ -50,7 +42,6 @@ public abstract class VocabulariesTest implements ProviderTest {
     void shouldIgnoreOptionalUnsupportedVocabularies() {
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(getJsonNodeFactory())
-                .withDialect(testDialect)
                 .createValidator();
 
         String metaSchema = """
@@ -77,7 +68,6 @@ public abstract class VocabulariesTest implements ProviderTest {
     void shouldFailForUnsupportedRequiredVocabularies() {
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(getJsonNodeFactory())
-                .withDialect(testDialect)
                 .createValidator();
 
         String metaSchema = """
@@ -104,7 +94,6 @@ public abstract class VocabulariesTest implements ProviderTest {
     void shouldFailForMissingRequiredVocabularies() {
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(getJsonNodeFactory())
-                .withDialect(testDialect)
                 .createValidator();
 
         String metaSchema = """
@@ -128,7 +117,6 @@ public abstract class VocabulariesTest implements ProviderTest {
     void shouldUseAllSupportedVocabulariesByDefault() {
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(getJsonNodeFactory())
-                .withDialect(testDialect)
                 .createValidator();
 
         String metaSchema = """
@@ -171,7 +159,6 @@ public abstract class VocabulariesTest implements ProviderTest {
 
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(getJsonNodeFactory())
-                .withDialect(testDialect)
                 .withEvaluatorFactory(evaluatorFactory)
                 .createValidator();
 
@@ -197,7 +184,7 @@ public abstract class VocabulariesTest implements ProviderTest {
     }
 
     @Test
-    void shouldNotSupportEvaluatorWithUnknownVocabularies() {
+    void shouldSupportEvaluatorWithAnyVocabularies() {
         Evaluator evaluator = new Evaluator() {
             @Override
             public Result evaluate(EvaluationContext ctx, JsonNode node) {
@@ -219,7 +206,6 @@ public abstract class VocabulariesTest implements ProviderTest {
 
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(getJsonNodeFactory())
-                .withDialect(testDialect)
                 .withEvaluatorFactory(evaluatorFactory)
                 .createValidator();
 
@@ -231,6 +217,6 @@ public abstract class VocabulariesTest implements ProviderTest {
         URI schemaUri = URI.create("urn:schema");
         validator.registerSchema(schemaUri, schema);
         Validator.Result result = validator.validate(schemaUri, "{}");
-        assertThat(result.isValid()).isTrue();
+        assertThat(result.isValid()).isFalse();
     }
 }
