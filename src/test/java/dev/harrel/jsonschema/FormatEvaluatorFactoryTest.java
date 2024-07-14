@@ -9,18 +9,32 @@ import java.util.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class FormatEvaluatorFactoryTest {
 
     @Test
-    void shouldUseProvidedVocabularies() {
+    void shouldCreateEvaluatorWhenVocabsOverlap() {
         JacksonNode.Factory nodeFactory = new JacksonNode.Factory();
         Set<String> vocabs = Set.of("a", "b", "c");
         FormatEvaluatorFactory factory = new FormatEvaluatorFactory(vocabs);
 
-        Optional<Evaluator> evaluator = factory.create(mock(SchemaParsingContext.class), "format", nodeFactory.create("\"date\""));
+        SchemaParsingContext ctx = mock(SchemaParsingContext.class);
+        when(ctx.getMetaValidationData()).thenReturn(new MetaSchemaData(new Dialects.Draft2020Dialect(), Map.of(), Set.of("c")));
+        Optional<Evaluator> evaluator = factory.create(ctx, "format", nodeFactory.create("\"date\""));
         assertThat(evaluator).isPresent();
-        assertThat(evaluator.get().getVocabularies()).isEqualTo(vocabs);
+    }
+
+    @Test
+    void shouldNotCreateEvaluatorWhenVocabsDontOverlap() {
+        JacksonNode.Factory nodeFactory = new JacksonNode.Factory();
+        Set<String> vocabs = Set.of("a", "b", "c");
+        FormatEvaluatorFactory factory = new FormatEvaluatorFactory(vocabs);
+
+        SchemaParsingContext ctx = mock(SchemaParsingContext.class);
+        when(ctx.getMetaValidationData()).thenReturn(new MetaSchemaData(new Dialects.Draft2020Dialect(), Map.of(), Set.of("d")));
+        Optional<Evaluator> evaluator = factory.create(ctx, "format", nodeFactory.create("\"date\""));
+        assertThat(evaluator).isEmpty();
     }
 
     @Test
@@ -28,12 +42,12 @@ class FormatEvaluatorFactoryTest {
         JacksonNode.Factory nodeFactory = new JacksonNode.Factory();
         Set<String> vocabs = new HashSet<>(Set.of("a", "b", "c"));
         FormatEvaluatorFactory factory = new FormatEvaluatorFactory(vocabs);
-        vocabs.add("d");
+        vocabs.remove("c");
 
-        Optional<Evaluator> evaluator = factory.create(mock(SchemaParsingContext.class), "format", nodeFactory.create("\"date\""));
+        SchemaParsingContext ctx = mock(SchemaParsingContext.class);
+        when(ctx.getMetaValidationData()).thenReturn(new MetaSchemaData(new Dialects.Draft2020Dialect(), Map.of(), Set.of("c")));
+        Optional<Evaluator> evaluator = factory.create(ctx, "format", nodeFactory.create("\"date\""));
         assertThat(evaluator).isPresent();
-        assertThat(evaluator.get().getVocabularies()).isNotEqualTo(vocabs);
-        assertThat(evaluator.get().getVocabularies()).containsExactly("a", "b", "c");
     }
 
     @Test
