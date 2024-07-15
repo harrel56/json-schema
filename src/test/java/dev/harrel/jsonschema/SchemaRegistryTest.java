@@ -5,8 +5,6 @@ import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
