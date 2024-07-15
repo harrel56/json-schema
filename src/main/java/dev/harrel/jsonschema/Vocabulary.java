@@ -1,9 +1,5 @@
 package dev.harrel.jsonschema;
 
-import java.util.*;
-
-import static java.util.Collections.*;
-
 /**
  * {@code Vocabulary} class exposes constants related to vocabularies.
  */
