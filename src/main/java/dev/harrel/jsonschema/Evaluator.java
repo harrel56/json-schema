@@ -1,6 +1,5 @@
 package dev.harrel.jsonschema;
 
-import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -35,11 +34,14 @@ public interface Evaluator {
      * this method returns an empty set, which means it belongs to no vocabulary, and it will always be taken into
      * consideration when validating against a schema.
      * At least one of returned vocabulary URIs have to be "active" for evaluator to be run.
-     *
      * @return set of vocabulary URIs
+     * @deprecated since version 1.7.0, subject to removal in future releases.
+     * Throws {@code UnsupportedOperationException}. Deciding whether this evaluator is turned on or off
+     * should be done now in {@link EvaluatorFactory} code.
      */
+    @Deprecated
     default Set<String> getVocabularies() {
-        return Collections.emptySet();
+        throw new UnsupportedOperationException();
     }
 
     /**
