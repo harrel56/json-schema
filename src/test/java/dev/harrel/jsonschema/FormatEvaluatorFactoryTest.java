@@ -9,18 +9,33 @@ import java.util.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class FormatEvaluatorFactoryTest {
+    static final Set<String> FORMAT_ASSERTION_VOCABULARY = Set.of(Vocabulary.Draft2020.FORMAT_ASSERTION, Vocabulary.Draft2019.FORMAT);
 
     @Test
-    void shouldUseProvidedVocabularies() {
+    void shouldCreateEvaluatorWhenVocabsOverlap() {
         JacksonNode.Factory nodeFactory = new JacksonNode.Factory();
         Set<String> vocabs = Set.of("a", "b", "c");
         FormatEvaluatorFactory factory = new FormatEvaluatorFactory(vocabs);
 
-        Optional<Evaluator> evaluator = factory.create(mock(SchemaParsingContext.class), "format", nodeFactory.create("\"date\""));
+        SchemaParsingContext ctx = mock(SchemaParsingContext.class);
+        when(ctx.getMetaValidationData()).thenReturn(new MetaSchemaData(new Dialects.Draft2020Dialect(), Map.of(), Set.of("c")));
+        Optional<Evaluator> evaluator = factory.create(ctx, "format", nodeFactory.create("\"date\""));
         assertThat(evaluator).isPresent();
-        assertThat(evaluator.get().getVocabularies()).isEqualTo(vocabs);
+    }
+
+    @Test
+    void shouldNotCreateEvaluatorWhenVocabsDontOverlap() {
+        JacksonNode.Factory nodeFactory = new JacksonNode.Factory();
+        Set<String> vocabs = Set.of("a", "b", "c");
+        FormatEvaluatorFactory factory = new FormatEvaluatorFactory(vocabs);
+
+        SchemaParsingContext ctx = mock(SchemaParsingContext.class);
+        when(ctx.getMetaValidationData()).thenReturn(new MetaSchemaData(new Dialects.Draft2020Dialect(), Map.of(), Set.of("d")));
+        Optional<Evaluator> evaluator = factory.create(ctx, "format", nodeFactory.create("\"date\""));
+        assertThat(evaluator).isEmpty();
     }
 
     @Test
@@ -28,12 +43,12 @@ class FormatEvaluatorFactoryTest {
         JacksonNode.Factory nodeFactory = new JacksonNode.Factory();
         Set<String> vocabs = new HashSet<>(Set.of("a", "b", "c"));
         FormatEvaluatorFactory factory = new FormatEvaluatorFactory(vocabs);
-        vocabs.add("d");
+        vocabs.remove("c");
 
-        Optional<Evaluator> evaluator = factory.create(mock(SchemaParsingContext.class), "format", nodeFactory.create("\"date\""));
+        SchemaParsingContext ctx = mock(SchemaParsingContext.class);
+        when(ctx.getMetaValidationData()).thenReturn(new MetaSchemaData(new Dialects.Draft2020Dialect(), Map.of(), Set.of("c")));
+        Optional<Evaluator> evaluator = factory.create(ctx, "format", nodeFactory.create("\"date\""));
         assertThat(evaluator).isPresent();
-        assertThat(evaluator.get().getVocabularies()).isNotEqualTo(vocabs);
-        assertThat(evaluator.get().getVocabularies()).containsExactly("a", "b", "c");
     }
 
     @Test
@@ -56,7 +71,7 @@ class FormatEvaluatorFactoryTest {
                   "format": "uri-reference"
                 }""";
         Validator.Result result = new ValidatorFactory()
-                .withEvaluatorFactory(new FormatEvaluatorFactory(Vocabulary.FORMAT_ASSERTION_VOCABULARY))
+                .withEvaluatorFactory(new FormatEvaluatorFactory(FORMAT_ASSERTION_VOCABULARY))
                 .validate(schema, "\" \"");
 
         assertThat(result.isValid()).isTrue();
@@ -69,7 +84,7 @@ class FormatEvaluatorFactoryTest {
                   "format": "uri-reference"
                 }""";
         Validator.Result result = new ValidatorFactory()
-                .withEvaluatorFactory(new FormatEvaluatorFactory(Vocabulary.VALIDATION_VOCABULARY))
+                .withEvaluatorFactory(new FormatEvaluatorFactory(Set.of(Vocabulary.Draft2020.VALIDATION, Vocabulary.Draft2019.VALIDATION)))
                 .validate(schema, "\" \"");
 
         assertThat(result.isValid()).isFalse();
@@ -92,7 +107,7 @@ class FormatEvaluatorFactoryTest {
                   "format": "uri-reference"
                 }""";
         Validator validator = new ValidatorFactory()
-                .withEvaluatorFactory(new FormatEvaluatorFactory(Vocabulary.FORMAT_ASSERTION_VOCABULARY))
+                .withEvaluatorFactory(new FormatEvaluatorFactory(FORMAT_ASSERTION_VOCABULARY))
                 .createValidator();
         validator.registerSchema(metaSchema);
         URI schemaUri = validator.registerSchema(schema);
@@ -118,7 +133,7 @@ class FormatEvaluatorFactoryTest {
                   "format": "uri-reference"
                 }""";
         Validator validator = new ValidatorFactory()
-                .withEvaluatorFactory(new FormatEvaluatorFactory(Vocabulary.FORMAT_ASSERTION_VOCABULARY))
+                .withEvaluatorFactory(new FormatEvaluatorFactory(FORMAT_ASSERTION_VOCABULARY))
                 .createValidator();
         validator.registerSchema(metaSchema);
         assertThatThrownBy(() -> validator.registerSchema(schema))
@@ -152,7 +167,7 @@ class FormatEvaluatorFactoryTest {
         };
         Validator validator = new ValidatorFactory()
                 .withDialect(dialect) // this actually overrides official dialect - might be changed in the future?
-                .withEvaluatorFactory(new FormatEvaluatorFactory(Vocabulary.FORMAT_ASSERTION_VOCABULARY))
+                .withEvaluatorFactory(new FormatEvaluatorFactory(FORMAT_ASSERTION_VOCABULARY))
                 .createValidator();
         validator.registerSchema(metaSchema);
         URI schemaUri = validator.registerSchema(schema);

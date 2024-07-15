@@ -2,7 +2,6 @@ package dev.harrel.jsonschema;
 
 import java.net.URI;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static dev.harrel.jsonschema.Evaluator.Result;
 
@@ -24,13 +23,8 @@ final class Schema {
         this.parentUri = Objects.requireNonNull(parentUri);
         this.schemaLocation = Objects.requireNonNull(schemaLocation);
         this.schemaLocationFragment = UriUtil.getJsonPointer(schemaLocation);
-        this.evaluators = Collections.unmodifiableList(
-                evaluators.stream()
-                        .filter(evaluator -> evaluator.getVocabularies().isEmpty() ||
-                                !Collections.disjoint(evaluator.getVocabularies(), metaSchemaData.activeVocabularies))
-                        .sorted(Comparator.comparingInt(Evaluator::getOrder))
-                        .collect(Collectors.toList())
-        );
+        this.evaluators = evaluators;
+        this.evaluators.sort(Comparator.comparingInt(Evaluator::getOrder));
 
         Optional<Map<String, Boolean>> vocabulariesObject = JsonNodeUtil.getVocabulariesObject(objectMap);
         Set<String> vocabularies = vocabulariesObject

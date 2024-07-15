@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 
+import static dev.harrel.jsonschema.FormatEvaluatorFactoryTest.FORMAT_ASSERTION_VOCABULARY;
 import static dev.harrel.jsonschema.util.TestUtil.assertError;
 import static org.assertj.core.api.Assertions.*;
 
@@ -151,7 +152,7 @@ class CompoundSchemaTest {
                 }""";
 
         Validator validator = new ValidatorFactory()
-                .withEvaluatorFactory(new FormatEvaluatorFactory(Vocabulary.FORMAT_ASSERTION_VOCABULARY))
+                .withEvaluatorFactory(new FormatEvaluatorFactory(FORMAT_ASSERTION_VOCABULARY))
                 .createValidator();
         validator.registerSchema(FORMAT_META_SCHEMA);
         validator.registerSchema(compoundSchema);
@@ -179,7 +180,7 @@ class CompoundSchemaTest {
                 }""";
 
         Validator validator = new ValidatorFactory()
-                .withEvaluatorFactory(new FormatEvaluatorFactory(Vocabulary.FORMAT_ASSERTION_VOCABULARY))
+                .withEvaluatorFactory(new FormatEvaluatorFactory(FORMAT_ASSERTION_VOCABULARY))
                 .createValidator();
         validator.registerSchema(FORMAT_META_SCHEMA);
         validator.registerSchema(compoundSchema);
@@ -214,7 +215,7 @@ class CompoundSchemaTest {
                 }""";
 
         Validator validator = new ValidatorFactory()
-                .withEvaluatorFactory(new FormatEvaluatorFactory(Vocabulary.FORMAT_ASSERTION_VOCABULARY))
+                .withEvaluatorFactory(new FormatEvaluatorFactory(FORMAT_ASSERTION_VOCABULARY))
                 .createValidator();
         validator.registerSchema(FORMAT_META_SCHEMA);
         validator.registerSchema(compoundSchema);
@@ -252,7 +253,7 @@ class CompoundSchemaTest {
                 }""";
 
         Validator validator = new ValidatorFactory()
-                .withEvaluatorFactory(new FormatEvaluatorFactory(Vocabulary.FORMAT_ASSERTION_VOCABULARY))
+                .withEvaluatorFactory(new FormatEvaluatorFactory(FORMAT_ASSERTION_VOCABULARY))
                 .createValidator();
         validator.registerSchema(FORMAT_META_SCHEMA);
         validator.registerSchema(compoundSchema);
@@ -289,7 +290,7 @@ class CompoundSchemaTest {
                 }""";
 
         Validator validator = new ValidatorFactory()
-                .withEvaluatorFactory(new FormatEvaluatorFactory(Vocabulary.FORMAT_ASSERTION_VOCABULARY))
+                .withEvaluatorFactory(new FormatEvaluatorFactory(FORMAT_ASSERTION_VOCABULARY))
                 .createValidator();
         validator.registerSchema(FORMAT_META_SCHEMA);
         validator.registerSchema(compoundSchema);
@@ -322,7 +323,7 @@ class CompoundSchemaTest {
                 }""";
 
         Validator validator = new ValidatorFactory()
-                .withEvaluatorFactory(new FormatEvaluatorFactory(Vocabulary.FORMAT_ASSERTION_VOCABULARY))
+                .withEvaluatorFactory(new FormatEvaluatorFactory(FORMAT_ASSERTION_VOCABULARY))
                 .createValidator();
         validator.registerSchema(FORMAT_META_SCHEMA);
         validator.registerSchema(compoundSchema);
@@ -363,7 +364,7 @@ class CompoundSchemaTest {
                 }""";
 
         Validator validator = new ValidatorFactory()
-                .withEvaluatorFactory(new FormatEvaluatorFactory(Vocabulary.FORMAT_ASSERTION_VOCABULARY))
+                .withEvaluatorFactory(new FormatEvaluatorFactory(FORMAT_ASSERTION_VOCABULARY))
                 .createValidator();
         validator.registerSchema(FORMAT_META_SCHEMA);
         validator.registerSchema(compoundSchema);
