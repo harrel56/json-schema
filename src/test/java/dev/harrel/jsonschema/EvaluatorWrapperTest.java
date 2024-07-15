@@ -39,22 +39,6 @@ class EvaluatorWrapperTest {
     }
 
     @Test
-    void shouldDelegateEvaluatorVocabularies() {
-        Evaluator evaluator = new Evaluator() {
-            @Override
-            public Result evaluate(EvaluationContext ctx, JsonNode node) {
-                return Result.success();
-            }
-            @Override
-            public Set<String> getVocabularies() {
-                return Set.of("a", "b", "c");
-            }
-        };
-        EvaluatorWrapper wrapper = new EvaluatorWrapper("keyword", "keywordPath", evaluator);
-        assertThat(wrapper.getVocabularies()).containsExactlyInAnyOrder("a", "b", "c");
-    }
-
-    @Test
     void shouldDelegateEvaluatorEvaluate() {
         Evaluator evaluator = (ctx, node) -> Evaluator.Result.failure(String.valueOf(Objects.hash(ctx, node)));
         EvaluatorWrapper wrapper = new EvaluatorWrapper("keyword", "keywordPath", evaluator);

@@ -156,64 +156,6 @@ public abstract class DisabledSchemaValidationTest implements ProviderTest {
     }
 
     @Test
-    void shouldSupportEvaluatorWithEmptyVocabularies() {
-        Validator validator = new ValidatorFactory()
-                .withJsonNodeFactory(getJsonNodeFactory())
-                .withEvaluatorFactory(new CustomEvaluatorFactory(Set.of()))
-                .withDisabledSchemaValidation(true)
-                .createValidator();
-
-        String schema = """
-                {
-                  "custom": "null"
-                }""";
-
-        URI schemaUri = URI.create("urn:schema");
-        validator.registerSchema(schemaUri, schema);
-        Validator.Result result = validator.validate(schemaUri, "{}");
-        assertThat(result.isValid()).isFalse();
-        List<Error> errors = result.getErrors();
-        assertThat(errors).hasSize(1);
-        assertError(
-                errors.getFirst(),
-                "/custom",
-                "urn:schema#",
-                "",
-                "custom",
-                "custom message"
-        );
-    }
-
-    @Test
-    void shouldSupportEvaluatorWithUnknownVocabularies() {
-        Validator validator = new ValidatorFactory()
-                .withJsonNodeFactory(getJsonNodeFactory())
-                .withEvaluatorFactory(new CustomEvaluatorFactory(Set.of("urn:vocab1", "urn:vocab2")))
-                .withDisabledSchemaValidation(true)
-                .createValidator();
-
-        String schema = """
-                {
-                  "custom": "null"
-                }""";
-
-        URI schemaUri = URI.create("urn:schema");
-        validator.registerSchema(schemaUri, schema);
-        Validator.Result result = validator.validate(schemaUri, "{}");
-        assertThat(result.isValid()).isFalse();
-        List<Error> errors = result.getErrors();
-        assertThat(errors).hasSize(1);
-        assertError(
-                errors.getFirst(),
-                "/custom",
-                "urn:schema#",
-                "",
-                "custom",
-                "custom message"
-        );
-    }
-
-    @Test
     void shouldUseDefaultDialectWhenNoSchemaKeyword() {
         Validator validator = new ValidatorFactory()
                 .withDefaultDialect(new CustomDialect())
@@ -272,35 +214,11 @@ public abstract class DisabledSchemaValidationTest implements ProviderTest {
         );
     }
 
-    static class CustomEvaluator implements Evaluator {
-        private final Set<String> vocabs;
-
-        CustomEvaluator(Set<String> vocabs) {
-            this.vocabs = vocabs;
-        }
-
-        @Override
-        public Result evaluate(EvaluationContext ctx, JsonNode node) {
-            return Evaluator.Result.failure("custom message");
-        }
-
-        @Override
-        public Set<String> getVocabularies() {
-            return vocabs;
-        }
-    }
-
     static class CustomEvaluatorFactory implements EvaluatorFactory {
-        private final Set<String> vocabs;
-
-        CustomEvaluatorFactory(Set<String> vocabs) {
-            this.vocabs = vocabs;
-        }
-
         @Override
         public Optional<Evaluator> create(SchemaParsingContext ctx, String fieldName, JsonNode fieldNode) {
             if (fieldName.equals("custom")) {
-                return Optional.of(new CustomEvaluator(vocabs));
+                return Optional.of((context, node) -> Evaluator.Result.failure("custom message"));
             } else {
                 return Optional.empty();
             }
@@ -315,7 +233,7 @@ public abstract class DisabledSchemaValidationTest implements ProviderTest {
 
         @Override
         public EvaluatorFactory getEvaluatorFactory() {
-            return new CustomEvaluatorFactory(Set.of("urn:vocab1", "urn:vocab2"));
+            return new CustomEvaluatorFactory();
         }
 
         @Override

@@ -28,11 +28,6 @@ final class EvaluatorWrapper implements Evaluator {
         return evaluator.getOrder();
     }
 
-    @Override
-    public Set<String> getVocabularies() {
-        return evaluator.getVocabularies();
-    }
-
     String getKeyword() {
         return keyword;
     }
