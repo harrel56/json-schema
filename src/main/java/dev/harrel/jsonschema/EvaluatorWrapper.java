@@ -1,7 +1,6 @@
 package dev.harrel.jsonschema;
 
 import java.util.Objects;
-import java.util.Set;
 
 final class EvaluatorWrapper implements Evaluator {
     private final String keyword;
