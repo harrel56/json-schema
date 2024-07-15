@@ -4,6 +4,7 @@ import dev.harrel.jsonschema.providers.JacksonNode;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -25,11 +26,11 @@ class SchemaRegistryTest {
                 }""");
         JsonNode subSchemaNode = rootSchemaNode.asObject().get("properties").asObject().get("field");
 
-        schemaRegistry.registerSchema(ctx, subSchemaNode, List.of());
+        schemaRegistry.registerSchema(ctx, subSchemaNode, new ArrayList<>());
         assertThat(schemaRegistry.get(CompoundUri.fromString("urn:test#/properties/field"))).isNotNull();
 
         SchemaRegistry.State snapshot = schemaRegistry.createSnapshot();
-        schemaRegistry.registerSchema(ctx, rootSchemaNode, List.of());
+        schemaRegistry.registerSchema(ctx, rootSchemaNode, new ArrayList<>());
         assertThat(schemaRegistry.get(CompoundUri.fromString("urn:test#"))).isNotNull();
         SchemaRegistry.State nextSnapshot = schemaRegistry.createSnapshot();
 
