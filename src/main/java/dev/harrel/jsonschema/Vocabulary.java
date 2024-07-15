@@ -10,13 +10,6 @@ import static java.util.Collections.*;
 public final class Vocabulary {
     private Vocabulary() {}
 
-    static final Set<String> CORE_VOCABULARY = unmodifiableSet(new HashSet<>(Arrays.asList(Draft2020.CORE, Draft2019.CORE)));
-    static final Set<String> APPLICATOR_VOCABULARY = unmodifiableSet(new HashSet<>(Arrays.asList(Draft2020.APPLICATOR, Draft2019.APPLICATOR)));
-    static final Set<String> VALIDATION_VOCABULARY = unmodifiableSet(new HashSet<>(Arrays.asList(Draft2020.VALIDATION, Draft2019.VALIDATION)));
-    static final Set<String> FORMAT_ASSERTION_VOCABULARY = unmodifiableSet(new HashSet<>(Arrays.asList(Draft2020.FORMAT_ASSERTION, Draft2019.FORMAT)));
-    /* In draft2019-09 unevaluated keywords are in applicator vocab */
-    static final Set<String> UNEVALUATED_VOCABULARY = unmodifiableSet(new HashSet<>(Arrays.asList(Draft2020.UNEVALUATED, Draft2019.APPLICATOR)));
-
     /**
      * {@code Vocabulary.Draft2020} class exposes vocabulary URIs that are part of a <i>draft2020-12</i> specification.
      */
