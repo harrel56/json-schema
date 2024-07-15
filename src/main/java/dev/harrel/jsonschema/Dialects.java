@@ -166,7 +166,6 @@ public final class Dialects {
             return Collections.emptySet();
         }
 
-        // todo: this needs to be postponed after Evaluators don't care about its vocabs
         @Override
         public Map<String, Boolean> getDefaultVocabularyObject() {
             return Collections.emptyMap();

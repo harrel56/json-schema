@@ -1,7 +1,9 @@
 package dev.harrel.jsonschema;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiFunction;
 
 import static dev.harrel.jsonschema.Keyword.*;
@@ -11,13 +13,17 @@ import static dev.harrel.jsonschema.Keyword.*;
  */
 public class Draft7EvaluatorFactory extends AbstractEvaluatorFactory {
     public Draft7EvaluatorFactory() {
-        super(Arrays.asList(ID, SCHEMA, ANCHOR, RECURSIVE_ANCHOR, VOCABULARY, COMMENT, DEFS, THEN, ELSE));
+        super(getIgnoredKeywords(), createEvaluatorMap());
     }
 
-    @Override
-    void configureEvaluatorsMap(Map<String, BiFunction<SchemaParsingContext, JsonNode, Evaluator>> map) {
-        map.put(ITEMS, Items2019Evaluator::new);
-        map.put(ADDITIONAL_ITEMS, AdditionalItemsEvaluator::new);
-        map.put(RECURSIVE_REF, (ctx, node) -> new RecursiveRefEvaluator(node));
+    private static Set<String> getIgnoredKeywords() {
+        // todo adjust keywords
+        return new HashSet<>(Arrays.asList(ID, SCHEMA, ANCHOR, DYNAMIC_ANCHOR, VOCABULARY, COMMENT, DEFS, THEN, ELSE));
+    }
+
+    private static Map<String, EvaluatorInfo> createEvaluatorMap() {
+        Map<String, EvaluatorInfo> map = createDefaultEvaluatorsMap(null, null, null, null);
+        // todo adjust evaluators
+        return map;
     }
 }
