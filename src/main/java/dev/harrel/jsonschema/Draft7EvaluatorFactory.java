@@ -1,10 +1,6 @@
 package dev.harrel.jsonschema;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.BiFunction;
+import java.util.*;
 
 import static dev.harrel.jsonschema.Keyword.*;
 
@@ -24,5 +20,13 @@ public class Draft7EvaluatorFactory extends AbstractEvaluatorFactory {
         Map<String, EvaluatorInfo> map = createDefaultEvaluatorsMap(null, null, null, null);
         // todo adjust evaluators
         return map;
+    }
+
+    @Override
+    public Optional<Evaluator> create(SchemaParsingContext ctx, String fieldName, JsonNode node) {
+        if (!REF.equals(fieldName) && ctx.getCurrentSchemaObject().containsKey(REF)) {
+            return Optional.empty();
+        }
+        return super.create(ctx, fieldName, node);
     }
 }
