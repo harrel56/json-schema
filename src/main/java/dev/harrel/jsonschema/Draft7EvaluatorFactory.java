@@ -17,8 +17,7 @@ public class Draft7EvaluatorFactory extends AbstractEvaluatorFactory {
     }
 
     private static Set<String> getIgnoredKeywords() {
-        // todo adjust keywords
-        return new HashSet<>(Arrays.asList(ID, SCHEMA, ANCHOR, DYNAMIC_ANCHOR, VOCABULARY, COMMENT, DEFS, THEN, ELSE));
+        return new HashSet<>(Arrays.asList(ID, SCHEMA, COMMENT, DEFINITIONS, THEN, ELSE));
     }
 
     private static Map<String, EvaluatorInfo> createEvaluatorMap() {
