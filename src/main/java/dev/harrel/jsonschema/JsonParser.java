@@ -111,7 +111,7 @@ final class JsonParser {
         } else {
             /* Embedded schema handling */
             String idString = idField.get();
-            URI idUri = UriUtil.getUriWithoutFragment(idString);
+            URI idUri = URI.create(idString);
             UnfinishedSchema unfinishedSchema = new UnfinishedSchema();
             unfinishedSchemas.put(idUri, unfinishedSchema);
             MetaSchemaData metaSchemaData = JsonNodeUtil.getStringField(objectMap, Keyword.SCHEMA)
