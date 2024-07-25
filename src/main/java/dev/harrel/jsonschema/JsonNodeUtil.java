@@ -1,6 +1,5 @@
 package dev.harrel.jsonschema;
 
-import java.net.URI;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
