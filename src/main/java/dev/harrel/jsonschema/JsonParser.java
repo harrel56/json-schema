@@ -47,9 +47,8 @@ final class JsonParser {
                 )
                 .map(UriUtil::removeEmptyFragment)
                 .orElse(null);
-        Optional<URI> providedSchemaId = objectMapOptional
-                .flatMap(obj -> JsonNodeUtil.getStringField(obj, Keyword.ID))
-                .filter(JsonNodeUtil::validateIdField)
+        Optional<String> idField = objectMapOptional.flatMap(obj -> JsonNodeUtil.getStringField(obj, Keyword.ID));
+        Optional<URI> providedSchemaId = idField
                 .map(UriUtil::getUriWithoutFragment)
                 .filter(id -> !baseUri.equals(id));
 
@@ -67,6 +66,7 @@ final class JsonParser {
         } else if (objectMapOptional.isPresent()) {
             Map<String, JsonNode> objectMap = objectMapOptional.get();
             SchemaParsingContext ctx = new SchemaParsingContext(metaSchemaData, schemaRegistry, finalUri, objectMap);
+            idField.ifPresent(id -> validateIdField(ctx, id));
             List<EvaluatorWrapper> evaluators = parseEvaluators(ctx, objectMap, node.getJsonPointer());
             schemaRegistry.registerSchema(ctx, node, evaluators);
             providedSchemaId.ifPresent(id -> schemaRegistry.registerAlias(id, baseUri));
@@ -103,16 +103,15 @@ final class JsonParser {
 
     private void parseObject(SchemaParsingContext ctx, JsonNode node) {
         Map<String, JsonNode> objectMap = node.asObject();
-        Optional<URI> providedSchemaId = JsonNodeUtil.getStringField(objectMap, Keyword.ID)
-                .filter(JsonNodeUtil::validateIdField)
-                .map(URI::create);
+        Optional<String> idField = JsonNodeUtil.getStringField(objectMap, Keyword.ID);
 
-        if (!providedSchemaId.isPresent()) {
+        if (!idField.isPresent()) {
             SchemaParsingContext newCtx = ctx.forChild(objectMap);
             schemaRegistry.registerSchema(ctx, node, parseEvaluators(newCtx, objectMap, node.getJsonPointer()));
         } else {
             /* Embedded schema handling */
-            URI idUri = providedSchemaId.get();
+            String idString = idField.get();
+            URI idUri = UriUtil.getUriWithoutFragment(idString);
             UnfinishedSchema unfinishedSchema = new UnfinishedSchema();
             unfinishedSchemas.put(idUri, unfinishedSchema);
             MetaSchemaData metaSchemaData = JsonNodeUtil.getStringField(objectMap, Keyword.SCHEMA)
@@ -122,6 +121,7 @@ final class JsonParser {
 
             URI uri = ctx.getParentUri().resolve(idUri);
             SchemaParsingContext newCtx = ctx.forChild(metaSchemaData, objectMap, uri);
+            validateIdField(newCtx, idString);
             List<EvaluatorWrapper> evaluators = parseEvaluators(newCtx, objectMap, node.getJsonPointer());
             schemaRegistry.registerEmbeddedSchema(newCtx, uri, node, evaluators);
             unfinishedSchema.parsed();
@@ -183,6 +183,12 @@ final class JsonParser {
             return EvaluatorFactory.compose(evaluatorFactory, ctx.getMetaValidationData().dialect.getEvaluatorFactory());
         } else {
             return ctx.getMetaValidationData().dialect.getEvaluatorFactory();
+        }
+    }
+
+    private static void validateIdField(SchemaParsingContext ctx, String id) {
+        if (UriUtil.hasNonEmptyFragment(URI.create(id)) && ctx.getMetaValidationData().dialect.getSpecificationVersion() != SpecificationVersion.DRAFT7) {
+            throw new IllegalArgumentException(String.format("$id [%s] cannot contain non-empty fragments", id));
         }
     }
 
