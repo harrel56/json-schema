@@ -195,9 +195,11 @@ final class JsonParser {
                     throw new IllegalArgumentException(String.format("$id [%s] cannot contain non-empty fragments", id));
                 }
                 break;
-            case DRAFT7:
-                // todo validate that fragment is not a json pointer (regex?)
-                break;
+            default:
+                if (uri.getFragment() != null && uri.getFragment().startsWith("/")) {
+                    // todo add test
+                    throw new IllegalArgumentException(String.format("$id [%s] cannot contain fragment starting with '/'", id));
+                }
         }
     }
 
