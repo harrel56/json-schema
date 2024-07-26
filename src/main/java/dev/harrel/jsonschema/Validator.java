@@ -138,22 +138,24 @@ public final class Validator {
     }
 
     private Schema getRootSchema(URI uri) {
-        if (UriUtil.hasNonEmptyFragment(uri)) {
-            throw new IllegalArgumentException(String.format("Root schema [%s] cannot contain non-empty fragments", uri));
-        }
+        CompoundUri compoundUri = CompoundUri.fromString(uri.toString());
         return OptionalUtil.firstPresent(
-                        () -> Optional.ofNullable(schemaRegistry.get(UriUtil.getUriWithoutFragment(uri))),
-                        () -> resolveExternalSchema(uri)
+                        () -> Optional.ofNullable(schemaRegistry.get(compoundUri)),
+                        () -> resolveExternalSchema(compoundUri)
                 )
-                .orElseThrow(() -> new SchemaNotFoundException(new CompoundUri(uri, "")));
+                .orElseThrow(() -> new SchemaNotFoundException(compoundUri));
     }
 
-    private Optional<Schema> resolveExternalSchema(URI uri) {
-        return schemaResolver.resolve(uri.toString())
+    private Optional<Schema> resolveExternalSchema(CompoundUri compoundUri) {
+        if (schemaRegistry.get(compoundUri.uri) != null) {
+            return Optional.empty();
+        }
+
+        return schemaResolver.resolve(compoundUri.uri.toString())
                 .toJsonNode(schemaNodeFactory)
                 .map(node -> {
-                    jsonParser.parseRootSchema(uri, node);
-                    return schemaRegistry.get(uri);
+                    jsonParser.parseRootSchema(compoundUri.uri, node);
+                    return schemaRegistry.get(compoundUri);
                 });
     }
 

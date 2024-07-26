@@ -40,7 +40,8 @@ final class JsonNodeUtil {
     }
 
     static boolean validateIdField(String id) {
-        if (UriUtil.hasNonEmptyFragment(URI.create(id))) {
+        URI uri = URI.create(id);
+        if (uri.getFragment() != null && !uri.getFragment().isEmpty()) {
             throw new IllegalArgumentException(String.format("$id [%s] cannot contain non-empty fragments", id));
         }
         return true;
