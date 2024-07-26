@@ -187,8 +187,17 @@ final class JsonParser {
     }
 
     private static void validateIdField(SchemaParsingContext ctx, String id) {
-        if (UriUtil.hasNonEmptyFragment(URI.create(id)) && ctx.getMetaValidationData().dialect.getSpecificationVersion() != SpecificationVersion.DRAFT7) {
-            throw new IllegalArgumentException(String.format("$id [%s] cannot contain non-empty fragments", id));
+        URI uri = URI.create(id);
+        switch (ctx.getMetaValidationData().dialect.getSpecificationVersion()) {
+            case DRAFT2020_12:
+            case DRAFT2019_09:
+                if (uri.getFragment() != null && !uri.getFragment().isEmpty()) {
+                    throw new IllegalArgumentException(String.format("$id [%s] cannot contain non-empty fragments", id));
+                }
+                break;
+            case DRAFT7:
+                // todo validate that fragment is not a json pointer (regex?)
+                break;
         }
     }
 
