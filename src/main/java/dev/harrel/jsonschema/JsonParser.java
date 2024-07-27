@@ -188,17 +188,14 @@ final class JsonParser {
 
     private static void validateIdField(SchemaParsingContext ctx, String id) {
         URI uri = URI.create(id);
-        switch (ctx.getMetaValidationData().dialect.getSpecificationVersion()) {
-            case DRAFT2020_12:
-            case DRAFT2019_09:
-                if (uri.getFragment() != null && !uri.getFragment().isEmpty()) {
-                    throw new IllegalArgumentException(String.format("$id [%s] cannot contain non-empty fragments", id));
-                }
-                break;
-            default:
-                if (uri.getFragment() != null && uri.getFragment().startsWith("/")) {
-                    throw new IllegalArgumentException(String.format("$id [%s] cannot contain fragments starting with '/'", id));
-                }
+        if (ctx.getMetaValidationData().dialect.getSpecificationVersion().getOrder() > SpecificationVersion.DRAFT7.getOrder()) {
+            if (uri.getFragment() != null && !uri.getFragment().isEmpty()) {
+                throw new IllegalArgumentException(String.format("$id [%s] cannot contain non-empty fragments", id));
+            }
+        } else {
+            if (uri.getFragment() != null && uri.getFragment().startsWith("/")) {
+                throw new IllegalArgumentException(String.format("$id [%s] cannot contain fragments starting with '/'", id));
+            }
         }
     }
 
