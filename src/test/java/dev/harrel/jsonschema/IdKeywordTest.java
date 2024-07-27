@@ -1,19 +1,24 @@
 package dev.harrel.jsonschema;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.net.URI;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 
 class IdKeywordTest {
-    @Test
-    void allowsEmptyFragmentsInIdRootSchema() {
+    @ParameterizedTest
+    @EnumSource(SpecificationVersion.class)
+    void allowsEmptyFragmentsInIdRootSchema(SpecificationVersion version) {
         // with disabled schema validation
-        Validator validator = new ValidatorFactory()
-                .withDisabledSchemaValidation(true)
-                .createValidator();
+        Validator validator = createValidator(version, true);
         String schema = """
                 {
                   "$id": "urn:test#"
@@ -24,54 +29,110 @@ class IdKeywordTest {
         assertThat(result.isValid()).isTrue();
 
         // with enabled schema validation
-        validator = new ValidatorFactory().createValidator();
+        validator = createValidator(version, false);
 
         uri = validator.registerSchema(schema);
         result = validator.validate(uri, "true");
         assertThat(result.isValid()).isTrue();
     }
 
-    @Test
-    void disallowsNonEmptyFragmentsInIdRootSchema() {
+    @ParameterizedTest
+    @MethodSource("lenientIdVersions")
+    void allowsAnchorFragmentsInIdRootSchema(SpecificationVersion version) {
         // with disabled schema validation
-        Validator validator = new ValidatorFactory()
-                .withDisabledSchemaValidation(true)
-                .createValidator();
-
-        String schema1 = """
+        Validator validator = createValidator(version, true);
+        String schema = """
                 {
                   "$id": "urn:test#anchor"
                 }""";
-        assertThatThrownBy(() -> validator.registerSchema(schema1))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("$id [urn:test#anchor] cannot contain non-empty fragments");
 
-        String schema2 = """
+        URI uri = validator.registerSchema(schema);
+        Validator.Result result = validator.validate(uri, "true");
+        assertThat(result.isValid()).isTrue();
+
+        // with enabled schema validation
+        validator = createValidator(version, false);
+
+        uri = validator.registerSchema(schema);
+        result = validator.validate(uri, "true");
+        assertThat(result.isValid()).isTrue();
+    }
+
+    @ParameterizedTest
+    @MethodSource("strictIdVersions")
+    void disallowsStrictJsonPointerFragmentsInIdRootSchema(SpecificationVersion version) {
+        // with disabled schema validation
+        Validator validator = createValidator(version, true);
+
+        String schema = """
                 {
                   "$id": "urn:test#/$defs/x"
                 }""";
-        assertThatThrownBy(() -> validator.registerSchema(schema2))
+        assertThatThrownBy(() -> validator.registerSchema(schema))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("$id [urn:test#/$defs/x] cannot contain non-empty fragments");
 
         // with enabled schema validation
-        Validator validator2 = new ValidatorFactory().createValidator();
+        Validator validator2 = createValidator(version, false);
 
-        assertThatThrownBy(() -> validator2.registerSchema(schema1))
+        InvalidSchemaException exception = catchThrowableOfType(InvalidSchemaException.class, () -> validator2.registerSchema(schema));
+        assertThat(exception).hasMessage("Schema [urn:test] failed to validate against meta-schema [%s]".formatted(version.getId()));
+        List<Error> errors = exception.getErrors();
+        assertThat(errors).hasSize(2);
+        assertThat(errors.getFirst().getError()).isEqualTo("\"urn:test#/$defs/x\" does not match regular expression [^[^#]*#?$]");
+    }
+
+    @ParameterizedTest
+    @MethodSource("lenientIdVersions")
+    void disallowsLenientJsonPointerFragmentsInIdRootSchema(SpecificationVersion version) {
+        // with disabled schema validation
+        Validator validator = createValidator(version, true);
+
+        String schema = """
+                {
+                  "$id": "urn:test#/$defs/x"
+                }""";
+        assertThatThrownBy(() -> validator.registerSchema(schema))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("$id [urn:test#/$defs/x] cannot contain fragments starting with '/'");
+
+        // with enabled schema validation
+        Validator validator2 = createValidator(version, false);
+
+        assertThatThrownBy(() -> validator2.registerSchema(schema))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("$id [urn:test#/$defs/x] cannot contain fragments starting with '/'");
+    }
+
+    @ParameterizedTest
+    @MethodSource("strictIdVersions")
+    void disallowsAnchorFragmentsInIdRootSchema(SpecificationVersion version) {
+        // with disabled schema validation
+        Validator validator = createValidator(version, true);
+
+        String schema = """
+                {
+                  "$id": "urn:test#anchor"
+                }""";
+        assertThatThrownBy(() -> validator.registerSchema(schema))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("$id [urn:test#anchor] cannot contain non-empty fragments");
 
-        assertThatThrownBy(() -> validator2.registerSchema(schema2))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("$id [urn:test#/$defs/x] cannot contain non-empty fragments");
+        // with enabled schema validation
+        Validator validator2 = createValidator(version, false);
+
+        InvalidSchemaException exception = catchThrowableOfType(InvalidSchemaException.class, () -> validator2.registerSchema(schema));
+        assertThat(exception).hasMessage("Schema [urn:test] failed to validate against meta-schema [%s]".formatted(version.getId()));
+        List<Error> errors = exception.getErrors();
+        assertThat(errors).hasSize(2);
+        assertThat(errors.getFirst().getError()).isEqualTo("\"urn:test#anchor\" does not match regular expression [^[^#]*#?$]");
     }
 
-    @Test
-    void allowsEmptyFragmentsInIdSubSchema() {
+    @ParameterizedTest
+    @EnumSource(SpecificationVersion.class)
+    void allowsEmptyFragmentsInIdSubSchema(SpecificationVersion version) {
         // with disabled schema validation
-        Validator validator = new ValidatorFactory()
-                .withDisabledSchemaValidation(true)
-                .createValidator();
+        Validator validator = createValidator(version, true);
         String schema = """
                 {
                   "$defs": {
@@ -86,33 +147,19 @@ class IdKeywordTest {
         assertThat(result.isValid()).isTrue();
 
         // with enabled schema validation
-        validator = new ValidatorFactory().createValidator();
+        validator = createValidator(version, false);
 
         uri = validator.registerSchema(schema);
         result = validator.validate(uri, "true");
         assertThat(result.isValid()).isTrue();
     }
 
-    @Test
-    void disallowsNonEmptyFragmentsInIdSubSchema() {
+    @ParameterizedTest
+    @MethodSource("strictIdVersions")
+    void disallowsStrictJsonPointerFragmentsInIdSubSchema(SpecificationVersion version) {
         // with disabled schema validation
-        Validator validator = new ValidatorFactory()
-                .withDisabledSchemaValidation(true)
-                .createValidator();
-
-        String schema1 = """
-                {
-                  "$defs": {
-                    "x": {
-                      "$id": "urn:sub#anchor"
-                    }
-                  }
-                }""";
-        assertThatThrownBy(() -> validator.registerSchema(schema1))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("$id [urn:sub#anchor] cannot contain non-empty fragments");
-
-        String schema2 = """
+        Validator validator = createValidator(version, true);
+        String schema = """
                 {
                   "$defs": {
                     "x": {
@@ -120,20 +167,108 @@ class IdKeywordTest {
                     }
                   }
                 }""";
-        assertThatThrownBy(() -> validator.registerSchema(schema2))
+        assertThatThrownBy(() -> validator.registerSchema(schema))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("$id [urn:sub#/$defs/x] cannot contain non-empty fragments");
 
         // with enabled schema validation
-        Validator validator2 = new ValidatorFactory().createValidator();
+        Validator validator2 = createValidator(version, false);
         URI uri = URI.create("urn:sub");
 
-        assertThatThrownBy(() -> validator2.registerSchema(uri, schema1))
+        assertThatThrownBy(() -> validator2.registerSchema(uri, schema))
                 .isInstanceOf(InvalidSchemaException.class)
-                .hasMessage("Schema [urn:sub] failed to validate against meta-schema [https://json-schema.org/draft/2020-12/schema]");
+                .hasMessage("Schema [urn:sub] failed to validate against meta-schema [%s]".formatted(version.getId()));
+    }
 
-        assertThatThrownBy(() -> validator2.registerSchema(uri, schema2))
+    @ParameterizedTest
+    @MethodSource("lenientIdVersions")
+    void disallowsLenientJsonPointerFragmentsInIdSubSchema(SpecificationVersion version) {
+        // with disabled schema validation
+        Validator validator = createValidator(version, true);
+        String schema = """
+                {
+                  "$defs": {
+                    "x": {
+                      "$id": "urn:sub#/$defs/x"
+                    }
+                  }
+                }""";
+        assertThatThrownBy(() -> validator.registerSchema(schema))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("$id [urn:sub#/$defs/x] cannot contain fragments starting with '/'");
+
+        // with enabled schema validation
+        Validator validator2 = createValidator(version, false);
+
+        assertThatThrownBy(() -> validator2.registerSchema(schema))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("$id [urn:sub#/$defs/x] cannot contain fragments starting with '/'");
+    }
+
+    @ParameterizedTest
+    @MethodSource("lenientIdVersions")
+    void allowsAnchorFragmentsInIdSubSchema(SpecificationVersion version) {
+        // with disabled schema validation
+        Validator validator = createValidator(version, true);
+        String schema = """
+                {
+                  "$defs": {
+                    "x": {
+                      "$id": "urn:sub#anchor"
+                    }
+                  }
+                }""";
+        URI uri = validator.registerSchema(schema);
+        Validator.Result result = validator.validate(uri, "true");
+        assertThat(result.isValid()).isTrue();
+
+        // with enabled schema validation
+        validator = createValidator(version, false);
+
+        uri = validator.registerSchema(schema);
+        result = validator.validate(uri, "true");
+        assertThat(result.isValid()).isTrue();
+    }
+
+    @ParameterizedTest
+    @MethodSource("strictIdVersions")
+    void disallowsAnchorFragmentsInIdSubSchema(SpecificationVersion version) {
+        // with disabled schema validation
+        Validator validator = createValidator(version, true);
+        String schema = """
+                {
+                  "$defs": {
+                    "x": {
+                      "$id": "urn:sub#anchor"
+                    }
+                  }
+                }""";
+        assertThatThrownBy(() -> validator.registerSchema(schema))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("$id [urn:sub#anchor] cannot contain non-empty fragments");
+
+        // with enabled schema validation
+        Validator validator2 = createValidator(version, false);
+        URI uri = URI.create("urn:sub");
+
+        assertThatThrownBy(() -> validator2.registerSchema(uri, schema))
                 .isInstanceOf(InvalidSchemaException.class)
-                .hasMessage("Schema [urn:sub] failed to validate against meta-schema [https://json-schema.org/draft/2020-12/schema]");
+                .hasMessage("Schema [urn:sub] failed to validate against meta-schema [%s]".formatted(version.getId()));
+    }
+
+    private Validator createValidator(SpecificationVersion version, boolean disabledSchemaValidation) {
+        return new ValidatorFactory()
+                .withDefaultDialect(Dialects.OFFICIAL_DIALECTS.get(URI.create(version.getId())))
+                .withDisabledSchemaValidation(disabledSchemaValidation)
+                .createValidator();
+    }
+
+    static Stream<SpecificationVersion> strictIdVersions() {
+        Set<SpecificationVersion> lenient = lenientIdVersions().collect(Collectors.toSet());
+        return Arrays.stream(SpecificationVersion.values()).filter(version -> !lenient.contains(version));
+    }
+
+    static Stream<SpecificationVersion> lenientIdVersions() {
+        return Stream.of(SpecificationVersion.DRAFT7);
     }
 }

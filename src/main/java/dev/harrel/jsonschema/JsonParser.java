@@ -197,8 +197,7 @@ final class JsonParser {
                 break;
             default:
                 if (uri.getFragment() != null && uri.getFragment().startsWith("/")) {
-                    // todo add test
-                    throw new IllegalArgumentException(String.format("$id [%s] cannot contain fragment starting with '/'", id));
+                    throw new IllegalArgumentException(String.format("$id [%s] cannot contain fragments starting with '/'", id));
                 }
         }
     }
