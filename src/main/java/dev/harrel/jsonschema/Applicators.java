@@ -66,11 +66,11 @@ class ItemsEvaluator implements Evaluator {
     }
 }
 
-class Items2019Evaluator implements Evaluator {
+class ItemsLegacyEvaluator implements Evaluator {
     private final CompoundUri schemaRef;
     private final List<CompoundUri> schemaRefs;
 
-    Items2019Evaluator(SchemaParsingContext ctx, JsonNode node) {
+    ItemsLegacyEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (node.isObject() || node.isBoolean()) {
             this.schemaRef = ctx.getCompoundUri(node);
             this.schemaRefs = null;
