@@ -1,8 +1,8 @@
 package dev.harrel.jsonschema;
 
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.net.URI;
 import java.util.*;
@@ -12,37 +12,25 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class VocabularyValidatorTest {
     private final VocabularyValidator validator = new VocabularyValidator();
 
-    @Test
-    void shouldAlwaysPassForNullVocabs() {
-        validator.validateVocabularies(new Dialects.Draft2020Dialect(), null);
+    @ParameterizedTest
+    @EnumSource(SpecificationVersion.class)
+    void shouldAlwaysPassForNullVocabs(SpecificationVersion version) {
+        validator.validateVocabularies(createDialect(version, orderedSet(), orderedSet()), null);
     }
 
-    @Test
-    void shouldAlwaysPassForEmptyRequiredVocabs() {
-        Dialects.Draft2020Dialect dialect = new Dialects.Draft2020Dialect() {
-            @Override
-            public Set<String> getRequiredVocabularies() {
-                return orderedSet();
-            }
-
-            @Override
-            public Set<String> getSupportedVocabularies() {
-                return orderedSet("urn:a", "urn:b");
-            }
-        };
+    @ParameterizedTest
+    @EnumSource(SpecificationVersion.class)
+    void shouldAlwaysPassForEmptyRequiredVocabs(SpecificationVersion version) {
+        Dialect dialect = createDialect(version, orderedSet("urn:a", "urn:b"), orderedSet());
         Map<String, Boolean> vocabs = orderedMap(Map.entry("urn:a", true), Map.entry("urn:b", false));
 
         validator.validateVocabularies(dialect, vocabs);
     }
 
-    @Test
-    void shouldFailForMissingRequiredVocabs() {
-        Dialects.Draft2020Dialect dialect = new Dialects.Draft2020Dialect() {
-            @Override
-            public Set<String> getRequiredVocabularies() {
-                return orderedSet("urn:a", "urn:b");
-            }
-        };
+    @ParameterizedTest
+    @MethodSource("dev.harrel.jsonschema.IdKeywordTest#strictVersions")
+    void shouldFailForMissingRequiredVocabs(SpecificationVersion version) {
+        Dialect dialect = createDialect(version, orderedSet(), orderedSet("urn:a", "urn:b"));
         Map<String, Boolean> vocabs = orderedMap();
 
         assertThatThrownBy(() -> validator.validateVocabularies(dialect, vocabs))
@@ -50,14 +38,17 @@ class VocabularyValidatorTest {
                 .hasMessage("Required vocabularies [urn:a, urn:b] were missing or marked optional in $vocabulary object");
     }
 
-    @Test
-    void shouldFailForOptionalRequiredVocabs() {
-        Dialects.Draft2020Dialect dialect = new Dialects.Draft2020Dialect() {
-            @Override
-            public Set<String> getRequiredVocabularies() {
-                return orderedSet("urn:a", "urn:b");
-            }
-        };
+    @ParameterizedTest
+    @MethodSource("dev.harrel.jsonschema.IdKeywordTest#lenientVersions")
+    void shouldPassForMissingRequiredVocabs(SpecificationVersion version) {
+        Dialect dialect = createDialect(version, orderedSet(), orderedSet("urn:a", "urn:b"));
+        validator.validateVocabularies(dialect, orderedMap());
+    }
+
+    @ParameterizedTest
+    @MethodSource("dev.harrel.jsonschema.IdKeywordTest#strictVersions")
+    void shouldFailForOptionalRequiredVocabs(SpecificationVersion version) {
+        Dialect dialect = createDialect(version, orderedSet(), orderedSet("urn:a", "urn:b"));
         Map<String, Boolean> vocabs = orderedMap(Map.entry("urn:a", false), Map.entry("urn:b", false));
 
         assertThatThrownBy(() -> validator.validateVocabularies(dialect, vocabs))
@@ -65,14 +56,18 @@ class VocabularyValidatorTest {
                 .hasMessage("Required vocabularies [urn:a, urn:b] were missing or marked optional in $vocabulary object");
     }
 
-    @Test
-    void shouldFailForOptionalAndMissingRequiredVocabs() {
-        Dialects.Draft2020Dialect dialect = new Dialects.Draft2020Dialect() {
-            @Override
-            public Set<String> getRequiredVocabularies() {
-                return orderedSet("urn:a", "urn:b", "urn:c");
-            }
-        };
+    @ParameterizedTest
+    @MethodSource("dev.harrel.jsonschema.IdKeywordTest#lenientVersions")
+    void shouldPassForOptionalRequiredVocabs(SpecificationVersion version) {
+        Dialect dialect = createDialect(version, orderedSet(), orderedSet("urn:a", "urn:b"));
+        Map<String, Boolean> vocabs = orderedMap(Map.entry("urn:a", false), Map.entry("urn:b", false));
+        validator.validateVocabularies(dialect, vocabs);
+    }
+
+    @ParameterizedTest
+    @MethodSource("dev.harrel.jsonschema.IdKeywordTest#strictVersions")
+    void shouldFailForOptionalAndMissingRequiredVocabs(SpecificationVersion version) {
+        Dialect dialect = createDialect(version, orderedSet(), orderedSet("urn:a", "urn:b", "urn:c"));
         Map<String, Boolean> vocabs = orderedMap(Map.entry("urn:a", false), Map.entry("urn:b", false));
 
         assertThatThrownBy(() -> validator.validateVocabularies(dialect, vocabs))
@@ -80,50 +75,18 @@ class VocabularyValidatorTest {
                 .hasMessage("Required vocabularies [urn:a, urn:b, urn:c] were missing or marked optional in $vocabulary object");
     }
 
-    @Test
-    void shouldPassUnusedMandatoryVocabs() {
-        Dialects.Draft2020Dialect dialect = new Dialects.Draft2020Dialect() {
-            @Override
-            public Set<String> getSupportedVocabularies() {
-                return orderedSet(Vocabulary.Draft2020.CORE, "urn:a", "urn:b");
-            }
-        };
-        Map<String, Boolean> vocabs = orderedMap(Map.entry(Vocabulary.Draft2020.CORE, true));
-
-        validator.validateVocabularies(dialect, vocabs);
-    }
-
-    @Test
-    void shouldPassForOptionalUnsupportedVocabs() {
-        Dialects.Draft2020Dialect dialect = new Dialects.Draft2020Dialect() {
-            @Override
-            public Set<String> getRequiredVocabularies() {
-                return orderedSet();
-            }
-
-            @Override
-            public Set<String> getSupportedVocabularies() {
-                return orderedSet();
-            }
-        };
+    @ParameterizedTest
+    @MethodSource("dev.harrel.jsonschema.IdKeywordTest#lenientVersions")
+    void shouldPassForOptionalAndMissingRequiredVocabs(SpecificationVersion version) {
+        Dialect dialect = createDialect(version, orderedSet(), orderedSet("urn:a", "urn:b", "urn:c"));
         Map<String, Boolean> vocabs = orderedMap(Map.entry("urn:a", false), Map.entry("urn:b", false));
-
         validator.validateVocabularies(dialect, vocabs);
     }
 
-    @Test
-    void shouldFailForMandatoryUnsupportedVocabs() {
-        Dialects.Draft2020Dialect dialect = new Dialects.Draft2020Dialect() {
-            @Override
-            public Set<String> getRequiredVocabularies() {
-                return orderedSet();
-            }
-
-            @Override
-            public Set<String> getSupportedVocabularies() {
-                return orderedSet();
-            }
-        };
+    @ParameterizedTest
+    @MethodSource("dev.harrel.jsonschema.IdKeywordTest#strictVersions")
+    void shouldFailForMandatoryUnsupportedVocabs(SpecificationVersion version) {
+        Dialect dialect = createDialect(version, orderedSet(), orderedSet());
         Map<String, Boolean> vocabs = orderedMap(Map.entry("urn:a", true), Map.entry("urn:b", true));
 
         assertThatThrownBy(() -> validator.validateVocabularies(dialect, vocabs))
@@ -132,10 +95,53 @@ class VocabularyValidatorTest {
     }
 
     @ParameterizedTest
+    @MethodSource("dev.harrel.jsonschema.IdKeywordTest#lenientVersions")
+    void shouldPassForMandatoryUnsupportedVocabs(SpecificationVersion version) {
+        Dialect dialect = createDialect(version, orderedSet(), orderedSet());
+        Map<String, Boolean> vocabs = orderedMap(Map.entry("urn:a", true), Map.entry("urn:b", true));
+        validator.validateVocabularies(dialect, vocabs);
+    }
+
+    @ParameterizedTest
+    @EnumSource(SpecificationVersion.class)
+    void shouldPassUnusedMandatoryVocabs(SpecificationVersion version) {
+        Dialect dialect = createDialect(version, orderedSet(Vocabulary.Draft2020.CORE, "urn:a", "urn:b"), orderedSet(Vocabulary.Draft2020.CORE));
+        Map<String, Boolean> vocabs = orderedMap(Map.entry(Vocabulary.Draft2020.CORE, true));
+        validator.validateVocabularies(dialect, vocabs);
+    }
+
+    @ParameterizedTest
+    @EnumSource(SpecificationVersion.class)
+    void shouldPassForOptionalUnsupportedVocabs(SpecificationVersion version) {
+        Dialect dialect = createDialect(version, orderedSet(), orderedSet());
+        Map<String, Boolean> vocabs = orderedMap(Map.entry("urn:a", false), Map.entry("urn:b", false));
+        validator.validateVocabularies(dialect, vocabs);
+    }
+
+    @ParameterizedTest
     @EnumSource(SpecificationVersion.class)
     void allOfficialDialectsShouldBeInternallyValid(SpecificationVersion version) {
         Dialect dialect = Dialects.OFFICIAL_DIALECTS.get(URI.create(version.getId()));
         validator.validateVocabularies(dialect, dialect.getDefaultVocabularyObject());
+    }
+
+    private static Dialect createDialect(SpecificationVersion version, Set<String> supportedVocabs, Set<String> requiredVocabs) {
+        return new Dialects.Draft2020Dialect() {
+            @Override
+            public SpecificationVersion getSpecificationVersion() {
+                return version;
+            }
+
+            @Override
+            public Set<String> getSupportedVocabularies() {
+                return supportedVocabs;
+            }
+
+            @Override
+            public Set<String> getRequiredVocabularies() {
+                return requiredVocabs;
+            }
+        };
     }
 
     private static Set<String> orderedSet(String... values) {

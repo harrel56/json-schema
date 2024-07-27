@@ -6,8 +6,7 @@ import java.util.stream.Collectors;
 
 final class VocabularyValidator {
     void validateVocabularies(Dialect dialect, Map<String, Boolean> vocabularyObject) {
-        // todo validate only if spec is past draft7, make spec enum orderable, test it
-        if (vocabularyObject == null) {
+        if (vocabularyObject == null || dialect.getSpecificationVersion().getOrder() <= SpecificationVersion.DRAFT7.getOrder()) {
             return;
         }
 

@@ -7,8 +7,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.*;
@@ -37,7 +35,7 @@ class IdKeywordTest {
     }
 
     @ParameterizedTest
-    @MethodSource("lenientIdVersions")
+    @MethodSource("lenientVersions")
     void allowsAnchorFragmentsInIdRootSchema(SpecificationVersion version) {
         // with disabled schema validation
         Validator validator = createValidator(version, true);
@@ -59,7 +57,7 @@ class IdKeywordTest {
     }
 
     @ParameterizedTest
-    @MethodSource("strictIdVersions")
+    @MethodSource("strictVersions")
     void disallowsStrictJsonPointerFragmentsInIdRootSchema(SpecificationVersion version) {
         // with disabled schema validation
         Validator validator = createValidator(version, true);
@@ -83,7 +81,7 @@ class IdKeywordTest {
     }
 
     @ParameterizedTest
-    @MethodSource("lenientIdVersions")
+    @MethodSource("lenientVersions")
     void disallowsLenientJsonPointerFragmentsInIdRootSchema(SpecificationVersion version) {
         // with disabled schema validation
         Validator validator = createValidator(version, true);
@@ -105,7 +103,7 @@ class IdKeywordTest {
     }
 
     @ParameterizedTest
-    @MethodSource("strictIdVersions")
+    @MethodSource("strictVersions")
     void disallowsAnchorFragmentsInIdRootSchema(SpecificationVersion version) {
         // with disabled schema validation
         Validator validator = createValidator(version, true);
@@ -155,7 +153,7 @@ class IdKeywordTest {
     }
 
     @ParameterizedTest
-    @MethodSource("strictIdVersions")
+    @MethodSource("strictVersions")
     void disallowsStrictJsonPointerFragmentsInIdSubSchema(SpecificationVersion version) {
         // with disabled schema validation
         Validator validator = createValidator(version, true);
@@ -181,7 +179,7 @@ class IdKeywordTest {
     }
 
     @ParameterizedTest
-    @MethodSource("lenientIdVersions")
+    @MethodSource("lenientVersions")
     void disallowsLenientJsonPointerFragmentsInIdSubSchema(SpecificationVersion version) {
         // with disabled schema validation
         Validator validator = createValidator(version, true);
@@ -206,7 +204,7 @@ class IdKeywordTest {
     }
 
     @ParameterizedTest
-    @MethodSource("lenientIdVersions")
+    @MethodSource("lenientVersions")
     void allowsAnchorFragmentsInIdSubSchema(SpecificationVersion version) {
         // with disabled schema validation
         Validator validator = createValidator(version, true);
@@ -231,7 +229,7 @@ class IdKeywordTest {
     }
 
     @ParameterizedTest
-    @MethodSource("strictIdVersions")
+    @MethodSource("strictVersions")
     void disallowsAnchorFragmentsInIdSubSchema(SpecificationVersion version) {
         // with disabled schema validation
         Validator validator = createValidator(version, true);
@@ -263,12 +261,11 @@ class IdKeywordTest {
                 .createValidator();
     }
 
-    static Stream<SpecificationVersion> strictIdVersions() {
-        Set<SpecificationVersion> lenient = lenientIdVersions().collect(Collectors.toSet());
-        return Arrays.stream(SpecificationVersion.values()).filter(version -> !lenient.contains(version));
+    static Stream<SpecificationVersion> strictVersions() {
+        return Arrays.stream(SpecificationVersion.values()).filter(version -> version.getOrder() > SpecificationVersion.DRAFT7.getOrder());
     }
 
-    static Stream<SpecificationVersion> lenientIdVersions() {
-        return Stream.of(SpecificationVersion.DRAFT7);
+    static Stream<SpecificationVersion> lenientVersions() {
+        return Arrays.stream(SpecificationVersion.values()).filter(version -> version.getOrder() <= SpecificationVersion.DRAFT7.getOrder());
     }
 }
