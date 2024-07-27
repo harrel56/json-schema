@@ -135,10 +135,18 @@ final class JsonParser {
 
     private List<EvaluatorWrapper> parseEvaluators(SchemaParsingContext ctx, Map<String, JsonNode> object, String objectPath) {
         List<EvaluatorWrapper> evaluators = new ArrayList<>();
+        JsonNode refOverride = null;
+        /* until draft2019, $ref must ignore sibling keywords */
+        if (ctx.getSpecificationVersion().getOrder() <= SpecificationVersion.DRAFT7.getOrder()) {
+            refOverride = object.get(Keyword.REF);
+        }
+
         for (Map.Entry<String, JsonNode> entry : object.entrySet()) {
-            createEvaluatorFactory(ctx).create(ctx, entry.getKey(), entry.getValue())
-                    .map(evaluator -> new EvaluatorWrapper(entry.getKey(), entry.getValue(), evaluator))
-                    .ifPresent(evaluators::add);
+            if (refOverride == null || entry.getValue() == refOverride) {
+                createEvaluatorFactory(ctx).create(ctx, entry.getKey(), entry.getValue())
+                        .map(evaluator -> new EvaluatorWrapper(entry.getKey(), entry.getValue(), evaluator))
+                        .ifPresent(evaluators::add);
+            }
             parseNode(ctx, entry.getValue());
         }
         if (evaluators.isEmpty()) {

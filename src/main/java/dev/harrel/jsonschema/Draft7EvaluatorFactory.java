@@ -22,12 +22,4 @@ public class Draft7EvaluatorFactory extends AbstractEvaluatorFactory {
         map.put(ADDITIONAL_ITEMS, new EvaluatorInfo(null, AdditionalItemsEvaluator::new));
         return map;
     }
-
-    @Override
-    public Optional<Evaluator> create(SchemaParsingContext ctx, String fieldName, JsonNode node) {
-        if (!REF.equals(fieldName) && ctx.getCurrentSchemaObject().containsKey(REF)) {
-            return Optional.empty();
-        }
-        return super.create(ctx, fieldName, node);
-    }
 }
