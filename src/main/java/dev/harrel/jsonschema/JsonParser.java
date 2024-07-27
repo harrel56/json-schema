@@ -104,8 +104,11 @@ final class JsonParser {
     private void parseObject(SchemaParsingContext ctx, JsonNode node) {
         Map<String, JsonNode> objectMap = node.asObject();
         Optional<String> idField = JsonNodeUtil.getStringField(objectMap, Keyword.ID);
+        boolean isEmbeddedSchema = idField
+                .map(id -> !id.startsWith("#") || ctx.getSpecificationVersion().getOrder() > SpecificationVersion.DRAFT7.getOrder())
+                .orElse(false);
 
-        if (!idField.isPresent()) {
+        if (!isEmbeddedSchema) {
             SchemaParsingContext newCtx = ctx.forChild(objectMap);
             schemaRegistry.registerSchema(ctx, node, parseEvaluators(newCtx, objectMap, node.getJsonPointer()));
         } else {
@@ -188,7 +191,7 @@ final class JsonParser {
 
     private static void validateIdField(SchemaParsingContext ctx, String id) {
         URI uri = URI.create(id);
-        if (ctx.getMetaValidationData().dialect.getSpecificationVersion().getOrder() > SpecificationVersion.DRAFT7.getOrder()) {
+        if (ctx.getSpecificationVersion().getOrder() > SpecificationVersion.DRAFT7.getOrder()) {
             if (uri.getFragment() != null && !uri.getFragment().isEmpty()) {
                 throw new IllegalArgumentException(String.format("$id [%s] cannot contain non-empty fragments", id));
             }
