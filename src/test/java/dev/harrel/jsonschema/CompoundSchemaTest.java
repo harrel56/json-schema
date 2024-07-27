@@ -22,7 +22,7 @@ class CompoundSchemaTest {
 
     @Test
     @Disabled
-    // fixme
+    // todo
     void compoundSchemaDoesntValidateEmbeddedSchemas() {
         String schema = """
                 {
