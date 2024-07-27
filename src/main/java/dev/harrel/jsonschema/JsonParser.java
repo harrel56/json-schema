@@ -104,6 +104,7 @@ final class JsonParser {
     private void parseObject(SchemaParsingContext ctx, JsonNode node) {
         Map<String, JsonNode> objectMap = node.asObject();
         Optional<String> idField = JsonNodeUtil.getStringField(objectMap, Keyword.ID);
+        // todo add to CompoundSchemaTest case with draft7 fake embedded schema (anchor $id)
         boolean isEmbeddedSchema = idField
                 .map(id -> !id.startsWith("#") || ctx.getSpecificationVersion().getOrder() > SpecificationVersion.DRAFT7.getOrder())
                 .orElse(false);
