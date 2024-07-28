@@ -101,8 +101,7 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
         SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, Map.of());
         return Stream.of(
                 generator.generate(getTestPath() + "/draft2019-09/optional/bignum" + getFileExtension()),
-// todo uncomment when draft7 is supported
-//                generator.generate(getTestPath() + "/draft2019-09/optional/cross-draft" + getFileExtension()),
+                generator.generate(getTestPath() + "/draft2019-09/optional/cross-draft" + getFileExtension()),
                 generator.generate(getTestPath() + "/draft2019-09/optional/no-schema" + getFileExtension()),
                 generator.generate(getTestPath() + "/draft2019-09/optional/non-bmp-regex" + getFileExtension()),
                 generator.generate(getTestPath() + "/draft2019-09/optional/refOfUnknownKeyword" + getFileExtension())
