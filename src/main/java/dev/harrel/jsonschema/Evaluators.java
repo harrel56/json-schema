@@ -484,6 +484,33 @@ class RequiredEvaluator implements Evaluator {
     }
 }
 
+class DependenciesLegacyEvaluator implements Evaluator {
+    private final DependentRequiredEvaluator requiredDelegate;
+    private final DependentSchemasEvaluator schemasDelegate;
+
+    DependenciesLegacyEvaluator(SchemaParsingContext ctx, JsonNode node) {
+        if (!node.isObject()) {
+            throw new IllegalArgumentException();
+        }
+
+        Map<Boolean, Map<String, JsonNode>> splitMap = node.asObject().entrySet().stream()
+                .collect(Collectors.partitioningBy(entry -> entry.getValue().isArray(),
+                        Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+        this.requiredDelegate = new DependentRequiredEvaluator(splitMap.get(true));
+        this.schemasDelegate = new DependentSchemasEvaluator(ctx, splitMap.get(false));
+    }
+
+    @Override
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
+        Result result = requiredDelegate.evaluate(ctx, node);
+        if (!result.isValid()) {
+            return result;
+        } else {
+            return schemasDelegate.evaluate(ctx, node);
+        }
+    }
+}
+
 class DependentRequiredEvaluator implements Evaluator {
     private final Map<String, List<String>> requiredProperties;
 
@@ -491,9 +518,11 @@ class DependentRequiredEvaluator implements Evaluator {
         if (!node.isObject()) {
             throw new IllegalArgumentException();
         }
-        this.requiredProperties = node.asObject().entrySet()
-                .stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> toStringList(e.getValue())));
+        this.requiredProperties = toMap(node.asObject());
+    }
+
+    DependentRequiredEvaluator(Map<String, JsonNode> objectNode) {
+        this.requiredProperties = toMap(objectNode);
     }
 
     @Override
@@ -517,7 +546,13 @@ class DependentRequiredEvaluator implements Evaluator {
         }
     }
 
-    private List<String> toStringList(JsonNode node) {
+    private static Map<String, List<String>> toMap(Map<String, JsonNode> objectNode) {
+        return objectNode.entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> toStringList(e.getValue())));
+    }
+
+    private static List<String> toStringList(JsonNode node) {
         return unmodifiableList(node.asArray().stream().map(JsonNode::asString).collect(Collectors.toList()));
     }
 }

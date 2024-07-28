@@ -280,9 +280,11 @@ class DependentSchemasEvaluator implements Evaluator {
         if (!node.isObject()) {
             throw new IllegalArgumentException();
         }
-        this.dependentSchemas = node.asObject().entrySet()
-                .stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> ctx.getCompoundUri(e.getValue())));
+        this.dependentSchemas = toMap(ctx, node.asObject());
+    }
+
+    public DependentSchemasEvaluator(SchemaParsingContext ctx, Map<String, JsonNode> objectNode) {
+        this.dependentSchemas = toMap(ctx, objectNode);
     }
 
     @Override
@@ -303,6 +305,12 @@ class DependentSchemasEvaluator implements Evaluator {
         } else {
             return Result.failure(String.format("Object does not match dependent schemas for some properties %s", failedFields));
         }
+    }
+
+    private static Map<String, CompoundUri> toMap(SchemaParsingContext ctx, Map<String, JsonNode> objectNode) {
+        return objectNode.entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> ctx.getCompoundUri(e.getValue())));
     }
 }
 

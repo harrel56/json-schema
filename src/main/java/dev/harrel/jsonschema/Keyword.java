@@ -17,7 +17,6 @@ public final class Keyword {
     public static final String VOCABULARY = "$vocabulary";
     public static final String COMMENT = "$comment";
     public static final String DEFS = "$defs";
-    public static final String DEFINITIONS = "definitions";
 
     /* Evaluators */
     public static final String TYPE = "type";
@@ -64,4 +63,8 @@ public final class Keyword {
     public static final String ADDITIONAL_ITEMS = "additionalItems";
     public static final String RECURSIVE_REF = "$recursiveRef";
     public static final String RECURSIVE_ANCHOR = "$recursiveAnchor";
+
+    /* draft-07 */
+    public static final String DEFINITIONS = "definitions";
+    public static final String DEPENDENCIES = "dependencies";
 }
