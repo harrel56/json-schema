@@ -44,7 +44,7 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
                 .withSchemaResolver(createSchemaResolver())
                 .createValidator();
 
-        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, Map.of());
+        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, skippedDraft7Tests());
         return generator.generate(getTestPath() + "/draft7");
     }
 
@@ -120,6 +120,18 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
     String getFileExtension() {
         return ".json";
     }
+
+    private static Map<String, Map<String, Set<String>>> skippedDraft7Tests() {
+        return Map.of(
+                "ref", Map.of(
+                        "$ref prevents a sibling $id from changing the base uri", Set.of(
+                                "$ref resolves to /definitions/base_foo, data does not validate",
+                                "$ref resolves to /definitions/base_foo, data validates"
+                        )
+                )
+        );
+    }
+
 
     private static Map<String, Map<String, Set<String>>> skippedFormatTests() {
         return Map.of(
