@@ -24,6 +24,8 @@ public class Draft7EvaluatorFactory extends AbstractEvaluatorFactory {
         map.remove(MIN_CONTAINS);
         map.remove(DEPENDENT_REQUIRED);
         map.remove(DEPENDENT_SCHEMAS);
+        map.remove(UNEVALUATED_ITEMS);
+        map.remove(UNEVALUATED_PROPERTIES);
         return map;
     }
 }
