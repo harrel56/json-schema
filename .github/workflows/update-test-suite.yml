@@ -20,13 +20,13 @@ jobs:
           path: test-suite
           sparse-checkout: |
             remotes
+            tests/draft7
             tests/draft2019-09
             tests/draft2020-12
 
       - name: Remove unused draft versions
         run: |
           rm -rf test-suite/remotes/draft6
-          rm -rf test-suite/remotes/draft7
           rm -rf test-suite/remotes/draft-next
 
       - name: Checkout json-schema
@@ -71,12 +71,15 @@ jobs:
         run: |
           cat test-suite/tests/draft2020-12/if-then-else.yml | yq '((.[] | select(.description == "if appears at the end when serialized (keyword processing sequence)")).tests[] | select(.description == "no redirects to then and fails")).data style = "single"' > json-schema/src/test/resources/suite-yaml/tests/draft2020-12/if-then-else.yml
           cat test-suite/tests/draft2019-09/if-then-else.yml | yq '((.[] | select(.description == "if appears at the end when serialized (keyword processing sequence)")).tests[] | select(.description == "no redirects to then and fails")).data style = "single"' > json-schema/src/test/resources/suite-yaml/tests/draft2019-09/if-then-else.yml
+          cat test-suite/tests/draft7/if-then-else.yml | yq '((.[] | select(.description == "if appears at the end when serialized (keyword processing sequence)")).tests[] | select(.description == "no redirects to then and fails")).data style = "single"' > json-schema/src/test/resources/suite-yaml/tests/draft7/if-then-else.yml
           cat test-suite/tests/draft2020-12/unevaluatedItems.yml | yq '((.[] | select(.description == "unevaluatedItems with nested items")).tests[] | select(.description == "with invalid additional item")).data[0] style = "single"' > json-schema/src/test/resources/suite-yaml/tests/draft2020-12/unevaluatedItems.yml
           cat test-suite/tests/draft2019-09/unevaluatedItems.yml | yq '((.[] | select(.description == "unevaluatedItems with nested items")).tests[] | select(.description == "with invalid additional item")).data[0] style = "single"' > json-schema/src/test/resources/suite-yaml/tests/draft2019-09/unevaluatedItems.yml
           cat test-suite/tests/draft2020-12/optional/format/ipv6.yml | yq '((.[] | select(.description == "validation of IPv6 addresses")).tests[] | select(.description == "an IPv6 address with too many components" or .description == "insufficient octets without double colons")).data style = "single"' > json-schema/src/test/resources/suite-yaml/tests/draft2020-12/optional/format/ipv6.yml
           cat test-suite/tests/draft2019-09/optional/format/ipv6.yml | yq '((.[] | select(.description == "validation of IPv6 addresses")).tests[] | select(.description == "an IPv6 address with too many components" or .description == "insufficient octets without double colons")).data style = "single"' > json-schema/src/test/resources/suite-yaml/tests/draft2019-09/optional/format/ipv6.yml
+          cat test-suite/tests/draft7/optional/format/ipv6.yml | yq '((.[] | select(.description == "validation of IPv6 addresses")).tests[] | select(.description == "an IPv6 address with too many components" or .description == "insufficient octets without double colons")).data style = "single"' > json-schema/src/test/resources/suite-yaml/tests/draft7/optional/format/ipv6.yml
           cat test-suite/tests/draft2020-12/optional/format/time.yml | yq '((.[] | select(.description == "validation of time strings")).tests[] | select(.description == "no time offset with second fraction")).data style = "single"' > json-schema/src/test/resources/suite-yaml/tests/draft2020-12/optional/format/time.yml
           cat test-suite/tests/draft2019-09/optional/format/time.yml | yq '((.[] | select(.description == "validation of time strings")).tests[] | select(.description == "no time offset with second fraction")).data style = "single"' > json-schema/src/test/resources/suite-yaml/tests/draft2019-09/optional/format/time.yml
+          cat test-suite/tests/draft7/optional/format/time.yml | yq '((.[] | select(.description == "validation of time strings")).tests[] | select(.description == "no time offset with second fraction")).data style = "single"' > json-schema/src/test/resources/suite-yaml/tests/draft7/optional/format/time.yml
 
       - name: Commit YAML test suite
         uses: EndBug/add-and-commit@v9.1.4
