@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 final class VocabularyValidator {
     void validateVocabularies(Dialect dialect, Map<String, Boolean> vocabularyObject) {
-        if (vocabularyObject == null) {
+        if (vocabularyObject == null || dialect.getSpecificationVersion().getOrder() <= SpecificationVersion.DRAFT7.getOrder()) {
             return;
         }
 

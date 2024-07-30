@@ -67,6 +67,14 @@ class GsonTest {
     }
 
     @Nested
+    class Draft7EvaluatorFactoryTest extends dev.harrel.jsonschema.Draft7EvaluatorFactoryTest {
+        @Override
+        public JsonNodeFactory getJsonNodeFactory() {
+            return createFactory();
+        }
+    }
+
+    @Nested
     class JsonNodeFactoryTest extends dev.harrel.jsonschema.JsonNodeFactoryTest {
         @Override
         public JsonNodeFactory getJsonNodeFactory() {

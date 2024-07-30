@@ -22,7 +22,7 @@ class CompoundSchemaTest {
 
     @Test
     @Disabled
-    // fixme
+    // todo
     void compoundSchemaDoesntValidateEmbeddedSchemas() {
         String schema = """
                 {
@@ -96,6 +96,59 @@ class CompoundSchemaTest {
                 "type",
                 "Value is [object] but should be [null]"
         );
+    }
+
+    @Test
+    void schemaKeywordIsIgnoredForFakeEmbeddedSchemasDraft7AnchorId() {
+        String schema = """
+                {
+                  "$schema": "http://json-schema.org/draft-07/schema",
+                  "$id": "urn:compound",
+                  "$ref": "#/$defs/x",
+                  "$defs": {
+                    "x": {
+                      "$schema": "urn:this-resolves-to-nothing",
+                      "$id": "#anchor",
+                      "type": ["null"]
+                    }
+                  }
+                }""";
+
+        Validator validator = new ValidatorFactory().createValidator();
+        URI uri = validator.registerSchema(schema);
+        Validator.Result result = validator.validate(uri, "{}");
+        assertThat(result.isValid()).isFalse();
+        assertThat(result.getErrors()).hasSize(1);
+        assertError(
+                result.getErrors().getFirst(),
+                "/$ref/type",
+                "urn:compound#",
+                "",
+                "type",
+                "Value is [object] but should be [null]"
+        );
+    }
+
+    @Test
+    void schemaKeywordIsNotIgnoredForDraft7MixedId() {
+        String schema = """
+                {
+                  "$schema": "http://json-schema.org/draft-07/schema",
+                  "$id": "urn:compound",
+                  "$ref": "#/$defs/x",
+                  "$defs": {
+                    "x": {
+                      "$schema": "urn:this-resolves-to-nothing",
+                      "$id": "well#anchor",
+                      "type": ["null"]
+                    }
+                  }
+                }""";
+
+        Validator validator = new ValidatorFactory().createValidator();
+        assertThatThrownBy(() -> validator.registerSchema(schema))
+                .isInstanceOf(MetaSchemaResolvingException.class)
+                .hasMessage("Cannot resolve meta-schema [urn:this-resolves-to-nothing]");
     }
 
     @Test

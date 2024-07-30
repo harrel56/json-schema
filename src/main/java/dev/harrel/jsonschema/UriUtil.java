@@ -50,6 +50,14 @@ final class UriUtil {
         }
     }
 
+    static URI removeEmptyFragment(String uri) {
+        if (uri.endsWith("#")) {
+            return URI.create(uri.substring(0, uri.length() - 1));
+        } else {
+            return URI.create(uri);
+        }
+    }
+
     static String getJsonPointer(String uri) {
         int fragmentIdx = uri.indexOf('#');
         if (fragmentIdx < 0) {

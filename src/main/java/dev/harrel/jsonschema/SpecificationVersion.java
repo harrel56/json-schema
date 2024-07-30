@@ -9,19 +9,22 @@ import java.util.stream.Collectors;
  * {@code SpecificationVersion} enum represents JSON Schema specification versions that are supported.
  */
 public enum SpecificationVersion {
-    DRAFT2020_12("https://json-schema.org/draft/2020-12", "/draft2020-12.json") {
+    DRAFT2020_12(9, "https://json-schema.org/draft/2020-12", "/draft2020-12.json") {
         @Override
         Optional<String> resolveResource(String uri) {
             return getId().equals(uri) ? readFileResource(getResourcePath()) : Optional.empty();
         }
     },
-    DRAFT2019_09("https://json-schema.org/draft/2019-09", "/dev/harrel/jsonschema/draft/2019-09/schema.json");
+    DRAFT2019_09(8, "https://json-schema.org/draft/2019-09", "/dev/harrel/jsonschema/draft/2019-09/schema.json"),
+    DRAFT7(7, "http://json-schema.org/draft-07", "/dev/harrel/jsonschema/draft-07/schema.json");
+    private final int order;
     private final URI baseUri;
     private final String id;
     private final String resourcePath;
     private final URI resourcePathUri;
 
-    SpecificationVersion(String baseUri, String resourcePath) {
+    SpecificationVersion(int order, String baseUri, String resourcePath) {
+        this.order = order;
         this.baseUri = URI.create(baseUri);
         this.id = baseUri + "/schema";
         this.resourcePath = resourcePath;
@@ -53,6 +56,10 @@ public enum SpecificationVersion {
      */
     public String getResourcePath() {
         return resourcePath;
+    }
+
+    int getOrder() {
+        return order;
     }
 
     URI getBaseUri() {

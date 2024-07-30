@@ -6,8 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static dev.harrel.jsonschema.Vocabulary.Draft2019;
-import static dev.harrel.jsonschema.Vocabulary.Draft2020;
+import static dev.harrel.jsonschema.Vocabulary.*;
 import static java.util.Collections.singleton;
 import static java.util.Collections.unmodifiableMap;
 
@@ -23,6 +22,7 @@ public final class Dialects {
         Map<URI, Dialect> map = new HashMap<>();
         map.put(URI.create(SpecificationVersion.DRAFT2020_12.getId()), new Draft2020Dialect());
         map.put(URI.create(SpecificationVersion.DRAFT2019_09.getId()), new Draft2019Dialect());
+        map.put(URI.create(SpecificationVersion.DRAFT7.getId()), new Draft7Dialect());
         OFFICIAL_DIALECTS = Collections.unmodifiableMap(map);
     }
 
@@ -128,6 +128,47 @@ public final class Dialects {
         @Override
         public Map<String, Boolean> getDefaultVocabularyObject() {
             return defaultVocabularyObject;
+        }
+    }
+
+    /**
+     * Dialect corresponding to <i>draft7</i> specification.
+     */
+    public static class Draft7Dialect implements Dialect {
+        private final EvaluatorFactory evaluatorFactory;
+
+        public Draft7Dialect() {
+            this.evaluatorFactory = new Draft7EvaluatorFactory();
+        }
+
+        @Override
+        public SpecificationVersion getSpecificationVersion() {
+            return SpecificationVersion.DRAFT7;
+        }
+
+        @Override
+        public String getMetaSchema() {
+            return SpecificationVersion.DRAFT7.getId();
+        }
+
+        @Override
+        public EvaluatorFactory getEvaluatorFactory() {
+            return evaluatorFactory;
+        }
+
+        @Override
+        public Set<String> getSupportedVocabularies() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public Set<String> getRequiredVocabularies() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public Map<String, Boolean> getDefaultVocabularyObject() {
+            return Collections.emptyMap();
         }
     }
 }

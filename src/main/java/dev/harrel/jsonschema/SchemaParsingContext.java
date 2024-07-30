@@ -42,6 +42,10 @@ public final class SchemaParsingContext {
         return metaSchemaData;
     }
 
+    SpecificationVersion getSpecificationVersion() {
+        return metaSchemaData.dialect.getSpecificationVersion();
+    }
+
     URI getBaseUri() {
         return baseUri;
     }

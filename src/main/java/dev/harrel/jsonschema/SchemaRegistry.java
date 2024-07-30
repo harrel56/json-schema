@@ -87,13 +87,23 @@ final class SchemaRegistry {
         Map<String, JsonNode> objectMap = schemaNode.asObject();
         Fragments fragments = state.createIfAbsent(ctx.getParentUri());
 
-        JsonNodeUtil.getStringField(objectMap, Keyword.ANCHOR)
-                .ifPresent(anchorString -> fragments.additionalSchemas.put(anchorString, schema));
-        JsonNodeUtil.getStringField(objectMap, Keyword.DYNAMIC_ANCHOR)
-                .ifPresent(anchorString -> fragments.dynamicSchemas.put(anchorString, schema));
-        JsonNodeUtil.getBooleanField(objectMap, Keyword.RECURSIVE_ANCHOR)
-                .filter(anchor -> anchor)
-                .ifPresent(anchorString -> fragments.dynamicSchemas.put("", schema));
+        if (ctx.getSpecificationVersion().getOrder() > SpecificationVersion.DRAFT7.getOrder()) {
+            JsonNodeUtil.getStringField(objectMap, Keyword.ANCHOR)
+                    .ifPresent(anchorString -> fragments.additionalSchemas.put(anchorString, schema));
+            if (ctx.getSpecificationVersion() == SpecificationVersion.DRAFT2019_09) {
+                JsonNodeUtil.getBooleanField(objectMap, Keyword.RECURSIVE_ANCHOR)
+                        .filter(anchor -> anchor)
+                        .ifPresent(anchorString -> fragments.dynamicSchemas.put("", schema));
+            } else {
+                JsonNodeUtil.getStringField(objectMap, Keyword.DYNAMIC_ANCHOR)
+                        .ifPresent(anchorString -> fragments.dynamicSchemas.put(anchorString, schema));
+            }
+        } else {
+            JsonNodeUtil.getStringField(objectMap, Keyword.ID)
+                    .map(URI::create)
+                    .map(URI::getFragment)
+                    .ifPresent(anchorString -> fragments.additionalSchemas.put(anchorString, schema));
+        }
     }
 
     static final class State {

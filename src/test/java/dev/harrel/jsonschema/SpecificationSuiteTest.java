@@ -37,6 +37,18 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
     }
 
     @TestFactory
+    Stream<DynamicNode> draft7Required() {
+        Validator validator = new ValidatorFactory()
+                .withDefaultDialect(new Dialects.Draft7Dialect())
+                .withJsonNodeFactory(getJsonNodeFactory())
+                .withSchemaResolver(createSchemaResolver())
+                .createValidator();
+
+        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, skippedDraft7Tests());
+        return generator.generate(getTestPath() + "/draft7");
+    }
+
+    @TestFactory
     Stream<DynamicNode> draft2020Format() {
         Validator validator = new ValidatorFactory()
                 .withEvaluatorFactory(new FormatEvaluatorFactory())
@@ -62,6 +74,19 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
     }
 
     @TestFactory
+    Stream<DynamicNode> draft7Format() {
+        Validator validator = new ValidatorFactory()
+                .withDefaultDialect(new Dialects.Draft7Dialect())
+                .withEvaluatorFactory(new FormatEvaluatorFactory())
+                .withJsonNodeFactory(getJsonNodeFactory())
+                .withSchemaResolver(createSchemaResolver())
+                .createValidator();
+
+        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, skippedFormatTests());
+        return generator.generate(getTestPath() + "/draft7/optional/format");
+    }
+
+    @TestFactory
     Stream<DynamicNode> draft2020Optional() {
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(getJsonNodeFactory())
@@ -72,6 +97,7 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
         return Stream.of(
                 generator.generate(getTestPath() + "/draft2020-12/optional/bignum" + getFileExtension()),
                 generator.generate(getTestPath() + "/draft2020-12/optional/cross-draft" + getFileExtension()),
+                generator.generate(getTestPath() + "/draft2020-12/optional/float-overflow" + getFileExtension()),
                 generator.generate(getTestPath() + "/draft2020-12/optional/no-schema" + getFileExtension()),
                 generator.generate(getTestPath() + "/draft2020-12/optional/non-bmp-regex" + getFileExtension()),
                 generator.generate(getTestPath() + "/draft2020-12/optional/refOfUnknownKeyword" + getFileExtension())
@@ -89,11 +115,28 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
         SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, Map.of());
         return Stream.of(
                 generator.generate(getTestPath() + "/draft2019-09/optional/bignum" + getFileExtension()),
-// todo uncomment when draft7 is supported
-//                generator.generate(getTestPath() + "/draft2019-09/optional/cross-draft" + getFileExtension()),
+                generator.generate(getTestPath() + "/draft2019-09/optional/cross-draft" + getFileExtension()),
+                generator.generate(getTestPath() + "/draft2019-09/optional/float-overflow" + getFileExtension()),
                 generator.generate(getTestPath() + "/draft2019-09/optional/no-schema" + getFileExtension()),
                 generator.generate(getTestPath() + "/draft2019-09/optional/non-bmp-regex" + getFileExtension()),
                 generator.generate(getTestPath() + "/draft2019-09/optional/refOfUnknownKeyword" + getFileExtension())
+        ).flatMap(Function.identity());
+    }
+
+    @TestFactory
+    Stream<DynamicNode> draft7Optional() {
+        Validator validator = new ValidatorFactory()
+                .withDefaultDialect(new Dialects.Draft7Dialect())
+                .withJsonNodeFactory(getJsonNodeFactory())
+                .withSchemaResolver(createSchemaResolver())
+                .createValidator();
+
+        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, Map.of());
+        return Stream.of(
+                generator.generate(getTestPath() + "/draft7/optional/bignum" + getFileExtension()),
+                generator.generate(getTestPath() + "/draft7/optional/cross-draft" + getFileExtension()),
+                generator.generate(getTestPath() + "/draft7/optional/float-overflow" + getFileExtension()),
+                generator.generate(getTestPath() + "/draft7/optional/non-bmp-regex" + getFileExtension())
         ).flatMap(Function.identity());
     }
 
@@ -108,6 +151,18 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
     String getFileExtension() {
         return ".json";
     }
+
+    private static Map<String, Map<String, Set<String>>> skippedDraft7Tests() {
+        return Map.of(
+                "ref", Map.of(
+                        "$ref prevents a sibling $id from changing the base uri", Set.of(
+                                "$ref resolves to /definitions/base_foo, data does not validate",
+                                "$ref resolves to /definitions/base_foo, data validates"
+                        )
+                )
+        );
+    }
+
 
     private static Map<String, Map<String, Set<String>>> skippedFormatTests() {
         return Map.of(
