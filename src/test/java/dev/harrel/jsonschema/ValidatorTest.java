@@ -35,17 +35,46 @@ class ValidatorTest {
         Validator validator = new ValidatorFactory().createValidator();
         URI uri = URI.create("https://test.com/x#/$def/x");
         assertThatThrownBy(() -> validator.validate(uri, "{}"))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Root schema [https://test.com/x#/$def/x] cannot contain non-empty fragments");
+                .isInstanceOf(SchemaNotFoundException.class)
+                .hasMessage("Couldn't find schema with uri [https://test.com/x#/$def/x]");
     }
 
     @Test
-    void registersUriWithEmptyFragments() {
+    void failsForNonExistentSchemaWithEmptyFragment() {
         Validator validator = new ValidatorFactory().createValidator();
         URI uri = URI.create("https://test.com/x#");
         assertThatThrownBy(() -> validator.validate(uri, "{}"))
                 .isInstanceOf(SchemaNotFoundException.class)
-                .hasMessage("Couldn't find schema with uri [https://test.com/x#]");
+                .hasMessage("Couldn't find schema with uri [https://test.com/x]");
+    }
+
+    @Test
+    void findsSchemaByGeneratedUri() {
+        Validator validator = new ValidatorFactory().createValidator();
+        URI uri = validator.registerSchema("{}");
+        Validator.Result result = validator.validate(uri, "{}");
+        assertThat(result.isValid()).isTrue();
+    }
+
+    @Test
+    void findsSchemaByProvidedUri() {
+        Validator validator = new ValidatorFactory().createValidator();
+        URI uri = URI.create("https://test.com/schema");
+        validator.registerSchema(URI.create("https://test.com/schema"), "{}");
+        Validator.Result result = validator.validate(uri, "{}");
+        assertThat(result.isValid()).isTrue();
+    }
+
+    @Test
+    void findsSchemaByIdKeyword() {
+        Validator validator = new ValidatorFactory().createValidator();
+        URI uri = URI.create("https://test.com/schema/id");
+        validator.registerSchema("""
+                {
+                  "$id": "https://test.com/schema/id"
+                }""");
+        Validator.Result result = validator.validate(uri, "{}");
+        assertThat(result.isValid()).isTrue();
     }
 
     @Test
@@ -185,6 +214,102 @@ class ValidatorTest {
     }
 
     @Test
+    void shouldFallbackToSchemaResolverWithFragment() {
+        Validator validator = new ValidatorFactory()
+                .withDisabledSchemaValidation(true)
+                .withSchemaResolver(uri -> SchemaResolver.Result.fromString("""
+                        {
+                          "$defs": {
+                            "sub": {
+                              "type": "string"
+                            }
+                          }
+                        }"""))
+                .createValidator();
+
+        Validator.Result result = validator.validate(URI.create("urn:test#/$defs/sub"), "{}");
+        assertThat(result.isValid()).isFalse();
+
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(1);
+        assertError(
+                errors.get(0),
+                "/$defs/sub/type",
+                "urn:test#/$defs/sub",
+                "",
+                "type",
+                "Value is [object] but should be [string]"
+        );
+    }
+
+    @Test
+    void shouldFallbackToSchemaResolverWithAnchor() {
+        Validator validator = new ValidatorFactory()
+                .withDisabledSchemaValidation(true)
+                .withSchemaResolver(uri -> SchemaResolver.Result.fromString("""
+                        {
+                          "$defs": {
+                            "sub": {
+                              "$anchor": "anchor",
+                              "type": "string"
+                            }
+                          }
+                        }"""))
+                .createValidator();
+
+        Validator.Result result = validator.validate(URI.create("urn:test#anchor"), "{}");
+        assertThat(result.isValid()).isFalse();
+
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(1);
+        assertError(
+                errors.get(0),
+                "/$defs/sub/type",
+                "urn:test#/$defs/sub",
+                "",
+                "type",
+                "Value is [object] but should be [string]"
+        );
+    }
+
+    @Test
+    void shouldFailResolvingExternalSchemaWithInvalidFragment() {
+        Validator validator = new ValidatorFactory()
+                .withDisabledSchemaValidation(true)
+                .withSchemaResolver(uri -> SchemaResolver.Result.fromString("""
+                        {
+                          "$defs": {
+                            "sub": {
+                              "type": "string"
+                            }
+                          }
+                        }"""))
+                .createValidator();
+
+        URI uri = URI.create("urn:test#/$defs/non-existent");
+        assertThatThrownBy(() -> validator.validate(uri, "{}"))
+                .isInstanceOf(SchemaNotFoundException.class)
+                .hasMessage("Couldn't find schema with uri [urn:test#/$defs/non-existent]");
+    }
+
+    @Test
+    void shouldFailResolvingSchemaWithInvalidFragment() {
+        Validator validator = new ValidatorFactory().createValidator();
+        URI uri = URI.create("urn:test#/$defs/non-existent");
+        validator.registerSchema(uri, """
+                        {
+                          "$defs": {
+                            "sub": {
+                              "type": "string"
+                            }
+                          }
+                        }""");
+        assertThatThrownBy(() -> validator.validate(uri, "{}"))
+                .isInstanceOf(SchemaNotFoundException.class)
+                .hasMessage("Couldn't find schema with uri [urn:test#/$defs/non-existent]");
+    }
+
+    @Test
     void allowsEmptyFragmentsInIdRootSchema() {
         // with disabled schema validation
         Validator validator = new ValidatorFactory()
@@ -311,5 +436,36 @@ class ValidatorTest {
         assertThatThrownBy(() -> validator2.registerSchema(uri, schema2))
                 .isInstanceOf(InvalidSchemaException.class)
                 .hasMessage("Schema [urn:sub] failed to validate against meta-schema [https://json-schema.org/draft/2020-12/schema]");
+    }
+
+    @Test
+    void supportsMultipleWaysOfReferencing() {
+        String schema = """
+                {
+                  "$defs": {
+                    "x": {
+                      "$id": "urn:sub#"
+                    }
+                  }
+                }""";
+        Validator validator = new ValidatorFactory()
+                .withDisabledSchemaValidation(true)
+                .createValidator();
+
+        validator.registerSchema(URI.create("https://test.com/schema"), schema);
+        Validator.Result result = validator.validate(URI.create("https://test.com/schema"), "true");
+        assertThat(result.isValid()).isTrue();
+
+        result = validator.validate(URI.create("https://test.com/schema#"), "true");
+        assertThat(result.isValid()).isTrue();
+
+        result = validator.validate(URI.create("https://test.com/schema#/$defs/x"), "true");
+        assertThat(result.isValid()).isTrue();
+
+        result = validator.validate(URI.create("urn:sub"), "true");
+        assertThat(result.isValid()).isTrue();
+
+        result = validator.validate(URI.create("urn:sub#"), "true");
+        assertThat(result.isValid()).isTrue();
     }
 }

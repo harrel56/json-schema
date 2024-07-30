@@ -3,7 +3,6 @@ package dev.harrel.jsonschema.providers;
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.SimpleType;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -55,8 +54,4 @@ abstract class AbstractJsonNode<T> implements JsonNode {
     abstract List<JsonNode> createArray();
     abstract Map<String, JsonNode> createObject();
     abstract SimpleType computeNodeType(T node);
-
-    static boolean canConvertToInteger(BigDecimal bigDecimal) {
-        return bigDecimal.scale() <= 0 || bigDecimal.stripTrailingZeros().scale() <= 0;
-    }
 }

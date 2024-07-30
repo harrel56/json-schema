@@ -12,8 +12,6 @@ import java.math.BigInteger;
 import java.util.*;
 
 public final class GsonNode extends AbstractJsonNode<JsonElement> {
-    private BigDecimal asNumber;
-
     private GsonNode(JsonElement node, String jsonPointer) {
         super(Objects.requireNonNull(node), jsonPointer);
     }
@@ -34,12 +32,12 @@ public final class GsonNode extends AbstractJsonNode<JsonElement> {
 
     @Override
     public BigInteger asInteger() {
-        return asNumber.toBigInteger();
+        return node.getAsBigDecimal().toBigInteger();
     }
 
     @Override
     public BigDecimal asNumber() {
-        return asNumber;
+        return node.getAsBigDecimal();
     }
 
     @Override
@@ -86,8 +84,8 @@ public final class GsonNode extends AbstractJsonNode<JsonElement> {
             } else if (jsonPrimitive.isString()) {
                 return SimpleType.STRING;
             } else {
-                asNumber = jsonPrimitive.getAsBigDecimal();
-                if (canConvertToInteger(asNumber)) {
+                BigDecimal bigDecimal = jsonPrimitive.getAsBigDecimal();
+                if (bigDecimal.scale() <= 0 || bigDecimal.stripTrailingZeros().scale() <= 0) {
                     return SimpleType.INTEGER;
                 } else {
                     return SimpleType.NUMBER;
