@@ -10,6 +10,7 @@ Java library implementing [JSON schema specification](https://json-schema.org/sp
 - support for the newest [specification versions](#dialects) [![Supported spec](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie-json-schema.github.io%2Fbowtie%2Fbadges%2Fjava-dev.harrel.json-schema%2Fsupported_versions.json)](https://bowtie.report/#/implementations/java-json-schema):
   - Draft 2020-12 [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie.report%2Fbadges%2Fjava-dev.harrel.json-schema%2Fcompliance%2Fdraft2020-12.json)](https://bowtie.report/#/dialects/draft2020-12),
   - Draft 2019-09 [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie.report%2Fbadges%2Fjava-dev.harrel.json-schema%2Fcompliance%2Fdraft2019-09.json)](https://bowtie.report/#/dialects/draft2019-09),
+  - Draft 07 [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie.report%2Fbadges%2Fjava-dev.harrel.json-schema%2Fcompliance%2Fdraft7.json)](https://bowtie.report/#/dialects/draft7),
 - support for [custom keywords](#adding-custom-keywords),
 - support for annotation collection,
 - support for [format validation](#format-validation) (for a price of one additional dependency 😉),
@@ -78,6 +79,7 @@ Supported JSON providers:
 - `com.fasterxml.jackson.core:jackson-databind` (default),
 - `com.google.code.gson:gson`,
 - `jakarta.json:jakarta.json-api`,
+- `org.jetbrains.kotlinx:kotlinx-serialization-json`,
 - `org.json:json`,
 - `new.minidev:json-smart`,
 - `org.codehouse.jettison:jettison`.
@@ -93,15 +95,16 @@ All adapter classes for JSON provider libs can be found in this [package](https:
 
 ### Changing JSON/YAML provider
 
-| Provider                                    | Factory class                                                                                                                                | Provider node class                                                                                                                                      |
-|---------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
-| com.fasterxml.jackson.core:jackson-databind | [JacksonNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/JacksonNode.Factory.html)         | com.fasterxml.jackson.databind.JsonNode                                                                                                                  |
-| com.google.code.gson:gson                   | [GsonNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/GsonNode.Factory.html)               | com.google.gson.JsonElement                                                                                                                              |
-| jakarta.json:jakarta.json-api               | [JakartaJsonNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/JakartaJsonNode.Factory.html) | jakarta.json.JsonValue                                                                                                                                   |
-| org.json:json                               | [OrgJsonNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/OrgJsonNode.Factory.html)         | <ul><li>org.json.JSONObject,</li><li>org.json.JSONArray,</li><li>[literal types](#provider-literal-types).</li></ul>                                     |
-| new.minidev:json-smart                      | [JsonSmartNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/JsonSmartNode.Factory.html)     | <ul><li>net.minidev.json.JSONObject,</li><li>net.minidev.json.JSONArray,</li><li>[literal types](#provider-literal-types).</li></ul>                     |
-| org.codehouse.jettison:jettison             | [JettisonNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/JettisonNode.Factory.html)       | <ul><li>org.codehaus.jettison.json.JSONObject,</li><li>org.codehaus.jettison.json.JSONArray,</li><li>[literal types](#provider-literal-types).</li></ul> |
-| org.yaml:snakeyaml                          | [SnakeYamlNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/SnakeYamlNode.Factory.html)     | org.yaml.snakeyaml.nodes.Node                                                                                                                            |
+| Provider                                         | Factory class                                                                                                                                | Provider node class                                                                                                                                      |
+|--------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| com.fasterxml.jackson.core:jackson-databind      | [JacksonNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/JacksonNode.Factory.html)         | com.fasterxml.jackson.databind.JsonNode                                                                                                                  |
+| com.google.code.gson:gson                        | [GsonNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/GsonNode.Factory.html)               | com.google.gson.JsonElement                                                                                                                              |
+| jakarta.json:jakarta.json-api                    | [JakartaJsonNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/JakartaJsonNode.Factory.html) | jakarta.json.JsonValue                                                                                                                                   |
+| org.jetbrains.kotlinx:kotlinx-serialization-json | [KotlinxJsonFactory.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/KotlinxJson.Factory.html)  | kotlinx.serialization.json.JsonElement                                                                                                                   |
+| org.json:json                                    | [OrgJsonNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/OrgJsonNode.Factory.html)         | <ul><li>org.json.JSONObject,</li><li>org.json.JSONArray,</li><li>[literal types](#provider-literal-types).</li></ul>                                     |
+| new.minidev:json-smart                           | [JsonSmartNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/JsonSmartNode.Factory.html)     | <ul><li>net.minidev.json.JSONObject,</li><li>net.minidev.json.JSONArray,</li><li>[literal types](#provider-literal-types).</li></ul>                     |
+| org.codehouse.jettison:jettison                  | [JettisonNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/JettisonNode.Factory.html)       | <ul><li>org.codehaus.jettison.json.JSONObject,</li><li>org.codehaus.jettison.json.JSONArray,</li><li>[literal types](#provider-literal-types).</li></ul> |
+| org.yaml:snakeyaml                               | [SnakeYamlNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/SnakeYamlNode.Factory.html)     | org.yaml.snakeyaml.nodes.Node                                                                                                                            |
 
 #### com.fasterxml.jackson.core:jackson-databind
 ```java
@@ -118,6 +121,11 @@ It would be required to also have e.g. `org.glassfish:jakarta.json` dependency i
 Although, it was tested with newest `jakarta.json-api` version, it should be compatible down to `1.1` version.
 ```java
 new ValidatorFactory().withJsonNodeFactory(new JakartaJsonNode.Factory());
+```
+
+#### org.jetbrains.kotlinx:kotlinx-serialization-json
+```java
+new ValidatorFactory().withJsonNodeFactory(new KotlinxJsonNode.Factory());
 ```
 
 #### org.json:json
@@ -236,20 +244,26 @@ new ValidatorFactory().withSchemaResolver(resolver);
 For more information about return type please refer to the [documentation](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/SchemaResolver.Result.html).
 
 ### Dialects
-By default, [draft 2020-12 dialect](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/Dialects.Draft2020Dialect.html) is used,
-but it can be changed with:
+Officially supported dialects:
+- Draft 2020-12,
+- Draft 2019-09
+- Draft 07
+
+It is automatically inferred (by content of `$schema` keyword) which dialect to use.
+If a schema does not contain `$schema` keyword, the default dialect will be used, which is [draft 2020-12 dialect](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/Dialects.Draft2020Dialect.html).
+It's possible to change the default by calling:
 ```java
-new ValidatorFactory().withDialect(new Dialects.Draft2019Dialect()); // or any other dialect
+new ValidatorFactory().withDefaultDialect(new Dialects.Draft2019Dialect()); // or any other dialect
 ```
 Custom dialects are also supported, see more [here](#custom-dialects).
 
 ### Meta-schemas
-Dialects come with their meta-schemas. Each schema will be validated by meta-schema provided by used *dialect*.
-If validation fails [InvalidSchemaException](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/InvalidSchemaException.html) is thrown.
+Each schema is recommended to contain `$schema` keyword to properly infer which dialect to use.
+`$schema` keyword must refer to a meta-schema against which the current schema will be validated.
+Resolution of meta-schemas follows the same [rules](#resolving-external-schemas) as for a regular schemas.
+If validation against meta-schema fails [InvalidSchemaException](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/InvalidSchemaException.html) is thrown.
 
-For each specific schema this behaviour can be overridden by providing *$schema* keyword with desired meta-schema URI. Resolution of meta-schema follows the same [rules](#resolving-external-schemas) as for a regular schema.
-
-There is a configuration option that disables all schema validations (affects *$schema* and vocabularies semantics too):
+There is a configuration option that disables all schema validations:
 ```java
 new ValidatorFactory().withDisabledSchemaValidation(true);
 ```
@@ -399,5 +413,7 @@ Dialect customDialect = new Dialect() {
 };
 new ValidatorFactory().withDialect(customDialect);
 ```
+This way, whenever `$schema` has value `https://example.com/custom/schema` this custom dialect will be used.
+Please note that it is still required to provide a meta-schema which could be resolved from the given URI.
+You can provide multiple custom dialects by multiple `withDialect()` calls.
 See the [documentation](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/Dialect.html) for more details.
-

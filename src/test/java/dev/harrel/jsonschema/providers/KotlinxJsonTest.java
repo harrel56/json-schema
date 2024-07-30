@@ -5,24 +5,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
-import net.minidev.json.parser.JSONParser;
-import net.minidev.json.parser.ParseException;
+import kotlinx.serialization.json.Json;
+import kotlinx.serialization.json.JsonElement;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import static net.minidev.json.parser.JSONParser.MODE_JSON_SIMPLE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class JsonSmartTest {
+class KotlinxJsonTest {
     private JsonNodeFactory createFactory() {
-        return new JsonSmartNode.Factory();
+        return new KotlinxJsonNode.Factory();
     }
 
     @Test
-    void shouldWrapForValidArgument() throws ParseException {
-        Object object = new JSONParser(MODE_JSON_SIMPLE).parse("{}");
-        JsonNode wrap = new JsonSmartNode.Factory().wrap(object);
+    void shouldWrapForValidArgument() {
+        JsonElement object = Json.Default.parseToJsonElement("{}");
+        JsonNode wrap = createFactory().wrap(object);
         assertThat(wrap).isNotNull();
         assertThat(wrap.getNodeType()).isEqualTo(SimpleType.OBJECT);
     }
@@ -30,7 +29,7 @@ class JsonSmartTest {
     @Test
     void shouldFailWrapForInvalidArgument() throws JsonProcessingException {
         com.fasterxml.jackson.databind.JsonNode object = new ObjectMapper().readTree("{}");
-        JsonSmartNode.Factory factory = new JsonSmartNode.Factory();
+        JsonNodeFactory factory = createFactory();
         assertThatThrownBy(() -> factory.wrap(object))
                 .isInstanceOf(IllegalArgumentException.class);
     }
