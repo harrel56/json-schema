@@ -1,6 +1,5 @@
 package dev.harrel.jsonschema;
 
-import java.net.URI;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -37,13 +36,5 @@ final class JsonNodeUtil {
                         .filter(entry -> entry.getValue().isBoolean())
                         .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().asBoolean())))
                 .map(Collections::unmodifiableMap);
-    }
-
-    static boolean validateIdField(String id) {
-        URI uri = URI.create(id);
-        if (uri.getFragment() != null && !uri.getFragment().isEmpty()) {
-            throw new IllegalArgumentException(String.format("$id [%s] cannot contain non-empty fragments", id));
-        }
-        return true;
     }
 }

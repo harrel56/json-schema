@@ -89,8 +89,8 @@ public class SuiteTestGenerator {
 
     private void testValidation(String bundle, String name, JsonNode schema, JsonNode instance, boolean valid, boolean skipped) {
         Assumptions.assumeFalse(skipped);
-//        Assumptions.assumeTrue(bundle.equals("unevaluatedProperties with $dynamicRef"));
-//        Assumptions.assumeTrue(name.equals("an IPv6 address with too many components"));
+//        Assumptions.assumeTrue(bundle.equals("schema that uses custom metaschema with with no validation vocabulary"));
+//        Assumptions.assumeTrue(name.equals("no validation: invalid number, but it still validates"));
 
         logger.info("%s: %s".formatted(bundle, name));
         logger.info(String.valueOf(valid));
