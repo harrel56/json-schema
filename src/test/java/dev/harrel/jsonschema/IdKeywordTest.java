@@ -247,11 +247,62 @@ class IdKeywordTest {
 
         // with enabled schema validation
         Validator validator2 = createValidator(version, false);
-        URI uri = URI.create("urn:sub");
+        URI uri = URI.create("urn:root");
 
         assertThatThrownBy(() -> validator2.registerSchema(uri, schema))
                 .isInstanceOf(InvalidSchemaException.class)
-                .hasMessage("Schema [urn:sub] failed to validate against meta-schema [%s]".formatted(version.getId()));
+                .hasMessage("Schema [urn:root] failed to validate against meta-schema [%s]".formatted(version.getId()));
+    }
+
+    @ParameterizedTest
+    @MethodSource("lenientVersions")
+    void allowsSoleAnchorFragmentsInIdSubSchema(SpecificationVersion version) {
+        // with disabled schema validation
+        Validator validator = createValidator(version, true);
+        String schema = """
+                {
+                  "$defs": {
+                    "x": {
+                      "$id": "#anchor"
+                    }
+                  }
+                }""";
+        URI uri = validator.registerSchema(schema);
+        Validator.Result result = validator.validate(uri, "true");
+        assertThat(result.isValid()).isTrue();
+
+        // with enabled schema validation
+        validator = createValidator(version, false);
+
+        uri = validator.registerSchema(schema);
+        result = validator.validate(uri, "true");
+        assertThat(result.isValid()).isTrue();
+    }
+
+    @ParameterizedTest
+    @MethodSource("strictVersions")
+    void disallowsSoleAnchorFragmentsInIdSubSchema(SpecificationVersion version) {
+        // with disabled schema validation
+        Validator validator = createValidator(version, true);
+        String schema = """
+                {
+                  "$defs": {
+                    "x": {
+                      "$id": "#anchor"
+                    }
+                  }
+                }""";
+        assertThatThrownBy(() -> validator.registerSchema(schema))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("$id [#anchor] cannot contain non-empty fragments");
+
+        // with enabled schema validation
+        Validator validator2 = createValidator(version, false);
+        URI uri = URI.create("urn:root");
+
+        assertThatThrownBy(() -> validator2.registerSchema(uri, schema))
+                .isInstanceOf(InvalidSchemaException.class)
+                .hasMessage("Schema [urn:root] failed to validate against meta-schema [%s]".formatted(version.getId()));
     }
 
     private Validator createValidator(SpecificationVersion version, boolean disabledSchemaValidation) {
