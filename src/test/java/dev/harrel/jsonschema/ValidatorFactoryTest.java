@@ -63,18 +63,18 @@ class ValidatorFactoryTest {
                   "$schema": "urn:meta"
                 }""";
         Validator validator = new ValidatorFactory()
-                .withDialect(new Dialects.Draft2020Dialect() {
-                    @Override
-                    public String getMetaSchema() {
-                        return null;
+                .withSchemaResolver(uri -> {
+                    if ("urn:meta".equals(uri)) {
+                        return SchemaResolver.Result.fromString(RAW_SCHEMA);
+                    } else {
+                        return SchemaResolver.Result.empty();
                     }
                 })
-                .withSchemaResolver(uri -> SchemaResolver.Result.fromString(RAW_SCHEMA))
                 .createValidator();
-        InvalidSchemaException e = catchThrowableOfType(() -> validator.registerSchema(schema), InvalidSchemaException.class);
+        InvalidSchemaException e = catchThrowableOfType(InvalidSchemaException.class, () -> validator.registerSchema(schema));
         assertThat(e.getErrors()).hasSize(1);
         assertError(
-                e.getErrors().get(0),
+                e.getErrors().getFirst(),
                 "/type",
                 "urn:meta#",
                 "",
@@ -195,7 +195,7 @@ class ValidatorFactoryTest {
         List<Error> errors = result.getErrors();
         assertThat(errors).hasSize(1);
         assertError(
-                errors.get(0),
+                errors.getFirst(),
                 "/$ref",
                 "https://harrel.dev/",
                 "",

@@ -14,7 +14,8 @@ import java.util.function.Supplier;
  * @see Validator
  */
 public final class ValidatorFactory {
-    private Dialect dialect = new Dialects.Draft2020Dialect();
+    private final Map<URI, Dialect> dialects = new HashMap<>(Dialects.OFFICIAL_DIALECTS);
+    private Dialect defaultDialect = new Dialects.Draft2020Dialect();
     private EvaluatorFactory evaluatorFactory;
     private Supplier<JsonNodeFactory> schemaNodeFactory = JacksonNode.Factory::new;
     private Supplier<JsonNodeFactory> instanceNodeFactory = schemaNodeFactory;
@@ -27,20 +28,47 @@ public final class ValidatorFactory {
      * @return new {@link Validator} instance
      */
     public Validator createValidator() {
-        EvaluatorFactory compositeFactory = evaluatorFactory == null ? dialect.getEvaluatorFactory() : EvaluatorFactory.compose(evaluatorFactory, dialect.getEvaluatorFactory());
+        Map<URI, Dialect> dialectsCopy = Collections.unmodifiableMap(new HashMap<>(dialects));
         JsonNodeFactory schemaFactory = schemaNodeFactory.get();
         JsonNodeFactory instanceFactory = instanceNodeFactory.get();
-        return new Validator(dialect, compositeFactory, schemaFactory, instanceFactory, schemaResolver, disabledSchemaValidation);
+        SchemaRegistry schemaRegistry = new SchemaRegistry();
+        MetaSchemaValidator metaSchemaValidator = new MetaSchemaValidator(schemaFactory, schemaRegistry, schemaResolver);
+        JsonParser jsonParser = new JsonParser(dialectsCopy, defaultDialect, evaluatorFactory, schemaRegistry, metaSchemaValidator, disabledSchemaValidation);
+        return new Validator(schemaFactory, instanceFactory, schemaResolver, schemaRegistry, jsonParser);
     }
 
     /**
-     * Sets {@link Dialect}. Provided default is {@link Dialects.Draft2020Dialect}.
+     * Registers a {@link Dialect} using {@link Dialect#getMetaSchema()} value.
+     * If {@link Dialect#getMetaSchema()} returns null, the dialect will not be registered.
+     * This method can be called multiple times to register multiple dialects.
+     * Keep in mind that overriding an official dialect is also possible if you provide the same meta-schema.
+     * Generally, this method should be used only when:
+     * <ul>
+     *     <li>You need your meta-schema to be recursive (same value in <code>$schema</code> and <code>$id</code>).</li>
+     *     <li>You want to validate vocabularies integrity based on your dialect's required and supported vocabularies.</li>
+     *     <li>You use <code>withDisabledSchemaValidation()</code> and want to define active vocabularies for your meta-schema.</li>
+     * </ul>
      *
-     * @param dialect {@code Dialect} to be used
+     * @param dialect {@code Dialect} to be registered
      * @return self
      */
     public ValidatorFactory withDialect(Dialect dialect) {
-        this.dialect = Objects.requireNonNull(dialect);
+        // todo lets make meta-schema non-nullable at some point
+        if (dialect.getMetaSchema() != null) {
+            dialects.put(URI.create(dialect.getMetaSchema()), dialect);
+        }
+        return this;
+    }
+
+    /**
+     * Sets default {@link Dialect} which will be used when {@code $schema} keyword is absent.
+     * Provided default is {@link Dialects.Draft2020Dialect}.
+     *
+     * @param dialect {@code Dialect} to be used as default
+     * @return self
+     */
+    public ValidatorFactory withDefaultDialect(Dialect dialect) {
+        this.defaultDialect = Objects.requireNonNull(dialect);
         return this;
     }
 
@@ -101,8 +129,7 @@ public final class ValidatorFactory {
     }
 
     /**
-     * Disables schema validation against meta-schemas. This also disables vocabulary specific semantics.
-     * <i>$schema</i> keyword will be ignored.
+     * Disables schema validation against meta-schemas.
      *
      * @param disabledSchemaValidation if schema validation should be disabled
      * @return self

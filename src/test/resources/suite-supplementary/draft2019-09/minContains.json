@@ -2,6 +2,7 @@
   {
     "description": "minContains inside items keyword",
     "schema": {
+      "$schema": "https://json-schema.org/draft/2019-09/schema",
       "items": {
         "contains": {
           "type": "number"
@@ -45,6 +46,7 @@
   {
     "description": "minContains inside properties keyword",
     "schema": {
+      "$schema": "https://json-schema.org/draft/2019-09/schema",
       "properties": {
         "x": {
           "contains": {

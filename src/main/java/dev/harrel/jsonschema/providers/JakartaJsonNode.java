@@ -76,8 +76,7 @@ public final class JakartaJsonNode extends AbstractJsonNode<JsonValue> {
             case FALSE:
                 return SimpleType.BOOLEAN;
             case NUMBER:
-                JsonNumber jsonNumber = (JsonNumber) node;
-                if (jsonNumber.isIntegral() || jsonNumber.bigDecimalValue().stripTrailingZeros().scale() <= 0) {
+                if (canConvertToInteger(((JsonNumber) node).bigDecimalValue())) {
                     return SimpleType.INTEGER;
                 } else {
                     return SimpleType.NUMBER;

@@ -53,8 +53,10 @@ final class SchemaRegistry {
         state.fragments.put(aliasUri, originalFragments.readOnly());
     }
 
-    void registerSchema(SchemaParsingContext ctx, JsonNode schemaNode, List<EvaluatorWrapper> evaluators, Set<String> activeVocabularies) {
-        Schema schema = new Schema(ctx.getParentUri(), ctx.getAbsoluteUri(schemaNode), evaluators, activeVocabularies, ctx.getVocabulariesObject());
+    void registerSchema(SchemaParsingContext ctx,
+                        JsonNode schemaNode,
+                        List<EvaluatorWrapper> evaluators) {
+        Schema schema = new Schema(ctx.getParentUri(), ctx.getAbsoluteUri(schemaNode), evaluators, ctx.getMetaValidationData(), ctx.getCurrentSchemaObject());
         state.createIfAbsent(ctx.getBaseUri()).schemas.put(schemaNode.getJsonPointer(), schema);
         registerAnchorsIfPresent(ctx, schemaNode, schema);
     }
@@ -62,8 +64,7 @@ final class SchemaRegistry {
     void registerEmbeddedSchema(SchemaParsingContext ctx,
                                 URI id,
                                 JsonNode schemaNode,
-                                List<EvaluatorWrapper> evaluators,
-                                Set<String> activeVocabularies) {
+                                List<EvaluatorWrapper> evaluators) {
         Fragments baseFragments = state.createIfAbsent(ctx.getBaseUri());
         Fragments idFragments = state.createIfAbsent(UriUtil.getUriWithoutFragment(id));
 
@@ -73,7 +74,7 @@ final class SchemaRegistry {
                     String newJsonPointer = e.getKey().substring(schemaNode.getJsonPointer().length());
                     idFragments.additionalSchemas.put(newJsonPointer, e.getValue());
                 });
-        Schema identifiableSchema = new Schema(ctx.getParentUri(), ctx.getAbsoluteUri(schemaNode), evaluators, activeVocabularies, ctx.getVocabulariesObject());
+        Schema identifiableSchema = new Schema(ctx.getParentUri(), ctx.getAbsoluteUri(schemaNode), evaluators, ctx.getMetaValidationData(), ctx.getCurrentSchemaObject());
         idFragments.schemas.put("", identifiableSchema);
         baseFragments.schemas.put(schemaNode.getJsonPointer(), identifiableSchema);
         registerAnchorsIfPresent(ctx, schemaNode, identifiableSchema);
@@ -86,13 +87,23 @@ final class SchemaRegistry {
         Map<String, JsonNode> objectMap = schemaNode.asObject();
         Fragments fragments = state.createIfAbsent(ctx.getParentUri());
 
-        JsonNodeUtil.getStringField(objectMap, Keyword.ANCHOR)
-                .ifPresent(anchorString -> fragments.additionalSchemas.put(anchorString, schema));
-        JsonNodeUtil.getStringField(objectMap, Keyword.DYNAMIC_ANCHOR)
-                .ifPresent(anchorString -> fragments.dynamicSchemas.put(anchorString, schema));
-        JsonNodeUtil.getBooleanField(objectMap, Keyword.RECURSIVE_ANCHOR)
-                .filter(anchor -> anchor)
-                .ifPresent(anchorString -> fragments.dynamicSchemas.put("", schema));
+        if (ctx.getSpecificationVersion().getOrder() > SpecificationVersion.DRAFT7.getOrder()) {
+            JsonNodeUtil.getStringField(objectMap, Keyword.ANCHOR)
+                    .ifPresent(anchorString -> fragments.additionalSchemas.put(anchorString, schema));
+            if (ctx.getSpecificationVersion() == SpecificationVersion.DRAFT2019_09) {
+                JsonNodeUtil.getBooleanField(objectMap, Keyword.RECURSIVE_ANCHOR)
+                        .filter(anchor -> anchor)
+                        .ifPresent(anchorString -> fragments.dynamicSchemas.put("", schema));
+            } else {
+                JsonNodeUtil.getStringField(objectMap, Keyword.DYNAMIC_ANCHOR)
+                        .ifPresent(anchorString -> fragments.dynamicSchemas.put(anchorString, schema));
+            }
+        } else {
+            JsonNodeUtil.getStringField(objectMap, Keyword.ID)
+                    .map(URI::create)
+                    .map(URI::getFragment)
+                    .ifPresent(anchorString -> fragments.additionalSchemas.put(anchorString, schema));
+        }
     }
 
     static final class State {

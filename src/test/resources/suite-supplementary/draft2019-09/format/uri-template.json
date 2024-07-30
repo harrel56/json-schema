@@ -2,6 +2,7 @@
   {
     "description": "URI template format",
     "schema": {
+      "$schema": "https://json-schema.org/draft/2019-09/schema",
       "format": "uri-template"
     },
     "tests": [
