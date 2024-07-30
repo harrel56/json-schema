@@ -31,6 +31,22 @@ class JsonNodeFactoriesTest {
             throw new IllegalArgumentException("instance");
         }
     };
+    static class HolderFactory implements JsonNodeFactory {
+        private JsonNodeFactory factory;
+
+        void setFactory(JsonNodeFactory factory) {
+            this.factory = factory;
+        }
+
+        @Override
+        public JsonNode wrap(Object node) {
+            return factory.wrap(node);
+        }
+        @Override
+        public JsonNode create(String rawJson) {
+            return factory.create(rawJson);
+        }
+    }
     JsonNode jsonNode = mock(JsonNode.class);
     Object providerNode = new ObjectMapper().readTree("{}");
 
@@ -94,8 +110,9 @@ class JsonNodeFactoriesTest {
     @Test
     void shouldUseSchemaFactoryWhenResolvingSchema() {
         SchemaResolver resolver = uri -> SchemaResolver.Result.fromString("{}");
-        Validator validator = new ValidatorFactory().withJsonNodeFactories(schemaFactory, new JacksonNode.Factory())
-                .withDisabledSchemaValidation(true)
+        HolderFactory holderFactory = new HolderFactory();
+        holderFactory.setFactory(new JacksonNode.Factory());
+        Validator validator = new ValidatorFactory().withJsonNodeFactories(holderFactory, new JacksonNode.Factory())
                 .withSchemaResolver(resolver)
                 .createValidator();
         URI uri = URI.create("urn:test");
@@ -105,6 +122,7 @@ class JsonNodeFactoriesTest {
                 }""");
         validator.registerSchema(uri, jacksonNode);
 
+        holderFactory.setFactory(schemaFactory);
         assertThatThrownBy(() -> validator.validate(uri, "{}")).hasMessage("schema");
     }
 

@@ -1,80 +1,104 @@
 package dev.harrel.jsonschema;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiFunction;
 
 import static dev.harrel.jsonschema.Keyword.*;
-import static java.util.Collections.*;
+import static java.util.Collections.unmodifiableMap;
+import static java.util.Collections.unmodifiableSet;
 
 abstract class AbstractEvaluatorFactory implements EvaluatorFactory {
     private final Set<String> ignoredKeywords;
-    private final Map<String, BiFunction<SchemaParsingContext, JsonNode, Evaluator>> evaluatorsMap;
+    private final Map<String, EvaluatorInfo> evaluatorsMap;
 
-    AbstractEvaluatorFactory(List<String> ignoredKeywords) {
-        this.ignoredKeywords = unmodifiableSet(new HashSet<>(ignoredKeywords));
-        Map<String, BiFunction<SchemaParsingContext, JsonNode, Evaluator>> evaluators = getDefaultEvaluatorsMap();
-        configureEvaluatorsMap(evaluators);
-        this.evaluatorsMap = unmodifiableMap(evaluators);
+    AbstractEvaluatorFactory(Set<String> ignoredKeywords, Map<String, EvaluatorInfo> evaluatorsMap) {
+        this.ignoredKeywords = unmodifiableSet(ignoredKeywords);
+        this.evaluatorsMap = unmodifiableMap(evaluatorsMap);
     }
-
-    abstract void configureEvaluatorsMap(Map<String, BiFunction<SchemaParsingContext, JsonNode, Evaluator>> evaluatorsMap);
 
     @Override
     public Optional<Evaluator> create(SchemaParsingContext ctx, String fieldName, JsonNode node) {
         if (ignoredKeywords.contains(fieldName)) {
             return Optional.empty();
         }
-        if (evaluatorsMap.containsKey(fieldName)) {
-            try {
-                return Optional.of(evaluatorsMap.get(fieldName).apply(ctx, node));
-            } catch (Exception e) {
+
+        EvaluatorInfo evaluatorInfo = evaluatorsMap.get(fieldName);
+        if (evaluatorInfo == null) {
+            if (node.isString()) {
+                return Optional.of(new AnnotationEvaluator(node.asString()));
+            } else {
                 return Optional.empty();
             }
         }
-        if (node.isString()) {
-            return Optional.of(new AnnotationEvaluator(node.asString()));
+
+        if (evaluatorInfo.vocabulary != null && !ctx.getMetaValidationData().activeVocabularies.contains(evaluatorInfo.vocabulary)) {
+            return Optional.empty();
         }
-        return Optional.empty();
+
+        try {
+            return Optional.of(evaluatorInfo.creator.apply(ctx, node));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 
-    private static Map<String, BiFunction<SchemaParsingContext, JsonNode, Evaluator>> getDefaultEvaluatorsMap() {
-        Map<String, BiFunction<SchemaParsingContext, JsonNode, Evaluator>> map = new HashMap<>();
-        map.put(TYPE, (ctx, node) -> new TypeEvaluator(node));
-        map.put(CONST, (ctx, node) -> new ConstEvaluator(node));
-        map.put(ENUM, (ctx, node) -> new EnumEvaluator(node));
-        map.put(MULTIPLE_OF, (ctx, node) -> new MultipleOfEvaluator(node));
-        map.put(MAXIMUM, (ctx, node) -> new MaximumEvaluator(node));
-        map.put(EXCLUSIVE_MAXIMUM, (ctx, node) -> new ExclusiveMaximumEvaluator(node));
-        map.put(MINIMUM, (ctx, node) -> new MinimumEvaluator(node));
-        map.put(EXCLUSIVE_MINIMUM, (ctx, node) -> new ExclusiveMinimumEvaluator(node));
-        map.put(MAX_LENGTH, (ctx, node) -> new MaxLengthEvaluator(node));
-        map.put(MIN_LENGTH, (ctx, node) -> new MinLengthEvaluator(node));
-        map.put(PATTERN, (ctx, node) -> new PatternEvaluator(node));
-        map.put(MAX_ITEMS, (ctx, node) -> new MaxItemsEvaluator(node));
-        map.put(MIN_ITEMS, (ctx, node) -> new MinItemsEvaluator(node));
-        map.put(UNIQUE_ITEMS, (ctx, node) -> new UniqueItemsEvaluator(node));
-        map.put(MAX_CONTAINS, (ctx, node) -> new MaxContainsEvaluator(node));
-        map.put(MIN_CONTAINS, (ctx, node) -> new MinContainsEvaluator(node));
-        map.put(MAX_PROPERTIES, (ctx, node) -> new MaxPropertiesEvaluator(node));
-        map.put(MIN_PROPERTIES, (ctx, node) -> new MinPropertiesEvaluator(node));
-        map.put(REQUIRED, (ctx, node) -> new RequiredEvaluator(node));
-        map.put(DEPENDENT_REQUIRED, (ctx, node) -> new DependentRequiredEvaluator(node));
+    static Map<String, EvaluatorInfo> createDefaultEvaluatorsMap(String coreVocab,
+                                                                 String applicatorVocab,
+                                                                 String unevaluatedVocab,
+                                                                 String validationVocab) {
+        Map<String, EvaluatorInfo> map = new HashMap<>();
+        map.put(REF, new EvaluatorInfo(coreVocab, (ctx, node) -> new RefEvaluator(node)));
 
-        map.put(CONTAINS, ContainsEvaluator::new);
-        map.put(ADDITIONAL_PROPERTIES, AdditionalPropertiesEvaluator::new);
-        map.put(PROPERTIES, PropertiesEvaluator::new);
-        map.put(PATTERN_PROPERTIES, PatternPropertiesEvaluator::new);
-        map.put(DEPENDENT_SCHEMAS, DependentSchemasEvaluator::new);
-        map.put(PROPERTY_NAMES, PropertyNamesEvaluator::new);
-        map.put(IF, IfThenElseEvaluator::new);
-        map.put(ALL_OF, AllOfEvaluator::new);
-        map.put(ANY_OF, AnyOfEvaluator::new);
-        map.put(ONE_OF, OneOfEvaluator::new);
-        map.put(NOT, NotEvaluator::new);
-        map.put(UNEVALUATED_ITEMS, UnevaluatedItemsEvaluator::new);
-        map.put(UNEVALUATED_PROPERTIES, UnevaluatedPropertiesEvaluator::new);
-        map.put(REF, (ctx, node) -> new RefEvaluator(node));
+        map.put(TYPE, new EvaluatorInfo(validationVocab, (ctx, node) -> new TypeEvaluator(node)));
+        map.put(CONST, new EvaluatorInfo(validationVocab, (ctx, node) -> new ConstEvaluator(node)));
+        map.put(ENUM, new EvaluatorInfo(validationVocab, (ctx, node) -> new EnumEvaluator(node)));
+        map.put(MULTIPLE_OF, new EvaluatorInfo(validationVocab, (ctx, node) -> new MultipleOfEvaluator(node)));
+        map.put(MAXIMUM, new EvaluatorInfo(validationVocab, (ctx, node) -> new MaximumEvaluator(node)));
+        map.put(EXCLUSIVE_MAXIMUM, new EvaluatorInfo(validationVocab, (ctx, node) -> new ExclusiveMaximumEvaluator(node)));
+        map.put(MINIMUM, new EvaluatorInfo(validationVocab, (ctx, node) -> new MinimumEvaluator(node)));
+        map.put(EXCLUSIVE_MINIMUM, new EvaluatorInfo(validationVocab, (ctx, node) -> new ExclusiveMinimumEvaluator(node)));
+        map.put(MAX_LENGTH, new EvaluatorInfo(validationVocab, (ctx, node) -> new MaxLengthEvaluator(node)));
+        map.put(MIN_LENGTH, new EvaluatorInfo(validationVocab, (ctx, node) -> new MinLengthEvaluator(node)));
+        map.put(PATTERN, new EvaluatorInfo(validationVocab, (ctx, node) -> new PatternEvaluator(node)));
+        map.put(MAX_ITEMS, new EvaluatorInfo(validationVocab, (ctx, node) -> new MaxItemsEvaluator(node)));
+        map.put(MIN_ITEMS, new EvaluatorInfo(validationVocab, (ctx, node) -> new MinItemsEvaluator(node)));
+        map.put(UNIQUE_ITEMS, new EvaluatorInfo(validationVocab, (ctx, node) -> new UniqueItemsEvaluator(node)));
+        map.put(MAX_CONTAINS, new EvaluatorInfo(validationVocab, (ctx, node) -> new MaxContainsEvaluator(node)));
+        map.put(MIN_CONTAINS, new EvaluatorInfo(validationVocab, (ctx, node) -> new MinContainsEvaluator(node)));
+        map.put(MAX_PROPERTIES, new EvaluatorInfo(validationVocab, (ctx, node) -> new MaxPropertiesEvaluator(node)));
+        map.put(MIN_PROPERTIES, new EvaluatorInfo(validationVocab, (ctx, node) -> new MinPropertiesEvaluator(node)));
+        map.put(REQUIRED, new EvaluatorInfo(validationVocab, (ctx, node) -> new RequiredEvaluator(node)));
+        map.put(DEPENDENT_REQUIRED, new EvaluatorInfo(validationVocab, (ctx, node) -> new DependentRequiredEvaluator(node)));
+
+        map.put(CONTAINS, new EvaluatorInfo(applicatorVocab, ContainsEvaluator::new));
+        map.put(ADDITIONAL_PROPERTIES, new EvaluatorInfo(applicatorVocab, AdditionalPropertiesEvaluator::new));
+        map.put(PROPERTIES, new EvaluatorInfo(applicatorVocab, PropertiesEvaluator::new));
+        map.put(PATTERN_PROPERTIES, new EvaluatorInfo(applicatorVocab, PatternPropertiesEvaluator::new));
+        map.put(DEPENDENT_SCHEMAS, new EvaluatorInfo(applicatorVocab, DependentSchemasEvaluator::new));
+        map.put(PROPERTY_NAMES, new EvaluatorInfo(applicatorVocab, PropertyNamesEvaluator::new));
+        map.put(IF, new EvaluatorInfo(applicatorVocab, IfThenElseEvaluator::new));
+        map.put(ALL_OF, new EvaluatorInfo(applicatorVocab, AllOfEvaluator::new));
+        map.put(ANY_OF, new EvaluatorInfo(applicatorVocab, AnyOfEvaluator::new));
+        map.put(ONE_OF, new EvaluatorInfo(applicatorVocab, OneOfEvaluator::new));
+        map.put(NOT, new EvaluatorInfo(applicatorVocab, NotEvaluator::new));
+
+        map.put(UNEVALUATED_ITEMS, new EvaluatorInfo(unevaluatedVocab, UnevaluatedItemsEvaluator::new));
+        map.put(UNEVALUATED_PROPERTIES, new EvaluatorInfo(unevaluatedVocab, UnevaluatedPropertiesEvaluator::new));
+
         return map;
+    }
+
+    static class EvaluatorInfo {
+        final String vocabulary;
+        final BiFunction<SchemaParsingContext, JsonNode, Evaluator> creator;
+
+        EvaluatorInfo(String vocabulary, BiFunction<SchemaParsingContext, JsonNode, Evaluator> creator) {
+            this.vocabulary = vocabulary;
+            this.creator = creator;
+        }
     }
 
     static class AnnotationEvaluator implements Evaluator {

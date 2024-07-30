@@ -24,7 +24,7 @@ public abstract class SupplementarySuiteTest implements ProviderTest {
     @TestFactory
     Stream<DynamicNode> draft2019Supplementary() {
         Validator validator = new ValidatorFactory()
-                .withDialect(new Dialects.Draft2019Dialect())
+                .withDefaultDialect(new Dialects.Draft2019Dialect())
                 .withEvaluatorFactory(new FormatEvaluatorFactory())
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .createValidator();
@@ -47,7 +47,7 @@ public abstract class SupplementarySuiteTest implements ProviderTest {
     @TestFactory
     Stream<DynamicNode> draft2019FormatSupplementary() {
         Validator validator = new ValidatorFactory()
-                .withDialect(new Dialects.Draft2019Dialect())
+                .withDefaultDialect(new Dialects.Draft2019Dialect())
                 .withEvaluatorFactory(new FormatEvaluatorFactory())
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .createValidator();

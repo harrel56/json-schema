@@ -3,10 +3,7 @@ package dev.harrel.jsonschema;
 import dev.harrel.jsonschema.providers.JacksonNode;
 
 import java.net.URI;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.unmodifiableList;
@@ -25,26 +22,17 @@ public final class Validator {
     private final SchemaResolver schemaResolver;
     private final SchemaRegistry schemaRegistry;
     private final JsonParser jsonParser;
-    private final boolean disabledSchemaValidation;
 
-    Validator(Dialect dialect,
-              EvaluatorFactory evaluatorFactory,
-              JsonNodeFactory schemaNodeFactory,
+    Validator(JsonNodeFactory schemaNodeFactory,
               JsonNodeFactory instanceNodeFactory,
               SchemaResolver schemaResolver,
-              boolean disabledSchemaValidation) {
+              SchemaRegistry schemaRegistry,
+              JsonParser jsonParser) {
         this.schemaNodeFactory = Objects.requireNonNull(schemaNodeFactory);
         this.instanceNodeFactory = Objects.requireNonNull(instanceNodeFactory);
         this.schemaResolver = Objects.requireNonNull(schemaResolver);
-        this.schemaRegistry = new SchemaRegistry();
-        this.disabledSchemaValidation = disabledSchemaValidation;
-        MetaSchemaValidator metaSchemaValidator;
-        if (disabledSchemaValidation) {
-            metaSchemaValidator = new MetaSchemaValidator.NoOpMetaSchemaValidator(dialect.getSupportedVocabularies());
-        } else {
-            metaSchemaValidator = new MetaSchemaValidator.DefaultMetaSchemaValidator(dialect, this.schemaNodeFactory, schemaRegistry, schemaResolver);
-        }
-        this.jsonParser = new JsonParser(dialect, evaluatorFactory, schemaRegistry, metaSchemaValidator);
+        this.schemaRegistry = Objects.requireNonNull(schemaRegistry);
+        this.jsonParser = Objects.requireNonNull(jsonParser);
     }
 
     /**
@@ -144,7 +132,7 @@ public final class Validator {
      */
     public Result validate(URI schemaUri, JsonNode instanceNode) {
         Schema schema = getRootSchema(schemaUri);
-        EvaluationContext ctx = createNewEvaluationContext(schema);
+        EvaluationContext ctx = createNewEvaluationContext();
         boolean valid = ctx.validateAgainstSchema(schema, instanceNode);
         return new Result(valid, ctx);
     }
@@ -175,8 +163,8 @@ public final class Validator {
         return URI.create("https://harrel.dev/" + UUID.randomUUID().toString().substring(0, 8));
     }
 
-    private EvaluationContext createNewEvaluationContext(Schema schema) {
-        return new EvaluationContext(schemaNodeFactory, jsonParser, schemaRegistry, schemaResolver, schema.getActiveVocabularies(), disabledSchemaValidation);
+    private EvaluationContext createNewEvaluationContext() {
+        return new EvaluationContext(schemaNodeFactory, jsonParser, schemaRegistry, schemaResolver);
     }
 
     /**

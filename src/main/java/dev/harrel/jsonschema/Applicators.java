@@ -6,8 +6,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static dev.harrel.jsonschema.Vocabulary.APPLICATOR_VOCABULARY;
-import static dev.harrel.jsonschema.Vocabulary.UNEVALUATED_VOCABULARY;
 import static java.util.Collections.*;
 
 class PrefixItemsEvaluator implements Evaluator {
@@ -20,11 +18,6 @@ class PrefixItemsEvaluator implements Evaluator {
         this.prefixRefs = unmodifiableList(node.asArray().stream()
                 .map(ctx::getCompoundUri)
                 .collect(Collectors.toList()));
-    }
-
-    @Override
-    public Set<String> getVocabularies() {
-        return APPLICATOR_VOCABULARY;
     }
 
     @Override
@@ -54,11 +47,6 @@ class ItemsEvaluator implements Evaluator {
     }
 
     @Override
-    public Set<String> getVocabularies() {
-        return APPLICATOR_VOCABULARY;
-    }
-
-    @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isArray()) {
             return Result.success();
@@ -78,11 +66,11 @@ class ItemsEvaluator implements Evaluator {
     }
 }
 
-class Items2019Evaluator implements Evaluator {
+class ItemsLegacyEvaluator implements Evaluator {
     private final CompoundUri schemaRef;
     private final List<CompoundUri> schemaRefs;
 
-    Items2019Evaluator(SchemaParsingContext ctx, JsonNode node) {
+    ItemsLegacyEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (node.isObject() || node.isBoolean()) {
             this.schemaRef = ctx.getCompoundUri(node);
             this.schemaRefs = null;
@@ -94,11 +82,6 @@ class Items2019Evaluator implements Evaluator {
         } else {
             throw new IllegalArgumentException();
         }
-    }
-
-    @Override
-    public Set<String> getVocabularies() {
-        return APPLICATOR_VOCABULARY;
     }
 
     @Override
@@ -124,7 +107,6 @@ class Items2019Evaluator implements Evaluator {
 }
 
 class AdditionalItemsEvaluator implements Evaluator {
-    private static final Set<String> vocabularies = singleton(Vocabulary.Draft2019.APPLICATOR);
     private final CompoundUri schemaRef;
 
     AdditionalItemsEvaluator(SchemaParsingContext ctx, JsonNode node) {
@@ -132,11 +114,6 @@ class AdditionalItemsEvaluator implements Evaluator {
             throw new IllegalArgumentException();
         }
         this.schemaRef = ctx.getCompoundUri(node);
-    }
-
-    @Override
-    public Set<String> getVocabularies() {
-        return vocabularies;
     }
 
     @Override
@@ -182,11 +159,6 @@ class ContainsEvaluator implements Evaluator {
     }
 
     @Override
-    public Set<String> getVocabularies() {
-        return APPLICATOR_VOCABULARY;
-    }
-
-    @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isArray()) {
             return Result.success();
@@ -209,11 +181,6 @@ class AdditionalPropertiesEvaluator implements Evaluator {
             throw new IllegalArgumentException();
         }
         this.schemaRef = ctx.getCompoundUri(node);
-    }
-
-    @Override
-    public Set<String> getVocabularies() {
-        return APPLICATOR_VOCABULARY;
     }
 
     @Override
@@ -257,11 +224,6 @@ class PropertiesEvaluator implements Evaluator {
     }
 
     @Override
-    public Set<String> getVocabularies() {
-        return APPLICATOR_VOCABULARY;
-    }
-
-    @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isObject()) {
             return Result.success();
@@ -292,11 +254,6 @@ class PatternPropertiesEvaluator implements Evaluator {
     }
 
     @Override
-    public Set<String> getVocabularies() {
-        return APPLICATOR_VOCABULARY;
-    }
-
-    @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isObject()) {
             return Result.success();
@@ -323,14 +280,11 @@ class DependentSchemasEvaluator implements Evaluator {
         if (!node.isObject()) {
             throw new IllegalArgumentException();
         }
-        this.dependentSchemas = node.asObject().entrySet()
-                .stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> ctx.getCompoundUri(e.getValue())));
+        this.dependentSchemas = toMap(ctx, node.asObject());
     }
 
-    @Override
-    public Set<String> getVocabularies() {
-        return APPLICATOR_VOCABULARY;
+    public DependentSchemasEvaluator(SchemaParsingContext ctx, Map<String, JsonNode> objectNode) {
+        this.dependentSchemas = toMap(ctx, objectNode);
     }
 
     @Override
@@ -352,6 +306,12 @@ class DependentSchemasEvaluator implements Evaluator {
             return Result.failure(String.format("Object does not match dependent schemas for some properties %s", failedFields));
         }
     }
+
+    private static Map<String, CompoundUri> toMap(SchemaParsingContext ctx, Map<String, JsonNode> objectNode) {
+        return objectNode.entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> ctx.getCompoundUri(e.getValue())));
+    }
 }
 
 class PropertyNamesEvaluator implements Evaluator {
@@ -362,11 +322,6 @@ class PropertyNamesEvaluator implements Evaluator {
             throw new IllegalArgumentException();
         }
         this.schemaRef = ctx.getCompoundUri(node);
-    }
-
-    @Override
-    public Set<String> getVocabularies() {
-        return APPLICATOR_VOCABULARY;
     }
 
     @Override
@@ -401,11 +356,6 @@ class IfThenElseEvaluator implements Evaluator {
     }
 
     @Override
-    public Set<String> getVocabularies() {
-        return APPLICATOR_VOCABULARY;
-    }
-
-    @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (ctx.resolveInternalRefAndValidate(ifRef, node)) {
             boolean valid = thenRef
@@ -431,11 +381,6 @@ class AllOfEvaluator implements Evaluator {
             throw new IllegalArgumentException();
         }
         this.refs = unmodifiableList(node.asArray().stream().map(ctx::getCompoundUri).collect(Collectors.toList()));
-    }
-
-    @Override
-    public Set<String> getVocabularies() {
-        return APPLICATOR_VOCABULARY;
     }
 
     @Override
@@ -465,11 +410,6 @@ class AnyOfEvaluator implements Evaluator {
     }
 
     @Override
-    public Set<String> getVocabularies() {
-        return APPLICATOR_VOCABULARY;
-    }
-
-    @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
         boolean valid = false;
         for (CompoundUri ref : refs) {
@@ -487,11 +427,6 @@ class OneOfEvaluator implements Evaluator {
             throw new IllegalArgumentException();
         }
         this.refs = unmodifiableList(node.asArray().stream().map(ctx::getCompoundUri).collect(Collectors.toList()));
-    }
-
-    @Override
-    public Set<String> getVocabularies() {
-        return APPLICATOR_VOCABULARY;
     }
 
     @Override
@@ -524,11 +459,6 @@ class NotEvaluator implements Evaluator {
     }
 
     @Override
-    public Set<String> getVocabularies() {
-        return APPLICATOR_VOCABULARY;
-    }
-
-    @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
         boolean valid = !ctx.resolveInternalRefAndValidate(schemaUri, node);
         return valid ? Result.success() : Result.failure("Value matches against given schema but it must not");
@@ -543,11 +473,6 @@ class UnevaluatedItemsEvaluator implements Evaluator {
             throw new IllegalArgumentException();
         }
         this.schemaRef = ctx.getCompoundUri(node);
-    }
-
-    @Override
-    public Set<String> getVocabularies() {
-        return UNEVALUATED_VOCABULARY;
     }
 
     @Override
@@ -580,11 +505,6 @@ class UnevaluatedPropertiesEvaluator implements Evaluator {
             throw new IllegalArgumentException();
         }
         this.schemaRef = ctx.getCompoundUri(node);
-    }
-
-    @Override
-    public Set<String> getVocabularies() {
-        return UNEVALUATED_VOCABULARY;
     }
 
     @Override
@@ -627,11 +547,6 @@ class RefEvaluator implements Evaluator {
             return Result.failure(String.format("Resolution of $ref [%s] failed", ref));
         }
     }
-
-    @Override
-    public Set<String> getVocabularies() {
-        return Vocabulary.CORE_VOCABULARY;
-    }
 }
 
 class DynamicRefEvaluator implements Evaluator {
@@ -652,11 +567,6 @@ class DynamicRefEvaluator implements Evaluator {
             return Result.failure(String.format("Resolution of $dynamicRef [%s] failed", ref));
         }
     }
-
-    @Override
-    public Set<String> getVocabularies() {
-        return Vocabulary.CORE_VOCABULARY;
-    }
 }
 
 class RecursiveRefEvaluator implements Evaluator {
@@ -676,10 +586,5 @@ class RecursiveRefEvaluator implements Evaluator {
         } catch (SchemaNotFoundException e) {
             return Result.failure(String.format("Resolution of $recursiveRef [%s] failed", ref));
         }
-    }
-
-    @Override
-    public Set<String> getVocabularies() {
-        return Vocabulary.CORE_VOCABULARY;
     }
 }

@@ -20,20 +20,32 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
                 .withSchemaResolver(createSchemaResolver())
                 .createValidator();
 
-        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, skippedRequiredTests());
+        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, Map.of());
         return generator.generate(getTestPath() + "/draft2020-12");
     }
 
     @TestFactory
     Stream<DynamicNode> draft2019Required() {
         Validator validator = new ValidatorFactory()
-                .withDialect(new Dialects.Draft2019Dialect())
+                .withDefaultDialect(new Dialects.Draft2019Dialect())
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .withSchemaResolver(createSchemaResolver())
                 .createValidator();
 
-        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, skippedRequiredTests());
+        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, Map.of());
         return generator.generate(getTestPath() + "/draft2019-09");
+    }
+
+    @TestFactory
+    Stream<DynamicNode> draft7Required() {
+        Validator validator = new ValidatorFactory()
+                .withDefaultDialect(new Dialects.Draft7Dialect())
+                .withJsonNodeFactory(getJsonNodeFactory())
+                .withSchemaResolver(createSchemaResolver())
+                .createValidator();
+
+        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, skippedDraft7Tests());
+        return generator.generate(getTestPath() + "/draft7");
     }
 
     @TestFactory
@@ -51,7 +63,7 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
     @TestFactory
     Stream<DynamicNode> draft2019Format() {
         Validator validator = new ValidatorFactory()
-                .withDialect(new Dialects.Draft2019Dialect())
+                .withDefaultDialect(new Dialects.Draft2019Dialect())
                 .withEvaluatorFactory(new FormatEvaluatorFactory())
                 .withJsonNodeFactory(getJsonNodeFactory())
                 .withSchemaResolver(createSchemaResolver())
@@ -62,14 +74,30 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
     }
 
     @TestFactory
+    Stream<DynamicNode> draft7Format() {
+        Validator validator = new ValidatorFactory()
+                .withDefaultDialect(new Dialects.Draft7Dialect())
+                .withEvaluatorFactory(new FormatEvaluatorFactory())
+                .withJsonNodeFactory(getJsonNodeFactory())
+                .withSchemaResolver(createSchemaResolver())
+                .createValidator();
+
+        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, skippedFormatTests());
+        return generator.generate(getTestPath() + "/draft7/optional/format");
+    }
+
+    @TestFactory
     Stream<DynamicNode> draft2020Optional() {
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(getJsonNodeFactory())
+                .withSchemaResolver(createSchemaResolver())
                 .createValidator();
 
         SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, Map.of());
         return Stream.of(
                 generator.generate(getTestPath() + "/draft2020-12/optional/bignum" + getFileExtension()),
+                generator.generate(getTestPath() + "/draft2020-12/optional/cross-draft" + getFileExtension()),
+                generator.generate(getTestPath() + "/draft2020-12/optional/float-overflow" + getFileExtension()),
                 generator.generate(getTestPath() + "/draft2020-12/optional/no-schema" + getFileExtension()),
                 generator.generate(getTestPath() + "/draft2020-12/optional/non-bmp-regex" + getFileExtension()),
                 generator.generate(getTestPath() + "/draft2020-12/optional/refOfUnknownKeyword" + getFileExtension())
@@ -79,16 +107,36 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
     @TestFactory
     Stream<DynamicNode> draft2019Optional() {
         Validator validator = new ValidatorFactory()
-                .withDialect(new Dialects.Draft2019Dialect())
+                .withDefaultDialect(new Dialects.Draft2019Dialect())
                 .withJsonNodeFactory(getJsonNodeFactory())
+                .withSchemaResolver(createSchemaResolver())
                 .createValidator();
 
         SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, Map.of());
         return Stream.of(
                 generator.generate(getTestPath() + "/draft2019-09/optional/bignum" + getFileExtension()),
+                generator.generate(getTestPath() + "/draft2019-09/optional/cross-draft" + getFileExtension()),
+                generator.generate(getTestPath() + "/draft2019-09/optional/float-overflow" + getFileExtension()),
                 generator.generate(getTestPath() + "/draft2019-09/optional/no-schema" + getFileExtension()),
                 generator.generate(getTestPath() + "/draft2019-09/optional/non-bmp-regex" + getFileExtension()),
                 generator.generate(getTestPath() + "/draft2019-09/optional/refOfUnknownKeyword" + getFileExtension())
+        ).flatMap(Function.identity());
+    }
+
+    @TestFactory
+    Stream<DynamicNode> draft7Optional() {
+        Validator validator = new ValidatorFactory()
+                .withDefaultDialect(new Dialects.Draft7Dialect())
+                .withJsonNodeFactory(getJsonNodeFactory())
+                .withSchemaResolver(createSchemaResolver())
+                .createValidator();
+
+        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, Map.of());
+        return Stream.of(
+                generator.generate(getTestPath() + "/draft7/optional/bignum" + getFileExtension()),
+                generator.generate(getTestPath() + "/draft7/optional/cross-draft" + getFileExtension()),
+                generator.generate(getTestPath() + "/draft7/optional/float-overflow" + getFileExtension()),
+                generator.generate(getTestPath() + "/draft7/optional/non-bmp-regex" + getFileExtension())
         ).flatMap(Function.identity());
     }
 
@@ -104,21 +152,17 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
         return ".json";
     }
 
-    private static Map<String, Map<String, Set<String>>> skippedRequiredTests() {
+    private static Map<String, Map<String, Set<String>>> skippedDraft7Tests() {
         return Map.of(
-                "id", Map.of(
-                        "$id inside an enum is not a real identifier", Set.of(
-                                "match $ref to $id"
-                        )
-                ),
-                "unknownKeyword", Map.of(
-                        "$id inside an unknown keyword is not a real identifier", Set.of(
-                                "type matches second anyOf, which has a real schema in it",
-                                "type matches non-schema in first anyOf"
+                "ref", Map.of(
+                        "$ref prevents a sibling $id from changing the base uri", Set.of(
+                                "$ref resolves to /definitions/base_foo, data does not validate",
+                                "$ref resolves to /definitions/base_foo, data validates"
                         )
                 )
         );
     }
+
 
     private static Map<String, Map<String, Set<String>>> skippedFormatTests() {
         return Map.of(
