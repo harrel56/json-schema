@@ -94,7 +94,7 @@ final class SchemaRegistry {
                 JsonNodeUtil.getBooleanField(objectMap, Keyword.RECURSIVE_ANCHOR)
                         .filter(anchor -> anchor)
                         .ifPresent(anchorString -> fragments.dynamicSchemas.put("", schema));
-            } else if (ctx.getSpecificationVersion().getOrder() > SpecificationVersion.DRAFT2019_09.getOrder()) {
+            } else {
                 JsonNodeUtil.getStringField(objectMap, Keyword.DYNAMIC_ANCHOR)
                         .ifPresent(anchorString -> fragments.dynamicSchemas.put(anchorString, schema));
             }

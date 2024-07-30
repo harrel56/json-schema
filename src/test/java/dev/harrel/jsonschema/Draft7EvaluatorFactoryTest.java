@@ -35,6 +35,8 @@ public abstract class Draft7EvaluatorFactoryTest extends EvaluatorFactoryTest {
 
     private static Stream<Arguments> getSupportedKeywords() {
         return Stream.of(
+                Arguments.of(DEPENDENCIES, Set.of(OBJECT)),
+
                 Arguments.of(Keyword.TYPE, Set.of(STRING, ARRAY)),
                 Arguments.of(Keyword.CONST, Set.of(NULL, BOOLEAN, STRING, INTEGER, NUMBER, ARRAY, OBJECT)),
                 Arguments.of(Keyword.ENUM, Set.of(ARRAY)),
