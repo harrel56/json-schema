@@ -22,7 +22,7 @@ abstract class EvaluatorFactoryTest implements ProviderTest {
     private final SchemaParsingContext ctx;
 
     EvaluatorFactoryTest(SpecificationVersion version) {
-        MetaSchemaData metaData = new MetaSchemaData(Dialects.OFFICIAL_DIALECTS.get(URI.create(version.getId())));
+        MetaSchemaData metaData = new MetaSchemaData(Dialects.OFFICIAL_DIALECTS.get(UriUtil.removeEmptyFragment(version.getId())));
         this.ctx = new SchemaParsingContext(metaData, new SchemaRegistry(), URI.create("urn:CoreEvaluatorFactoryTest"), emptyMap());
     }
 

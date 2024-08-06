@@ -4,7 +4,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.net.URI;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -121,7 +120,7 @@ class VocabularyValidatorTest {
     @ParameterizedTest
     @EnumSource(SpecificationVersion.class)
     void allOfficialDialectsShouldBeInternallyValid(SpecificationVersion version) {
-        Dialect dialect = Dialects.OFFICIAL_DIALECTS.get(URI.create(version.getId()));
+        Dialect dialect = Dialects.OFFICIAL_DIALECTS.get(UriUtil.removeEmptyFragment(version.getId()));
         validator.validateVocabularies(dialect, dialect.getDefaultVocabularyObject());
     }
 
