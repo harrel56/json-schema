@@ -9,24 +9,24 @@ import java.util.stream.Collectors;
  * {@code SpecificationVersion} enum represents JSON Schema specification versions that are supported.
  */
 public enum SpecificationVersion {
-    DRAFT2020_12(9, "https://json-schema.org/draft/2020-12", "/draft2020-12.json") {
+    DRAFT2020_12(9, "https://json-schema.org/draft/2020-12/schema", "/draft2020-12.json") {
         @Override
         Optional<String> resolveResource(String uri) {
             return getId().equals(uri) ? readFileResource(getResourcePath()) : Optional.empty();
         }
     },
-    DRAFT2019_09(8, "https://json-schema.org/draft/2019-09", "/dev/harrel/jsonschema/draft/2019-09/schema.json"),
-    DRAFT7(7, "http://json-schema.org/draft-07", "/dev/harrel/jsonschema/draft-07/schema.json");
+    DRAFT2019_09(8, "https://json-schema.org/draft/2019-09/schema", "/dev/harrel/jsonschema/draft/2019-09/schema.json"),
+    DRAFT7(7, "http://json-schema.org/draft-07/schema#", "/dev/harrel/jsonschema/draft-07/schema.json");
     private final int order;
     private final URI baseUri;
-    private final String id;
+    private final URI id;
     private final String resourcePath;
     private final URI resourcePathUri;
 
-    SpecificationVersion(int order, String baseUri, String resourcePath) {
+    SpecificationVersion(int order, String id, String resourcePath) {
         this.order = order;
-        this.baseUri = URI.create(baseUri);
-        this.id = baseUri + "/schema";
+        this.id = URI.create(id);
+        this.baseUri = UriUtil.getUriWithoutFragment(id).resolve(".");
         this.resourcePath = resourcePath;
         this.resourcePathUri = URI.create(resourcePath);
     }
@@ -35,8 +35,8 @@ public enum SpecificationVersion {
         if (!uri.startsWith(getBaseUri().toString())) {
             return Optional.empty();
         }
-        String relativeUri = uri.substring(getBaseUri().toString().length() + 1);
-        URI resolvedUri = getResourcePathUri().resolve(relativeUri);
+        String relativeUri = uri.substring(getBaseUri().toString().length());
+        URI resolvedUri = getResourcePathUri().resolve(UriUtil.getUriWithoutFragment(relativeUri));
         return readFileResource(resolvedUri + ".json");
     }
 
@@ -46,7 +46,7 @@ public enum SpecificationVersion {
      * @return specification version ID
      */
     public String getId() {
-        return id;
+        return id.toString();
     }
 
     /**
