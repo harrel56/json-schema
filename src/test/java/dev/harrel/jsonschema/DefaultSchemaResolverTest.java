@@ -27,8 +27,28 @@ class DefaultSchemaResolverTest {
 
     @ParameterizedTest
     @EnumSource(SpecificationVersion.class)
+    void shouldResolveAllSpecificationMetaSchemasWithoutFragment(SpecificationVersion spec) {
+        DefaultSchemaResolver resolver = new DefaultSchemaResolver();
+        SchemaResolver.Result result = resolver.resolve(UriUtil.removeEmptyFragment(spec.getId()).toString());
+
+        assertThat(result.isEmpty()).isFalse();
+        assertThat(result.toJsonNode(new JacksonNode.Factory())).isPresent();
+    }
+
+    @ParameterizedTest
+    @EnumSource(SpecificationVersion.class)
     void shouldHandleNonExistentSubSchemas(SpecificationVersion spec) {
         URI uri = URI.create(spec.getId()).resolve("meta/not-found");
+        DefaultSchemaResolver resolver = new DefaultSchemaResolver();
+        SchemaResolver.Result result = resolver.resolve(uri.toString());
+
+        assertThat(result.isEmpty()).isTrue();
+    }
+
+    @ParameterizedTest
+    @EnumSource(SpecificationVersion.class)
+    void shouldHandleBaseSpecUris(SpecificationVersion spec) {
+        URI uri = URI.create(spec.getId()).resolve(".");
         DefaultSchemaResolver resolver = new DefaultSchemaResolver();
         SchemaResolver.Result result = resolver.resolve(uri.toString());
 
