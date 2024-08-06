@@ -22,7 +22,7 @@ public final class Dialects {
         Map<URI, Dialect> map = new HashMap<>();
         map.put(URI.create(SpecificationVersion.DRAFT2020_12.getId()), new Draft2020Dialect());
         map.put(URI.create(SpecificationVersion.DRAFT2019_09.getId()), new Draft2019Dialect());
-        map.put(URI.create(SpecificationVersion.DRAFT7.getId()), new Draft7Dialect());
+        map.put(UriUtil.removeEmptyFragment(SpecificationVersion.DRAFT7.getId()), new Draft7Dialect());
         OFFICIAL_DIALECTS = Collections.unmodifiableMap(map);
     }
 
