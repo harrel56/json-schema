@@ -307,7 +307,7 @@ class IdKeywordTest {
 
     private Validator createValidator(SpecificationVersion version, boolean disabledSchemaValidation) {
         return new ValidatorFactory()
-                .withDefaultDialect(Dialects.OFFICIAL_DIALECTS.get(URI.create(version.getId())))
+                .withDefaultDialect(Dialects.OFFICIAL_DIALECTS.get(UriUtil.removeEmptyFragment(version.getId())))
                 .withDisabledSchemaValidation(disabledSchemaValidation)
                 .createValidator();
     }
