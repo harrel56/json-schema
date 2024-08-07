@@ -6,7 +6,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.io.InputStream;
 import java.net.URI;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static dev.harrel.jsonschema.ValidatorFactory.DefaultSchemaResolver;
@@ -66,13 +68,24 @@ class DefaultSchemaResolverTest {
     }
 
     @ParameterizedTest
+    @EnumSource(SpecificationVersion.class)
+    void allMetaSchemaResourcesShouldExist(SpecificationVersion spec) {
+        InputStream is = this.getClass().getResourceAsStream(spec.getResourcePath());
+        assertThat(is).isNotNull();
+    }
+
+    @ParameterizedTest
     @MethodSource("getDraft2019SubSchemas")
     void shouldResolveDraft2019SubSchemas(URI uri) {
         DefaultSchemaResolver resolver = new DefaultSchemaResolver();
         SchemaResolver.Result result = resolver.resolve(uri.toString());
 
         assertThat(result.isEmpty()).isFalse();
-        assertThat(result.toJsonNode(new JacksonNode.Factory())).isPresent();
+        Optional<JsonNode> jsonNodeOptional = result.toJsonNode(new JacksonNode.Factory());
+        assertThat(jsonNodeOptional).isPresent();
+        JsonNode idNode = jsonNodeOptional.get().asObject().get(Keyword.ID);
+        assertThat(idNode.isString()).isTrue();
+        assertThat(idNode.asString()).isEqualTo(uri.toString());
     }
 
     @Test
