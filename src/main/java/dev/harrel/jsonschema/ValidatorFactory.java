@@ -282,10 +282,11 @@ public final class ValidatorFactory {
     }
 
     static class DefaultSchemaResolver implements SchemaResolver {
-        private final ConcurrentMap<String, String> schemaCache = new ConcurrentHashMap<>();
+        private final ConcurrentMap<URI, String> schemaCache = new ConcurrentHashMap<>();
 
         @Override
-        public Result resolve(String uri) {
+        public Result resolve(String uriString) {
+            URI uri = URI.create(uriString);
             if (schemaCache.containsKey(uri)) {
                 return Result.fromString(schemaCache.get(uri));
             }
