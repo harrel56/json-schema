@@ -3,7 +3,6 @@ package dev.harrel.jsonschema;
 import dev.harrel.jsonschema.providers.JacksonNode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -20,6 +19,17 @@ class DefaultSchemaResolverTest {
     void shouldResolveAllSpecificationMetaSchemas(SpecificationVersion spec) {
         DefaultSchemaResolver resolver = new DefaultSchemaResolver();
         SchemaResolver.Result result = resolver.resolve(spec.getId());
+
+        assertThat(result.isEmpty()).isFalse();
+        assertThat(result.toJsonNode(new JacksonNode.Factory())).isPresent();
+    }
+
+    @ParameterizedTest
+    @EnumSource(SpecificationVersion.class)
+    void shouldResolveAllSpecificationMetaSchemasWitFragment(SpecificationVersion spec) {
+        DefaultSchemaResolver resolver = new DefaultSchemaResolver();
+        String uri = UriUtil.removeEmptyFragment(spec.getId()) + "#";
+        SchemaResolver.Result result = resolver.resolve(uri);
 
         assertThat(result.isEmpty()).isFalse();
         assertThat(result.toJsonNode(new JacksonNode.Factory())).isPresent();
@@ -84,16 +94,14 @@ class DefaultSchemaResolverTest {
         assertThat(result.toJsonNode(new JacksonNode.Factory())).isPresent();
     }
 
-    static Stream<Arguments> getDraft2019SubSchemas() {
+    static Stream<String> getDraft2019SubSchemas() {
         return Stream.of(
-                        "meta/applicator",
-                        "meta/content",
-                        "meta/core",
-                        "meta/format",
-                        "meta/meta-data",
-                        "meta/validation"
-                )
-                .map(uri -> URI.create(SpecificationVersion.DRAFT2019_09.getId()).resolve(uri))
-                .map(Arguments::of);
+                        "https://json-schema.org/draft/2019-09/meta/applicator",
+                        "https://json-schema.org/draft/2019-09/meta/content",
+                        "https://json-schema.org/draft/2019-09/meta/core",
+                        "https://json-schema.org/draft/2019-09/meta/format",
+                        "https://json-schema.org/draft/2019-09/meta/meta-data",
+                        "https://json-schema.org/draft/2019-09/meta/validation"
+                );
     }
 }
