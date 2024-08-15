@@ -52,7 +52,8 @@ class ItemsEvaluator implements Evaluator {
             return Result.success();
         }
         List<JsonNode> array = node.asArray();
-        int prefixItemsSize = ctx.getSiblingAnnotation(Keyword.PREFIX_ITEMS, node.getJsonPointer(), Integer.class).orElse(0);
+        Object prefixItemsAnnotation = ctx.getSiblingAnnotation(Keyword.PREFIX_ITEMS, node.getJsonPointer());
+        int prefixItemsSize = prefixItemsAnnotation instanceof Integer ? (Integer) prefixItemsAnnotation : 0;
         boolean valid = true;
         for (int i = prefixItemsSize; i < array.size(); i++) {
             valid = ctx.resolveInternalRefAndValidate(schemaRef, array.get(i)) && valid;
@@ -122,12 +123,12 @@ class AdditionalItemsEvaluator implements Evaluator {
             return Result.success();
         }
         List<JsonNode> array = node.asArray();
-        Optional<Object> itemsAnnotation = ctx.getSiblingAnnotation(Keyword.ITEMS, node.getJsonPointer());
-        boolean shouldSkip = itemsAnnotation.map(Boolean.class::isInstance).orElse(false);
-        if (shouldSkip) {
+        Object itemsAnnotation = ctx.getSiblingAnnotation(Keyword.ITEMS, node.getJsonPointer());
+        if (itemsAnnotation instanceof Boolean) {
             return Result.success(true);
         }
-        int itemsSize = itemsAnnotation.filter(Integer.class::isInstance).map(Integer.class::cast).orElse(array.size());
+
+        int itemsSize = itemsAnnotation instanceof Integer ? (Integer) itemsAnnotation : array.size();
         int size = Math.max(array.size() - itemsSize, 0);
         boolean valid = array.stream()
                 .skip(itemsSize)
@@ -184,18 +185,22 @@ class AdditionalPropertiesEvaluator implements Evaluator {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (!node.isObject()) {
             return Result.success();
         }
 
         String instanceLocation = node.getJsonPointer();
-        Set<String> props = new HashSet<>();
-        ctx.getSiblingAnnotation(Keyword.PROPERTIES, instanceLocation, Set.class).ifPresent(props::addAll);
-        ctx.getSiblingAnnotation(Keyword.PATTERN_PROPERTIES, instanceLocation, Set.class).ifPresent(props::addAll);
-
         Map<String, JsonNode> toBeProcessed = new HashMap<>(node.asObject());
-        toBeProcessed.keySet().removeAll(props);
+        Object propsAnnotation = ctx.getSiblingAnnotation(Keyword.PROPERTIES, instanceLocation);
+        if (propsAnnotation instanceof Collection) {
+            toBeProcessed.keySet().removeAll((Collection<String>) propsAnnotation);
+        }
+        Object patternAnnotation = ctx.getSiblingAnnotation(Keyword.PATTERN_PROPERTIES, instanceLocation);
+        if (patternAnnotation instanceof Collection) {
+            toBeProcessed.keySet().removeAll((Collection<String>) patternAnnotation);
+        }
         boolean valid = true;
         for (JsonNode propNode : toBeProcessed.values()) {
             valid = ctx.resolveInternalRefAndValidate(schemaRef, propNode) && valid;
