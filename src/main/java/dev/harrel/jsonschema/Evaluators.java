@@ -361,9 +361,8 @@ class MaxContainsEvaluator implements Evaluator {
             return Result.success();
         }
 
-        int containsCount = ctx.getSiblingAnnotation(Keyword.CONTAINS, node.getJsonPointer(), List.class)
-                .map(Collection::size)
-                .orElse(0);
+        Object containsAnnotation = ctx.getSiblingAnnotation(Keyword.CONTAINS, node.getJsonPointer());
+        int containsCount = containsAnnotation instanceof Collection ? ((Collection<?>) containsAnnotation).size() : 0;
         if (containsCount <= max) {
             return Result.success();
         } else {
@@ -393,9 +392,8 @@ class MinContainsEvaluator implements Evaluator {
             return Result.success();
         }
 
-        int containsCount = ctx.getSiblingAnnotation(Keyword.CONTAINS, node.getJsonPointer(), List.class)
-                .map(Collection::size)
-                .orElse(Integer.MAX_VALUE);
+        Object containsAnnotation = ctx.getSiblingAnnotation(Keyword.CONTAINS, node.getJsonPointer());
+        int containsCount = containsAnnotation instanceof Collection ? ((Collection<?>) containsAnnotation).size() : Integer.MAX_VALUE;
         if (containsCount >= min) {
             return Result.success();
         } else {
