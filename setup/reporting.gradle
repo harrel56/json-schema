@@ -14,5 +14,7 @@ sonar {
 
         property 'sonar.java.source', '8'
         property 'sonar.java.target', '8'
+        property 'sonar.java.test.source', '21'
+        property 'sonar.java.test.target', '21'
     }
 }
