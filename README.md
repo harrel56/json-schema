@@ -12,7 +12,7 @@ Java library implementing [JSON schema specification](https://json-schema.org/sp
   - Draft 2019-09 [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie.report%2Fbadges%2Fjava-dev.harrel.json-schema%2Fcompliance%2Fdraft2019-09.json)](https://bowtie.report/#/dialects/draft2019-09),
   - Draft 07 [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie.report%2Fbadges%2Fjava-dev.harrel.json-schema%2Fcompliance%2Fdraft7.json)](https://bowtie.report/#/dialects/draft7),
 - support for [custom keywords](#adding-custom-keywords),
-- support for annotation collection,
+- support for annotation collection, 
 - support for [format validation](#format-validation) (for a price of one additional dependency 😉),
 - compatible with most of the JSON/YAML libraries ([supported libraries](#jsonyaml-providers)),
 - and no additional dependencies on top of that.
