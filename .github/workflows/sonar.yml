@@ -32,15 +32,10 @@ jobs:
           head: 'harrel56:${{ fromJSON(steps.workflow-run-info.outputs.data).head_branch }}'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: "echo run info: '${{ steps.workflow-run-info.outputs.data }}'"
-      - run: "echo pr info: '${{ steps.pr-info.outputs.data }}'"
-      - run: "echo 'pr info 2: ${{ fromJSON(steps.pr-info.outputs.data)[0].number }}'"
       - name: Extract PR number
         id: pr-number
         if: steps.pr-info.outputs.data != ''
         run: echo "number=${{ fromJSON(steps.pr-info.outputs.data)[0].number }}" >> $GITHUB_OUTPUT
-      - run: "echo 'pr number: ${{ steps.pr-number.outputs.number }}'"
-      - run: "echo 'pr number 2: ${{ toJSON(steps.pr-number.outputs.number) }}'"
 
   sonar-cloud:
     if: github.event.workflow_run.conclusion == 'success'
@@ -54,7 +49,7 @@ jobs:
           fetch-depth: 0
 
       - name: Download code coverage
-        uses: dawidd6/action-download-artifact@v3
+        uses: dawidd6/action-download-artifact@v6
         with:
           workflow: tests.yml
           commit: ${{ github.event.workflow_run.head_sha }}
