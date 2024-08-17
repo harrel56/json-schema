@@ -34,13 +34,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: "echo run info: '${{ steps.workflow-run-info.outputs.data }}'"
       - run: "echo pr info: '${{ steps.pr-info.outputs.data }}'"
-      - run: "echo pr info 2: '${{ steps.pr-info.outputs.data && fromJSON(steps.pr-info.outputs.data).number }}'"
+      - run: "echo 'pr info 2: ${{ fromJSON(steps.pr-info.outputs.data).number }}'"
       - name: Extract PR number
         id: pr-number
         if: steps.pr-info.outputs.data != ''
         run: echo "number=${{ fromJSON(steps.pr-info.outputs.data).number }}" >> $GITHUB_OUTPUT
-      - run: "echo pr number: '${{ steps.pr-number.outputs.number }}'"
-      - run: "echo pr number 2: '${{ toJSON(steps.pr-number.outputs.number) }}'"
+      - run: "echo 'pr number: ${{ steps.pr-number.outputs.number }}'"
+      - run: "echo 'pr number 2: ${{ toJSON(steps.pr-number.outputs.number) }}'"
 
   sonar-cloud:
     if: github.event.workflow_run.conclusion == 'success'
