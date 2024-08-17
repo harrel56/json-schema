@@ -18,7 +18,7 @@ Java library implementing [JSON schema specification](https://json-schema.org/sp
 - and no additional dependencies on top of that.
 
 Check how it compares with other implementations:
-- [Bowtie](https://bowtie.report) - specification compliance (only mandatory behaviour),
+- [Bowtie](https://bowtie.report) - specification compliance (only mandatory behaviour), 
 - [Creek's benchmark](https://www.creekservice.org/json-schema-validation-comparison/performance) - benchmark for JVM based implementations.
 
 ## Demo
