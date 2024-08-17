@@ -10,7 +10,7 @@ jobs:
     outputs:
       sourceHeadBranch: ${{ fromJSON(steps.workflow-run-info.outputs.data).head_branch }}
       sourceHeadSha: ${{ fromJSON(steps.workflow-run-info.outputs.data).head_sha }}
-      pullRequestNumber: ${{ fromJSON(steps.pr-info.outputs.data).number }}
+      pullRequestNumber: ${{ steps.pr-info.outputs.data && fromJSON(steps.pr-info.outputs.data).number }}
     steps:
       - uses: octokit/request-action@v2.3.1
         id: workflow-run-info
@@ -32,7 +32,8 @@ jobs:
           head: 'harrel56:${{ fromJSON(steps.workflow-run-info.outputs.data).head_branch }}'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: "echo latest release: '${{ steps.pr-info.outputs.data }}'"
+      - run: "echo run info: '${{ steps.workflow-run-info.outputs.data }}'"
+      - run: "echo pr info: '${{ steps.pr-info.outputs.data }}'"
 
   sonar-cloud:
     if: github.event.workflow_run.conclusion == 'success'
