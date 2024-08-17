@@ -6,7 +6,7 @@
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=harrel56_json-schema&metric=coverage)](https://sonarcloud.io/summary/new_code?id=harrel56_json-schema)
 
 Java library implementing [JSON schema specification](https://json-schema.org/specification.html):
-- compatible with Java 8, 
+- compatible with Java 8,  
 - support for the newest [specification versions](#dialects) [![Supported spec](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie-json-schema.github.io%2Fbowtie%2Fbadges%2Fjava-dev.harrel.json-schema%2Fsupported_versions.json)](https://bowtie.report/#/implementations/java-json-schema):
   - Draft 2020-12 [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie.report%2Fbadges%2Fjava-dev.harrel.json-schema%2Fcompliance%2Fdraft2020-12.json)](https://bowtie.report/#/dialects/draft2020-12),
   - Draft 2019-09 [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie.report%2Fbadges%2Fjava-dev.harrel.json-schema%2Fcompliance%2Fdraft2019-09.json)](https://bowtie.report/#/dialects/draft2019-09),
