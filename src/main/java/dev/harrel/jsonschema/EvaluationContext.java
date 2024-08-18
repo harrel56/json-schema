@@ -202,28 +202,26 @@ public final class EvaluationContext {
     }
 
     private Schema resolveSchema(CompoundUri compoundUri) {
-        CompoundUri resolvedUri = UriUtil.resolveUri(dynamicScope.element(), compoundUri);
-        Schema schema = schemaRegistry.get(resolvedUri);
+        Schema schema = schemaRegistry.get(compoundUri);
         if (schema != null) {
             return schema;
         }
-        schema = schemaRegistry.getDynamic(resolvedUri);
+        schema = schemaRegistry.getDynamic(compoundUri);
         if (schema != null) {
             return schema;
         }
-        return resolveExternalSchema(compoundUri, resolvedUri);
+        return resolveExternalSchema(compoundUri);
     }
 
     private Schema resolveDynamicSchema(CompoundUri compoundUri) {
-        CompoundUri resolvedUri = UriUtil.resolveUri(dynamicScope.element(), compoundUri);
-        Schema staticSchema = schemaRegistry.get(resolvedUri);
+        Schema staticSchema = schemaRegistry.get(compoundUri);
         if (staticSchema != null) {
             return staticSchema;
         }
 
         Iterator<URI> it = dynamicScope.descendingIterator();
         while (it.hasNext()) {
-            Schema schema = schemaRegistry.getDynamic(new CompoundUri(it.next(), resolvedUri.fragment));
+            Schema schema = schemaRegistry.getDynamic(new CompoundUri(it.next(), compoundUri.fragment));
             if (schema != null) {
                 return schema;
             }
@@ -253,15 +251,15 @@ public final class EvaluationContext {
         return refItem.evaluationPath + evaluationPathPart;
     }
 
-    private Schema resolveExternalSchema(CompoundUri originalRef, CompoundUri resolvedUri) {
-        if (schemaRegistry.get(resolvedUri.uri) != null) {
+    private Schema resolveExternalSchema(CompoundUri compoundUri) {
+        if (schemaRegistry.get(compoundUri.uri) != null) {
             return null;
         }
-        return schemaResolver.resolve(resolvedUri.uri.toString())
+        return schemaResolver.resolve(compoundUri.uri.toString())
                 .toJsonNode(jsonNodeFactory)
                 .map(node -> {
-                    jsonParser.parseRootSchema(resolvedUri.uri, node);
-                    return resolveSchema(originalRef);
+                    jsonParser.parseRootSchema(compoundUri.uri, node);
+                    return resolveSchema(compoundUri);
                 }).orElse(null);
     }
 

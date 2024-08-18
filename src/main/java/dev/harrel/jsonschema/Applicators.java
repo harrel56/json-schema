@@ -537,11 +537,11 @@ class UnevaluatedPropertiesEvaluator implements Evaluator {
 class RefEvaluator implements Evaluator {
     private final CompoundUri ref;
 
-    RefEvaluator(JsonNode node) {
+    RefEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isString()) {
             throw new IllegalArgumentException();
         }
-        this.ref = CompoundUri.fromString(node.asString());
+        this.ref = UriUtil.resolveUri(ctx.getParentUri(), CompoundUri.fromString(node.asString()));
     }
 
     @Override
@@ -557,11 +557,11 @@ class RefEvaluator implements Evaluator {
 class DynamicRefEvaluator implements Evaluator {
     private final CompoundUri ref;
 
-    DynamicRefEvaluator(JsonNode node) {
+    DynamicRefEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isString()) {
             throw new IllegalArgumentException();
         }
-        this.ref = CompoundUri.fromString(node.asString());
+        this.ref = UriUtil.resolveUri(ctx.getParentUri(), CompoundUri.fromString(node.asString()));
     }
 
     @Override
