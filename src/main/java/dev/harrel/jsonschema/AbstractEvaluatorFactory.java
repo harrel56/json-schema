@@ -50,7 +50,7 @@ abstract class AbstractEvaluatorFactory implements EvaluatorFactory {
                                                                  String unevaluatedVocab,
                                                                  String validationVocab) {
         Map<String, EvaluatorInfo> map = new HashMap<>();
-        map.put(REF, new EvaluatorInfo(coreVocab, (ctx, node) -> new RefEvaluator(node)));
+        map.put(REF, new EvaluatorInfo(coreVocab, RefEvaluator::new));
 
         map.put(TYPE, new EvaluatorInfo(validationVocab, (ctx, node) -> new TypeEvaluator(node)));
         map.put(CONST, new EvaluatorInfo(validationVocab, (ctx, node) -> new ConstEvaluator(node)));
