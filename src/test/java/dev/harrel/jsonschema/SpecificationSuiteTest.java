@@ -166,6 +166,12 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
 
     private static Map<String, Map<String, Set<String>>> skippedFormatTests() {
         return Map.of(
+                "ecmascript-regex", Map.of(
+                        "\\a is not an ECMA 262 control escape", Set.of(
+                                /* this is no good for java regex */
+                                "when used as a pattern"
+                        )
+                ),
                 "date-time", Map.of(
                         "validation of date-time strings", Set.of(
                                 /* leap seconds not supported */
