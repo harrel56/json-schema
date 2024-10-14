@@ -2,6 +2,7 @@ package dev.harrel.jsonschema;
 
 import java.net.URI;
 import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
@@ -13,6 +14,7 @@ final class JsonParser {
     private final SchemaRegistry schemaRegistry;
     private final MetaSchemaValidator metaSchemaValidator;
     private final boolean disabledSchemaValidation;
+    private final ReentrantLock lock = new ReentrantLock();
     private final Map<URI, UnfinishedSchema> unfinishedSchemas = new HashMap<>();
 
     JsonParser(Map<URI, Dialect> dialects,
@@ -29,13 +31,18 @@ final class JsonParser {
         this.disabledSchemaValidation = disabledSchemaValidation;
     }
 
-    synchronized URI parseRootSchema(URI baseUri, JsonNode node) {
-        SchemaRegistry.State snapshot = schemaRegistry.createSnapshot();
+    URI parseRootSchema(URI baseUri, JsonNode node) {
+        lock.lock();
         try {
-            return parseRootSchemaInternal(UriUtil.getUriWithoutFragment(baseUri), node);
-        } catch (RuntimeException e) {
-            schemaRegistry.restoreSnapshot(snapshot);
-            throw e;
+            SchemaRegistry.State snapshot = schemaRegistry.createSnapshot();
+            try {
+                return parseRootSchemaInternal(UriUtil.getUriWithoutFragment(baseUri), node);
+            } catch (RuntimeException e) {
+                schemaRegistry.restoreSnapshot(snapshot);
+                throw e;
+            }
+        } finally {
+            lock.unlock();
         }
     }
 
