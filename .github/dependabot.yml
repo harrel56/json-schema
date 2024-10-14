@@ -4,3 +4,9 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    groups:
+      all:
+        patterns:
+          - '*'
+       # seems that split between prod & test deps is not implemented for gradle
+       # dependency-type: production
