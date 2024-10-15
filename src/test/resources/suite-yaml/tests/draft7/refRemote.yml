@@ -10,7 +10,7 @@
       valid: false
 - description: fragment within remote ref
   schema:
-    $ref: http://localhost:1234/subSchemas.json#/definitions/integer
+    $ref: http://localhost:1234/draft7/subSchemas.json#/definitions/integer
   tests:
     - description: remote fragment valid
       data: 1
@@ -20,7 +20,7 @@
       valid: false
 - description: ref within remote ref
   schema:
-    $ref: http://localhost:1234/subSchemas.json#/definitions/refToInteger
+    $ref: http://localhost:1234/draft7/subSchemas.json#/definitions/refToInteger
   tests:
     - description: ref within ref valid
       data: 1
@@ -100,7 +100,7 @@
     type: object
     properties:
       name:
-        $ref: name.json#/definitions/orNull
+        $ref: draft7/name.json#/definitions/orNull
   tests:
     - description: string is valid
       data:
@@ -119,7 +119,7 @@
   schema:
     $id: http://localhost:1234/schema-remote-ref-ref-defs1.json
     allOf:
-      - $ref: ref-and-definitions.json
+      - $ref: draft7/ref-and-definitions.json
   tests:
     - description: invalid
       data:
@@ -131,7 +131,7 @@
       valid: true
 - description: Location-independent identifier in remote ref
   schema:
-    $ref: http://localhost:1234/locationIndependentIdentifierPre2019.json#/definitions/refToInteger
+    $ref: http://localhost:1234/draft7/locationIndependentIdentifier.json#/definitions/refToInteger
   tests:
     - description: integer is valid
       data: 1

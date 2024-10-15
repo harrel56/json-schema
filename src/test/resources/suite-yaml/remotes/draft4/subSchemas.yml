@@ -1,0 +1,5 @@
+definitions:
+  integer:
+    type: integer
+  refToInteger:
+    $ref: '#/definitions/integer'
