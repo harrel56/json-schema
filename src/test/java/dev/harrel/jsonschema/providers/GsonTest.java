@@ -20,7 +20,7 @@ class GsonTest {
 
     @Test
     void shouldWrapForValidArgument() {
-        JsonElement object = JsonParser.parseString("{}");
+        JsonElement object = new JsonParser().parse("{}");
         JsonNode wrap = new GsonNode.Factory().wrap(object);
         assertThat(wrap).isNotNull();
         assertThat(wrap.getNodeType()).isEqualTo(SimpleType.OBJECT);

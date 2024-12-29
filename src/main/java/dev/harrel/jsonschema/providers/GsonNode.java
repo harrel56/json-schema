@@ -98,7 +98,11 @@ public final class GsonNode extends AbstractJsonNode<JsonElement> {
         }
     }
 
+    /* Using deprecated API to support older versions as well */
+    @SuppressWarnings("deprecation")
     public static final class Factory implements JsonNodeFactory {
+        private final JsonParser jsonParser = new JsonParser();
+
         @Override
         public GsonNode wrap(Object node) {
             if (node instanceof GsonNode) {
@@ -112,7 +116,7 @@ public final class GsonNode extends AbstractJsonNode<JsonElement> {
 
         @Override
         public GsonNode create(String rawJson) {
-            return new GsonNode(JsonParser.parseString(rawJson));
+            return new GsonNode(jsonParser.parse(rawJson));
         }
     }
 }
