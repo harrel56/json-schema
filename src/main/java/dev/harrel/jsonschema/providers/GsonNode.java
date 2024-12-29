@@ -1,5 +1,6 @@
 package dev.harrel.jsonschema.providers;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
@@ -44,10 +45,11 @@ public final class GsonNode extends AbstractJsonNode<JsonElement> {
 
     @Override
     List<JsonNode> createArray() {
-        List<JsonElement> elements = node.getAsJsonArray().asList();
-        List<JsonNode> result = new ArrayList<>(elements.size());
-        for (int i = 0; i < elements.size(); i++) {
-            result.add(new GsonNode(elements.get(i), jsonPointer + "/" + i));
+        JsonArray array = node.getAsJsonArray();
+        List<JsonNode> result = new ArrayList<>(array.size());
+        int i = 0;
+        for (JsonElement elem : array) {
+            result.add(new GsonNode(elem, jsonPointer + "/" + i++));
         }
         return result;
     }
