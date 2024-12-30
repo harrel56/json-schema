@@ -36,10 +36,10 @@ repositories {
 }
 
 def jsonProvidersTmp = [
-        [group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.18.0']
+        [group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.18.2']
 ]
 def jsonProviders = [
-        jackson    : 'com.fasterxml.jackson.core:jackson-databind:2.18.0',
+        jackson    : 'com.fasterxml.jackson.core:jackson-databind:2.18.2',
         gson       : 'com.google.code.gson:gson:2.11.0',
         orgJson    : 'org.json:json:20240303',
         kotlinxJson: 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3',
