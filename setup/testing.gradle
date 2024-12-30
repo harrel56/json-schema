@@ -9,12 +9,12 @@ tasks.register('genericTests', Test) {
 }
 tasks.check.dependsOn genericTests
 
-ext.setupProviderTest = (String provider, String dependency) -> {
-    def taskName = "${provider}Test"
+ext.setupProviderTest = (Map data) -> {
+    def taskName = "${data.id}Test"
     def configName = "${taskName}Implementation"
     sourceSets.create(taskName) {
         java {
-            srcDir file("src/provider-test/$provider")
+            srcDir file("src/provider-test/${data.id}")
             compileClasspath += sourceSets.main.output
             runtimeClasspath += sourceSets.main.output
         }
@@ -24,7 +24,7 @@ ext.setupProviderTest = (String provider, String dependency) -> {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
     configurations.getByName(configName).extendsFrom configurations.getByName('testImplementation')
-    dependencies.add(configName, dependency)
+    dependencies.add(configName, [group: data.group, name: data.name, version: data.version])
     tasks.register(taskName, Test) {
         useJUnitPlatform()
         group = 'verification'
