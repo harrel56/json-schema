@@ -1,3 +1,5 @@
+import groovy.transform.Immutable
+
 plugins {
     id 'java'
     id 'maven-publish'
@@ -35,8 +37,17 @@ repositories {
     mavenCentral()
 }
 
+@Immutable
+class JsonProvider {
+    String id
+    String group
+    String name
+    String version
+    String[] additionalVersions
+}
 def jsonProvidersTmp = [
-        [id: 'jackson', group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.18.0', versions: ['2.17.0', '2.17.1']]
+        new JsonProvider(group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.18.0',
+                id: 'jackson', additionalVersions: ['2.17.0', '2.17.1'])
 ]
 def jsonProviders = [
         jackson    : 'com.fasterxml.jackson.core:jackson-databind:2.18.0',
