@@ -15,24 +15,39 @@ ext.setupProviderTest = (Map data) -> {
     sourceSets.create(taskName) {
         java {
             srcDir file("src/provider-test/${data.id}")
-            compileClasspath += sourceSets.main.output
-            runtimeClasspath += sourceSets.main.output
+            compileClasspath += sourceSets.main.output + sourceSets.test.output
+            runtimeClasspath += sourceSets.main.output + sourceSets.test.output
         }
     }
-    tasks.getByName("compile${taskName.capitalize()}Java") {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-    configurations.getByName(configName).extendsFrom configurations.getByName('testImplementation')
+    configurations.getByName(configName).extendsFrom configurations.testImplementation, configurations.formatImplementation
     dependencies.add(configName, [group: data.group, name: data.name, version: data.version])
     tasks.register(taskName, Test) {
         useJUnitPlatform()
-        group = 'verification'
+        group = 'provider'
         testClassesDirs = sourceSets.getByName(taskName).output.classesDirs
         classpath = sourceSets.getByName(taskName).runtimeClasspath
-        javaLauncher = javaToolchains.launcherFor {
-            languageVersion = JavaLanguageVersion.of(8)
-        }
+//        javaLauncher = javaToolchains.launcherFor {
+//            languageVersion = JavaLanguageVersion.of(8)
+//        }
     }
     tasks.check.dependsOn taskName
+
+    (data.additionalVersions as List<String>).forEach {
+        def taskName2 = "${data.id}${it.replace('.', '_')}Test"
+        def configName2 = "${taskName2}Implementation"
+        configurations.create(configName2)
+        configurations.getByName(configName2).extendsFrom configurations.testImplementation, configurations.formatImplementation
+        dependencies.add(configName2, [group: data.group, name: data.name, version: it])
+        tasks.register(taskName2, Test) {
+            useJUnitPlatform()
+            group = 'provider'
+            testClassesDirs = sourceSets.getByName(taskName).output.classesDirs
+            classpath = configurations.getByName(configName2).getIncoming().getFiles() + sourceSets.getByName(taskName).output + sourceSets.test.output + sourceSets.main.output
+//    classpath = configurations.getByName('gson2TestImplementation').getIncoming().getFiles() + sourceSets.main.output + sourceSets.test.output
+//        javaLauncher = javaToolchains.launcherFor {
+//            languageVersion = JavaLanguageVersion.of(8)
+//        }
+        }
+        tasks.check.dependsOn taskName2
+    }
 }

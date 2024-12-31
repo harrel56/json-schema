@@ -456,13 +456,15 @@ public abstract class MetaSchemaTest implements ProviderTest {
                   "$schema": "urn:meta",
                   "$id": "urn:schema"
                 }""";
-        Validator validator = new ValidatorFactory().withSchemaResolver(uri -> {
-            if ("urn:meta".equals(uri)) {
-                return SchemaResolver.Result.fromString(failingMetaSchema);
-            } else {
-                return SchemaResolver.Result.empty();
-            }
-        }).createValidator();
+        Validator validator = new ValidatorFactory()
+                .withJsonNodeFactory(getJsonNodeFactory())
+                .withSchemaResolver(uri -> {
+                    if ("urn:meta".equals(uri)) {
+                        return SchemaResolver.Result.fromString(failingMetaSchema);
+                    } else {
+                        return SchemaResolver.Result.empty();
+                    }
+                }).createValidator();
 
         InvalidSchemaException exception = catchThrowableOfType(InvalidSchemaException.class, () -> validator.registerSchema(schema));
         assertThat(exception).hasMessage("Schema [urn:schema] failed to validate against meta-schema [urn:meta]");
