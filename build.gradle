@@ -54,6 +54,7 @@ def jsonProviders = [
          group: 'org.yaml', name: 'snakeyaml', version: '2.3'],
 ]
 
+setupJava8Test(jsonProviders[0])
 jsonProviders.forEach {
     java.registerFeature(it.id, {
         usingSourceSet(sourceSets.main)
