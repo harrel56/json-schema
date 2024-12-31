@@ -1,3 +1,4 @@
+// todo this should be removed as it will be equivalent of `test` task
 tasks.register('genericTests', Test) {
     description = 'Runs all tests that are not related to specific JSON providers (no specification tests)'
     useJUnitPlatform()
@@ -9,23 +10,28 @@ tasks.register('genericTests', Test) {
 }
 tasks.check.dependsOn genericTests
 
+/**
+ * Each provider gets SourceSet with Test task.
+ * Each additional version of provider reuses created SourceSet and creates Configuration and Test task for itself.
+ */
 ext.setupProviderTest = (Map data) -> {
     def taskName = "${data.id}Test"
     def configName = "${taskName}Implementation"
     sourceSets.create(taskName) {
         java {
-            srcDir file("src/provider-test/${data.id}")
+            srcDir file("src/integration/${taskName}")
             compileClasspath += sourceSets.main.output + sourceSets.test.output
             runtimeClasspath += sourceSets.main.output + sourceSets.test.output
         }
     }
+    def sourceSet = sourceSets.getByName(taskName)
     configurations.getByName(configName).extendsFrom configurations.testImplementation, configurations.formatImplementation
     dependencies.add(configName, [group: data.group, name: data.name, version: data.version])
     tasks.register(taskName, Test) {
         useJUnitPlatform()
         group = 'provider'
-        testClassesDirs = sourceSets.getByName(taskName).output.classesDirs
-        classpath = sourceSets.getByName(taskName).runtimeClasspath
+        testClassesDirs = sourceSet.output.classesDirs
+        classpath = sourceSet.runtimeClasspath
 //        javaLauncher = javaToolchains.launcherFor {
 //            languageVersion = JavaLanguageVersion.of(8)
 //        }
@@ -33,21 +39,20 @@ ext.setupProviderTest = (Map data) -> {
     tasks.check.dependsOn taskName
 
     (data.additionalVersions as List<String>).forEach {
-        def taskName2 = "${data.id}${it.replace('.', '_')}Test"
-        def configName2 = "${taskName2}Implementation"
-        configurations.create(configName2)
-        configurations.getByName(configName2).extendsFrom configurations.testImplementation, configurations.formatImplementation
-        dependencies.add(configName2, [group: data.group, name: data.name, version: it])
-        tasks.register(taskName2, Test) {
+        def additionalTaskName = "${data.id}${it.replace('.', '_')}Test"
+        def additionalConfigName = "${additionalTaskName}Implementation"
+        configurations.create(additionalConfigName)
+        configurations.getByName(additionalConfigName).extendsFrom configurations.testImplementation, configurations.formatImplementation
+        dependencies.add(additionalConfigName, [group: data.group, name: data.name, version: it])
+        tasks.register(additionalTaskName, Test) {
             useJUnitPlatform()
             group = 'provider'
-            testClassesDirs = sourceSets.getByName(taskName).output.classesDirs
-            classpath = configurations.getByName(configName2).getIncoming().getFiles() + sourceSets.getByName(taskName).output + sourceSets.test.output + sourceSets.main.output
-//    classpath = configurations.getByName('gson2TestImplementation').getIncoming().getFiles() + sourceSets.main.output + sourceSets.test.output
+            testClassesDirs = sourceSet.output.classesDirs
+            classpath = configurations.getByName(additionalConfigName).getIncoming().getFiles() + sourceSet.output + sourceSets.test.output + sourceSets.main.output
 //        javaLauncher = javaToolchains.launcherFor {
 //            languageVersion = JavaLanguageVersion.of(8)
 //        }
         }
-        tasks.check.dependsOn taskName2
+        tasks.check.dependsOn additionalTaskName
     }
 }
