@@ -63,6 +63,7 @@ ext.setupProviderTest = (Map data) -> {
     dependencies.add(configName, [group: data.group, name: data.name, version: data.version])
     tasks.register(taskName, Test) {
         useJUnitPlatform()
+        jvmArgs("-XX:+EnableDynamicAgentLoading")
         group = 'provider'
         testClassesDirs = sourceSet.output.classesDirs
         classpath = sourceSet.runtimeClasspath
@@ -77,6 +78,7 @@ ext.setupProviderTest = (Map data) -> {
         dependencies.add(additionalConfigName, [group: data.group, name: data.name, version: version])
         tasks.register(additionalTaskName, Test) {
             useJUnitPlatform()
+            jvmArgs("-XX:+EnableDynamicAgentLoading")
             group = 'provider'
             environment 'PROVIDER_VERSION', version
             systemProperty 'junit.jupiter.displayname.generator.default', 'dev.harrel.jsonschema.util.VersionAwareNameGenerator'
