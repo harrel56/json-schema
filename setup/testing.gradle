@@ -18,7 +18,7 @@ ext.setupJava8Test = (Map data) -> {
     dependencies.add(configName, [group: data.group, name: data.name, version: data.version])
     tasks.register(taskName, Test) {
         useJUnitPlatform()
-        group = 'provider'
+        group = 'integration'
         testClassesDirs = sourceSet.output.classesDirs
         classpath = sourceSet.runtimeClasspath
         javaLauncher = javaToolchains.launcherFor {
@@ -52,7 +52,7 @@ ext.setupProviderTest = (Map data) -> {
     tasks.register(taskName, Test) {
         useJUnitPlatform()
         jvmArgs("-XX:+EnableDynamicAgentLoading")
-        group = 'provider'
+        group = 'integration'
         testClassesDirs = sourceSet.output.classesDirs
         classpath = sourceSet.runtimeClasspath
     }
@@ -67,7 +67,7 @@ ext.setupProviderTest = (Map data) -> {
         tasks.register(additionalTaskName, Test) {
             useJUnitPlatform()
             jvmArgs("-XX:+EnableDynamicAgentLoading")
-            group = 'provider'
+            group = 'integration'
             environment 'PROVIDER_VERSION', version
             systemProperty 'junit.jupiter.displayname.generator.default', 'dev.harrel.jsonschema.util.VersionAwareNameGenerator'
             testClassesDirs = sourceSet.output.classesDirs
@@ -75,4 +75,10 @@ ext.setupProviderTest = (Map data) -> {
         }
         tasks.check.dependsOn additionalTaskName
     }
+}
+
+/* For GH actions */
+tasks.register('integrationTasksArray') {
+    def taskNames = tasks.findAll { it.group == 'integration' }.name
+    println groovy.json.JsonOutput.toJson(taskNames)
 }
