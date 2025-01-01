@@ -46,7 +46,7 @@ class GsonTest {
     @Test
     void shouldFailWrapForInvalidArgument() {
         JsonNode node = mock(JsonNode.class);
-        GsonNode.Factory factory = new GsonNode.Factory();
+        JsonNodeFactory factory = createFactory();
         assertThatThrownBy(() -> factory.wrap(node))
                 .isInstanceOf(IllegalArgumentException.class);
     }
