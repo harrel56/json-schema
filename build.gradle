@@ -48,7 +48,7 @@ def jsonProviders = [
          group: 'jakarta.json', name: 'jakarta.json-api', version: '2.1.3'],
         [id   : 'jettison', additionalVersions: [],
          group: 'org.codehaus.jettison', name: 'jettison', version: '1.5.4'],
-        [id   : 'jsonSmart', additionalVersions: [],
+        [id   : 'jsonSmart', additionalVersions: ['1.1'],
          group: 'net.minidev', name: 'json-smart', version: '2.5.1'],
         [id   : 'snakeYaml', additionalVersions: ['1.26', '2.0'],
          group: 'org.yaml', name: 'snakeyaml', version: '2.3'],
