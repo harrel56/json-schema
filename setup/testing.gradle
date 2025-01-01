@@ -1,15 +1,3 @@
-// todo this should be removed as it will be equivalent of `test` task
-tasks.register('genericTests', Test) {
-    description = 'Runs all tests that are not related to specific JSON providers (no specification tests)'
-    useJUnitPlatform()
-    group = 'verification'
-
-    filter {
-        excludeTestsMatching 'dev.harrel.jsonschema.providers.*'
-    }
-}
-tasks.check.dependsOn genericTests
-
 ext.setupJava8Test = (Map data) -> {
     def taskName = 'java8Test'
     def configName = "${taskName}Implementation"
