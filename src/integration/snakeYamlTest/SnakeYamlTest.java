@@ -1,10 +1,9 @@
-package dev.harrel.jsonschema.providers;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
+import dev.harrel.jsonschema.ValidatorFactory;
+import dev.harrel.jsonschema.providers.SnakeYamlNode;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -21,10 +20,29 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 
 class SnakeYamlTest {
     private JsonNodeFactory createFactory() {
         return new SnakeYamlNode.Factory();
+    }
+
+    @Test
+    void shouldInstantiateValidatorFactory() {
+        new ValidatorFactory();
+    }
+
+    @Test
+    void shouldPassForOrgJsonFactory() {
+        new ValidatorFactory()
+                .withJsonNodeFactory(new SnakeYamlNode.Factory())
+                .validate("{}", "{}");
+    }
+
+    @Test
+    void shouldFailForDefaultFactory() {
+        AssertionsForClassTypes.assertThatThrownBy(() -> new ValidatorFactory().validate("{}", "{}"))
+                .isInstanceOf(NoClassDefFoundError.class);
     }
 
     @Test
@@ -36,10 +54,10 @@ class SnakeYamlTest {
     }
 
     @Test
-    void shouldFailWrapForInvalidArgument() throws JsonProcessingException {
-        com.fasterxml.jackson.databind.JsonNode object = new ObjectMapper().readTree("{}");
+    void shouldFailWrapForInvalidArgument() {
+        JsonNode node = mock(JsonNode.class);
         JsonNodeFactory factory = createFactory();
-        assertThatThrownBy(() -> factory.wrap(object))
+        AssertionsForClassTypes.assertThatThrownBy(() -> factory.wrap(node))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 

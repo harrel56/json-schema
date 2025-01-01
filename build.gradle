@@ -50,7 +50,7 @@ def jsonProviders = [
          group: 'org.codehaus.jettison', name: 'jettison', version: '1.5.4'],
         [id   : 'jsonSmart', additionalVersions: [],
          group: 'net.minidev', name: 'json-smart', version: '2.5.1'],
-        [id   : 'snakeYaml', additionalVersions: [],
+        [id   : 'snakeYaml', additionalVersions: ['1.26', '2.0'],
          group: 'org.yaml', name: 'snakeyaml', version: '2.3'],
 ]
 
