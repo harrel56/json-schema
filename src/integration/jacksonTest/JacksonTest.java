@@ -1,10 +1,12 @@
-package dev.harrel.jsonschema.providers;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
+import dev.harrel.jsonschema.ValidatorFactory;
+import dev.harrel.jsonschema.providers.GsonNode;
+import dev.harrel.jsonschema.providers.JacksonNode;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -14,6 +16,32 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class JacksonTest {
     private JsonNodeFactory createFactory() {
         return new JacksonNode.Factory();
+    }
+
+    @Test
+    void shouldInstantiateValidatorFactory() {
+        new ValidatorFactory();
+    }
+
+    @Test
+    void shouldPassForJacksonFactory() {
+        new ValidatorFactory()
+                .withJsonNodeFactory(new JacksonNode.Factory())
+                .validate("{}", "{}");
+    }
+
+    @Test
+    void shouldPassForDefaultFactory() {
+        new ValidatorFactory().validate("{}", "{}");
+    }
+
+    @Test
+    void shouldFailForGsonFactory() {
+        AssertionsForClassTypes.assertThatThrownBy(
+                        () -> new ValidatorFactory()
+                                .withJsonNodeFactory(new GsonNode.Factory())
+                                .validate("{}", "{}"))
+                .isInstanceOf(NoClassDefFoundError.class);
     }
 
     @Test
