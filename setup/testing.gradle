@@ -69,15 +69,17 @@ ext.setupProviderTest = (Map data) -> {
     }
     tasks.check.dependsOn taskName
 
-    (data.additionalVersions as List<String>).forEach {
-        def additionalTaskName = "${data.id}${it.replace('.', '_')}Test"
+    (data.additionalVersions as List<String>).forEach { version ->
+        def additionalTaskName = "${data.id}${version.replace('.', '_')}Test"
         def additionalConfigName = "${additionalTaskName}Implementation"
         configurations.create(additionalConfigName)
         configurations.getByName(additionalConfigName).extendsFrom configurations.testImplementation, configurations.formatImplementation
-        dependencies.add(additionalConfigName, [group: data.group, name: data.name, version: it])
+        dependencies.add(additionalConfigName, [group: data.group, name: data.name, version: version])
         tasks.register(additionalTaskName, Test) {
             useJUnitPlatform()
             group = 'provider'
+            environment 'PROVIDER_VERSION', version
+            systemProperty 'junit.jupiter.displayname.generator.default', 'dev.harrel.jsonschema.util.VersionAwareNameGenerator'
             testClassesDirs = sourceSet.output.classesDirs
             classpath = configurations.getByName(additionalConfigName).getIncoming().getFiles() + sourceSet.output + sourceSets.test.output + sourceSets.main.output
         }
