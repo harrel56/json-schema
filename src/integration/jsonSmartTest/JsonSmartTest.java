@@ -3,6 +3,7 @@ import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
 import dev.harrel.jsonschema.ValidatorFactory;
 import dev.harrel.jsonschema.providers.JsonSmartNode;
+import dev.harrel.jsonschema.util.JsonNodeMock;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 import org.assertj.core.api.AssertionsForClassTypes;
@@ -11,7 +12,6 @@ import org.junit.jupiter.api.Test;
 
 import static net.minidev.json.parser.JSONParser.MODE_JSON_SIMPLE;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
 class JsonSmartTest {
     private JsonNodeFactory createFactory() {
@@ -46,7 +46,7 @@ class JsonSmartTest {
 
     @Test
     void shouldFailWrapForInvalidArgument() {
-        JsonNode node = mock(JsonNode.class);
+        JsonNode node = new JsonNodeMock();
         JsonNodeFactory factory = createFactory();
         AssertionsForClassTypes.assertThatThrownBy(() -> factory.wrap(node))
                 .isInstanceOf(IllegalArgumentException.class);

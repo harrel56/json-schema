@@ -3,6 +3,7 @@ import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
 import dev.harrel.jsonschema.ValidatorFactory;
 import dev.harrel.jsonschema.providers.JakartaJsonNode;
+import dev.harrel.jsonschema.util.JsonNodeMock;
 import jakarta.json.Json;
 import jakarta.json.JsonStructure;
 import org.assertj.core.api.AssertionsForClassTypes;
@@ -12,7 +13,6 @@ import org.junit.jupiter.api.Test;
 import java.io.StringReader;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
 class JakartaJsonTest {
     private JsonNodeFactory createFactory() {
@@ -47,7 +47,7 @@ class JakartaJsonTest {
 
     @Test
     void shouldFailWrapForInvalidArgument() {
-        JsonNode node = mock(JsonNode.class);
+        JsonNode node = new JsonNodeMock();
         JsonNodeFactory factory = createFactory();
         AssertionsForClassTypes.assertThatThrownBy(() -> factory.wrap(node))
                 .isInstanceOf(IllegalArgumentException.class);

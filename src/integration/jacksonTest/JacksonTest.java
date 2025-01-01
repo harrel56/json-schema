@@ -6,6 +6,7 @@ import dev.harrel.jsonschema.SimpleType;
 import dev.harrel.jsonschema.ValidatorFactory;
 import dev.harrel.jsonschema.providers.GsonNode;
 import dev.harrel.jsonschema.providers.JacksonNode;
+import dev.harrel.jsonschema.util.JsonNodeMock;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -54,9 +55,9 @@ class JacksonTest {
 
     @Test
     void shouldFailWrapForInvalidArgument() throws JsonProcessingException {
-        Integer object = new ObjectMapper().readValue("1", Integer.class);
+        dev.harrel.jsonschema.JsonNode node = new JsonNodeMock();
         JacksonNode.Factory factory = new JacksonNode.Factory();
-        assertThatThrownBy(() -> factory.wrap(object))
+        assertThatThrownBy(() -> factory.wrap(node))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 

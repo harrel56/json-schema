@@ -5,12 +5,12 @@ import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
 import dev.harrel.jsonschema.ValidatorFactory;
 import dev.harrel.jsonschema.providers.GsonNode;
+import dev.harrel.jsonschema.util.JsonNodeMock;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
 
 class GsonTest {
     private JsonNodeFactory createFactory() {
@@ -45,7 +45,7 @@ class GsonTest {
 
     @Test
     void shouldFailWrapForInvalidArgument() {
-        JsonNode node = mock(JsonNode.class);
+        JsonNode node = new JsonNodeMock();
         JsonNodeFactory factory = createFactory();
         assertThatThrownBy(() -> factory.wrap(node))
                 .isInstanceOf(IllegalArgumentException.class);

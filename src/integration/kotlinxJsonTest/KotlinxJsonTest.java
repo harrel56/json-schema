@@ -2,8 +2,8 @@ import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
 import dev.harrel.jsonschema.ValidatorFactory;
-import dev.harrel.jsonschema.providers.GsonNode;
 import dev.harrel.jsonschema.providers.KotlinxJsonNode;
+import dev.harrel.jsonschema.util.JsonNodeMock;
 import kotlinx.serialization.json.Json;
 import kotlinx.serialization.json.JsonElement;
 import org.assertj.core.api.AssertionsForClassTypes;
@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
 class KotlinxJsonTest {
     private JsonNodeFactory createFactory() {
@@ -46,7 +45,7 @@ class KotlinxJsonTest {
 
     @Test
     void shouldFailWrapForInvalidArgument() {
-        JsonNode node = mock(JsonNode.class);
+        JsonNode node = new JsonNodeMock();
         JsonNodeFactory factory = createFactory();
         AssertionsForClassTypes.assertThatThrownBy(() -> factory.wrap(node))
                 .isInstanceOf(IllegalArgumentException.class);

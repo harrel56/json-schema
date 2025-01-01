@@ -3,6 +3,7 @@ import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
 import dev.harrel.jsonschema.ValidatorFactory;
 import dev.harrel.jsonschema.providers.SnakeYamlNode;
+import dev.harrel.jsonschema.util.JsonNodeMock;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
@@ -20,7 +21,6 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
 
 class SnakeYamlTest {
     private JsonNodeFactory createFactory() {
@@ -55,7 +55,7 @@ class SnakeYamlTest {
 
     @Test
     void shouldFailWrapForInvalidArgument() {
-        JsonNode node = mock(JsonNode.class);
+        JsonNode node = new JsonNodeMock();
         JsonNodeFactory factory = createFactory();
         AssertionsForClassTypes.assertThatThrownBy(() -> factory.wrap(node))
                 .isInstanceOf(IllegalArgumentException.class);
