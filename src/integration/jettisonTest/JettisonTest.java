@@ -1,21 +1,38 @@
-package dev.harrel.jsonschema.providers;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
+import dev.harrel.jsonschema.ValidatorFactory;
+import dev.harrel.jsonschema.providers.JettisonNode;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 
 class JettisonTest {
     private JsonNodeFactory createFactory() {
         return new JettisonNode.Factory();
+    }
+
+    @Test
+    void shouldInstantiateValidatorFactory() {
+        new ValidatorFactory();
+    }
+
+    @Test
+    void shouldPassForJettisonFactory() {
+        new ValidatorFactory()
+                .withJsonNodeFactory(new JettisonNode.Factory())
+                .validate("{}", "{}");
+    }
+
+    @Test
+    void shouldFailForDefaultFactory() {
+        AssertionsForClassTypes.assertThatThrownBy(() -> new ValidatorFactory().validate("{}", "{}"))
+                .isInstanceOf(NoClassDefFoundError.class);
     }
 
     @Test
@@ -27,10 +44,10 @@ class JettisonTest {
     }
 
     @Test
-    void shouldFailWrapForInvalidArgument() throws JsonProcessingException {
-        com.fasterxml.jackson.databind.JsonNode object = new ObjectMapper().readTree("{}");
-        JettisonNode.Factory factory = new JettisonNode.Factory();
-        assertThatThrownBy(() -> factory.wrap(object))
+    void shouldFailWrapForInvalidArgument() {
+        JsonNode node = mock(JsonNode.class);
+        JsonNodeFactory factory = createFactory();
+        AssertionsForClassTypes.assertThatThrownBy(() -> factory.wrap(node))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
