@@ -53,12 +53,13 @@ jobs:
         id: integration-tasks
         run: |
           TASKS=$(./gradlew integrationTasksArray -q --console=plain)
-          echo $TASKS
+          echo "integration-tasks=$TASKS"
           echo "integration-tasks=$TASKS" >> "$GITHUB_OUTPUT"
-
-      - name: Debug GITHUB_OUTPUT
-        run: |
           cat "$GITHUB_OUTPUT"
+
+      - name: Check GITHUB_OUTPUT variable
+        run: |
+          echo "GITHUB_OUTPUT is: $GITHUB_OUTPUT"
 
   integration-tasks-execution:
     needs: integration-tasks-list
