@@ -85,7 +85,7 @@ jobs:
           path: build/jacoco
 
   report:
-    needs: [generic-tests, integration-tasks]
+    needs: [generic-tests, integration-tasks-execution]
     runs-on: ubuntu-latest
 
     steps:
