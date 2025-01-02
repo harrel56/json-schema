@@ -75,36 +75,26 @@ This way, schema is parsed only once. You could also register multiple schemas t
 For custom user implementations: if intended for use in multi-threaded environment, the implementation should ensure thread safety.
 
 ## JSON/YAML providers
-Supported JSON providers:
-- `com.fasterxml.jackson.core:jackson-databind` (default),
-- `com.google.code.gson:gson`,
-- `jakarta.json:jakarta.json-api`,
-- `org.jetbrains.kotlinx:kotlinx-serialization-json`,
-- `org.json:json`,
-- `new.minidev:json-smart`,
-- `org.codehouse.jettison:jettison`.
-
-Supported YAML providers:
-- `org.yaml:snakeyaml`.
 
 The default provider is `com.fasterxml.jackson.core:jackson-databind`, so if you are not planning on changing the `ValidatorFactory` configuration, **you need to have this dependency present in your project**.
 
-Specific version of provider dependencies which were tested can be found in project POM (uploaded to maven central) listed as optional dependencies.
+| Provider                                                  | Oldest supported version      | Factory class                                                                                                                                | Provider node class                                                                                                                                      |
+|-----------------------------------------------------------|-------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **com.fasterxml.jackson.core:jackson-databind (default)** | `2.2.0`                       | [JacksonNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/JacksonNode.Factory.html)         | com.fasterxml.jackson.databind.JsonNode                                                                                                                  |
+| com.google.code.gson:gson                                 | `2.3`                         | [GsonNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/GsonNode.Factory.html)               | com.google.gson.JsonElement                                                                                                                              |
+| jakarta.json:jakarta.json-api                             | `2.0.1` (tested with parsson) | [JakartaJsonNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/JakartaJsonNode.Factory.html) | jakarta.json.JsonValue                                                                                                                                   |
+| org.jetbrains.kotlinx:kotlinx-serialization-json          | `1.0.0`                       | [KotlinxJsonFactory.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/KotlinxJson.Factory.html)  | kotlinx.serialization.json.JsonElement                                                                                                                   |
+| org.json:json                                             | `20201115`                    | [OrgJsonNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/OrgJsonNode.Factory.html)         | <ul><li>org.json.JSONObject,</li><li>org.json.JSONArray,</li><li>[literal types](#provider-literal-types).</li></ul>                                     |
+| new.minidev:json-smart                                    | `1.1`                         | [JsonSmartNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/JsonSmartNode.Factory.html)     | <ul><li>net.minidev.json.JSONObject,</li><li>net.minidev.json.JSONArray,</li><li>[literal types](#provider-literal-types).</li></ul>                     |
+| org.codehouse.jettison:jettison                           | `1.5.0`                       | [JettisonNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/JettisonNode.Factory.html)       | <ul><li>org.codehaus.jettison.json.JSONObject,</li><li>org.codehaus.jettison.json.JSONArray,</li><li>[literal types](#provider-literal-types).</li></ul> |
+| org.yaml:snakeyaml                                        | `1.26`                        | [SnakeYamlNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/SnakeYamlNode.Factory.html)     | org.yaml.snakeyaml.nodes.Node                                                                                                                            |
+
+Both newest and oldest versions are tested for each provider. 
+The newest supported versions can be found in project POM (uploaded to maven central) listed as optional dependencies.
 
 All adapter classes for JSON provider libs can be found in this [package](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/package-summary.html). Anyone is free to add new adapter classes for any JSON lib of their choice, but keep in mind that it is not trivial. If you do so, ensure that test suites for providers pass.
 
 ### Changing JSON/YAML provider
-
-| Provider                                         | Factory class                                                                                                                                | Provider node class                                                                                                                                      |
-|--------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
-| com.fasterxml.jackson.core:jackson-databind      | [JacksonNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/JacksonNode.Factory.html)         | com.fasterxml.jackson.databind.JsonNode                                                                                                                  |
-| com.google.code.gson:gson                        | [GsonNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/GsonNode.Factory.html)               | com.google.gson.JsonElement                                                                                                                              |
-| jakarta.json:jakarta.json-api                    | [JakartaJsonNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/JakartaJsonNode.Factory.html) | jakarta.json.JsonValue                                                                                                                                   |
-| org.jetbrains.kotlinx:kotlinx-serialization-json | [KotlinxJsonFactory.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/KotlinxJson.Factory.html)  | kotlinx.serialization.json.JsonElement                                                                                                                   |
-| org.json:json                                    | [OrgJsonNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/OrgJsonNode.Factory.html)         | <ul><li>org.json.JSONObject,</li><li>org.json.JSONArray,</li><li>[literal types](#provider-literal-types).</li></ul>                                     |
-| new.minidev:json-smart                           | [JsonSmartNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/JsonSmartNode.Factory.html)     | <ul><li>net.minidev.json.JSONObject,</li><li>net.minidev.json.JSONArray,</li><li>[literal types](#provider-literal-types).</li></ul>                     |
-| org.codehouse.jettison:jettison                  | [JettisonNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/JettisonNode.Factory.html)       | <ul><li>org.codehaus.jettison.json.JSONObject,</li><li>org.codehaus.jettison.json.JSONArray,</li><li>[literal types](#provider-literal-types).</li></ul> |
-| org.yaml:snakeyaml                               | [SnakeYamlNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/SnakeYamlNode.Factory.html)     | org.yaml.snakeyaml.nodes.Node                                                                                                                            |
 
 #### com.fasterxml.jackson.core:jackson-databind
 ```java
@@ -117,8 +107,7 @@ new ValidatorFactory().withJsonNodeFactory(new GsonNode.Factory());
 ```
 #### jakarta.json:jakarta.json-api
 Keep in mind that this library contains only interfaces without concrete implementation.
-It would be required to also have e.g. `org.glassfish:jakarta.json` dependency in your classpath.
-Although, it was tested with newest `jakarta.json-api` version, it should be compatible down to `1.1` version.
+It would be required to also have e.g. `org.glassfish:jakarta.json` or `org.eclipse.parsson:parsson`.
 ```java
 new ValidatorFactory().withJsonNodeFactory(new JakartaJsonNode.Factory());
 ```
@@ -181,11 +170,11 @@ If you want to use format validation, please add an explicit dependency to `jmai
 <dependency>
   <groupId>com.sanctionco.jmail</groupId>
   <artifactId>jmail</artifactId>
-  <version>1.6.2</version>
+  <version>1.6.3</version>
 </dependency>
 ```
 ```groovy
-implementation 'com.sanctionco.jmail:jmail:1.6.2'
+implementation 'com.sanctionco.jmail:jmail:1.6.3'
 ```
 
 To enable format validation, attach `FormatEvaluatorFactory` to your `ValidatorFactory` instance:

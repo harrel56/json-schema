@@ -41,7 +41,6 @@ class CompoundSchemaTest {
 
         Validator.Result result = new ValidatorFactory()
                 .validate(schema, "[1]");
-        System.out.println(result);
     }
 
     @Test

@@ -55,7 +55,6 @@ public class SuiteTestGenerator {
 
     private Stream<DynamicNode> readTestFile(Path path) {
         try {
-            System.out.println("Reading file: " + path);
             List<TestBundle> bundles = mapper.readTestBundles(Files.readString(path));
             return bundles.stream().map(bundle -> readBundle(path.getFileName().toString(), bundle));
         } catch (IOException e) {
@@ -92,8 +91,8 @@ public class SuiteTestGenerator {
 //        Assumptions.assumeTrue(bundle.equals("schema that uses custom metaschema with with no validation vocabulary"));
 //        Assumptions.assumeTrue(name.equals("no validation: invalid number, but it still validates"));
 
-        logger.info("%s: %s".formatted(bundle, name));
-        logger.info(String.valueOf(valid));
+//        logger.info("%s: %s".formatted(bundle, name));
+//        logger.info(String.valueOf(valid));
 
         URI uri = validator.registerSchema(schema);
         Assertions.assertEquals(valid, validator.validate(uri, instance).isValid());

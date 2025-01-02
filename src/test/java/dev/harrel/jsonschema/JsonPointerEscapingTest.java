@@ -92,7 +92,9 @@ public abstract class JsonPointerEscapingTest implements ProviderTest {
     @ParameterizedTest
     @MethodSource("getScenarios")
     void shouldEscapeWhenRegisteringSchemas(String schema, String errorLocation) {
-        Validator validator = new ValidatorFactory().createValidator();
+        Validator validator = new ValidatorFactory()
+                .withJsonNodeFactory(getJsonNodeFactory())
+                .createValidator();
         URI uri = validator.registerSchema(schema);
 
         Validator.Result result = validator.validate(uri, "{}");
@@ -144,7 +146,6 @@ public abstract class JsonPointerEscapingTest implements ProviderTest {
                                   "$id": "urn:test",
                                   "$ref": "#/~1",
                                   "/": false
-                                  }
                                 }""",
                         "urn:test#/~1")
         );

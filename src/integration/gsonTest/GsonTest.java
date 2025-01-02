@@ -1,35 +1,53 @@
-package dev.harrel.jsonschema.providers;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
-import org.json.JSONObject;
+import dev.harrel.jsonschema.ValidatorFactory;
+import dev.harrel.jsonschema.providers.GsonNode;
+import dev.harrel.jsonschema.util.JsonNodeMock;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
-class OrgJsonTest {
+class GsonTest {
     private JsonNodeFactory createFactory() {
-        return new OrgJsonNode.Factory();
+        return new GsonNode.Factory();
+    }
+
+    @Test
+    void shouldInstantiateValidatorFactory() {
+        new ValidatorFactory();
+    }
+
+    @Test
+    void shouldPassForGsonFactory() {
+        new ValidatorFactory()
+                .withJsonNodeFactory(new GsonNode.Factory())
+                .validate("{}", "{}");
+    }
+
+    @Test
+    void shouldFailForDefaultFactory() {
+        assertThatThrownBy(() -> new ValidatorFactory().validate("{}", "{}"))
+                .isInstanceOf(NoClassDefFoundError.class);
     }
 
     @Test
     void shouldWrapForValidArgument() {
-        JSONObject object = new JSONObject("{}");
-        JsonNode wrap = new OrgJsonNode.Factory().wrap(object);
+        JsonElement object = new JsonParser().parse("{}");
+        JsonNode wrap = new GsonNode.Factory().wrap(object);
         assertThat(wrap).isNotNull();
         assertThat(wrap.getNodeType()).isEqualTo(SimpleType.OBJECT);
     }
 
     @Test
-    void shouldFailWrapForInvalidArgument() throws JsonProcessingException {
-        com.fasterxml.jackson.databind.JsonNode object = new ObjectMapper().readTree("{}");
-        OrgJsonNode.Factory factory = new OrgJsonNode.Factory();
-        assertThatThrownBy(() -> factory.wrap(object))
+    void shouldFailWrapForInvalidArgument() {
+        JsonNode node = new JsonNodeMock();
+        JsonNodeFactory factory = createFactory();
+        assertThatThrownBy(() -> factory.wrap(node))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 

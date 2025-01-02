@@ -10,21 +10,11 @@ import java.util.List;
 import java.util.Optional;
 
 import static dev.harrel.jsonschema.util.TestUtil.assertError;
-import static dev.harrel.jsonschema.util.TestUtil.readResource;
 import static org.assertj.core.api.Assertions.*;
 
 class ValidatorFactoryTest {
     private static final String RAW_SCHEMA = "{\"type\":\"boolean\"}";
     private static final String RAW_INSTANCE = "null";
-
-    @Test
-    void name() {
-        String schema = readResource("/schema.json");
-        String instance = readResource("/instance.json");
-        Validator.Result result = new ValidatorFactory().withDisabledSchemaValidation(true).validate(schema, instance);
-        List<Error> errors = result.getErrors();
-        System.out.println(errors);
-    }
 
     @Test
     void emptyEvaluatorFactory() {

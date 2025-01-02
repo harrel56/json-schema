@@ -1,34 +1,55 @@
-package dev.harrel.jsonschema.providers;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
+import dev.harrel.jsonschema.ValidatorFactory;
+import dev.harrel.jsonschema.providers.JakartaJsonNode;
+import dev.harrel.jsonschema.util.JsonNodeMock;
+import jakarta.json.Json;
+import jakarta.json.JsonStructure;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import java.io.StringReader;
 
-class JacksonTest {
+import static org.assertj.core.api.Assertions.assertThat;
+
+class JakartaJsonTest {
     private JsonNodeFactory createFactory() {
-        return new JacksonNode.Factory();
+        return new JakartaJsonNode.Factory();
     }
 
     @Test
-    void shouldWrapForValidArgument() throws JsonProcessingException {
-        JsonNode object = new ObjectMapper().readTree("{}");
-        JacksonNode wrap = new JacksonNode.Factory().wrap(object);
+    void shouldInstantiateValidatorFactory() {
+        new ValidatorFactory();
+    }
+
+    @Test
+    void shouldPassForGsonFactory() {
+        new ValidatorFactory()
+                .withJsonNodeFactory(new JakartaJsonNode.Factory())
+                .validate("{}", "{}");
+    }
+
+    @Test
+    void shouldFailForDefaultFactory() {
+        AssertionsForClassTypes.assertThatThrownBy(() -> new ValidatorFactory().validate("{}", "{}"))
+                .isInstanceOf(NoClassDefFoundError.class);
+    }
+
+    @Test
+    void shouldWrapForValidArgument() {
+        JsonStructure object = Json.createReader(new StringReader("{}")).read();
+        JsonNode wrap = new JakartaJsonNode.Factory().wrap(object);
         assertThat(wrap).isNotNull();
         assertThat(wrap.getNodeType()).isEqualTo(SimpleType.OBJECT);
     }
 
     @Test
-    void shouldFailWrapForInvalidArgument() throws JsonProcessingException {
-        Integer object = new ObjectMapper().readValue("1", Integer.class);
-        JacksonNode.Factory factory = new JacksonNode.Factory();
-        assertThatThrownBy(() -> factory.wrap(object))
+    void shouldFailWrapForInvalidArgument() {
+        JsonNode node = new JsonNodeMock();
+        JsonNodeFactory factory = createFactory();
+        AssertionsForClassTypes.assertThatThrownBy(() -> factory.wrap(node))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 

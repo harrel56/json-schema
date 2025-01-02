@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+
 plugins {
     id 'java'
     id 'maven-publish'
@@ -36,28 +38,37 @@ repositories {
 }
 
 def jsonProviders = [
-        jackson    : 'com.fasterxml.jackson.core:jackson-databind:2.18.2',
-        gson       : 'com.google.code.gson:gson:2.11.0',
-        orgJson    : 'org.json:json:20240303',
-        kotlinxJson: 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3',
-        jakartaJson: 'jakarta.json:jakarta.json-api:2.1.3',
-        jettison   : 'org.codehaus.jettison:jettison:1.5.4',
-        jsonSmart  : 'net.minidev:json-smart:2.5.1',
-        snakeYaml  : 'org.yaml:snakeyaml:2.3'
+        [id   : 'jackson', additionalVersions: ['2.2.0'],
+         group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.18.0'],
+        [id   : 'gson', additionalVersions: ['2.3'],
+         group: 'com.google.code.gson', name: 'gson', version: '2.11.0'],
+        [id   : 'orgJson', additionalVersions: ['20201115'],
+         group: 'org.json', name: 'json', version: '20240303'],
+        [id   : 'kotlinxJson', additionalVersions: ['1.0.0'],
+         group: 'org.jetbrains.kotlinx', name: 'kotlinx-serialization-json', version: '1.7.3'],
+        [id   : 'jakartaJson', additionalVersions: [],
+         group: 'jakarta.json', name: 'jakarta.json-api', version: '2.1.3'],
+        [id   : 'jettison', additionalVersions: ['1.5.0'],
+         group: 'org.codehaus.jettison', name: 'jettison', version: '1.5.4'],
+        [id   : 'jsonSmart', additionalVersions: ['1.1'],
+         group: 'net.minidev', name: 'json-smart', version: '2.5.1'],
+        [id   : 'snakeYaml', additionalVersions: ['1.26', '2.0'],
+         group: 'org.yaml', name: 'snakeyaml', version: '2.3'],
 ]
 
-jsonProviders.entrySet().forEach {
-    java.registerFeature(it.key, {
+setupJava8Test(jsonProviders[0])
+jsonProviders.forEach {
+    java.registerFeature(it.id, {
         usingSourceSet(sourceSets.main)
     })
-    dependencies.add("${it.key}Implementation", it.value)
-    setupProviderTest(it.key, it.value)
+    dependencies.add("${it.id}Implementation", [group: it.group, name: it.name, version: it.version])
+    setupProviderTest(it)
 }
 
 dependencies {
     formatImplementation 'com.sanctionco.jmail:jmail:1.6.3'
 
-    testImplementation 'org.eclipse.parsson:parsson:1.1.7'
+    jakartaJsonTestImplementation 'org.eclipse.parsson:parsson:1.1.7'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.4'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
     testImplementation 'org.assertj:assertj-core:3.27.0'
@@ -68,4 +79,16 @@ dependencies {
 test {
     useJUnitPlatform()
     jvmArgs("-XX:+EnableDynamicAgentLoading")
+}
+
+tasks.withType(Test).configureEach {
+    testLogging {
+        events TestLogEvent.SKIPPED, TestLogEvent.FAILED, TestLogEvent.STANDARD_OUT, TestLogEvent.STANDARD_ERROR
+        exceptionFormat 'full'
+    }
+    afterSuite { desc, result ->
+        if (!desc.parent) {
+            println("${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)")
+        }
+    }
 }

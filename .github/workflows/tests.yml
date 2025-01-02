@@ -25,7 +25,7 @@ jobs:
           gradle-version: wrapper
 
       - name: Run generic tests
-        run: ./gradlew check -x test --no-daemon
+        run: ./gradlew test --no-daemon
 
       - name: Upload test execution data
         uses: actions/upload-artifact@v4
@@ -33,26 +33,36 @@ jobs:
           name: generic-tests-exec
           path: build/jacoco
 
-  provider-list:
+  integration-tasks-list:
     runs-on: ubuntu-latest
     outputs:
-      test-classes: ${{ steps.test-classes.outputs.test-classes }}
+      integration-tasks: ${{ steps.integration-tasks.outputs.integration-tasks }}
     steps:
       - name: Git checkout
         uses: actions/checkout@v4
-      - name: List provider test classes
-        id: test-classes
-        run: |
-          CLASSES=$(ls src/test/java/dev/harrel/jsonschema/providers/ | sed 's/\.java$//' | jq -R -s -c 'split("\n")[:-1]')
-          echo "test-classes=$CLASSES" >> "$GITHUB_OUTPUT"
 
-  provider-tests:
-    needs: provider-list
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: wrapper
+
+      - name: Trigger Gradle download
+        run: ./gradlew help -q
+
+      - name: Get JSON integration tasks
+        id: integration-tasks
+        run: |
+          TASKS=$(./gradlew integrationTasksArray -q --console=plain)
+          echo "integration-tasks=$TASKS" >> "$GITHUB_OUTPUT"
+
+  integration-tasks-execution:
+    needs: integration-tasks-list
     runs-on: ubuntu-latest
+    name: ${{ matrix.integration-task }}
 
     strategy:
       matrix:
-        test-class: ${{ fromJSON(needs.provider-list.outputs.test-classes) }}
+        integration-task: ${{ fromJSON(needs.integration-tasks-list.outputs.integration-tasks) }}
 
     steps:
       - uses: actions/checkout@v4
@@ -68,20 +78,17 @@ jobs:
         with:
           gradle-version: wrapper
 
-      - name: Gradle provider tests
-        run: ./gradlew test --tests ${{ matrix.test-class }} --no-daemon
-
-      - name: Rename test execution data
-        run: mv build/jacoco/test.exec build/jacoco/${{ matrix.test-class }}.exec
+      - name: Gradle integration tests
+        run: ./gradlew ${{ matrix.integration-task }} --no-daemon
 
       - name: Upload test execution data
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.test-class }}-tests-exec
+          name: ${{ matrix.integration-task }}-tests-exec
           path: build/jacoco
 
   report:
-    needs: [generic-tests, provider-tests]
+    needs: [generic-tests, integration-tasks-execution]
     runs-on: ubuntu-latest
 
     steps:
