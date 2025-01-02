@@ -46,10 +46,12 @@ jobs:
         with:
           gradle-version: wrapper
 
+      - name: Trigger Gradle download
+        run: ./gradlew help -q
+
       - name: Get JSON integration tasks
         id: integration-tasks
         run: |
-          ./gradlew help -q
           TASKS=$(./gradlew integrationTasksArray -q --console=plain)
           echo "integration-tasks=$TASKS" >> "$GITHUB_OUTPUT"
 
