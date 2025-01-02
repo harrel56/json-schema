@@ -49,7 +49,7 @@ jobs:
       - name: Get JSON integration tasks
         id: integration-tasks
         run: |
-          ./gradlew help #just to download gradle bin...
+          ./gradlew help -q
           TASKS=$(./gradlew integrationTasksArray -q --console=plain)
           echo "integration-tasks=$TASKS" >> "$GITHUB_OUTPUT"
 
