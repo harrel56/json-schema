@@ -30,12 +30,12 @@ Please note that you will also need to include at least one of the supported JSO
 <dependency>
     <groupId>dev.harrel</groupId>
     <artifactId>json-schema</artifactId>
-    <version>1.7.2</version>
+    <version>1.7.3</version>
 </dependency>
 ```
 ### Gradle
 ```groovy
-implementation 'dev.harrel:json-schema:1.7.2'
+implementation 'dev.harrel:json-schema:1.7.3'
 ```
 
 ## Usage
