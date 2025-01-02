@@ -48,7 +48,9 @@ jobs:
 
       - name: Get JSON integration tasks
         id: integration-tasks
-        run: echo "integration-tasks=$(./gradlew integrationTasksArray -q --console=plain)" >> "$GITHUB_OUTPUT"
+        run: |
+          TASKS=$(./gradlew integrationTasksArray -q --console=plain)
+          echo "integration-tasks=$TASKS" >> "$GITHUB_OUTPUT"
 
   integration-tasks-execution:
     needs: integration-tasks-list
