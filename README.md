@@ -170,11 +170,11 @@ If you want to use format validation, please add an explicit dependency to `jmai
 <dependency>
   <groupId>com.sanctionco.jmail</groupId>
   <artifactId>jmail</artifactId>
-  <version>1.6.2</version>
+  <version>1.6.3</version>
 </dependency>
 ```
 ```groovy
-implementation 'com.sanctionco.jmail:jmail:1.6.2'
+implementation 'com.sanctionco.jmail:jmail:1.6.3'
 ```
 
 To enable format validation, attach `FormatEvaluatorFactory` to your `ValidatorFactory` instance:
