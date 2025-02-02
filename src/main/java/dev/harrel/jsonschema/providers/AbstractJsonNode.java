@@ -91,6 +91,7 @@ abstract class AbstractJsonNode<T> implements JsonNode {
             return false;
         }
         ensureInitialized();
+        other.ensureInitialized();
         if (getNodeType() == SimpleType.INTEGER) {
             return Objects.equals(rawBigInt, other.rawBigInt);
         } else {
