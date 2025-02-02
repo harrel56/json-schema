@@ -166,10 +166,12 @@ class ContainsEvaluator implements Evaluator {
         }
 
         List<JsonNode> array = node.asArray();
-        List<Integer> indices = unmodifiableList(IntStream.range(0, array.size())
-                .filter(i -> ctx.resolveInternalRefAndValidate(schemaRef, array.get(i)))
-                .boxed()
-                .collect(Collectors.toList()));
+        List<Integer> indices = new ArrayList<>();
+        for (int i = 0; i < array.size(); i++) {
+            if (ctx.resolveInternalRefAndValidate(schemaRef, array.get(i))) {
+                indices.add(i);
+            }
+        }
         return minContainsZero || !indices.isEmpty() ? Result.success(indices) : Result.failure("Array contains no matching items");
     }
 }
