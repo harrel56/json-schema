@@ -22,26 +22,6 @@ public final class JakartaJsonNode extends AbstractJsonNode<JsonValue> {
     }
 
     @Override
-    public boolean asBoolean() {
-        return node.getValueType() == JsonValue.ValueType.TRUE;
-    }
-
-    @Override
-    public String asString() {
-        return node instanceof JsonString ? ((JsonString) node).getChars().toString() : node.toString();
-    }
-
-    @Override
-    public BigInteger asInteger() {
-        return ((JsonNumber) node).bigIntegerValue();
-    }
-
-    @Override
-    public BigDecimal asNumber() {
-        return ((JsonNumber) node).bigDecimalValue();
-    }
-
-    @Override
     List<JsonNode> createArray() {
         JsonArray jsonArray = node.asJsonArray();
         List<JsonNode> result = new ArrayList<>(jsonArray.size());
@@ -71,12 +51,17 @@ public final class JakartaJsonNode extends AbstractJsonNode<JsonValue> {
             case OBJECT:
                 return SimpleType.OBJECT;
             case STRING:
+                rawNode = ((JsonString) node).getString();
                 return SimpleType.STRING;
             case TRUE:
+                rawNode = Boolean.TRUE;
+                return SimpleType.BOOLEAN;
             case FALSE:
+                rawNode = Boolean.FALSE;
                 return SimpleType.BOOLEAN;
             case NUMBER:
-                if (canConvertToInteger(((JsonNumber) node).bigDecimalValue())) {
+                rawNode = ((JsonNumber) node).bigDecimalValue();
+                if (canConvertToInteger((BigDecimal) rawNode)) {
                     return SimpleType.INTEGER;
                 } else {
                     return SimpleType.NUMBER;
