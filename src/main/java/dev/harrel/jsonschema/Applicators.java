@@ -130,11 +130,10 @@ class AdditionalItemsEvaluator implements Evaluator {
         }
 
         int itemsSize = itemsAnnotation instanceof Integer ? (Integer) itemsAnnotation : array.size();
-        int size = Math.max(array.size() - itemsSize, 0);
-        boolean valid = array.stream()
-                .skip(itemsSize)
-                .filter(element -> ctx.resolveInternalRefAndValidate(schemaRef, element))
-                .count() == size;
+        boolean valid = true;
+        for (int i = itemsSize; i < array.size(); i++) {
+            valid = ctx.resolveInternalRefAndValidate(schemaRef, array.get(i)) && valid;
+        }
         return valid ? Result.success(true) : Result.failure();
     }
 
