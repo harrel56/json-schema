@@ -92,16 +92,17 @@ class ItemsLegacyEvaluator implements Evaluator {
         }
         List<JsonNode> array = node.asArray();
         if (schemaRef != null) {
-            boolean valid = array.stream()
-                    .filter(element -> ctx.resolveInternalRefAndValidate(schemaRef, element))
-                    .count() == array.size();
+            boolean valid = true;
+            for (JsonNode element : array) {
+                valid = ctx.resolveInternalRefAndValidate(schemaRef, element) && valid;
+            }
             return valid ? Result.success(true) : Result.failure();
         } else {
             int size = Math.min(schemaRefs.size(), array.size());
-            boolean valid = IntStream.range(0, size)
-                    .boxed()
-                    .filter(idx -> ctx.resolveInternalRefAndValidate(schemaRefs.get(idx), array.get(idx)))
-                    .count() == size;
+            boolean valid = true;
+            for (int i = 0; i < size; i++) {
+                valid = ctx.resolveInternalRefAndValidate(schemaRefs.get(i), array.get(i)) && valid;
+            }
             return valid ? Result.success(schemaRefs.size()) : Result.failure();
         }
     }
