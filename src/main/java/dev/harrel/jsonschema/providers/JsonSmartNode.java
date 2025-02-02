@@ -22,16 +22,6 @@ public final class JsonSmartNode extends SimpleJsonNode {
     }
 
     @Override
-    public boolean asBoolean() {
-        return (Boolean) node;
-    }
-
-    @Override
-    public String asString() {
-        return String.valueOf(node);
-    }
-
-    @Override
     List<JsonNode> createArray() {
         JSONArray jsonArray = (JSONArray) node;
         List<JsonNode> result = new ArrayList<>(jsonArray.size());
