@@ -10,34 +10,6 @@ abstract class SimpleJsonNode extends AbstractJsonNode<Object> {
         super(node, jsonPointer);
     }
 
-    private BigDecimal asNumber(Object node) {
-        if (node instanceof BigDecimal) {
-            return (BigDecimal) node;
-        } else if (node instanceof BigInteger) {
-            return new BigDecimal((BigInteger) node);
-        } else if (node instanceof Double) {
-            return BigDecimal.valueOf((Double) node);
-        } else {
-            return BigDecimal.valueOf(((Number) node).longValue());
-        }
-    }
-
-    private boolean isBoolean(Object node) {
-        return node instanceof Boolean;
-    }
-
-    private boolean isString(Object node) {
-        return node instanceof Character || node instanceof String || node instanceof Enum;
-    }
-
-    private boolean isInteger(Object node) {
-        return node instanceof Integer || node instanceof Long || node instanceof BigInteger;
-    }
-
-    private boolean isDecimal(Object node) {
-        return node instanceof Double || node instanceof BigDecimal;
-    }
-
     abstract boolean isNull(Object node);
 
     abstract boolean isArray(Object node);
@@ -72,5 +44,34 @@ abstract class SimpleJsonNode extends AbstractJsonNode<Object> {
             return SimpleType.OBJECT;
         }
         throw new IllegalArgumentException("Cannot assign type to node of class=" + node.getClass().getName());
+    }
+
+    private BigDecimal asNumber(Object node) {
+        if (node instanceof BigDecimal) {
+            return (BigDecimal) node;
+        } else if (node instanceof BigInteger) {
+            rawBigInt = (BigInteger) node;
+            return new BigDecimal((BigInteger) node);
+        } else if (node instanceof Double) {
+            return BigDecimal.valueOf((Double) node);
+        } else {
+            return BigDecimal.valueOf(((Number) node).longValue());
+        }
+    }
+
+    private boolean isBoolean(Object node) {
+        return node instanceof Boolean;
+    }
+
+    private boolean isString(Object node) {
+        return node instanceof Character || node instanceof String || node instanceof Enum;
+    }
+
+    private boolean isInteger(Object node) {
+        return node instanceof Integer || node instanceof Long || node instanceof BigInteger;
+    }
+
+    private boolean isDecimal(Object node) {
+        return node instanceof Double || node instanceof BigDecimal;
     }
 }
