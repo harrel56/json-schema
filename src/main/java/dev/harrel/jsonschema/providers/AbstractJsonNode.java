@@ -76,11 +76,6 @@ abstract class AbstractJsonNode<T> implements JsonNode {
     }
 
     @Override
-    public boolean isEqualTo(JsonNode other) {
-        return equals(other);
-    }
-
-    @Override
     public final boolean equals(Object obj) {
         if (this == obj) {
             return true;
