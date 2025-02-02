@@ -10,19 +10,7 @@ abstract class SimpleJsonNode extends AbstractJsonNode<Object> {
         super(node, jsonPointer);
     }
 
-    @Override
-    public BigInteger asInteger() {
-        if (node instanceof BigInteger) {
-            return (BigInteger) node;
-        } else if (node instanceof BigDecimal) {
-            return ((BigDecimal) node).toBigInteger();
-        } else {
-            return BigInteger.valueOf(((Number) node).longValue());
-        }
-    }
-
-    @Override
-    public BigDecimal asNumber() {
+    private BigDecimal asNumber(Object node) {
         if (node instanceof BigDecimal) {
             return (BigDecimal) node;
         } else if (node instanceof BigInteger) {
@@ -34,19 +22,19 @@ abstract class SimpleJsonNode extends AbstractJsonNode<Object> {
         }
     }
 
-    boolean isBoolean(Object node) {
+    private boolean isBoolean(Object node) {
         return node instanceof Boolean;
     }
 
-    boolean isString(Object node) {
+    private boolean isString(Object node) {
         return node instanceof Character || node instanceof String || node instanceof Enum;
     }
 
-    boolean isInteger(Object node) {
+    private boolean isInteger(Object node) {
         return node instanceof Integer || node instanceof Long || node instanceof BigInteger;
     }
 
-    boolean isDecimal(Object node) {
+    private boolean isDecimal(Object node) {
         return node instanceof Double || node instanceof BigDecimal;
     }
 
@@ -61,10 +49,13 @@ abstract class SimpleJsonNode extends AbstractJsonNode<Object> {
         if (isNull(node)) {
             return SimpleType.NULL;
         } else if (isBoolean(node)) {
+            rawNode = node;
             return SimpleType.BOOLEAN;
         } else if (isString(node)) {
+            rawNode = node;
             return SimpleType.STRING;
         } else if (isDecimal(node)) {
+            rawNode = asNumber(node);
             if (node instanceof BigDecimal && ((BigDecimal) node).stripTrailingZeros().scale() <= 0) {
                 return SimpleType.INTEGER;
             } else if (node instanceof Double && ((Number) node).doubleValue() == Math.rint(((Number) node).doubleValue())) {
@@ -73,6 +64,7 @@ abstract class SimpleJsonNode extends AbstractJsonNode<Object> {
                 return SimpleType.NUMBER;
             }
         } else if (isInteger(node)) {
+            rawNode = asNumber(node);
             return SimpleType.INTEGER;
         } else if (isArray(node)) {
             return SimpleType.ARRAY;

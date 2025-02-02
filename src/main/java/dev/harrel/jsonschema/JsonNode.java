@@ -114,6 +114,8 @@ public interface JsonNode {
             return "specific object";
         } else if (isArray()) {
             return "specific array";
+        } else if (isInteger()) {
+          return asInteger().toString();
         } else {
             return asString();
         }
