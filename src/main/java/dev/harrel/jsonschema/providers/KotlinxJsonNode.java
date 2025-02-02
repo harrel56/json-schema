@@ -10,34 +10,12 @@ import java.math.BigInteger;
 import java.util.*;
 
 public final class KotlinxJsonNode extends AbstractJsonNode<JsonElement> {
-    private BigDecimal asNumber;
-
     private KotlinxJsonNode(JsonElement node, String jsonPointer) {
         super(Objects.requireNonNull(node), jsonPointer);
     }
 
     private KotlinxJsonNode(JsonElement node) {
         this(node, "");
-    }
-
-    @Override
-    public boolean asBoolean() {
-        return Boolean.parseBoolean(((JsonPrimitive) node).getContent());
-    }
-
-    @Override
-    public String asString() {
-        return ((JsonPrimitive) node).getContent();
-    }
-
-    @Override
-    public BigInteger asInteger() {
-        return asNumber.toBigInteger();
-    }
-
-    @Override
-    public BigDecimal asNumber() {
-        return asNumber;
     }
 
     @Override
@@ -70,15 +48,21 @@ public final class KotlinxJsonNode extends AbstractJsonNode<JsonElement> {
             return SimpleType.ARRAY;
         } else if (node instanceof JsonPrimitive) {
             JsonPrimitive primitive = (JsonPrimitive) node;
+            String content = primitive.getContent();
             if (primitive.isString()) {
+                rawNode = content;
                 return SimpleType.STRING;
             }
-            String content = primitive.getContent();
-            if ("true".equals(content) || "false".equals(content)) {
+            if ("true".equals(content)) {
+                rawNode = Boolean.TRUE;
                 return SimpleType.BOOLEAN;
             }
-            asNumber = new BigDecimal(content);
-            if (canConvertToInteger(asNumber)) {
+            if ("false".equals(content)) {
+                rawNode = Boolean.FALSE;
+                return SimpleType.BOOLEAN;
+            }
+            rawNode = new BigDecimal(content);
+            if (canConvertToInteger((BigDecimal) rawNode)) {
                 return SimpleType.INTEGER;
             } else {
                 return SimpleType.NUMBER;
