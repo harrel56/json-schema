@@ -4,6 +4,7 @@ import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.SimpleType;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -14,9 +15,8 @@ abstract class AbstractJsonNode<T> implements JsonNode {
     private final SimpleType nodeType;
     final T node;
     final String jsonPointer;
-
-    private Map<String, JsonNode> asObject;
-    private List<JsonNode> asArray;
+    Object rawNode;
+    BigInteger rawBigInt;
 
     AbstractJsonNode(T node, String jsonPointer) {
         this.nodeType = computeNodeType(node);
@@ -35,21 +35,90 @@ abstract class AbstractJsonNode<T> implements JsonNode {
     }
 
     @Override
-    public final List<JsonNode> asArray() {
-        if (this.asArray != null) {
-            return asArray;
+    public boolean asBoolean() {
+        return (Boolean) rawNode;
+    }
+
+    @Override
+    public String asString() {
+        return Objects.toString(rawNode);
+    }
+
+    @Override
+    public BigInteger asInteger() {
+        if (rawBigInt == null) {
+            rawBigInt = asNumber().toBigInteger();
         }
-        this.asArray = unmodifiableList(createArray());
-        return asArray;
+        return rawBigInt;
+    }
+
+    @Override
+    public BigDecimal asNumber() {
+        return (BigDecimal) rawNode;
+    }
+
+    @Override
+    public final List<JsonNode> asArray() {
+        if (this.rawNode == null) {
+            rawNode = unmodifiableList(createArray());
+        }
+        return (List<JsonNode>) rawNode;
     }
 
     @Override
     public final Map<String, JsonNode> asObject() {
-        if (this.asObject != null) {
-            return asObject;
+        if (this.rawNode == null) {
+            rawNode = unmodifiableMap(createObject());
         }
-        this.asObject = unmodifiableMap(createObject());
-        return asObject;
+        return (Map<String, JsonNode>) rawNode;
+    }
+
+    @Override
+    public boolean isEqualTo(JsonNode other) {
+        return equals(other);
+    }
+
+    @Override
+    public final boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof AbstractJsonNode)) {
+            return false;
+        }
+        AbstractJsonNode<?> other = (AbstractJsonNode<?>) obj;
+        if (getNodeType() != other.getNodeType()) {
+            return false;
+        }
+        ensureInitialized();
+        if (getNodeType() == SimpleType.INTEGER) {
+            return Objects.equals(rawBigInt, other.rawBigInt);
+        } else {
+            return Objects.equals(rawNode, other.rawNode);
+        }
+    }
+
+    @Override
+    public final int hashCode() {
+        ensureInitialized();
+        if (getNodeType() == SimpleType.INTEGER) {
+            return Objects.hashCode(rawBigInt);
+        } else {
+            return Objects.hashCode(rawNode);
+        }
+    }
+
+    private void ensureInitialized() {
+        switch (nodeType) {
+            case INTEGER:
+                asInteger();
+                break;
+            case ARRAY:
+                asArray();
+                break;
+            case OBJECT:
+                asObject();
+        }
     }
 
     abstract List<JsonNode> createArray();

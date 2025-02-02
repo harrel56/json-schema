@@ -12,34 +12,12 @@ import java.math.BigInteger;
 import java.util.*;
 
 public final class JacksonNode extends AbstractJsonNode<com.fasterxml.jackson.databind.JsonNode> {
-    private BigDecimal asNumber;
-
     private JacksonNode(com.fasterxml.jackson.databind.JsonNode node, String jsonPointer) {
         super(Objects.requireNonNull(node), jsonPointer);
     }
 
     public JacksonNode(com.fasterxml.jackson.databind.JsonNode node) {
         this(node, "");
-    }
-
-    @Override
-    public boolean asBoolean() {
-        return node.asBoolean();
-    }
-
-    @Override
-    public String asString() {
-        return node.asText();
-    }
-
-    @Override
-    public BigInteger asInteger() {
-        return asNumber.toBigInteger();
-    }
-
-    @Override
-    public BigDecimal asNumber() {
-        return asNumber;
     }
 
     @Override
@@ -67,12 +45,14 @@ public final class JacksonNode extends AbstractJsonNode<com.fasterxml.jackson.da
             case NULL:
                 return SimpleType.NULL;
             case BOOLEAN:
+                rawNode = node.asBoolean();
                 return SimpleType.BOOLEAN;
             case STRING:
+                rawNode = node.asText();
                 return SimpleType.STRING;
             case NUMBER:
-                asNumber = node.decimalValue();
-                if (canConvertToInteger(asNumber)) {
+                rawNode = node.decimalValue();
+                if (canConvertToInteger((BigDecimal) rawNode)) {
                     return SimpleType.INTEGER;
                 } else {
                     return SimpleType.NUMBER;
