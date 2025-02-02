@@ -337,11 +337,10 @@ class PropertyNamesEvaluator implements Evaluator {
             return Result.success();
         }
 
-        Map<String, JsonNode> object = node.asObject();
-        boolean valid = object.keySet().stream()
-                .filter(propName -> ctx.resolveInternalRefAndValidate(schemaRef, new StringNode(propName, node.getJsonPointer())))
-                .count() == object.size();
-
+        boolean valid = true;
+        for (String propName : node.asObject().keySet()) {
+            valid = ctx.resolveInternalRefAndValidate(schemaRef, new StringNode(propName, node.getJsonPointer())) && valid;
+        }
         return valid ? Result.success() : Result.failure();
     }
 }
