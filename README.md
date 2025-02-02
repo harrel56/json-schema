@@ -4,13 +4,16 @@
 [![maven](https://maven-badges.herokuapp.com/maven-central/dev.harrel/json-schema/badge.svg)](https://mvnrepository.com/artifact/dev.harrel/json-schema)
 [![javadoc](https://javadoc.io/badge2/dev.harrel/json-schema/javadoc.svg)](https://javadoc.io/doc/dev.harrel/json-schema)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=harrel56_json-schema&metric=coverage)](https://sonarcloud.io/summary/new_code?id=harrel56_json-schema)
+[![Size](https://jarhell.harrel.dev/api/v1/badges/total_size/dev.harrel:json-schema)](https://jarhell.harrel.dev/packages/dev.harrel:json-schema)
+[![Bytecode](https://jarhell.harrel.dev/api/v1/badges/effective_bytecode/dev.harrel:json-schema)](https://jarhell.harrel.dev/packages/dev.harrel:json-schema)
+[![Dependencies](https://jarhell.harrel.dev/api/v1/badges/dependencies/dev.harrel:json-schema)](https://jarhell.harrel.dev/packages/dev.harrel:json-schema)
 
 Java library implementing [JSON schema specification](https://json-schema.org/specification.html):
 - compatible with Java 8,
-- support for the newest [specification versions](#dialects) [![Supported spec](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie-json-schema.github.io%2Fbowtie%2Fbadges%2Fjava-dev.harrel.json-schema%2Fsupported_versions.json)](https://bowtie.report/#/implementations/java-json-schema):
-  - Draft 2020-12 [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie.report%2Fbadges%2Fjava-dev.harrel.json-schema%2Fcompliance%2Fdraft2020-12.json)](https://bowtie.report/#/dialects/draft2020-12),
-  - Draft 2019-09 [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie.report%2Fbadges%2Fjava-dev.harrel.json-schema%2Fcompliance%2Fdraft2019-09.json)](https://bowtie.report/#/dialects/draft2019-09),
-  - Draft 07 [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie.report%2Fbadges%2Fjava-dev.harrel.json-schema%2Fcompliance%2Fdraft7.json)](https://bowtie.report/#/dialects/draft7),
+- support for the newest [specification versions](#dialects) [![Supported spec](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie-json-schema.github.io%2Fbowtie%2Fbadges%2Fjava-dev.harrel.json-schema%2Fsupported_versions.json&color=blue)](https://bowtie.report/#/implementations/java-json-schema):
+  - Draft 2020-12 [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie.report%2Fbadges%2Fjava-dev.harrel.json-schema%2Fcompliance%2Fdraft2020-12.json&color=brightgreen)](https://bowtie.report/#/dialects/draft2020-12),
+  - Draft 2019-09 [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie.report%2Fbadges%2Fjava-dev.harrel.json-schema%2Fcompliance%2Fdraft2019-09.json&color=brightgreen)](https://bowtie.report/#/dialects/draft2019-09),
+  - Draft 07 [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie.report%2Fbadges%2Fjava-dev.harrel.json-schema%2Fcompliance%2Fdraft7.json&color=brightgreen)](https://bowtie.report/#/dialects/draft7),
 - support for [custom keywords](#adding-custom-keywords),
 - support for annotation collection,
 - support for [format validation](#format-validation) (for a price of one additional dependency 😉),
@@ -18,7 +21,7 @@ Java library implementing [JSON schema specification](https://json-schema.org/sp
 - and no additional dependencies on top of that.
 
 Check how it compares with other implementations:
-- [Bowtie](https://bowtie.report) - specification compliance (only mandatory behaviour),
+- [Bowtie](https://bowtie.report) - specification compliance (only mandatory behavior),
 - [Creek's benchmark](https://www.creekservice.org/json-schema-validation-comparison/performance) - benchmark for JVM based implementations.
 
 ## Demo
