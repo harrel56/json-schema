@@ -58,6 +58,7 @@ abstract class AbstractJsonNode<T> implements JsonNode {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public final List<JsonNode> asArray() {
         if (this.rawNode == null) {
             rawNode = unmodifiableList(createArray());
@@ -66,6 +67,7 @@ abstract class AbstractJsonNode<T> implements JsonNode {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public final Map<String, JsonNode> asObject() {
         if (this.rawNode == null) {
             rawNode = unmodifiableMap(createObject());
