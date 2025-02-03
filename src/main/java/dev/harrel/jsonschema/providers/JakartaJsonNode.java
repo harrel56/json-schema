@@ -9,7 +9,6 @@ import jakarta.json.stream.JsonParserFactory;
 
 import java.io.StringReader;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.*;
 
 public final class JakartaJsonNode extends AbstractJsonNode<JsonValue> {

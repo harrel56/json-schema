@@ -6,7 +6,6 @@ import dev.harrel.jsonschema.SimpleType;
 import kotlinx.serialization.json.*;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.*;
 
 public final class KotlinxJsonNode extends AbstractJsonNode<JsonElement> {

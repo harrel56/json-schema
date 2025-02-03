@@ -9,7 +9,6 @@ import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.*;
 
 public final class GsonNode extends AbstractJsonNode<JsonElement> {

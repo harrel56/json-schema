@@ -8,7 +8,6 @@ import dev.harrel.jsonschema.SimpleType;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.*;
 
 public final class JacksonNode extends AbstractJsonNode<com.fasterxml.jackson.databind.JsonNode> {
