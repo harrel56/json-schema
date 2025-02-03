@@ -521,13 +521,14 @@ class DependentRequiredEvaluator implements Evaluator {
             return Result.success();
         }
 
+        Set<String> requiredSet = new HashSet<>();
         Set<String> objectKeys = node.asObject().keySet();
-        Set<String> requiredSet = objectKeys
-                .stream()
-                .filter(requiredProperties::containsKey)
-                .map(requiredProperties::get)
-                .flatMap(List::stream)
-                .collect(Collectors.toSet());
+        for (String objectKey : objectKeys) {
+            List<String> keys = requiredProperties.get(objectKey);
+            if (keys != null) {
+                requiredSet.addAll(keys);
+            }
+        }
         if (objectKeys.containsAll(requiredSet)) {
             return Result.success();
         } else {
