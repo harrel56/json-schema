@@ -107,15 +107,12 @@ abstract class AbstractJsonNode<T> implements JsonNode {
     }
 
     private void ensureInitialized() {
-        switch (nodeType) {
-            case INTEGER:
-                asInteger();
-                break;
-            case ARRAY:
-                asArray();
-                break;
-            case OBJECT:
-                asObject();
+        if (nodeType == SimpleType.INTEGER) {
+            asInteger();
+        } else if (nodeType == SimpleType.ARRAY) {
+            asArray();
+        } else if (nodeType == SimpleType.OBJECT) {
+            asObject();
         }
     }
 
