@@ -13,6 +13,14 @@ final class CompoundUri {
     final URI uri;
     final String fragment;
 
+    static CompoundUri fromUri(URI uri) {
+        if (uri.getFragment() == null) {
+            return new CompoundUri(uri, "");
+        } else {
+            return fromString(uri.toString());
+        }
+    }
+
     static CompoundUri fromString(String ref) {
         String[] split = ref.split("#", -1);
         String fragment = split.length > 1 ? split[1] : "";

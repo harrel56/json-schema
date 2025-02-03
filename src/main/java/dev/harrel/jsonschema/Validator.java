@@ -138,7 +138,7 @@ public final class Validator {
     }
 
     private Schema getRootSchema(URI uri) {
-        CompoundUri compoundUri = CompoundUri.fromString(uri.toString());
+        CompoundUri compoundUri = CompoundUri.fromUri(uri);
         return OptionalUtil.firstPresent(
                         () -> Optional.ofNullable(schemaRegistry.get(compoundUri)),
                         () -> resolveExternalSchema(compoundUri)
