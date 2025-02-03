@@ -329,11 +329,9 @@ class UniqueItemsEvaluator implements Evaluator {
         Set<JsonNode> parsed = new HashSet<>();
         List<JsonNode> jsonNodes = node.asArray();
         for (int i = 0; i < jsonNodes.size(); i++) {
-            JsonNode element = jsonNodes.get(i);
-            if (parsed.contains(element)) {
+            if (!parsed.add(jsonNodes.get(i))) {
                 return Result.failure(String.format("Array contains non-unique item at index [%d]", i));
             }
-            parsed.add(element);
         }
         return Result.success();
     }
