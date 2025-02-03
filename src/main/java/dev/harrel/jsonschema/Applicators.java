@@ -289,7 +289,7 @@ class DependentSchemasEvaluator implements Evaluator {
         this.dependentSchemas = toMap(ctx, node.asObject());
     }
 
-    public DependentSchemasEvaluator(SchemaParsingContext ctx, Map<String, JsonNode> objectNode) {
+    DependentSchemasEvaluator(SchemaParsingContext ctx, Map<String, JsonNode> objectNode) {
         this.dependentSchemas = toMap(ctx, objectNode);
     }
 
@@ -346,33 +346,27 @@ class PropertyNamesEvaluator implements Evaluator {
 
 class IfThenElseEvaluator implements Evaluator {
     private final CompoundUri ifRef;
-    private final Optional<CompoundUri> thenRef;
-    private final Optional<CompoundUri> elseRef;
+    private final CompoundUri thenRef;
+    private final CompoundUri elseRef;
 
     IfThenElseEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isObject() && !node.isBoolean()) {
             throw new IllegalArgumentException();
         }
         this.ifRef = ctx.getCompoundUri(node);
-        this.thenRef = Optional.ofNullable(ctx.getCurrentSchemaObject().get(Keyword.THEN))
-                .map(ctx::getCompoundUri);
-        this.elseRef = Optional.ofNullable(ctx.getCurrentSchemaObject().get(Keyword.ELSE))
-                .map(ctx::getCompoundUri);
+        JsonNode thenNode = ctx.getCurrentSchemaObject().get(Keyword.THEN);
+        this.thenRef = thenNode == null ? null : ctx.getCompoundUri(thenNode);
+        JsonNode elseNode = ctx.getCurrentSchemaObject().get(Keyword.ELSE);
+        this.elseRef = elseNode == null ? null : ctx.getCompoundUri(elseNode);
     }
 
     @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (ctx.resolveInternalRefAndValidate(ifRef, node)) {
-            boolean valid = thenRef
-                    .map(ref -> ctx.resolveInternalRefAndValidate(ref, node))
-                    .orElse(true);
-
+            boolean valid = thenRef == null || ctx.resolveInternalRefAndValidate(thenRef, node);
             return valid ? Result.success() : Result.failure("Value matches against schema from 'if' but does not match against schema from 'then'");
         } else {
-            boolean valid = elseRef
-                    .map(ref -> ctx.resolveInternalRefAndValidate(ref, node))
-                    .orElse(true);
-
+            boolean valid = elseRef == null || ctx.resolveInternalRefAndValidate(elseRef, node);
             return valid ? Result.success() : Result.failure("Value does not match against schema from 'if' and 'else'");
         }
     }
