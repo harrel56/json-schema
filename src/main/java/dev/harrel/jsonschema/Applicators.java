@@ -4,7 +4,6 @@ import java.math.BigInteger;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static java.util.Collections.*;
 
@@ -92,16 +91,17 @@ class ItemsLegacyEvaluator implements Evaluator {
         }
         List<JsonNode> array = node.asArray();
         if (schemaRef != null) {
-            boolean valid = array.stream()
-                    .filter(element -> ctx.resolveInternalRefAndValidate(schemaRef, element))
-                    .count() == array.size();
+            boolean valid = true;
+            for (JsonNode element : array) {
+                valid = ctx.resolveInternalRefAndValidate(schemaRef, element) && valid;
+            }
             return valid ? Result.success(true) : Result.failure();
         } else {
             int size = Math.min(schemaRefs.size(), array.size());
-            boolean valid = IntStream.range(0, size)
-                    .boxed()
-                    .filter(idx -> ctx.resolveInternalRefAndValidate(schemaRefs.get(idx), array.get(idx)))
-                    .count() == size;
+            boolean valid = true;
+            for (int i = 0; i < size; i++) {
+                valid = ctx.resolveInternalRefAndValidate(schemaRefs.get(i), array.get(i)) && valid;
+            }
             return valid ? Result.success(schemaRefs.size()) : Result.failure();
         }
     }
@@ -129,11 +129,10 @@ class AdditionalItemsEvaluator implements Evaluator {
         }
 
         int itemsSize = itemsAnnotation instanceof Integer ? (Integer) itemsAnnotation : array.size();
-        int size = Math.max(array.size() - itemsSize, 0);
-        boolean valid = array.stream()
-                .skip(itemsSize)
-                .filter(element -> ctx.resolveInternalRefAndValidate(schemaRef, element))
-                .count() == size;
+        boolean valid = true;
+        for (int i = itemsSize; i < array.size(); i++) {
+            valid = ctx.resolveInternalRefAndValidate(schemaRef, array.get(i)) && valid;
+        }
         return valid ? Result.success(true) : Result.failure();
     }
 
@@ -166,10 +165,12 @@ class ContainsEvaluator implements Evaluator {
         }
 
         List<JsonNode> array = node.asArray();
-        List<Integer> indices = unmodifiableList(IntStream.range(0, array.size())
-                .filter(i -> ctx.resolveInternalRefAndValidate(schemaRef, array.get(i)))
-                .boxed()
-                .collect(Collectors.toList()));
+        List<Integer> indices = new ArrayList<>();
+        for (int i = 0; i < array.size(); i++) {
+            if (ctx.resolveInternalRefAndValidate(schemaRef, array.get(i))) {
+                indices.add(i);
+            }
+        }
         return minContainsZero || !indices.isEmpty() ? Result.success(indices) : Result.failure("Array contains no matching items");
     }
 }
@@ -288,7 +289,7 @@ class DependentSchemasEvaluator implements Evaluator {
         this.dependentSchemas = toMap(ctx, node.asObject());
     }
 
-    public DependentSchemasEvaluator(SchemaParsingContext ctx, Map<String, JsonNode> objectNode) {
+    DependentSchemasEvaluator(SchemaParsingContext ctx, Map<String, JsonNode> objectNode) {
         this.dependentSchemas = toMap(ctx, objectNode);
     }
 
@@ -335,44 +336,37 @@ class PropertyNamesEvaluator implements Evaluator {
             return Result.success();
         }
 
-        Map<String, JsonNode> object = node.asObject();
-        boolean valid = object.keySet().stream()
-                .filter(propName -> ctx.resolveInternalRefAndValidate(schemaRef, new StringNode(propName, node.getJsonPointer())))
-                .count() == object.size();
-
+        boolean valid = true;
+        for (String propName : node.asObject().keySet()) {
+            valid = ctx.resolveInternalRefAndValidate(schemaRef, new StringNode(propName, node.getJsonPointer())) && valid;
+        }
         return valid ? Result.success() : Result.failure();
     }
 }
 
 class IfThenElseEvaluator implements Evaluator {
     private final CompoundUri ifRef;
-    private final Optional<CompoundUri> thenRef;
-    private final Optional<CompoundUri> elseRef;
+    private final CompoundUri thenRef;
+    private final CompoundUri elseRef;
 
     IfThenElseEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isObject() && !node.isBoolean()) {
             throw new IllegalArgumentException();
         }
         this.ifRef = ctx.getCompoundUri(node);
-        this.thenRef = Optional.ofNullable(ctx.getCurrentSchemaObject().get(Keyword.THEN))
-                .map(ctx::getCompoundUri);
-        this.elseRef = Optional.ofNullable(ctx.getCurrentSchemaObject().get(Keyword.ELSE))
-                .map(ctx::getCompoundUri);
+        JsonNode thenNode = ctx.getCurrentSchemaObject().get(Keyword.THEN);
+        this.thenRef = thenNode == null ? null : ctx.getCompoundUri(thenNode);
+        JsonNode elseNode = ctx.getCurrentSchemaObject().get(Keyword.ELSE);
+        this.elseRef = elseNode == null ? null : ctx.getCompoundUri(elseNode);
     }
 
     @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (ctx.resolveInternalRefAndValidate(ifRef, node)) {
-            boolean valid = thenRef
-                    .map(ref -> ctx.resolveInternalRefAndValidate(ref, node))
-                    .orElse(true);
-
+            boolean valid = thenRef == null || ctx.resolveInternalRefAndValidate(thenRef, node);
             return valid ? Result.success() : Result.failure("Value matches against schema from 'if' but does not match against schema from 'then'");
         } else {
-            boolean valid = elseRef
-                    .map(ref -> ctx.resolveInternalRefAndValidate(ref, node))
-                    .orElse(true);
-
+            boolean valid = elseRef == null || ctx.resolveInternalRefAndValidate(elseRef, node);
             return valid ? Result.success() : Result.failure("Value does not match against schema from 'if' and 'else'");
         }
     }

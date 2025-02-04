@@ -19,16 +19,6 @@ public final class OrgJsonNode extends SimpleJsonNode {
     }
 
     @Override
-    public boolean asBoolean() {
-        return (Boolean) node;
-    }
-
-    @Override
-    public String asString() {
-        return node.toString();
-    }
-
-    @Override
     List<JsonNode> createArray() {
         JSONArray jsonArray = (JSONArray) node;
         List<JsonNode> elements = new ArrayList<>(jsonArray.length());

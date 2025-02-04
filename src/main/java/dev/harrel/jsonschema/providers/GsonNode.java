@@ -9,38 +9,15 @@ import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.*;
 
 public final class GsonNode extends AbstractJsonNode<JsonElement> {
-    private BigDecimal asNumber;
-
     private GsonNode(JsonElement node, String jsonPointer) {
         super(Objects.requireNonNull(node), jsonPointer);
     }
 
     public GsonNode(JsonElement node) {
         this(node, "");
-    }
-
-    @Override
-    public boolean asBoolean() {
-        return node.getAsBoolean();
-    }
-
-    @Override
-    public String asString() {
-        return node.getAsString();
-    }
-
-    @Override
-    public BigInteger asInteger() {
-        return asNumber.toBigInteger();
-    }
-
-    @Override
-    public BigDecimal asNumber() {
-        return asNumber;
     }
 
     @Override
@@ -65,15 +42,6 @@ public final class GsonNode extends AbstractJsonNode<JsonElement> {
     }
 
     @Override
-    public String toPrintableString() {
-        if (isNull()) {
-            return "null";
-        } else {
-            return super.toPrintableString();
-        }
-    }
-
-    @Override
     SimpleType computeNodeType(JsonElement node) {
         if (node.isJsonNull()) {
             return SimpleType.NULL;
@@ -84,12 +52,14 @@ public final class GsonNode extends AbstractJsonNode<JsonElement> {
         } else {
             JsonPrimitive jsonPrimitive = node.getAsJsonPrimitive();
             if (jsonPrimitive.isBoolean()) {
+                rawNode = node.getAsBoolean();
                 return SimpleType.BOOLEAN;
             } else if (jsonPrimitive.isString()) {
+                rawNode = node.getAsString();
                 return SimpleType.STRING;
             } else {
-                asNumber = jsonPrimitive.getAsBigDecimal();
-                if (canConvertToInteger(asNumber)) {
+                rawNode = jsonPrimitive.getAsBigDecimal();
+                if (canConvertToInteger((BigDecimal) rawNode)) {
                     return SimpleType.INTEGER;
                 } else {
                     return SimpleType.NUMBER;

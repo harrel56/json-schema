@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 public abstract class JsonNodeTest implements ProviderTest {
 
@@ -225,15 +226,16 @@ public abstract class JsonNodeTest implements ProviderTest {
 
         JsonNode node1 = nodeFactory.create("null");
         JsonNode node2 = nodeFactory.create("null");
-        assertThat(node1.isEqualTo(node2)).isTrue();
-        assertThat(node2.isEqualTo(node1)).isTrue();
+        assertThat(node1.equals(node1)).isTrue();
+        assertThat(node1.equals(node2)).isTrue();
+        assertThat(node2.equals(node1)).isTrue();
 
-        assertThat(node1.isEqualTo(nodeFactory.create("true"))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("\"a\""))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("1"))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("1.1"))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("[1]"))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("{}"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("true"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("\"a\""))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("1"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("1.1"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("[1]"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("{}"))).isFalse();
     }
 
     @Test
@@ -242,16 +244,17 @@ public abstract class JsonNodeTest implements ProviderTest {
 
         JsonNode node1 = nodeFactory.create("true");
         JsonNode node2 = nodeFactory.create("true");
-        assertThat(node1.isEqualTo(node2)).isTrue();
-        assertThat(node2.isEqualTo(node1)).isTrue();
+        assertThat(node1.equals(node1)).isTrue();
+        assertThat(node1.equals(node2)).isTrue();
+        assertThat(node2.equals(node1)).isTrue();
 
-        assertThat(node1.isEqualTo(nodeFactory.create("null"))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("false"))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("\"a\""))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("1"))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("1.1"))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("[1]"))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("{}"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("null"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("false"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("\"a\""))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("1"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("1.1"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("[1]"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("{}"))).isFalse();
     }
 
     @Test
@@ -260,16 +263,17 @@ public abstract class JsonNodeTest implements ProviderTest {
 
         JsonNode node1 = nodeFactory.create("\"a\"");
         JsonNode node2 = nodeFactory.create("\"a\"");
-        assertThat(node1.isEqualTo(node2)).isTrue();
-        assertThat(node2.isEqualTo(node1)).isTrue();
+        assertThat(node1.equals(node1)).isTrue();
+        assertThat(node1.equals(node2)).isTrue();
+        assertThat(node2.equals(node1)).isTrue();
 
-        assertThat(node1.isEqualTo(nodeFactory.create("null"))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("false"))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("\"\""))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("1"))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("1.1"))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("[1]"))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("{}"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("null"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("false"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("\"\""))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("1"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("1.1"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("[1]"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("{}"))).isFalse();
     }
 
     @Test
@@ -278,17 +282,18 @@ public abstract class JsonNodeTest implements ProviderTest {
 
         JsonNode node1 = nodeFactory.create("123");
         JsonNode node2 = nodeFactory.create("123");
-        assertThat(node1.isEqualTo(node2)).isTrue();
-        assertThat(node2.isEqualTo(node1)).isTrue();
-        assertThat(node1.isEqualTo(nodeFactory.create("123.0"))).isTrue();
+        assertThat(node1.equals(node1)).isTrue();
+        assertThat(node1.equals(node2)).isTrue();
+        assertThat(node2.equals(node1)).isTrue();
+        assertThat(node1.equals(nodeFactory.create("123.0"))).isTrue();
 
-        assertThat(node1.isEqualTo(nodeFactory.create("null"))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("false"))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("\"a\""))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("1"))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("123.01"))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("[1]"))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("{}"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("null"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("false"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("\"a\""))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("1"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("123.01"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("[1]"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("{}"))).isFalse();
     }
 
     @Test
@@ -297,16 +302,17 @@ public abstract class JsonNodeTest implements ProviderTest {
 
         JsonNode node1 = nodeFactory.create("1.01");
         JsonNode node2 = nodeFactory.create("1.01");
-        assertThat(node1.isEqualTo(node2)).isTrue();
-        assertThat(node2.isEqualTo(node1)).isTrue();
+        assertThat(node1.equals(node1)).isTrue();
+        assertThat(node1.equals(node2)).isTrue();
+        assertThat(node2.equals(node1)).isTrue();
 
-        assertThat(node1.isEqualTo(nodeFactory.create("null"))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("false"))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("\"a\""))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("1"))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("123.01"))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("[1]"))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("{}"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("null"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("false"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("\"a\""))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("1"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("123.01"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("[1]"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("{}"))).isFalse();
     }
 
     @Test
@@ -316,19 +322,20 @@ public abstract class JsonNodeTest implements ProviderTest {
         String value = "[null, true, \"a\", 1, 1.2]";
         JsonNode node1 = nodeFactory.create(value);
         JsonNode node2 = nodeFactory.create(value);
-        assertThat(node1.isEqualTo(node2)).isTrue();
-        assertThat(node2.isEqualTo(node1)).isTrue();
+        assertThat(node1.equals(node1)).isTrue();
+        assertThat(node1.equals(node2)).isTrue();
+        assertThat(node2.equals(node1)).isTrue();
 
-        assertThat(node1.isEqualTo(nodeFactory.create("null"))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("false"))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("\"a\""))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("1"))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("123.01"))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("[1]"))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("{}"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("null"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("false"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("\"a\""))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("1"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("123.01"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("[1]"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("{}"))).isFalse();
 
-        assertThat(node1.isEqualTo(nodeFactory.create("[true, null, \"a\", 1, 1.2]"))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("[[true, null, \"a\", 1, 1.2]]"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("[true, null, \"a\", 1, 1.2]"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("[[true, null, \"a\", 1, 1.2]]"))).isFalse();
     }
 
     @Test
@@ -338,19 +345,28 @@ public abstract class JsonNodeTest implements ProviderTest {
         String value = "{\"a\": [1, {\"b\": 2}], \"b\": 1}";
         JsonNode node1 = nodeFactory.create(value);
         JsonNode node2 = nodeFactory.create(value);
-        assertThat(node1.isEqualTo(node2)).isTrue();
-        assertThat(node2.isEqualTo(node1)).isTrue();
-        assertThat(node1.isEqualTo(nodeFactory.create("{\"a\": [1, {\"b\": 2.0}], \"b\": 1}"))).isTrue();
-        assertThat(node1.isEqualTo(nodeFactory.create("{\"b\": 1, \"a\": [1, {\"b\": 2}]}"))).isTrue();
+        assertThat(node1.equals(node1)).isTrue();
+        assertThat(node1.equals(node2)).isTrue();
+        assertThat(node2.equals(node1)).isTrue();
+        assertThat(node1.equals(nodeFactory.create("{\"a\": [1, {\"b\": 2.0}], \"b\": 1}"))).isTrue();
+        assertThat(node1.equals(nodeFactory.create("{\"b\": 1, \"a\": [1, {\"b\": 2}]}"))).isTrue();
 
-        assertThat(node1.isEqualTo(nodeFactory.create("null"))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("false"))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("\"a\""))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("1"))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("123.01"))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("[1]"))).isFalse();
-        assertThat(node1.isEqualTo(nodeFactory.create("{\"a\": []}"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("null"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("false"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("\"a\""))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("1"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("123.01"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("[1]"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("{\"a\": []}"))).isFalse();
 
-        assertThat(node1.isEqualTo(nodeFactory.create("{\"a\": [1, {\"b\": 2.1}], \"b\": 1}"))).isFalse();
+        assertThat(node1.equals(nodeFactory.create("{\"a\": [1, {\"b\": 2.1}], \"b\": 1}"))).isFalse();
+    }
+
+    @Test
+    void isNotEqualToDifferentType() {
+        JsonNodeFactory nodeFactory = getJsonNodeFactory();
+        JsonNode node = nodeFactory.create("{}");
+        assertThat(node.equals(mock(JsonNode.class))).isFalse();
+        assertThat(node.equals(new Object())).isFalse();
     }
 }

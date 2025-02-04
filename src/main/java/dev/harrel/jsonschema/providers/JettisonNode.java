@@ -20,16 +20,6 @@ public final class JettisonNode extends SimpleJsonNode {
     }
 
     @Override
-    public boolean asBoolean() {
-        return (Boolean) node;
-    }
-
-    @Override
-    public String asString() {
-        return Objects.toString(isNull() ? null : node);
-    }
-
-    @Override
     List<JsonNode> createArray() {
         JSONArray arrayNode = (JSONArray) node;
         List<JsonNode> elements = new ArrayList<>(arrayNode.length());

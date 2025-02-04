@@ -5,8 +5,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static java.util.Collections.singleton;
-import static java.util.Collections.unmodifiableList;
+import static java.util.Collections.*;
 
 class TypeEvaluator implements Evaluator {
     private final Set<SimpleType> types;
@@ -46,31 +45,26 @@ class ConstEvaluator implements Evaluator {
 
     @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
-        return constNode.isEqualTo(node) ? Result.success() : Result.failure("Expected " + constNode.toPrintableString());
+        return constNode.equals(node) ? Result.success() : Result.failure("Expected " + constNode.toPrintableString());
     }
 }
 
 class EnumEvaluator implements Evaluator {
-    private final List<JsonNode> enumNodes;
+    private final Set<JsonNode> enumNodes;
     private final String failMessage;
 
     EnumEvaluator(JsonNode node) {
         if (!node.isArray()) {
             throw new IllegalArgumentException();
         }
-        this.enumNodes = unmodifiableList(node.asArray());
+        this.enumNodes = unmodifiableSet(new LinkedHashSet<>(node.asArray()));
         List<String> printList = enumNodes.stream().map(JsonNode::toPrintableString).collect(Collectors.toList());
         this.failMessage = String.format("Expected any of [%s]", printList);
     }
 
     @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
-        for (JsonNode enumNode : enumNodes) {
-            if (enumNode.isEqualTo(node)) {
-                return Result.success();
-            }
-        }
-        return Result.failure(failMessage);
+        return enumNodes.contains(node) ? Result.success() : Result.failure(failMessage);
     }
 }
 
@@ -332,14 +326,12 @@ class UniqueItemsEvaluator implements Evaluator {
             return Result.success();
         }
 
-        List<JsonNode> parsed = new ArrayList<>();
+        Set<JsonNode> parsed = new HashSet<>();
         List<JsonNode> jsonNodes = node.asArray();
         for (int i = 0; i < jsonNodes.size(); i++) {
-            JsonNode element = jsonNodes.get(i);
-            if (parsed.stream().anyMatch(element::isEqualTo)) {
+            if (!parsed.add(jsonNodes.get(i))) {
                 return Result.failure(String.format("Array contains non-unique item at index [%d]", i));
             }
-            parsed.add(element);
         }
         return Result.success();
     }
@@ -529,13 +521,14 @@ class DependentRequiredEvaluator implements Evaluator {
             return Result.success();
         }
 
+        Set<String> requiredSet = new HashSet<>();
         Set<String> objectKeys = node.asObject().keySet();
-        Set<String> requiredSet = objectKeys
-                .stream()
-                .filter(requiredProperties::containsKey)
-                .map(requiredProperties::get)
-                .flatMap(List::stream)
-                .collect(Collectors.toSet());
+        for (String objectKey : objectKeys) {
+            List<String> keys = requiredProperties.get(objectKey);
+            if (keys != null) {
+                requiredSet.addAll(keys);
+            }
+        }
         if (objectKeys.containsAll(requiredSet)) {
             return Result.success();
         } else {
