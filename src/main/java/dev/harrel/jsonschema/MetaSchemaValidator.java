@@ -43,10 +43,12 @@ class MetaSchemaValidator {
 
     private Schema resolveMetaSchema(JsonParser jsonParser, URI uri) {
         CompoundUri compoundUri = CompoundUri.fromUri(uri);
-        return OptionalUtil.firstPresent(
-                () -> Optional.ofNullable(schemaRegistry.get(compoundUri)),
-                () -> Optional.ofNullable(schemaRegistry.getDynamic(compoundUri))
-        ).orElseGet(() -> resolveExternalSchema(jsonParser, uri));
+        Schema schema = schemaRegistry.get(compoundUri);
+        if (schema != null) {
+            return schema;
+        }
+        schema = schemaRegistry.getDynamic(compoundUri);
+        return schema != null ? schema : resolveExternalSchema(jsonParser, uri);
     }
 
     private Schema resolveExternalSchema(JsonParser jsonParser, URI uri) {

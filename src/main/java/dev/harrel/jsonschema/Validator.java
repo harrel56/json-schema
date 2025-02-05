@@ -139,24 +139,29 @@ public final class Validator {
 
     private Schema getRootSchema(URI uri) {
         CompoundUri compoundUri = CompoundUri.fromUri(uri);
-        return OptionalUtil.firstPresent(
-                        () -> Optional.ofNullable(schemaRegistry.get(compoundUri)),
-                        () -> resolveExternalSchema(compoundUri)
-                )
-                .orElseThrow(() -> new SchemaNotFoundException(compoundUri));
+        Schema schema = schemaRegistry.get(compoundUri);
+        if (schema != null) {
+            return schema;
+        }
+        schema = resolveExternalSchema(compoundUri);
+        if (schema != null) {
+            return schema;
+        } else {
+            throw new SchemaNotFoundException(compoundUri);
+        }
     }
 
-    private Optional<Schema> resolveExternalSchema(CompoundUri compoundUri) {
+    private Schema resolveExternalSchema(CompoundUri compoundUri) {
         if (schemaRegistry.get(compoundUri.uri) != null) {
-            return Optional.empty();
+            return null;
         }
-
         return schemaResolver.resolve(compoundUri.uri.toString())
                 .toJsonNode(schemaNodeFactory)
                 .map(node -> {
                     jsonParser.parseRootSchema(compoundUri.uri, node);
                     return schemaRegistry.get(compoundUri);
-                });
+                })
+                .orElse(null);
     }
 
     private URI generateSchemaUri() {
