@@ -177,12 +177,23 @@ class ContainsEvaluator implements Evaluator {
 
 class AdditionalPropertiesEvaluator implements Evaluator {
     private final CompoundUri schemaRef;
+    /* To reduce annotation usage when not needed */
+    private final Set<String> propertyNames;
+    private final boolean hasPatternProperties;
 
     AdditionalPropertiesEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isObject() && !node.isBoolean()) {
             throw new IllegalArgumentException();
         }
         this.schemaRef = ctx.getCompoundUri(node);
+
+        Set<String> tmpProps = emptySet();
+        JsonNode propertiesNode = ctx.getCurrentSchemaObject().get(Keyword.PROPERTIES);
+        if (propertiesNode != null && propertiesNode.isObject()) {
+            tmpProps = propertiesNode.asObject().keySet();
+        }
+        this.propertyNames = unmodifiableSet(tmpProps);
+        this.hasPatternProperties = ctx.getCurrentSchemaObject().containsKey(Keyword.PATTERN_PROPERTIES);
     }
 
     @Override
@@ -192,15 +203,13 @@ class AdditionalPropertiesEvaluator implements Evaluator {
             return Result.success();
         }
 
-        String instanceLocation = node.getJsonPointer();
         Map<String, JsonNode> toBeProcessed = new HashMap<>(node.asObject());
-        Object propsAnnotation = ctx.getSiblingAnnotation(Keyword.PROPERTIES, instanceLocation);
-        if (propsAnnotation instanceof Collection) {
-            toBeProcessed.keySet().removeAll((Collection<String>) propsAnnotation);
-        }
-        Object patternAnnotation = ctx.getSiblingAnnotation(Keyword.PATTERN_PROPERTIES, instanceLocation);
-        if (patternAnnotation instanceof Collection) {
-            toBeProcessed.keySet().removeAll((Collection<String>) patternAnnotation);
+        toBeProcessed.keySet().removeAll(propertyNames);
+        if (hasPatternProperties) {
+            Object patternAnnotation = ctx.getSiblingAnnotation(Keyword.PATTERN_PROPERTIES, node.getJsonPointer());
+            if (patternAnnotation instanceof Collection) {
+                toBeProcessed.keySet().removeAll((Collection<String>) patternAnnotation);
+            }
         }
         boolean valid = true;
         for (JsonNode propNode : toBeProcessed.values()) {
