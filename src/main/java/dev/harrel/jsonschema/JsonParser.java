@@ -48,9 +48,9 @@ final class JsonParser {
 
     private URI parseRootSchemaInternal(URI baseUri, JsonNode node) {
         Optional<Map<String, JsonNode>> objectMapOptional = JsonNodeUtil.getAsObject(node);
-        URI metaSchemaUri = OptionalUtil.firstPresent(
-                        () -> objectMapOptional.flatMap(obj -> JsonNodeUtil.getStringField(obj, Keyword.SCHEMA)),
-                        () -> Optional.ofNullable(defaultDialect.getMetaSchema())
+        URI metaSchemaUri = Optional.ofNullable(
+                        objectMapOptional.flatMap(obj -> JsonNodeUtil.getStringField(obj, Keyword.SCHEMA))
+                                .orElseGet(defaultDialect::getMetaSchema)
                 )
                 .map(UriUtil::removeEmptyFragment)
                 .orElse(null);
