@@ -177,6 +177,7 @@ class ContainsEvaluator implements Evaluator {
 
 class AdditionalPropertiesEvaluator implements Evaluator {
     private final CompoundUri schemaRef;
+    private final boolean alwaysFail;
     /* To reduce annotation usage when not needed */
     private final Set<String> propertyNames;
     private final boolean hasPatternProperties;
@@ -186,6 +187,7 @@ class AdditionalPropertiesEvaluator implements Evaluator {
             throw new IllegalArgumentException();
         }
         this.schemaRef = ctx.getCompoundUri(node);
+        this.alwaysFail = node.isBoolean() && !node.asBoolean();
 
         Set<String> tmpProps = emptySet();
         JsonNode propertiesNode = ctx.getCurrentSchemaObject().get(Keyword.PROPERTIES);
@@ -203,19 +205,29 @@ class AdditionalPropertiesEvaluator implements Evaluator {
             return Result.success();
         }
 
-        Map<String, JsonNode> toBeProcessed = new HashMap<>(node.asObject());
-        toBeProcessed.keySet().removeAll(propertyNames);
+        Set<String> patternNames = emptySet();
         if (hasPatternProperties) {
             Object patternAnnotation = ctx.getSiblingAnnotation(Keyword.PATTERN_PROPERTIES, node.getJsonPointer());
             if (patternAnnotation instanceof Collection) {
-                toBeProcessed.keySet().removeAll((Collection<String>) patternAnnotation);
+                patternNames = (Set<String>) patternAnnotation;
             }
         }
+
+        Map<String, JsonNode> objectMap = node.asObject();
+        List<String> processed = new ArrayList<>(objectMap.size());
         boolean valid = true;
-        for (JsonNode propNode : toBeProcessed.values()) {
-            valid = ctx.resolveInternalRefAndValidate(schemaRef, propNode) && valid;
+        for (Map.Entry<String, JsonNode> entry : objectMap.entrySet()) {
+            String key = entry.getKey();
+            if (!propertyNames.contains(key) && !patternNames.contains(key)) {
+                if (alwaysFail) {
+                    return Result.failure();
+                } else {
+                    processed.add(key);
+                    valid = ctx.resolveInternalRefAndValidate(schemaRef, entry.getValue()) && valid;
+                }
+            }
         }
-        return valid ? Result.success(unmodifiableSet(toBeProcessed.keySet())) : Result.failure();
+        return valid ? Result.success(unmodifiableList(processed)) : Result.failure();
     }
 
     @Override
