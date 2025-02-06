@@ -2,6 +2,7 @@ package dev.harrel.jsonschema;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -467,9 +468,12 @@ class RequiredEvaluator implements Evaluator {
         if (keys.containsAll(requiredProperties)) {
             return Result.success();
         } else {
-            HashSet<String> unsatisfied = new HashSet<>(requiredProperties);
-            unsatisfied.removeAll(keys);
-            return Result.failure(String.format("Object does not have some of the required properties [%s]", unsatisfied));
+            Supplier<String> messageSupplier = () -> {
+                HashSet<String> unsatisfied = new HashSet<>(requiredProperties);
+                unsatisfied.removeAll(keys);
+                return String.format("Object does not have some of the required properties [%s]", unsatisfied);
+            };
+            return Result.failure(messageSupplier);
         }
     }
 }

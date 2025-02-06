@@ -1,15 +1,17 @@
 package dev.harrel.jsonschema;
 
-abstract class EvaluationItem {
+import java.util.function.Supplier;
+
+class EvaluationItem {
     private final String evaluationPath;
     private final String schemaLocation;
     private final String instanceLocation;
     private final String keyword;
 
     EvaluationItem(String evaluationPath,
-                          String schemaLocation,
-                          String instanceLocation,
-                          String keyword) {
+                   String schemaLocation,
+                   String instanceLocation,
+                   String keyword) {
         this.evaluationPath = evaluationPath;
         this.schemaLocation = schemaLocation;
         this.instanceLocation = instanceLocation;
@@ -42,5 +44,18 @@ abstract class EvaluationItem {
      */
     public String getKeyword() {
         return keyword;
+    }
+}
+
+final class LazyError extends EvaluationItem {
+    private final Supplier<String> errorSupplier;
+
+    public LazyError(String evaluationPath, String schemaLocation, String instanceLocation, String keyword, Supplier<String> errorSupplier) {
+        super(evaluationPath, schemaLocation, instanceLocation, keyword);
+        this.errorSupplier = errorSupplier;
+    }
+
+    Error toError() {
+        return new Error(getEvaluationPath(), getSchemaLocation(), getInstanceLocation(), getKeyword(), errorSupplier.get());
     }
 }

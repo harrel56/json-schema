@@ -1,6 +1,7 @@
 package dev.harrel.jsonschema;
 
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * {@code Evaluator} interface is the main abstraction for the keyword evaluation logic.
@@ -49,16 +50,16 @@ public interface Evaluator {
      */
     final class Result {
         private static final Result SUCCESSFUL_RESULT = new Result(true, null, null);
-        private static final Result FAILED_RESULT = new Result(false, null, null);
+        private static final Result FAILED_RESULT = new Result(false, null, () -> null);
 
         private final boolean valid;
         private final Object annotation;
-        private final String error;
+        private final Supplier<String> errorSupplier;
 
-        private Result(boolean valid, Object annotation, String error) {
+        private Result(boolean valid, Object annotation, Supplier<String> errorSupplier) {
             this.valid = valid;
             this.annotation = annotation;
-            this.error = error;
+            this.errorSupplier = errorSupplier;
         }
 
         /**
@@ -94,7 +95,14 @@ public interface Evaluator {
          * @return {@link Result}
          */
         public static Result failure(String message) {
-            return new Result(false, null, message);
+            return new Result(false, null, () -> message);
+        }
+
+        /**
+         * Lazy error message construction is internal for now.
+         */
+        static Result failure(Supplier<String> messageSupplier) {
+            return new Result(false, null, messageSupplier);
         }
 
         boolean isValid() {
@@ -105,8 +113,8 @@ public interface Evaluator {
             return annotation;
         }
 
-        String getError() {
-            return error;
+        Supplier<String> getErrorSupplier() {
+            return errorSupplier;
         }
     }
 }

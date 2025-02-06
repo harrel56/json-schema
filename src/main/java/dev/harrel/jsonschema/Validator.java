@@ -184,6 +184,7 @@ public final class Validator {
         Result(boolean valid, EvaluationContext ctx) {
             this.valid = valid;
             this.errors = unmodifiableList(ctx.getErrors().stream()
+                    .map(LazyError::toError)
                     .filter(e -> e.getError() != null)
                     .collect(Collectors.toList()));
             this.annotationTree = ctx.getAnnotationTree();

@@ -20,7 +20,7 @@ public final class EvaluationContext {
     private final Deque<RefStackItem> refStack = new ArrayDeque<>();
     private final LinkedList<String> evaluationStack = new LinkedList<>();
     private final AnnotationTree annotationTree = new AnnotationTree();
-    private final List<Error> errors = new ArrayList<>();
+    private final List<LazyError> errors = new ArrayList<>();
 
     EvaluationContext(JsonNodeFactory jsonNodeFactory,
                       JsonParser jsonParser,
@@ -117,7 +117,7 @@ public final class EvaluationContext {
         return validateAgainstSchema(schema, node);
     }
 
-    List<Error> getErrors() {
+    List<LazyError> getErrors() {
         return unmodifiableList(errors);
     }
 
@@ -147,7 +147,7 @@ public final class EvaluationContext {
                 all.add(annotation.getInstanceLocation());
             }
         }
-        for (Error error : errors) {
+        for (EvaluationItem error : errors) {
             if (error.getEvaluationPath().startsWith(correctedParentPath)) {
                 all.add(error.getInstanceLocation());
             }
@@ -179,7 +179,7 @@ public final class EvaluationContext {
                 treeNode.annotations.add(annotation);
             } else {
                 valid = false;
-                errors.add(new Error(evaluationPath, schema.getSchemaLocation(), node.getJsonPointer(), evaluator.getKeyword(), result.getError()));
+                errors.add(new LazyError(evaluationPath, schema.getSchemaLocation(), node.getJsonPointer(), evaluator.getKeyword(), result.getErrorSupplier()));
             }
             evaluationStack.pop();
         }

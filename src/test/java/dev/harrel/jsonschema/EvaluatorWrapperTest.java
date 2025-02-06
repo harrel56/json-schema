@@ -46,6 +46,7 @@ class EvaluatorWrapperTest {
         Evaluator.Result result = wrapper.evaluate(ctx, node);
         assertThat(result).isNotNull();
         assertThat(result.isValid()).isFalse();
-        assertThat(result.getError()).isEqualTo(String.valueOf(Objects.hash(ctx, node)));
+        assertThat(result.getErrorSupplier()).isNotNull();
+        assertThat(result.getErrorSupplier().get()).isEqualTo(String.valueOf(Objects.hash(ctx, node)));
     }
 }
