@@ -9,7 +9,6 @@ import jakarta.json.stream.JsonParserFactory;
 
 import java.io.StringReader;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.*;
 
 public final class JakartaJsonNode extends AbstractJsonNode<JsonValue> {
@@ -19,26 +18,6 @@ public final class JakartaJsonNode extends AbstractJsonNode<JsonValue> {
 
     public JakartaJsonNode(JsonValue node) {
         this(node, "");
-    }
-
-    @Override
-    public boolean asBoolean() {
-        return node.getValueType() == JsonValue.ValueType.TRUE;
-    }
-
-    @Override
-    public String asString() {
-        return node instanceof JsonString ? ((JsonString) node).getChars().toString() : node.toString();
-    }
-
-    @Override
-    public BigInteger asInteger() {
-        return ((JsonNumber) node).bigIntegerValue();
-    }
-
-    @Override
-    public BigDecimal asNumber() {
-        return ((JsonNumber) node).bigDecimalValue();
     }
 
     @Override
@@ -71,12 +50,17 @@ public final class JakartaJsonNode extends AbstractJsonNode<JsonValue> {
             case OBJECT:
                 return SimpleType.OBJECT;
             case STRING:
+                rawNode = ((JsonString) node).getString();
                 return SimpleType.STRING;
             case TRUE:
+                rawNode = Boolean.TRUE;
+                return SimpleType.BOOLEAN;
             case FALSE:
+                rawNode = Boolean.FALSE;
                 return SimpleType.BOOLEAN;
             case NUMBER:
-                if (canConvertToInteger(((JsonNumber) node).bigDecimalValue())) {
+                rawNode = ((JsonNumber) node).bigDecimalValue();
+                if (canConvertToInteger((BigDecimal) rawNode)) {
                     return SimpleType.INTEGER;
                 } else {
                     return SimpleType.NUMBER;

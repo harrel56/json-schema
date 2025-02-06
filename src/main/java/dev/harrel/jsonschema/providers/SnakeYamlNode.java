@@ -19,34 +19,12 @@ public final class SnakeYamlNode extends AbstractJsonNode<Node> {
     private static final SafeConstructor.ConstructYamlInt INT_CREATOR = CONSTR.new ConstructYamlInt();
     private static final SafeConstructor.ConstructYamlFloat NUMBER_CREATOR = CONSTR.new ConstructYamlFloat();
 
-    private BigDecimal asNumber;
-
     private SnakeYamlNode(Node node, String jsonPointer) {
         super(Objects.requireNonNull(node), jsonPointer);
     }
 
     private SnakeYamlNode(Node node) {
         this(node, "");
-    }
-
-    @Override
-    public boolean asBoolean() {
-        return (Boolean) BOOLEAN_CREATOR.construct(node);
-    }
-
-    @Override
-    public String asString() {
-        return ((ScalarNode) node).getValue();
-    }
-
-    @Override
-    public BigInteger asInteger() {
-        return asNumber.toBigInteger();
-    }
-
-    @Override
-    public BigDecimal asNumber() {
-        return asNumber;
     }
 
     @Override
@@ -81,31 +59,35 @@ public final class SnakeYamlNode extends AbstractJsonNode<Node> {
         if (node.getTag() == Tag.NULL) {
             return SimpleType.NULL;
         } else if (node.getTag() == Tag.BOOL) {
+            rawNode = BOOLEAN_CREATOR.construct(node);
             return SimpleType.BOOLEAN;
         } else if (node.getTag() == Tag.INT) {
-            asNumber = intToBigDecimal(node);
+            rawNode = intToBigDecimal(node);
             return SimpleType.INTEGER;
         } else if (node.getTag() == Tag.FLOAT) {
             String asString = ((ScalarNode) node).getValue().toLowerCase();
             if (asString.contains(".inf") || asString.contains(".nan")) {
+                rawNode = ((ScalarNode) node).getValue();
                 return SimpleType.STRING;
             }
-            asNumber = floatToBigDecimal(node);
-            if (canConvertToInteger(asNumber)) {
+            rawNode = floatToBigDecimal(node);
+            if (canConvertToInteger((BigDecimal) rawNode)) {
                 return SimpleType.INTEGER;
             } else {
                 return SimpleType.NUMBER;
             }
         } else {
+            rawNode = ((ScalarNode) node).getValue();
             return SimpleType.STRING;
         }
     }
 
-    private static BigDecimal intToBigDecimal(Node node) {
+    private BigDecimal intToBigDecimal(Node node) {
         Object intObject = INT_CREATOR.construct(node);
         if (intObject instanceof Integer || intObject instanceof Long) {
             return BigDecimal.valueOf(((Number) intObject).longValue());
         } else {
+            rawBigInt = (BigInteger) intObject;
             return new BigDecimal((BigInteger) intObject);
         }
     }
