@@ -12,7 +12,7 @@ jobs:
       sourceHeadSha: ${{ fromJSON(steps.workflow-run-info.outputs.data).head_sha }}
       pullRequestNumber: ${{ steps.pr-number.outputs.number }}
     steps:
-      - uses: octokit/request-action@v2.3.1
+      - uses: octokit/request-action@v2.x
         id: workflow-run-info
         with:
           route: GET /repos/{owner}/{repo}/actions/runs/{run_id}
@@ -21,7 +21,7 @@ jobs:
           run_id: ${{ github.event.workflow_run.id }}
         env:
          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: octokit/request-action@v2.3.1
+      - uses: octokit/request-action@v2.x
         if: fromJSON(steps.workflow-run-info.outputs.data).event == 'pull_request'
         id: pr-info
         with:
