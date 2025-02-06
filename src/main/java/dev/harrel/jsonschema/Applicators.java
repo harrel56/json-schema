@@ -177,12 +177,25 @@ class ContainsEvaluator implements Evaluator {
 
 class AdditionalPropertiesEvaluator implements Evaluator {
     private final CompoundUri schemaRef;
+    private final boolean alwaysFail;
+    /* To reduce annotation usage when not needed */
+    private final Set<String> propertyNames;
+    private final boolean hasPatternProperties;
 
     AdditionalPropertiesEvaluator(SchemaParsingContext ctx, JsonNode node) {
         if (!node.isObject() && !node.isBoolean()) {
             throw new IllegalArgumentException();
         }
         this.schemaRef = ctx.getCompoundUri(node);
+        this.alwaysFail = node.isBoolean() && !node.asBoolean();
+
+        Set<String> tmpProps = emptySet();
+        JsonNode propertiesNode = ctx.getCurrentSchemaObject().get(Keyword.PROPERTIES);
+        if (propertiesNode != null && propertiesNode.isObject()) {
+            tmpProps = propertiesNode.asObject().keySet();
+        }
+        this.propertyNames = unmodifiableSet(tmpProps);
+        this.hasPatternProperties = ctx.getCurrentSchemaObject().containsKey(Keyword.PATTERN_PROPERTIES);
     }
 
     @Override
@@ -192,21 +205,29 @@ class AdditionalPropertiesEvaluator implements Evaluator {
             return Result.success();
         }
 
-        String instanceLocation = node.getJsonPointer();
-        Map<String, JsonNode> toBeProcessed = new HashMap<>(node.asObject());
-        Object propsAnnotation = ctx.getSiblingAnnotation(Keyword.PROPERTIES, instanceLocation);
-        if (propsAnnotation instanceof Collection) {
-            toBeProcessed.keySet().removeAll((Collection<String>) propsAnnotation);
+        Set<String> patternNames = emptySet();
+        if (hasPatternProperties) {
+            Object patternAnnotation = ctx.getSiblingAnnotation(Keyword.PATTERN_PROPERTIES, node.getJsonPointer());
+            if (patternAnnotation instanceof Collection) {
+                patternNames = (Set<String>) patternAnnotation;
+            }
         }
-        Object patternAnnotation = ctx.getSiblingAnnotation(Keyword.PATTERN_PROPERTIES, instanceLocation);
-        if (patternAnnotation instanceof Collection) {
-            toBeProcessed.keySet().removeAll((Collection<String>) patternAnnotation);
-        }
+
+        Map<String, JsonNode> objectMap = node.asObject();
+        List<String> processed = new ArrayList<>(objectMap.size());
         boolean valid = true;
-        for (JsonNode propNode : toBeProcessed.values()) {
-            valid = ctx.resolveInternalRefAndValidate(schemaRef, propNode) && valid;
+        for (Map.Entry<String, JsonNode> entry : objectMap.entrySet()) {
+            String key = entry.getKey();
+            if (!propertyNames.contains(key) && !patternNames.contains(key)) {
+                if (alwaysFail) {
+                    return Result.failure();
+                } else {
+                    processed.add(key);
+                    valid = ctx.resolveInternalRefAndValidate(schemaRef, entry.getValue()) && valid;
+                }
+            }
         }
-        return valid ? Result.success(unmodifiableSet(toBeProcessed.keySet())) : Result.failure();
+        return valid ? Result.success(unmodifiableList(processed)) : Result.failure();
     }
 
     @Override
