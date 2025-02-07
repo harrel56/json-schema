@@ -161,13 +161,15 @@ public final class EvaluationContext {
             dynamicScope.push(schema.getParentUri());
         }
 
-        String parentSchemaLocation = evaluationStack.size() > 1 ? evaluationStack.get(1) : null;
-        AnnotationTree.Node treeNode = annotationTree.createIfAbsent(parentSchemaLocation, evaluationStack.element());
+        AnnotationTree.Node treeNode = annotationTree.createIfAbsent(evaluationStack);
         int nodesBefore = treeNode.nodes.size();
         int annotationsBefore = treeNode.annotations.size();
 
+        List<EvaluatorWrapper> evaluators = schema.getEvaluators();
+        int evaluatorsSize = evaluators.size();
         boolean valid = true;
-        for (EvaluatorWrapper evaluator : schema.getEvaluators()) {
+        for (int i = 0; i < evaluatorsSize; i++) {
+            EvaluatorWrapper evaluator = evaluators.get(i);
             String evaluationPath = resolveEvaluationPath(evaluator);
             evaluationStack.push(evaluationPath);
             int errorsBefore = errors.size();

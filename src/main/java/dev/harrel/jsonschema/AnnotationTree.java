@@ -1,9 +1,6 @@
 package dev.harrel.jsonschema;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 final class AnnotationTree {
     private final Map<String, Node> lookupMap = new HashMap<>();
@@ -20,12 +17,15 @@ final class AnnotationTree {
         return lookupMap.get(location);
     }
 
-    Node createIfAbsent(String parentLocation, String location) {
-        return lookupMap.computeIfAbsent(location, key -> {
-            Node node = new Node();
-            lookupMap.get(parentLocation).nodes.add(node);
-            return node;
-        });
+    Node createIfAbsent(LinkedList<String> evaluationStack) {
+        String location = evaluationStack.element();
+        Node res = lookupMap.get(location);
+        if (res == null) {
+            res = new Node();
+            lookupMap.get(evaluationStack.size() > 1 ? evaluationStack.get(1) : null).nodes.add(res);
+            lookupMap.put(location, res);
+        }
+        return res;
     }
 
     static class Node {
