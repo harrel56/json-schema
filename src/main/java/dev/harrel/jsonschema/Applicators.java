@@ -330,7 +330,7 @@ class DependentSchemasEvaluator implements Evaluator {
         if (failedFields.isEmpty()) {
             return Result.success();
         } else {
-            return Result.failure(String.format("Object does not match dependent schemas for some properties %s", failedFields));
+            return Result.failure(() -> String.format("Object does not match dependent schemas for some properties %s", failedFields));
         }
     }
 
@@ -415,7 +415,7 @@ class AllOfEvaluator implements Evaluator {
         if (unmatchedIndexes.isEmpty()) {
             return Result.success();
         }
-        return Result.failure(String.format("Value does not match against the schemas at indexes %s", unmatchedIndexes));
+        return Result.failure(() -> String.format("Value does not match against the schemas at indexes %s", unmatchedIndexes));
     }
 }
 
@@ -464,7 +464,7 @@ class OneOfEvaluator implements Evaluator {
         if (matchedIndexes.isEmpty()) {
             return Result.failure("Value does not match against any of the schemas");
         }
-        return Result.failure(String.format("Value matches against more than one schema. Matched schema indexes %s", matchedIndexes));
+        return Result.failure(() -> String.format("Value matches against more than one schema. Matched schema indexes %s", matchedIndexes));
     }
 }
 
@@ -564,7 +564,7 @@ class RefEvaluator implements Evaluator {
         try {
             return ctx.resolveRefAndValidate(ref, node) ? Result.success() : Result.failure();
         } catch (SchemaNotFoundException e) {
-            return Result.failure(String.format("Resolution of $ref [%s] failed", ref));
+            return Result.failure(() -> String.format("Resolution of $ref [%s] failed", ref));
         }
     }
 }
@@ -584,7 +584,7 @@ class DynamicRefEvaluator implements Evaluator {
         try {
             return ctx.resolveDynamicRefAndValidate(ref, node) ? Result.success() : Result.failure();
         } catch (SchemaNotFoundException e) {
-            return Result.failure(String.format("Resolution of $dynamicRef [%s] failed", ref));
+            return Result.failure(() -> String.format("Resolution of $dynamicRef [%s] failed", ref));
         }
     }
 }
@@ -604,7 +604,7 @@ class RecursiveRefEvaluator implements Evaluator {
         try {
             return ctx.resolveRecursiveRefAndValidate(ref, node) ? Result.success() : Result.failure();
         } catch (SchemaNotFoundException e) {
-            return Result.failure(String.format("Resolution of $recursiveRef [%s] failed", ref));
+            return Result.failure(() -> String.format("Resolution of $recursiveRef [%s] failed", ref));
         }
     }
 }
