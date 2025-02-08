@@ -119,8 +119,8 @@ public final class EvaluationContext {
         return validateAgainstSchema(schema, node);
     }
 
-    public List<Annotation> getAnnotations() {
-        return annotations;
+    List<Annotation> getAnnotations() {
+        return unmodifiableList(annotations);
     }
 
     List<LazyError> getErrors() {
@@ -130,25 +130,16 @@ public final class EvaluationContext {
     Object getSiblingAnnotation(String sibling, String instanceLocation) {
         Annotation annotation = siblingAnnotationsStack.element().get(sibling);
         return annotation == null ? null : annotation.getAnnotation();
-//        for (Annotation annotation : annotationTree.getNode(evaluationStack.get(1)).annotations) {
-//            if (instanceLocation.equals(annotation.getInstanceLocation()) && sibling.equals(annotation.getKeyword())) {
-//                return annotation.getAnnotation();
-//            }
-//        }
-//        return null;
     }
 
-//    AnnotationTree getAnnotationTree() {
-//        return annotationTree;
-//    }
-
-    Set<String> calculateEvaluatedInstancesFromParent(String instanceLocation) {
+    @SuppressWarnings("unchecked")
+    Set<String> calculateEvaluatedProperties(String instanceLocation) {
         int fromIdx = annotationsBeforeStack.element();
         Set<String> props = new HashSet<>();
         for (int i = fromIdx; i < annotations.size(); i++) {
             Annotation annotation = annotations.get(i);
-            if (annotation.getInstanceLocation().equals(instanceLocation) && annotation.getAnnotation() instanceof Collection) {
-                props.addAll((Collection) annotation.getAnnotation());
+            if (annotation.getInstanceLocation().equals(instanceLocation) && Keyword.PROPERTY_KEYWORDS.contains(annotation.getKeyword())) {
+                props.addAll((Collection<String>) annotation.getAnnotation());
             }
         }
         return props;

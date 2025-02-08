@@ -1,9 +1,16 @@
 package dev.harrel.jsonschema;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * {@code Keyword} class exposes keyword names in form of static final fields.
  */
 public final class Keyword {
+    static final Set<String> PROPERTY_KEYWORDS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+            Keyword.PROPERTIES, Keyword.PATTERN_PROPERTIES, Keyword.ADDITIONAL_PROPERTIES, Keyword.UNEVALUATED_PROPERTIES)));
 
     private Keyword() {}
 
