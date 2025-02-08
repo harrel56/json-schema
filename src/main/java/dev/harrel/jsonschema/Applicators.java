@@ -52,7 +52,7 @@ class ItemsEvaluator implements Evaluator {
             return Result.success();
         }
         List<JsonNode> array = node.asArray();
-        Object prefixItemsAnnotation = ctx.getSiblingAnnotation(Keyword.PREFIX_ITEMS, node.getJsonPointer());
+        Object prefixItemsAnnotation = ctx.getSiblingAnnotation(Keyword.PREFIX_ITEMS);
         if (prefixItemsAnnotation instanceof Boolean) {
             return Result.success();
         }
@@ -129,7 +129,7 @@ class AdditionalItemsEvaluator implements Evaluator {
             return Result.success();
         }
         List<JsonNode> array = node.asArray();
-        Object itemsAnnotation = ctx.getSiblingAnnotation(Keyword.ITEMS, node.getJsonPointer());
+        Object itemsAnnotation = ctx.getSiblingAnnotation(Keyword.ITEMS);
         if (itemsAnnotation instanceof Boolean || itemsAnnotation == null) {
             return Result.success();
         }
@@ -212,7 +212,7 @@ class AdditionalPropertiesEvaluator implements Evaluator {
 
         Set<String> patternNames = emptySet();
         if (hasPatternProperties) {
-            Object patternAnnotation = ctx.getSiblingAnnotation(Keyword.PATTERN_PROPERTIES, node.getJsonPointer());
+            Object patternAnnotation = ctx.getSiblingAnnotation(Keyword.PATTERN_PROPERTIES);
             if (patternAnnotation instanceof Collection) {
                 patternNames = (Set<String>) patternAnnotation;
             }

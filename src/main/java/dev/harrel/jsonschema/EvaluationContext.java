@@ -128,7 +128,7 @@ public final class EvaluationContext {
         return unmodifiableList(errors);
     }
 
-    Object getSiblingAnnotation(String sibling, String instanceLocation) {
+    Object getSiblingAnnotation(String sibling) {
         Annotation annotation = siblingAnnotationsStack.element().get(sibling);
         return annotation == null ? null : annotation.getAnnotation();
     }
@@ -167,24 +167,6 @@ public final class EvaluationContext {
             }
         }
         return props;
-        /* As on evaluationStack there are no paths to schemas in arrays (e.g. "/items/0")
-         * this needs to be accounted for with correctedParentPath */
-//        String parentPath = evaluationStack.get(1);
-//        String correctedParentPath = UriUtil.getJsonPointerParent(evaluationStack.element());
-//
-//        List<Annotation> annotations = annotationTree.getNode(parentPath).toList();
-//        Set<String> all = new HashSet<>(annotations.size() + errors.size());
-//        for (Annotation annotation : annotations) {
-//            if (annotation.getEvaluationPath().startsWith(correctedParentPath)) {
-//                all.add(annotation.getInstanceLocation());
-//            }
-//        }
-//        for (EvaluationItem error : errors) {
-//            if (error.getEvaluationPath().startsWith(correctedParentPath)) {
-//                all.add(error.getInstanceLocation());
-//            }
-//        }
-//        return all;
     }
 
     boolean validateAgainstSchema(Schema schema, JsonNode node) {

@@ -196,10 +196,8 @@ public final class Validator {
             return valid;
         }
 
-        // todo doc
         /**
          * Returns collected annotation during schema validation.
-         * @apiNote This getter works lazily. First call can be more expensive.
          *
          * @return unmodifiable list of {@link Annotation}s
          */
