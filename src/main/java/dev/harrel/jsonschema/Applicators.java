@@ -31,7 +31,8 @@ class PrefixItemsEvaluator implements Evaluator {
         for (int i = 0; i < size; i++) {
             valid = ctx.resolveInternalRefAndValidate(prefixRefs.get(i), elements.get(i)) && valid;
         }
-        return valid ? Result.success(prefixRefs.size()) : Result.failure();
+        Object annotation = size == elements.size() ? Boolean.TRUE : prefixRefs.size();
+        return valid ? Result.success(annotation) : Result.failure();
     }
 }
 
@@ -52,6 +53,10 @@ class ItemsEvaluator implements Evaluator {
         }
         List<JsonNode> array = node.asArray();
         Object prefixItemsAnnotation = ctx.getSiblingAnnotation(Keyword.PREFIX_ITEMS, node.getJsonPointer());
+        if (prefixItemsAnnotation instanceof Boolean) {
+            return Result.success();
+        }
+
         int prefixItemsSize = prefixItemsAnnotation instanceof Integer ? (Integer) prefixItemsAnnotation : 0;
         boolean valid = true;
         for (int i = prefixItemsSize; i < array.size(); i++) {
@@ -102,7 +107,8 @@ class ItemsLegacyEvaluator implements Evaluator {
             for (int i = 0; i < size; i++) {
                 valid = ctx.resolveInternalRefAndValidate(schemaRefs.get(i), array.get(i)) && valid;
             }
-            return valid ? Result.success(schemaRefs.size()) : Result.failure();
+            Object annotation = size == array.size() ? true : schemaRefs.size();
+            return valid ? Result.success(annotation) : Result.failure();
         }
     }
 }
@@ -124,13 +130,12 @@ class AdditionalItemsEvaluator implements Evaluator {
         }
         List<JsonNode> array = node.asArray();
         Object itemsAnnotation = ctx.getSiblingAnnotation(Keyword.ITEMS, node.getJsonPointer());
-        if (itemsAnnotation instanceof Boolean) {
-            return Result.success(true);
+        if (itemsAnnotation instanceof Boolean || itemsAnnotation == null) {
+            return Result.success();
         }
 
-        int itemsSize = itemsAnnotation instanceof Integer ? (Integer) itemsAnnotation : array.size();
         boolean valid = true;
-        for (int i = itemsSize; i < array.size(); i++) {
+        for (int i = (Integer) itemsAnnotation; i < array.size(); i++) {
             valid = ctx.resolveInternalRefAndValidate(schemaRef, array.get(i)) && valid;
         }
         return valid ? Result.success(true) : Result.failure();
@@ -497,19 +502,23 @@ class UnevaluatedItemsEvaluator implements Evaluator {
 
     @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
-        return Result.success();
-//        if (!node.isArray()) {
-//            return Result.success();
-//        }
-//
-//        Set<String> evaluatedInstances = ctx.calculateEvaluatedInstancesFromParent();
-//        boolean valid = true;
-//        for (JsonNode arrayNode : node.asArray()) {
-//            if (!evaluatedInstances.contains(arrayNode.getJsonPointer())) {
-//                valid = ctx.resolveInternalRefAndValidate(schemaRef, arrayNode) && valid;
-//            }
-//        }
-//        return valid ? Result.success() : Result.failure();
+        if (!node.isArray()) {
+            return Result.success();
+        }
+
+        Map.Entry<Integer, Set<Integer>> evaluated = ctx.calculateEvaluatedItems(node.getJsonPointer());
+        List<JsonNode> array = node.asArray();
+        if (evaluated.getKey() >= array.size()) {
+            return Result.success();
+        }
+        Set<Integer> evaluatedIndices = evaluated.getValue();
+        boolean valid = true;
+        for (int i = evaluated.getKey(); i < array.size(); i++) {
+            if (!evaluatedIndices.contains(i)) {
+                valid = ctx.resolveInternalRefAndValidate(schemaRef, array.get(i)) && valid;
+            }
+        }
+        return valid ? Result.success(true) : Result.failure();
     }
 
     @Override

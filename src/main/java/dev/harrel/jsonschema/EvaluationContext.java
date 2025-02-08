@@ -3,6 +3,7 @@ package dev.harrel.jsonschema;
 import java.net.URI;
 import java.util.*;
 
+import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableList;
 
 /**
@@ -130,6 +131,29 @@ public final class EvaluationContext {
     Object getSiblingAnnotation(String sibling, String instanceLocation) {
         Annotation annotation = siblingAnnotationsStack.element().get(sibling);
         return annotation == null ? null : annotation.getAnnotation();
+    }
+
+    @SuppressWarnings("unchecked")
+    Map.Entry<Integer, Set<Integer>> calculateEvaluatedItems(String instanceLocation) {
+        int fromIdx = annotationsBeforeStack.element();
+        Set<Integer> items = new HashSet<>();
+        int maxIdx = 0;
+        for (int i = fromIdx; i < annotations.size(); i++) {
+            Annotation annotation = annotations.get(i);
+            if (annotation.getInstanceLocation().equals(instanceLocation)) {
+                if (Keyword.ITEM_KEYWORDS.contains(annotation.getKeyword())) {
+                    if (annotation.getAnnotation() instanceof Boolean) {
+                        return new AbstractMap.SimpleEntry<>(Integer.MAX_VALUE, emptySet());
+                    } else if (annotation.getAnnotation() instanceof Integer) {
+                        maxIdx = Math.max(maxIdx, (Integer) annotation.getAnnotation());
+                    }
+                }
+                if (annotation.getKeyword().equals(Keyword.CONTAINS)) {
+                    items.addAll((Collection<Integer>) annotation.getAnnotation());
+                }
+            }
+        }
+        return new AbstractMap.SimpleEntry<>(maxIdx, items);
     }
 
     @SuppressWarnings("unchecked")
