@@ -18,8 +18,10 @@ public final class EvaluationContext {
     private final SchemaResolver schemaResolver;
     private final Deque<URI> dynamicScope = new ArrayDeque<>();
     private final Deque<RefStackItem> refStack = new ArrayDeque<>();
+    private final Deque<Integer> annotationsBeforeStack = new ArrayDeque<>();
+    private final Deque<Map<String, Annotation>> siblingAnnotationsStack = new ArrayDeque<>();
     private final LinkedList<String> evaluationStack = new LinkedList<>();
-    private final AnnotationTree annotationTree = new AnnotationTree();
+    private final List<Annotation> annotations = new ArrayList<>();
     private final List<LazyError> errors = new ArrayList<>();
 
     EvaluationContext(JsonNodeFactory jsonNodeFactory,
@@ -117,42 +119,57 @@ public final class EvaluationContext {
         return validateAgainstSchema(schema, node);
     }
 
+    public List<Annotation> getAnnotations() {
+        return annotations;
+    }
+
     List<LazyError> getErrors() {
         return unmodifiableList(errors);
     }
 
     Object getSiblingAnnotation(String sibling, String instanceLocation) {
-        for (Annotation annotation : annotationTree.getNode(evaluationStack.get(1)).annotations) {
-            if (instanceLocation.equals(annotation.getInstanceLocation()) && sibling.equals(annotation.getKeyword())) {
-                return annotation.getAnnotation();
+        Annotation annotation = siblingAnnotationsStack.element().get(sibling);
+        return annotation == null ? null : annotation.getAnnotation();
+//        for (Annotation annotation : annotationTree.getNode(evaluationStack.get(1)).annotations) {
+//            if (instanceLocation.equals(annotation.getInstanceLocation()) && sibling.equals(annotation.getKeyword())) {
+//                return annotation.getAnnotation();
+//            }
+//        }
+//        return null;
+    }
+
+//    AnnotationTree getAnnotationTree() {
+//        return annotationTree;
+//    }
+
+    Set<String> calculateEvaluatedInstancesFromParent(String instanceLocation) {
+        int fromIdx = annotationsBeforeStack.element();
+        Set<String> props = new HashSet<>();
+        for (int i = fromIdx; i < annotations.size(); i++) {
+            Annotation annotation = annotations.get(i);
+            if (annotation.getInstanceLocation().equals(instanceLocation) && annotation.getAnnotation() instanceof Collection) {
+                props.addAll((Collection) annotation.getAnnotation());
             }
         }
-        return null;
-    }
-
-    AnnotationTree getAnnotationTree() {
-        return annotationTree;
-    }
-
-    Set<String> calculateEvaluatedInstancesFromParent() {
+        return props;
         /* As on evaluationStack there are no paths to schemas in arrays (e.g. "/items/0")
          * this needs to be accounted for with correctedParentPath */
-        String parentPath = evaluationStack.get(1);
-        String correctedParentPath = UriUtil.getJsonPointerParent(evaluationStack.element());
-
-        List<Annotation> annotations = annotationTree.getNode(parentPath).toList();
-        Set<String> all = new HashSet<>(annotations.size() + errors.size());
-        for (Annotation annotation : annotations) {
-            if (annotation.getEvaluationPath().startsWith(correctedParentPath)) {
-                all.add(annotation.getInstanceLocation());
-            }
-        }
-        for (EvaluationItem error : errors) {
-            if (error.getEvaluationPath().startsWith(correctedParentPath)) {
-                all.add(error.getInstanceLocation());
-            }
-        }
-        return all;
+//        String parentPath = evaluationStack.get(1);
+//        String correctedParentPath = UriUtil.getJsonPointerParent(evaluationStack.element());
+//
+//        List<Annotation> annotations = annotationTree.getNode(parentPath).toList();
+//        Set<String> all = new HashSet<>(annotations.size() + errors.size());
+//        for (Annotation annotation : annotations) {
+//            if (annotation.getEvaluationPath().startsWith(correctedParentPath)) {
+//                all.add(annotation.getInstanceLocation());
+//            }
+//        }
+//        for (EvaluationItem error : errors) {
+//            if (error.getEvaluationPath().startsWith(correctedParentPath)) {
+//                all.add(error.getInstanceLocation());
+//            }
+//        }
+//        return all;
     }
 
     boolean validateAgainstSchema(Schema schema, JsonNode node) {
@@ -161,9 +178,10 @@ public final class EvaluationContext {
             dynamicScope.push(schema.getParentUri());
         }
 
-        AnnotationTree.Node treeNode = annotationTree.createIfAbsent(evaluationStack);
-        int nodesBefore = treeNode.nodes.size();
-        int annotationsBefore = treeNode.annotations.size();
+        int annotationsBefore = annotations.size();
+        Map<String, Annotation> siblingAnnotations = new HashMap<>();
+        annotationsBeforeStack.push(annotationsBefore);
+        siblingAnnotationsStack.push(siblingAnnotations);
 
         List<EvaluatorWrapper> evaluators = schema.getEvaluators();
         int evaluatorsSize = evaluators.size();
@@ -177,8 +195,11 @@ public final class EvaluationContext {
             if (result.isValid()) {
                 /* Discarding errors that were produced by keywords evaluated to true */
                 errors.subList(errorsBefore, errors.size()).clear();
-                Annotation annotation = new Annotation(evaluationPath, schema.getSchemaLocation(), node.getJsonPointer(), evaluator.getKeyword(), result.getAnnotation());
-                treeNode.annotations.add(annotation);
+                if (result.getAnnotation() != null) {
+                    Annotation annotation = new Annotation(evaluationPath, schema.getSchemaLocation(), node.getJsonPointer(), evaluator.getKeyword(), result.getAnnotation());
+                    siblingAnnotations.put(evaluator.getKeyword(), annotation);
+                    annotations.add(annotation);
+                }
             } else {
                 valid = false;
                 errors.add(new LazyError(evaluationPath, schema.getSchemaLocation(), node.getJsonPointer(), evaluator.getKeyword(), result.getErrorSupplier()));
@@ -187,9 +208,10 @@ public final class EvaluationContext {
         }
         if (!valid) {
             /* Discarding annotations */
-            treeNode.nodes.subList(nodesBefore, treeNode.nodes.size()).clear();
-            treeNode.annotations.subList(annotationsBefore, treeNode.annotations.size()).clear();
+            annotations.subList(annotationsBefore, annotations.size()).clear();
         }
+        siblingAnnotationsStack.pop();
+        annotationsBeforeStack.pop();
         if (outOfDynamicScope) {
             dynamicScope.pop();
         }

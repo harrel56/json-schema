@@ -497,18 +497,19 @@ class UnevaluatedItemsEvaluator implements Evaluator {
 
     @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
-        if (!node.isArray()) {
-            return Result.success();
-        }
-
-        Set<String> evaluatedInstances = ctx.calculateEvaluatedInstancesFromParent();
-        boolean valid = true;
-        for (JsonNode arrayNode : node.asArray()) {
-            if (!evaluatedInstances.contains(arrayNode.getJsonPointer())) {
-                valid = ctx.resolveInternalRefAndValidate(schemaRef, arrayNode) && valid;
-            }
-        }
-        return valid ? Result.success() : Result.failure();
+        return Result.success();
+//        if (!node.isArray()) {
+//            return Result.success();
+//        }
+//
+//        Set<String> evaluatedInstances = ctx.calculateEvaluatedInstancesFromParent();
+//        boolean valid = true;
+//        for (JsonNode arrayNode : node.asArray()) {
+//            if (!evaluatedInstances.contains(arrayNode.getJsonPointer())) {
+//                valid = ctx.resolveInternalRefAndValidate(schemaRef, arrayNode) && valid;
+//            }
+//        }
+//        return valid ? Result.success() : Result.failure();
     }
 
     @Override
@@ -533,14 +534,16 @@ class UnevaluatedPropertiesEvaluator implements Evaluator {
             return Result.success();
         }
 
-        Set<String> evaluatedInstances = ctx.calculateEvaluatedInstancesFromParent();
+        Set<String> evaluatedInstances = ctx.calculateEvaluatedInstancesFromParent(node.getJsonPointer());
+        Set<String> processed = new HashSet<>();
         boolean valid = true;
-        for (JsonNode fieldNode : node.asObject().values()) {
-            if (!evaluatedInstances.contains(fieldNode.getJsonPointer())) {
-                valid = ctx.resolveInternalRefAndValidate(schemaRef, fieldNode) && valid;
+        for (Map.Entry<String, JsonNode> entry : node.asObject().entrySet()) {
+            if (!evaluatedInstances.contains(entry.getKey())) {
+                processed.add(entry.getKey());
+                valid = ctx.resolveInternalRefAndValidate(schemaRef, entry.getValue()) && valid;
             }
         }
-        return valid ? Result.success() : Result.failure();
+        return valid ? Result.success(processed) : Result.failure();
     }
 
     @Override
