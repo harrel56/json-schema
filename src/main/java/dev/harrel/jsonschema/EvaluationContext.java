@@ -21,7 +21,7 @@ public final class EvaluationContext {
     private final Deque<RefStackItem> refStack = new ArrayDeque<>();
     private final Deque<Integer> annotationsBeforeStack = new ArrayDeque<>();
     private final Deque<Map<String, Annotation>> siblingAnnotationsStack = new ArrayDeque<>();
-    private final LinkedList<String> evaluationStack = new LinkedList<>();
+    private final Deque<String> evaluationStack = new ArrayDeque<>();
     private final List<Annotation> annotations = new ArrayList<>();
     private final List<LazyError> errors = new ArrayList<>();
 
