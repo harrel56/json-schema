@@ -544,9 +544,6 @@ class UnevaluatedPropertiesEvaluator implements Evaluator {
         }
 
         Set<String> evaluatedInstances = ctx.calculateEvaluatedProperties(node.getJsonPointer());
-        if (evaluatedInstances == null) {
-            return Result.success();
-        }
         Set<String> processed = new HashSet<>();
         boolean valid = true;
         for (Map.Entry<String, JsonNode> entry : node.asObject().entrySet()) {
