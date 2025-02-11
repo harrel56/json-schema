@@ -435,7 +435,7 @@ class ExhaustiveEvaluationTest {
     }
 
     @Test
-    void unevaluatedItemsWithEvaluatedErrors() {
+    void unevaluatedItemsWithPrefixItemsErrors() {
         String schema = """
                 {
                   "prefixItems": [true, false],
@@ -463,6 +463,40 @@ class ExhaustiveEvaluationTest {
                 "/2",
                 "minLength",
                 "\"a\" is shorter than 2 characters"
+        );
+    }
+
+    @Test
+    void unevaluatedItemsWithItemsErrors() {
+        String schema = """
+                {
+                  "items": {
+                    "const": "b"
+                  },
+                  "unevaluatedItems": {
+                    "minLength": 2
+                  }
+                }""";
+        String instance = "[\"a\", \"a\"]";
+        Validator.Result result = new ValidatorFactory().validate(schema, instance);
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(2);
+        assertError(
+                errors.get(0),
+                "/items/const",
+                "https://harrel.dev/",
+                "/0",
+                "const",
+                "Expected b"
+        );
+        assertError(
+                errors.get(1),
+                "/items/const",
+                "https://harrel.dev/",
+                "/1",
+                "const",
+                "Expected b"
         );
     }
 

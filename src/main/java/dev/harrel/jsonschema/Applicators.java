@@ -62,7 +62,7 @@ class ItemsEvaluator implements Evaluator {
         for (int i = prefixItemsSize; i < array.size(); i++) {
             valid = ctx.resolveInternalRefAndValidate(schemaRef, array.get(i)) && valid;
         }
-        return valid ? Result.success(true) : Result.failure();
+        return valid ? Result.success(true) : Result.annotatedFailure(true);
     }
 
     @Override

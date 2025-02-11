@@ -105,6 +105,9 @@ public interface Evaluator {
             return new Result(false, null, messageSupplier);
         }
 
+        /**
+         * Just for unevaluated vocabulary so it sees unevaluated items properly even on errors.
+         */
         static Result annotatedFailure(Object annotation) {
             return new Result(false, annotation, () -> null);
         }
