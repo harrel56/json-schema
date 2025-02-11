@@ -668,7 +668,7 @@ class ExhaustiveEvaluationTest {
     }
 
     @Test
-    void unevaluatedPropertiesWithEvaluatedErrors() {
+    void unevaluatedPropertiesWithPropertiesErrors() {
         String schema = """
                 {
                   "properties": {
@@ -693,6 +693,55 @@ class ExhaustiveEvaluationTest {
         assertError(
                 errors.get(0),
                 "/properties/b",
+                "https://harrel.dev/",
+                "/b",
+                null,
+                "False schema always fails"
+        );
+        assertError(
+                errors.get(1),
+                "/unevaluatedProperties/minLength",
+                "https://harrel.dev/",
+                "/c",
+                "minLength",
+                "\"c\" is shorter than 2 characters"
+        );
+        assertError(
+                errors.get(2),
+                "/unevaluatedProperties/minLength",
+                "https://harrel.dev/",
+                "/d",
+                "minLength",
+                "\"d\" is shorter than 2 characters"
+        );
+    }
+
+    @Test
+    void unevaluatedPropertiesWithPatternPropertiesErrors() {
+        String schema = """
+                {
+                  "patternProperties": {
+                    "^a": true,
+                    "^b": false
+                  },
+                  "unevaluatedProperties": {
+                    "minLength": 2
+                  }
+                }""";
+        String instance = """
+                {
+                  "a": "a",
+                  "b": "b",
+                  "c": "c",
+                  "d": "d"
+                }""";
+        Validator.Result result = new ValidatorFactory().validate(schema, instance);
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(3);
+        assertError(
+                errors.get(0),
+                "/patternProperties/^b",
                 "https://harrel.dev/",
                 "/b",
                 null,

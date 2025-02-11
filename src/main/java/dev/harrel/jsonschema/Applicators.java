@@ -301,7 +301,7 @@ class PatternPropertiesEvaluator implements Evaluator {
                 }
             }
         }
-        return valid ? Result.success(unmodifiableSet(processed)) : Result.failure();
+        return valid ? Result.success(unmodifiableSet(processed)) : Result.annotatedFailure(unmodifiableSet(processed));
     }
 }
 
