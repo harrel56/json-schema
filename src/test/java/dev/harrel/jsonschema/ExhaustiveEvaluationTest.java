@@ -569,6 +569,40 @@ class ExhaustiveEvaluationTest {
     }
 
     @Test
+    void unevaluatedItemsWithAdditionalItemsErrors() {
+        String schema = """
+                {
+                  "$schema": "https://json-schema.org/draft/2019-09/schema",
+                  "items": [false],
+                  "additionalItems": false,
+                  "unevaluatedItems": {
+                    "minLength": 2
+                  }
+                }""";
+        String instance = "[\"a\", \"a\"]";
+        Validator.Result result = new ValidatorFactory().validate(schema, instance);
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(2);
+        assertError(
+                errors.get(0),
+                "/items/0",
+                "https://harrel.dev/",
+                "/0",
+                null,
+                "False schema always fails"
+        );
+        assertError(
+                errors.get(1),
+                "/additionalItems",
+                "https://harrel.dev/",
+                "/1",
+                null,
+                "False schema always fails"
+        );
+    }
+
+    @Test
     void unevaluatedPropertiesWithEvaluatedErrors() {
         String schema = """
                 {
