@@ -105,6 +105,10 @@ public interface Evaluator {
             return new Result(false, null, messageSupplier);
         }
 
+        static Result annotatedFailure(Object annotation) {
+            return new Result(false, annotation, () -> null);
+        }
+
         boolean isValid() {
             return valid;
         }

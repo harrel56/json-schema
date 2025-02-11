@@ -189,14 +189,14 @@ public final class EvaluationContext {
             evaluationStack.push(evaluationPath);
             int errorsBefore = errors.size();
             Evaluator.Result result = evaluator.evaluate(this, node);
+            if (result.getAnnotation() != null) {
+                Annotation annotation = new Annotation(evaluationPath, schema.getSchemaLocation(), node.getJsonPointer(), evaluator.getKeyword(), result.getAnnotation());
+                siblingAnnotations.put(evaluator.getKeyword(), annotation);
+                annotations.add(annotation);
+            }
             if (result.isValid()) {
                 /* Discarding errors that were produced by keywords evaluated to true */
                 errors.subList(errorsBefore, errors.size()).clear();
-                if (result.getAnnotation() != null) {
-                    Annotation annotation = new Annotation(evaluationPath, schema.getSchemaLocation(), node.getJsonPointer(), evaluator.getKeyword(), result.getAnnotation());
-                    siblingAnnotations.put(evaluator.getKeyword(), annotation);
-                    annotations.add(annotation);
-                }
             } else {
                 valid = false;
                 errors.add(new LazyError(evaluationPath, schema.getSchemaLocation(), node.getJsonPointer(), evaluator.getKeyword(), result.getErrorSupplier()));

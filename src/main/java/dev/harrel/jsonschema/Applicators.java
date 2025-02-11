@@ -32,7 +32,7 @@ class PrefixItemsEvaluator implements Evaluator {
             valid = ctx.resolveInternalRefAndValidate(prefixRefs.get(i), elements.get(i)) && valid;
         }
         Object annotation = size == elements.size() ? Boolean.TRUE : prefixRefs.size();
-        return valid ? Result.success(annotation) : Result.failure();
+        return valid ? Result.success(annotation) : Result.annotatedFailure(annotation);
     }
 }
 
@@ -270,7 +270,7 @@ class PropertiesEvaluator implements Evaluator {
                 valid = ctx.resolveInternalRefAndValidate(ref, entry.getValue()) && valid;
             }
         }
-        return valid ? Result.success(unmodifiableSet(processed)) : Result.failure();
+        return valid ? Result.success(unmodifiableSet(processed)) : Result.annotatedFailure(unmodifiableSet(processed));
     }
 }
 
@@ -544,6 +544,9 @@ class UnevaluatedPropertiesEvaluator implements Evaluator {
         }
 
         Set<String> evaluatedInstances = ctx.calculateEvaluatedProperties(node.getJsonPointer());
+        if (evaluatedInstances == null) {
+            return Result.success();
+        }
         Set<String> processed = new HashSet<>();
         boolean valid = true;
         for (Map.Entry<String, JsonNode> entry : node.asObject().entrySet()) {
