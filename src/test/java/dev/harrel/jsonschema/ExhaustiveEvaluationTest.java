@@ -602,6 +602,71 @@ class ExhaustiveEvaluationTest {
         );
     }
 
+    /**
+     * This is a shortcoming of the current solution. Even if we collect annotations from failures too
+     * they will get dropped after schema has been processed - so the current approach only works for direct siblings.
+     * Probably fine as I saw different implementation have the same flaw. No idea for different solutions.
+     */
+    @Test
+    void unevaluatedItemsWithUnevaluatedItemsErrors() {
+        String schema = """
+                {
+                  "allOf": [
+                    {
+                      "unevaluatedItems": false
+                    }
+                  ],
+                  "unevaluatedItems": {
+                    "minLength": 2
+                  }
+                }""";
+        String instance = "[\"a\", \"a\"]";
+        Validator.Result result = new ValidatorFactory().withDisabledSchemaValidation(true).validate(schema, instance);
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(5);
+        assertError(
+                errors.get(0),
+                "/allOf/0/unevaluatedItems",
+                "https://harrel.dev/",
+                "/0",
+                null,
+                "False schema always fails"
+        );
+        assertError(
+                errors.get(1),
+                "/allOf/0/unevaluatedItems",
+                "https://harrel.dev/",
+                "/1",
+                null,
+                "False schema always fails"
+        );
+        assertError(
+                errors.get(2),
+                "/allOf",
+                "https://harrel.dev/",
+                "",
+                "allOf",
+                "Value does not match against the schemas at indexes [0]"
+        );
+        assertError(
+                errors.get(3),
+                "/unevaluatedItems/minLength",
+                "https://harrel.dev/",
+                "/0",
+                "minLength",
+                "\"a\" is shorter than 2 characters"
+        );
+        assertError(
+                errors.get(4),
+                "/unevaluatedItems/minLength",
+                "https://harrel.dev/",
+                "/1",
+                "minLength",
+                "\"a\" is shorter than 2 characters"
+        );
+    }
+
     @Test
     void unevaluatedPropertiesWithEvaluatedErrors() {
         String schema = """
