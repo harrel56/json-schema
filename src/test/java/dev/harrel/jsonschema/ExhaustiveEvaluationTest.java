@@ -501,6 +501,74 @@ class ExhaustiveEvaluationTest {
     }
 
     @Test
+    void unevaluatedItemsWithLegacyItemsErrors() {
+        String schema = """
+                {
+                  "$schema": "https://json-schema.org/draft/2019-09/schema",
+                  "items": [true, false],
+                  "unevaluatedItems": {
+                    "minLength": 2
+                  }
+                }""";
+        String instance = "[\"a\", \"a\", \"a\"]";
+        Validator.Result result = new ValidatorFactory().validate(schema, instance);
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(2);
+        assertError(
+                errors.get(0),
+                "/items/1",
+                "https://harrel.dev/",
+                "/1",
+                null,
+                "False schema always fails"
+        );
+        assertError(
+                errors.get(1),
+                "/unevaluatedItems/minLength",
+                "https://harrel.dev/",
+                "/2",
+                "minLength",
+                "\"a\" is shorter than 2 characters"
+        );
+    }
+
+    @Test
+    void unevaluatedItemsWithLegacyItems2Errors() {
+        String schema = """
+                {
+                  "$schema": "https://json-schema.org/draft/2019-09/schema",
+                  "items": {
+                    "const": "b"
+                  },
+                  "unevaluatedItems": {
+                    "minLength": 2
+                  }
+                }""";
+        String instance = "[\"a\", \"a\"]";
+        Validator.Result result = new ValidatorFactory().validate(schema, instance);
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(2);
+        assertError(
+                errors.get(0),
+                "/items/const",
+                "https://harrel.dev/",
+                "/0",
+                "const",
+                "Expected b"
+        );
+        assertError(
+                errors.get(1),
+                "/items/const",
+                "https://harrel.dev/",
+                "/1",
+                "const",
+                "Expected b"
+        );
+    }
+
+    @Test
     void unevaluatedPropertiesWithEvaluatedErrors() {
         String schema = """
                 {

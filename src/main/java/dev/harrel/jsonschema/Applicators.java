@@ -100,7 +100,7 @@ class ItemsLegacyEvaluator implements Evaluator {
             for (JsonNode element : array) {
                 valid = ctx.resolveInternalRefAndValidate(schemaRef, element) && valid;
             }
-            return valid ? Result.success(true) : Result.failure();
+            return valid ? Result.success(true) : Result.annotatedFailure(true);
         } else {
             int size = Math.min(schemaRefs.size(), array.size());
             boolean valid = true;
@@ -108,7 +108,7 @@ class ItemsLegacyEvaluator implements Evaluator {
                 valid = ctx.resolveInternalRefAndValidate(schemaRefs.get(i), array.get(i)) && valid;
             }
             Object annotation = size == array.size() ? true : schemaRefs.size();
-            return valid ? Result.success(annotation) : Result.failure();
+            return valid ? Result.success(annotation) : Result.annotatedFailure(annotation);
         }
     }
 }
