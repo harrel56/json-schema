@@ -816,4 +816,114 @@ class ExhaustiveEvaluationTest {
                 "\"c\" is shorter than 2 characters"
         );
     }
+
+    @Test
+    void unevaluatedPropertiesWithFalseAdditionalPropertiesErrors() {
+        String schema = """
+                {
+                  "additionalProperties": false,
+                  "unevaluatedProperties": {
+                    "minLength": 2
+                  }
+                }""";
+        String instance = """
+                {
+                  "a": "a",
+                  "b": "b",
+                  "c": "c",
+                  "d": "d"
+                }""";
+        Validator.Result result = new ValidatorFactory().validate(schema, instance);
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(4);
+        assertError(
+                errors.get(0),
+                "/additionalProperties",
+                "https://harrel.dev/",
+                "/a",
+                null,
+                "False schema always fails"
+        );
+        assertError(
+                errors.get(1),
+                "/additionalProperties",
+                "https://harrel.dev/",
+                "/b",
+                null,
+                "False schema always fails"
+        );
+        assertError(
+                errors.get(2),
+                "/additionalProperties",
+                "https://harrel.dev/",
+                "/c",
+                null,
+                "False schema always fails"
+        );
+        assertError(
+                errors.get(3),
+                "/additionalProperties",
+                "https://harrel.dev/",
+                "/d",
+                null,
+                "False schema always fails"
+        );
+    }
+
+    @Test
+    void unevaluatedPropertiesWithAdditionalPropertiesErrors() {
+        String schema = """
+                {
+                  "additionalProperties": {
+                    "type": "null"
+                  },
+                  "unevaluatedProperties": {
+                    "minLength": 2
+                  }
+                }""";
+        String instance = """
+                {
+                  "a": "a",
+                  "b": "b",
+                  "c": "c",
+                  "d": "d"
+                }""";
+        Validator.Result result = new ValidatorFactory().validate(schema, instance);
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(4);
+        assertError(
+                errors.get(0),
+                "/additionalProperties/type",
+                "https://harrel.dev/",
+                "/a",
+                "type",
+                "Value is [string] but should be [null]"
+        );
+        assertError(
+                errors.get(1),
+                "/additionalProperties/type",
+                "https://harrel.dev/",
+                "/b",
+                "type",
+                "Value is [string] but should be [null]"
+        );
+        assertError(
+                errors.get(2),
+                "/additionalProperties/type",
+                "https://harrel.dev/",
+                "/c",
+                "type",
+                "Value is [string] but should be [null]"
+        );
+        assertError(
+                errors.get(3),
+                "/additionalProperties/type",
+                "https://harrel.dev/",
+                "/d",
+                "type",
+                "Value is [string] but should be [null]"
+        );
+    }
 }

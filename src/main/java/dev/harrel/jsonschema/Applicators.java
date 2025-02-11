@@ -182,7 +182,6 @@ class ContainsEvaluator implements Evaluator {
 
 class AdditionalPropertiesEvaluator implements Evaluator {
     private final CompoundUri schemaRef;
-    private final boolean alwaysFail;
     /* To reduce annotation usage when not needed */
     private final Set<String> propertyNames;
     private final boolean hasPatternProperties;
@@ -192,7 +191,6 @@ class AdditionalPropertiesEvaluator implements Evaluator {
             throw new IllegalArgumentException();
         }
         this.schemaRef = ctx.getCompoundUri(node);
-        this.alwaysFail = node.isBoolean() && !node.asBoolean();
 
         Set<String> tmpProps = emptySet();
         JsonNode propertiesNode = ctx.getCurrentSchemaObject().get(Keyword.PROPERTIES);
@@ -224,15 +222,11 @@ class AdditionalPropertiesEvaluator implements Evaluator {
         for (Map.Entry<String, JsonNode> entry : objectMap.entrySet()) {
             String key = entry.getKey();
             if (!propertyNames.contains(key) && !patternNames.contains(key)) {
-                if (alwaysFail) {
-                    return Result.failure();
-                } else {
-                    processed.add(key);
-                    valid = ctx.resolveInternalRefAndValidate(schemaRef, entry.getValue()) && valid;
-                }
+                processed.add(key);
+                valid = ctx.resolveInternalRefAndValidate(schemaRef, entry.getValue()) && valid;
             }
         }
-        return valid ? Result.success(unmodifiableList(processed)) : Result.failure();
+        return valid ? Result.success(unmodifiableList(processed)) : Result.annotatedFailure(unmodifiableList(processed));
     }
 
     @Override
