@@ -764,4 +764,56 @@ class ExhaustiveEvaluationTest {
                 "\"d\" is shorter than 2 characters"
         );
     }
+
+    @Test
+    void unevaluatedPropertiesWithPropertiesAndPatternPropertiesErrors() {
+        String schema = """
+                {
+                  "patternProperties": {
+                    "^a": true,
+                    "^b": false
+                  },
+                  "properties": {
+                    "d": false
+                  },
+                  "unevaluatedProperties": {
+                    "minLength": 2
+                  }
+                }""";
+        String instance = """
+                {
+                  "a": "a",
+                  "b": "b",
+                  "c": "c",
+                  "d": "d"
+                }""";
+        Validator.Result result = new ValidatorFactory().validate(schema, instance);
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(3);
+        assertError(
+                errors.get(0),
+                "/patternProperties/^b",
+                "https://harrel.dev/",
+                "/b",
+                null,
+                "False schema always fails"
+        );
+        assertError(
+                errors.get(1),
+                "/properties/d",
+                "https://harrel.dev/",
+                "/d",
+                null,
+                "False schema always fails"
+        );
+        assertError(
+                errors.get(2),
+                "/unevaluatedProperties/minLength",
+                "https://harrel.dev/",
+                "/c",
+                "minLength",
+                "\"c\" is shorter than 2 characters"
+        );
+    }
 }
