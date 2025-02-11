@@ -926,4 +926,56 @@ class ExhaustiveEvaluationTest {
                 "Value is [string] but should be [null]"
         );
     }
+
+    /**
+     * This is a shortcoming of the current solution. Even if we collect annotations from failures too
+     * they will get dropped after schema has been processed - so the current approach only works for direct siblings.
+     * Probably fine as I saw different implementation have the same flaw. No idea for different solutions.
+     */
+    @Test
+    void unevaluatedPropertiesWithUnevaluatedPropertiesErrors() {
+        String schema = """
+                {
+                  "anyOf": [
+                    {
+                      "unevaluatedProperties": false
+                    }
+                  ],
+                  "unevaluatedProperties": {
+                    "minLength": 2
+                  }
+                }""";
+        String instance = """
+                {
+                  "a": "a"
+                }""";
+        Validator.Result result = new ValidatorFactory().validate(schema, instance);
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(3);
+        assertError(
+                errors.get(0),
+                "/anyOf/0/unevaluatedProperties",
+                "https://harrel.dev/",
+                "/a",
+                null,
+                "False schema always fails"
+        );
+        assertError(
+                errors.get(1),
+                "/anyOf",
+                "https://harrel.dev/",
+                "",
+                "anyOf",
+                "Value does not match against any of the schemas"
+        );
+        assertError(
+                errors.get(2),
+                "/unevaluatedProperties/minLength",
+                "https://harrel.dev/",
+                "/a",
+                "minLength",
+                "\"a\" is shorter than 2 characters"
+        );
+    }
 }
