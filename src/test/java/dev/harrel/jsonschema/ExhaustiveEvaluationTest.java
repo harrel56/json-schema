@@ -438,6 +438,7 @@ class ExhaustiveEvaluationTest {
     void unevaluatedItemsWithPrefixItemsErrors() {
         String schema = """
                 {
+                  "title": "random annotation",
                   "prefixItems": [true, false],
                   "unevaluatedItems": {
                     "minLength": 2
