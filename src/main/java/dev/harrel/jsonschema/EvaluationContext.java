@@ -144,11 +144,9 @@ public final class EvaluationContext {
                 if (Keyword.ITEM_KEYWORDS.contains(annotation.getKeyword())) {
                     if (annotation.getAnnotation() instanceof Boolean) {
                         return new AbstractMap.SimpleEntry<>(Integer.MAX_VALUE, emptySet());
-                    } else if (annotation.getAnnotation() instanceof Integer) {
-                        maxIdx = Math.max(maxIdx, (Integer) annotation.getAnnotation());
                     }
-                }
-                if (annotation.getKeyword().equals(Keyword.CONTAINS)) {
+                    maxIdx = Math.max(maxIdx, (Integer) annotation.getAnnotation());
+                } else if (annotation.getKeyword().equals(Keyword.CONTAINS)) {
                     items.addAll((Collection<Integer>) annotation.getAnnotation());
                 }
             }

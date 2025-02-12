@@ -107,7 +107,7 @@ class ItemsLegacyEvaluator implements Evaluator {
             for (int i = 0; i < size; i++) {
                 valid = ctx.resolveInternalRefAndValidate(schemaRefs.get(i), array.get(i)) && valid;
             }
-            Object annotation = size == array.size() ? true : schemaRefs.size();
+            Object annotation = size == array.size() ? Boolean.TRUE : schemaRefs.size();
             return valid ? Result.success(annotation) : Result.annotatedFailure(annotation);
         }
     }
@@ -211,7 +211,7 @@ class AdditionalPropertiesEvaluator implements Evaluator {
         Set<String> patternNames = emptySet();
         if (hasPatternProperties) {
             Object patternAnnotation = ctx.getSiblingAnnotation(Keyword.PATTERN_PROPERTIES);
-            if (patternAnnotation instanceof Collection) {
+            if (patternAnnotation instanceof Set) {
                 patternNames = (Set<String>) patternAnnotation;
             }
         }
