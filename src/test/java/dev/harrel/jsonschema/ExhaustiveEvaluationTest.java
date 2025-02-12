@@ -435,9 +435,10 @@ class ExhaustiveEvaluationTest {
     }
 
     @Test
-    void unevaluatedItemsWithEvaluatedErrors() {
+    void unevaluatedItemsWithPrefixItemsErrors() {
         String schema = """
                 {
+                  "title": "random annotation",
                   "prefixItems": [true, false],
                   "unevaluatedItems": {
                     "minLength": 2
@@ -467,7 +468,208 @@ class ExhaustiveEvaluationTest {
     }
 
     @Test
-    void unevaluatedPropertiesWithEvaluatedErrors() {
+    void unevaluatedItemsWithItemsErrors() {
+        String schema = """
+                {
+                  "items": {
+                    "const": "b"
+                  },
+                  "unevaluatedItems": {
+                    "minLength": 2
+                  }
+                }""";
+        String instance = "[\"a\", \"a\"]";
+        Validator.Result result = new ValidatorFactory().validate(schema, instance);
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(2);
+        assertError(
+                errors.get(0),
+                "/items/const",
+                "https://harrel.dev/",
+                "/0",
+                "const",
+                "Expected b"
+        );
+        assertError(
+                errors.get(1),
+                "/items/const",
+                "https://harrel.dev/",
+                "/1",
+                "const",
+                "Expected b"
+        );
+    }
+
+    @Test
+    void unevaluatedItemsWithLegacyItemsErrors() {
+        String schema = """
+                {
+                  "$schema": "https://json-schema.org/draft/2019-09/schema",
+                  "items": [true, false],
+                  "unevaluatedItems": {
+                    "minLength": 2
+                  }
+                }""";
+        String instance = "[\"a\", \"a\", \"a\"]";
+        Validator.Result result = new ValidatorFactory().validate(schema, instance);
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(2);
+        assertError(
+                errors.get(0),
+                "/items/1",
+                "https://harrel.dev/",
+                "/1",
+                null,
+                "False schema always fails"
+        );
+        assertError(
+                errors.get(1),
+                "/unevaluatedItems/minLength",
+                "https://harrel.dev/",
+                "/2",
+                "minLength",
+                "\"a\" is shorter than 2 characters"
+        );
+    }
+
+    @Test
+    void unevaluatedItemsWithLegacyItems2Errors() {
+        String schema = """
+                {
+                  "$schema": "https://json-schema.org/draft/2019-09/schema",
+                  "items": {
+                    "const": "b"
+                  },
+                  "unevaluatedItems": {
+                    "minLength": 2
+                  }
+                }""";
+        String instance = "[\"a\", \"a\"]";
+        Validator.Result result = new ValidatorFactory().validate(schema, instance);
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(2);
+        assertError(
+                errors.get(0),
+                "/items/const",
+                "https://harrel.dev/",
+                "/0",
+                "const",
+                "Expected b"
+        );
+        assertError(
+                errors.get(1),
+                "/items/const",
+                "https://harrel.dev/",
+                "/1",
+                "const",
+                "Expected b"
+        );
+    }
+
+    @Test
+    void unevaluatedItemsWithAdditionalItemsErrors() {
+        String schema = """
+                {
+                  "$schema": "https://json-schema.org/draft/2019-09/schema",
+                  "items": [false],
+                  "additionalItems": false,
+                  "unevaluatedItems": {
+                    "minLength": 2
+                  }
+                }""";
+        String instance = "[\"a\", \"a\"]";
+        Validator.Result result = new ValidatorFactory().validate(schema, instance);
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(2);
+        assertError(
+                errors.get(0),
+                "/items/0",
+                "https://harrel.dev/",
+                "/0",
+                null,
+                "False schema always fails"
+        );
+        assertError(
+                errors.get(1),
+                "/additionalItems",
+                "https://harrel.dev/",
+                "/1",
+                null,
+                "False schema always fails"
+        );
+    }
+
+    /**
+     * This is a shortcoming of the current solution. Even if we collect annotations from failures too
+     * they will get dropped after schema has been processed - so the current approach only works for direct siblings.
+     * Probably fine as I saw different implementation have the same flaw. No idea for different solutions.
+     */
+    @Test
+    void unevaluatedItemsWithUnevaluatedItemsErrors() {
+        String schema = """
+                {
+                  "allOf": [
+                    {
+                      "unevaluatedItems": false
+                    }
+                  ],
+                  "unevaluatedItems": {
+                    "minLength": 2
+                  }
+                }""";
+        String instance = "[\"a\", \"a\"]";
+        Validator.Result result = new ValidatorFactory().withDisabledSchemaValidation(true).validate(schema, instance);
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(5);
+        assertError(
+                errors.get(0),
+                "/allOf/0/unevaluatedItems",
+                "https://harrel.dev/",
+                "/0",
+                null,
+                "False schema always fails"
+        );
+        assertError(
+                errors.get(1),
+                "/allOf/0/unevaluatedItems",
+                "https://harrel.dev/",
+                "/1",
+                null,
+                "False schema always fails"
+        );
+        assertError(
+                errors.get(2),
+                "/allOf",
+                "https://harrel.dev/",
+                "",
+                "allOf",
+                "Value does not match against the schemas at indexes [0]"
+        );
+        assertError(
+                errors.get(3),
+                "/unevaluatedItems/minLength",
+                "https://harrel.dev/",
+                "/0",
+                "minLength",
+                "\"a\" is shorter than 2 characters"
+        );
+        assertError(
+                errors.get(4),
+                "/unevaluatedItems/minLength",
+                "https://harrel.dev/",
+                "/1",
+                "minLength",
+                "\"a\" is shorter than 2 characters"
+        );
+    }
+
+    @Test
+    void unevaluatedPropertiesWithPropertiesErrors() {
         String schema = """
                 {
                   "properties": {
@@ -512,6 +714,269 @@ class ExhaustiveEvaluationTest {
                 "/d",
                 "minLength",
                 "\"d\" is shorter than 2 characters"
+        );
+    }
+
+    @Test
+    void unevaluatedPropertiesWithPatternPropertiesErrors() {
+        String schema = """
+                {
+                  "patternProperties": {
+                    "^a": true,
+                    "^b": false
+                  },
+                  "unevaluatedProperties": {
+                    "minLength": 2
+                  }
+                }""";
+        String instance = """
+                {
+                  "a": "a",
+                  "b": "b",
+                  "c": "c",
+                  "d": "d"
+                }""";
+        Validator.Result result = new ValidatorFactory().validate(schema, instance);
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(3);
+        assertError(
+                errors.get(0),
+                "/patternProperties/^b",
+                "https://harrel.dev/",
+                "/b",
+                null,
+                "False schema always fails"
+        );
+        assertError(
+                errors.get(1),
+                "/unevaluatedProperties/minLength",
+                "https://harrel.dev/",
+                "/c",
+                "minLength",
+                "\"c\" is shorter than 2 characters"
+        );
+        assertError(
+                errors.get(2),
+                "/unevaluatedProperties/minLength",
+                "https://harrel.dev/",
+                "/d",
+                "minLength",
+                "\"d\" is shorter than 2 characters"
+        );
+    }
+
+    @Test
+    void unevaluatedPropertiesWithPropertiesAndPatternPropertiesErrors() {
+        String schema = """
+                {
+                  "patternProperties": {
+                    "^a": true,
+                    "^b": false
+                  },
+                  "properties": {
+                    "d": false
+                  },
+                  "unevaluatedProperties": {
+                    "minLength": 2
+                  }
+                }""";
+        String instance = """
+                {
+                  "a": "a",
+                  "b": "b",
+                  "c": "c",
+                  "d": "d"
+                }""";
+        Validator.Result result = new ValidatorFactory().validate(schema, instance);
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(3);
+        assertError(
+                errors.get(0),
+                "/patternProperties/^b",
+                "https://harrel.dev/",
+                "/b",
+                null,
+                "False schema always fails"
+        );
+        assertError(
+                errors.get(1),
+                "/properties/d",
+                "https://harrel.dev/",
+                "/d",
+                null,
+                "False schema always fails"
+        );
+        assertError(
+                errors.get(2),
+                "/unevaluatedProperties/minLength",
+                "https://harrel.dev/",
+                "/c",
+                "minLength",
+                "\"c\" is shorter than 2 characters"
+        );
+    }
+
+    @Test
+    void unevaluatedPropertiesWithFalseAdditionalPropertiesErrors() {
+        String schema = """
+                {
+                  "additionalProperties": false,
+                  "unevaluatedProperties": {
+                    "minLength": 2
+                  }
+                }""";
+        String instance = """
+                {
+                  "a": "a",
+                  "b": "b",
+                  "c": "c",
+                  "d": "d"
+                }""";
+        Validator.Result result = new ValidatorFactory().validate(schema, instance);
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(4);
+        assertError(
+                errors.get(0),
+                "/additionalProperties",
+                "https://harrel.dev/",
+                "/a",
+                null,
+                "False schema always fails"
+        );
+        assertError(
+                errors.get(1),
+                "/additionalProperties",
+                "https://harrel.dev/",
+                "/b",
+                null,
+                "False schema always fails"
+        );
+        assertError(
+                errors.get(2),
+                "/additionalProperties",
+                "https://harrel.dev/",
+                "/c",
+                null,
+                "False schema always fails"
+        );
+        assertError(
+                errors.get(3),
+                "/additionalProperties",
+                "https://harrel.dev/",
+                "/d",
+                null,
+                "False schema always fails"
+        );
+    }
+
+    @Test
+    void unevaluatedPropertiesWithAdditionalPropertiesErrors() {
+        String schema = """
+                {
+                  "additionalProperties": {
+                    "type": "null"
+                  },
+                  "unevaluatedProperties": {
+                    "minLength": 2
+                  }
+                }""";
+        String instance = """
+                {
+                  "a": "a",
+                  "b": "b",
+                  "c": "c",
+                  "d": "d"
+                }""";
+        Validator.Result result = new ValidatorFactory().validate(schema, instance);
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(4);
+        assertError(
+                errors.get(0),
+                "/additionalProperties/type",
+                "https://harrel.dev/",
+                "/a",
+                "type",
+                "Value is [string] but should be [null]"
+        );
+        assertError(
+                errors.get(1),
+                "/additionalProperties/type",
+                "https://harrel.dev/",
+                "/b",
+                "type",
+                "Value is [string] but should be [null]"
+        );
+        assertError(
+                errors.get(2),
+                "/additionalProperties/type",
+                "https://harrel.dev/",
+                "/c",
+                "type",
+                "Value is [string] but should be [null]"
+        );
+        assertError(
+                errors.get(3),
+                "/additionalProperties/type",
+                "https://harrel.dev/",
+                "/d",
+                "type",
+                "Value is [string] but should be [null]"
+        );
+    }
+
+    /**
+     * This is a shortcoming of the current solution. Even if we collect annotations from failures too
+     * they will get dropped after schema has been processed - so the current approach only works for direct siblings.
+     * Probably fine as I saw different implementation have the same flaw. No idea for different solutions.
+     */
+    @Test
+    void unevaluatedPropertiesWithUnevaluatedPropertiesErrors() {
+        String schema = """
+                {
+                  "anyOf": [
+                    {
+                      "unevaluatedProperties": false
+                    }
+                  ],
+                  "unevaluatedProperties": {
+                    "minLength": 2
+                  }
+                }""";
+        String instance = """
+                {
+                  "a": "a"
+                }""";
+        Validator.Result result = new ValidatorFactory().validate(schema, instance);
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(3);
+        assertError(
+                errors.get(0),
+                "/anyOf/0/unevaluatedProperties",
+                "https://harrel.dev/",
+                "/a",
+                null,
+                "False schema always fails"
+        );
+        assertError(
+                errors.get(1),
+                "/anyOf",
+                "https://harrel.dev/",
+                "",
+                "anyOf",
+                "Value does not match against any of the schemas"
+        );
+        assertError(
+                errors.get(2),
+                "/unevaluatedProperties/minLength",
+                "https://harrel.dev/",
+                "/a",
+                "minLength",
+                "\"a\" is shorter than 2 characters"
         );
     }
 }

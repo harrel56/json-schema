@@ -31,7 +31,8 @@ class PrefixItemsEvaluator implements Evaluator {
         for (int i = 0; i < size; i++) {
             valid = ctx.resolveInternalRefAndValidate(prefixRefs.get(i), elements.get(i)) && valid;
         }
-        return valid ? Result.success(prefixRefs.size()) : Result.failure();
+        Object annotation = size == elements.size() ? Boolean.TRUE : prefixRefs.size();
+        return valid ? Result.success(annotation) : Result.annotatedFailure(annotation);
     }
 }
 
@@ -51,13 +52,17 @@ class ItemsEvaluator implements Evaluator {
             return Result.success();
         }
         List<JsonNode> array = node.asArray();
-        Object prefixItemsAnnotation = ctx.getSiblingAnnotation(Keyword.PREFIX_ITEMS, node.getJsonPointer());
+        Object prefixItemsAnnotation = ctx.getSiblingAnnotation(Keyword.PREFIX_ITEMS);
+        if (prefixItemsAnnotation instanceof Boolean) {
+            return Result.success();
+        }
+
         int prefixItemsSize = prefixItemsAnnotation instanceof Integer ? (Integer) prefixItemsAnnotation : 0;
         boolean valid = true;
         for (int i = prefixItemsSize; i < array.size(); i++) {
             valid = ctx.resolveInternalRefAndValidate(schemaRef, array.get(i)) && valid;
         }
-        return valid ? Result.success(true) : Result.failure();
+        return valid ? Result.success(true) : Result.annotatedFailure(true);
     }
 
     @Override
@@ -95,14 +100,15 @@ class ItemsLegacyEvaluator implements Evaluator {
             for (JsonNode element : array) {
                 valid = ctx.resolveInternalRefAndValidate(schemaRef, element) && valid;
             }
-            return valid ? Result.success(true) : Result.failure();
+            return valid ? Result.success(true) : Result.annotatedFailure(true);
         } else {
             int size = Math.min(schemaRefs.size(), array.size());
             boolean valid = true;
             for (int i = 0; i < size; i++) {
                 valid = ctx.resolveInternalRefAndValidate(schemaRefs.get(i), array.get(i)) && valid;
             }
-            return valid ? Result.success(schemaRefs.size()) : Result.failure();
+            Object annotation = size == array.size() ? Boolean.TRUE : schemaRefs.size();
+            return valid ? Result.success(annotation) : Result.annotatedFailure(annotation);
         }
     }
 }
@@ -123,17 +129,16 @@ class AdditionalItemsEvaluator implements Evaluator {
             return Result.success();
         }
         List<JsonNode> array = node.asArray();
-        Object itemsAnnotation = ctx.getSiblingAnnotation(Keyword.ITEMS, node.getJsonPointer());
-        if (itemsAnnotation instanceof Boolean) {
-            return Result.success(true);
+        Object itemsAnnotation = ctx.getSiblingAnnotation(Keyword.ITEMS);
+        if (itemsAnnotation instanceof Boolean || itemsAnnotation == null) {
+            return Result.success();
         }
 
-        int itemsSize = itemsAnnotation instanceof Integer ? (Integer) itemsAnnotation : array.size();
         boolean valid = true;
-        for (int i = itemsSize; i < array.size(); i++) {
+        for (int i = (Integer) itemsAnnotation; i < array.size(); i++) {
             valid = ctx.resolveInternalRefAndValidate(schemaRef, array.get(i)) && valid;
         }
-        return valid ? Result.success(true) : Result.failure();
+        return valid ? Result.success(true) : Result.annotatedFailure(true);
     }
 
     @Override
@@ -177,7 +182,6 @@ class ContainsEvaluator implements Evaluator {
 
 class AdditionalPropertiesEvaluator implements Evaluator {
     private final CompoundUri schemaRef;
-    private final boolean alwaysFail;
     /* To reduce annotation usage when not needed */
     private final Set<String> propertyNames;
     private final boolean hasPatternProperties;
@@ -187,7 +191,6 @@ class AdditionalPropertiesEvaluator implements Evaluator {
             throw new IllegalArgumentException();
         }
         this.schemaRef = ctx.getCompoundUri(node);
-        this.alwaysFail = node.isBoolean() && !node.asBoolean();
 
         Set<String> tmpProps = emptySet();
         JsonNode propertiesNode = ctx.getCurrentSchemaObject().get(Keyword.PROPERTIES);
@@ -207,8 +210,8 @@ class AdditionalPropertiesEvaluator implements Evaluator {
 
         Set<String> patternNames = emptySet();
         if (hasPatternProperties) {
-            Object patternAnnotation = ctx.getSiblingAnnotation(Keyword.PATTERN_PROPERTIES, node.getJsonPointer());
-            if (patternAnnotation instanceof Collection) {
+            Object patternAnnotation = ctx.getSiblingAnnotation(Keyword.PATTERN_PROPERTIES);
+            if (patternAnnotation instanceof Set) {
                 patternNames = (Set<String>) patternAnnotation;
             }
         }
@@ -219,15 +222,11 @@ class AdditionalPropertiesEvaluator implements Evaluator {
         for (Map.Entry<String, JsonNode> entry : objectMap.entrySet()) {
             String key = entry.getKey();
             if (!propertyNames.contains(key) && !patternNames.contains(key)) {
-                if (alwaysFail) {
-                    return Result.failure();
-                } else {
-                    processed.add(key);
-                    valid = ctx.resolveInternalRefAndValidate(schemaRef, entry.getValue()) && valid;
-                }
+                processed.add(key);
+                valid = ctx.resolveInternalRefAndValidate(schemaRef, entry.getValue()) && valid;
             }
         }
-        return valid ? Result.success(unmodifiableList(processed)) : Result.failure();
+        return valid ? Result.success(unmodifiableList(processed)) : Result.annotatedFailure(unmodifiableList(processed));
     }
 
     @Override
@@ -265,7 +264,7 @@ class PropertiesEvaluator implements Evaluator {
                 valid = ctx.resolveInternalRefAndValidate(ref, entry.getValue()) && valid;
             }
         }
-        return valid ? Result.success(unmodifiableSet(processed)) : Result.failure();
+        return valid ? Result.success(unmodifiableSet(processed)) : Result.annotatedFailure(unmodifiableSet(processed));
     }
 }
 
@@ -296,7 +295,7 @@ class PatternPropertiesEvaluator implements Evaluator {
                 }
             }
         }
-        return valid ? Result.success(unmodifiableSet(processed)) : Result.failure();
+        return valid ? Result.success(unmodifiableSet(processed)) : Result.annotatedFailure(unmodifiableSet(processed));
     }
 }
 
@@ -501,14 +500,19 @@ class UnevaluatedItemsEvaluator implements Evaluator {
             return Result.success();
         }
 
-        Set<String> evaluatedInstances = ctx.calculateEvaluatedInstancesFromParent();
+        Map.Entry<Integer, Set<Integer>> evaluated = ctx.calculateEvaluatedItems(node.getJsonPointer());
+        List<JsonNode> array = node.asArray();
+        if (evaluated.getKey() >= array.size()) {
+            return Result.success();
+        }
+        Set<Integer> evaluatedIndices = evaluated.getValue();
         boolean valid = true;
-        for (JsonNode arrayNode : node.asArray()) {
-            if (!evaluatedInstances.contains(arrayNode.getJsonPointer())) {
-                valid = ctx.resolveInternalRefAndValidate(schemaRef, arrayNode) && valid;
+        for (int i = evaluated.getKey(); i < array.size(); i++) {
+            if (!evaluatedIndices.contains(i)) {
+                valid = ctx.resolveInternalRefAndValidate(schemaRef, array.get(i)) && valid;
             }
         }
-        return valid ? Result.success() : Result.failure();
+        return valid ? Result.success(true) : Result.failure();
     }
 
     @Override
@@ -533,14 +537,16 @@ class UnevaluatedPropertiesEvaluator implements Evaluator {
             return Result.success();
         }
 
-        Set<String> evaluatedInstances = ctx.calculateEvaluatedInstancesFromParent();
+        Set<String> evaluatedInstances = ctx.calculateEvaluatedProperties(node.getJsonPointer());
+        Set<String> processed = new HashSet<>();
         boolean valid = true;
-        for (JsonNode fieldNode : node.asObject().values()) {
-            if (!evaluatedInstances.contains(fieldNode.getJsonPointer())) {
-                valid = ctx.resolveInternalRefAndValidate(schemaRef, fieldNode) && valid;
+        for (Map.Entry<String, JsonNode> entry : node.asObject().entrySet()) {
+            if (!evaluatedInstances.contains(entry.getKey())) {
+                processed.add(entry.getKey());
+                valid = ctx.resolveInternalRefAndValidate(schemaRef, entry.getValue()) && valid;
             }
         }
-        return valid ? Result.success() : Result.failure();
+        return valid ? Result.success(processed) : Result.failure();
     }
 
     @Override
