@@ -23,6 +23,7 @@ public final class Dialects {
         map.put(URI.create(SpecificationVersion.DRAFT2020_12.getId()), new Draft2020Dialect());
         map.put(URI.create(SpecificationVersion.DRAFT2019_09.getId()), new Draft2019Dialect());
         map.put(UriUtil.removeEmptyFragment(SpecificationVersion.DRAFT7.getId()), new Draft7Dialect());
+        map.put(UriUtil.removeEmptyFragment(SpecificationVersion.DRAFT6.getId()), new Draft6Dialect());
         OFFICIAL_DIALECTS = Collections.unmodifiableMap(map);
     }
 
@@ -149,6 +150,47 @@ public final class Dialects {
         @Override
         public String getMetaSchema() {
             return SpecificationVersion.DRAFT7.getId();
+        }
+
+        @Override
+        public EvaluatorFactory getEvaluatorFactory() {
+            return evaluatorFactory;
+        }
+
+        @Override
+        public Set<String> getSupportedVocabularies() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public Set<String> getRequiredVocabularies() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public Map<String, Boolean> getDefaultVocabularyObject() {
+            return Collections.emptyMap();
+        }
+    }
+
+    /**
+     * Dialect corresponding to <i>draft6</i> specification.
+     */
+    public static class Draft6Dialect implements Dialect {
+        private final EvaluatorFactory evaluatorFactory;
+
+        public Draft6Dialect() {
+            this.evaluatorFactory = new Draft6EvaluatorFactory();
+        }
+
+        @Override
+        public SpecificationVersion getSpecificationVersion() {
+            return SpecificationVersion.DRAFT6;
+        }
+
+        @Override
+        public String getMetaSchema() {
+            return SpecificationVersion.DRAFT6.getId();
         }
 
         @Override
