@@ -14,6 +14,7 @@ Java library implementing [JSON schema specification](https://json-schema.org/sp
   - Draft 2020-12 [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie.report%2Fbadges%2Fjava-dev.harrel.json-schema%2Fcompliance%2Fdraft2020-12.json&color=brightgreen)](https://bowtie.report/#/dialects/draft2020-12),
   - Draft 2019-09 [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie.report%2Fbadges%2Fjava-dev.harrel.json-schema%2Fcompliance%2Fdraft2019-09.json&color=brightgreen)](https://bowtie.report/#/dialects/draft2019-09),
   - Draft 07 [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie.report%2Fbadges%2Fjava-dev.harrel.json-schema%2Fcompliance%2Fdraft7.json&color=brightgreen)](https://bowtie.report/#/dialects/draft7),
+  - Draft 06 [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie.report%2Fbadges%2Fjava-dev.harrel.json-schema%2Fcompliance%2Fdraft6.json&color=brightgreen)](https://bowtie.report/#/dialects/draft6),
 - support for [custom keywords](#adding-custom-keywords),
 - support for annotation collection,
 - support for [format validation](#format-validation) (for a price of one additional dependency 😉),
@@ -238,8 +239,9 @@ For more information about return type please refer to the [documentation](https
 ### Dialects
 Officially supported dialects:
 - Draft 2020-12,
-- Draft 2019-09
-- Draft 07
+- Draft 2019-09,
+- Draft 07,
+- Draft 06
 
 It is automatically inferred (by content of `$schema` keyword) which dialect to use.
 If a schema does not contain `$schema` keyword, the default dialect will be used, which is [draft 2020-12 dialect](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/Dialects.Draft2020Dialect.html).
