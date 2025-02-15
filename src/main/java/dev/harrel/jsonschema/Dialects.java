@@ -86,7 +86,7 @@ public final class Dialects {
         }
     }
 
-    private static abstract class BaseDialect implements Dialect {
+    private static class BaseDialect implements Dialect {
         private final SpecificationVersion specificationVersion;
         private final EvaluatorFactory evaluatorFactory;
         private final Set<String> requiredVocabularies;
