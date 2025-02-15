@@ -61,6 +61,18 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
     }
 
     @TestFactory
+    Stream<DynamicNode> draft4Required() {
+        Validator validator = new ValidatorFactory()
+                .withDefaultDialect(new Dialects.Draft4Dialect())
+                .withJsonNodeFactory(getJsonNodeFactory())
+                .withSchemaResolver(createSchemaResolver())
+                .createValidator();
+
+        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, skippedDraft7Tests());
+        return generator.generate(getTestPath() + "/draft4");
+    }
+
+    @TestFactory
     Stream<DynamicNode> draft2020Format() {
         Validator validator = new ValidatorFactory()
                 .withEvaluatorFactory(new FormatEvaluatorFactory())
