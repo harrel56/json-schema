@@ -32,7 +32,7 @@ public final class Dialects {
      */
     public static class Draft2020Dialect extends BaseDialect {
         public Draft2020Dialect() {
-            super(new Draft2020EvaluatorFactory(), singleton(Draft2020.CORE), createDefaultVocabularyObject());
+            super(SpecificationVersion.DRAFT2020_12, new Draft2020EvaluatorFactory(), singleton(Draft2020.CORE), createDefaultVocabularyObject());
         }
 
         private static Map<String, Boolean> createDefaultVocabularyObject() {
@@ -53,7 +53,7 @@ public final class Dialects {
      */
     public static class Draft2019Dialect extends BaseDialect {
         public Draft2019Dialect() {
-            super(new Draft2019EvaluatorFactory(), singleton(Draft2019.CORE), createDefaultVocabularyObject());
+            super(SpecificationVersion.DRAFT2019_09, new Draft2019EvaluatorFactory(), singleton(Draft2019.CORE), createDefaultVocabularyObject());
         }
 
         private static Map<String, Boolean> createDefaultVocabularyObject() {
@@ -73,7 +73,7 @@ public final class Dialects {
      */
     public static class Draft7Dialect extends BaseDialect {
         public Draft7Dialect() {
-            super(new Draft7EvaluatorFactory(), Collections.emptySet(), Collections.emptyMap());
+            super(SpecificationVersion.DRAFT7, new Draft7EvaluatorFactory(), Collections.emptySet(), Collections.emptyMap());
         }
     }
 
@@ -82,16 +82,18 @@ public final class Dialects {
      */
     public static class Draft6Dialect extends BaseDialect {
         public Draft6Dialect() {
-            super(new Draft6EvaluatorFactory(), Collections.emptySet(), Collections.emptyMap());
+            super(SpecificationVersion.DRAFT6, new Draft6EvaluatorFactory(), Collections.emptySet(), Collections.emptyMap());
         }
     }
 
     private static abstract class BaseDialect implements Dialect {
+        private final SpecificationVersion specificationVersion;
         private final EvaluatorFactory evaluatorFactory;
         private final Set<String> requiredVocabularies;
         private final Map<String, Boolean> defaultVocabularyObject;
 
-        public BaseDialect(EvaluatorFactory evaluatorFactory, Set<String> requiredVocabularies, Map<String, Boolean> defaultVocabularyObject) {
+        public BaseDialect(SpecificationVersion specificationVersion, EvaluatorFactory evaluatorFactory, Set<String> requiredVocabularies, Map<String, Boolean> defaultVocabularyObject) {
+            this.specificationVersion = specificationVersion;
             this.evaluatorFactory = evaluatorFactory;
             this.requiredVocabularies = requiredVocabularies;
             this.defaultVocabularyObject = defaultVocabularyObject;
@@ -99,12 +101,12 @@ public final class Dialects {
 
         @Override
         public SpecificationVersion getSpecificationVersion() {
-            return SpecificationVersion.DRAFT2020_12;
+            return specificationVersion;
         }
 
         @Override
         public String getMetaSchema() {
-            return SpecificationVersion.DRAFT2020_12.getId();
+            return specificationVersion.getId();
         }
 
         @Override
