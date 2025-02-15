@@ -92,7 +92,7 @@ public final class Dialects {
         private final Set<String> requiredVocabularies;
         private final Map<String, Boolean> defaultVocabularyObject;
 
-        public BaseDialect(SpecificationVersion specificationVersion, EvaluatorFactory evaluatorFactory, Set<String> requiredVocabularies, Map<String, Boolean> defaultVocabularyObject) {
+        private BaseDialect(SpecificationVersion specificationVersion, EvaluatorFactory evaluatorFactory, Set<String> requiredVocabularies, Map<String, Boolean> defaultVocabularyObject) {
             this.specificationVersion = specificationVersion;
             this.evaluatorFactory = evaluatorFactory;
             this.requiredVocabularies = requiredVocabularies;
