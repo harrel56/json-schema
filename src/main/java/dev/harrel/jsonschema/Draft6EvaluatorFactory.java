@@ -24,15 +24,15 @@ public class Draft6EvaluatorFactory extends AbstractEvaluatorFactory {
         map.put(ITEMS, new EvaluatorInfo(null, ItemsLegacyEvaluator::new));
         map.put(ADDITIONAL_ITEMS, new EvaluatorInfo(null, AdditionalItemsEvaluator::new));
         map.put(DEPENDENCIES, new EvaluatorInfo(null, DependenciesLegacyEvaluator::new));
+        map.remove(IF);
+        map.remove(THEN);
+        map.remove(ELSE);
         map.remove(MAX_CONTAINS);
         map.remove(MIN_CONTAINS);
         map.remove(DEPENDENT_REQUIRED);
         map.remove(DEPENDENT_SCHEMAS);
         map.remove(UNEVALUATED_ITEMS);
         map.remove(UNEVALUATED_PROPERTIES);
-        map.remove(IF);
-        map.remove(THEN);
-        map.remove(ELSE);
         return map;
     }
 }
