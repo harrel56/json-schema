@@ -16,7 +16,7 @@ public class Draft4EvaluatorFactory extends AbstractEvaluatorFactory {
     }
 
     private static Set<String> getIgnoredKeywords() {
-        return new HashSet<>(Arrays.asList(ID, SCHEMA, DEFINITIONS));
+        return new HashSet<>(Arrays.asList(LEGACY_ID, SCHEMA, DEFINITIONS));
     }
 
     private static Map<String, EvaluatorInfo> createEvaluatorMap() {
@@ -24,6 +24,11 @@ public class Draft4EvaluatorFactory extends AbstractEvaluatorFactory {
         map.put(ITEMS, new EvaluatorInfo(null, ItemsLegacyEvaluator::new));
         map.put(ADDITIONAL_ITEMS, new EvaluatorInfo(null, AdditionalItemsEvaluator::new));
         map.put(DEPENDENCIES, new EvaluatorInfo(null, DependenciesLegacyEvaluator::new));
+        map.put(EXCLUSIVE_MAXIMUM, new EvaluatorInfo(null, LegacyExclusiveMaximumEvaluator::new));
+        map.put(EXCLUSIVE_MINIMUM, new EvaluatorInfo(null, LegacyExclusiveMinimumEvaluator::new));
+        map.remove(PROPERTY_NAMES);
+        map.remove(CONTAINS);
+        map.remove(CONST);
         map.remove(IF);
         map.remove(THEN);
         map.remove(ELSE);

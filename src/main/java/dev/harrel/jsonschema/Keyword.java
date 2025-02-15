@@ -76,4 +76,7 @@ public final class Keyword {
     /* draft-07 */
     public static final String DEFINITIONS = "definitions";
     public static final String DEPENDENCIES = "dependencies";
+
+    /* draft-04 */
+    public static final String LEGACY_ID = "id";
 }
