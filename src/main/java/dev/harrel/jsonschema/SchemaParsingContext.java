@@ -15,9 +15,9 @@ public final class SchemaParsingContext {
     private final MetaSchemaData metaSchemaData;
     private final SchemaRegistry schemaRegistry;
     private final Map<String, JsonNode> currentSchemaObject;
-    private final LinkedList<URI> uriStack;
+    private final Deque<URI> uriStack;
 
-    private SchemaParsingContext(MetaSchemaData metaSchemaData, SchemaRegistry schemaRegistry, Map<String, JsonNode> currentSchemaObject, LinkedList<URI> uriStack) {
+    private SchemaParsingContext(MetaSchemaData metaSchemaData, SchemaRegistry schemaRegistry, Map<String, JsonNode> currentSchemaObject, Deque<URI> uriStack) {
         this.metaSchemaData = metaSchemaData;
         this.schemaRegistry = schemaRegistry;
         this.currentSchemaObject = currentSchemaObject;
@@ -25,11 +25,11 @@ public final class SchemaParsingContext {
     }
 
     SchemaParsingContext(MetaSchemaData metaSchemaData, URI baseUri, SchemaRegistry schemaRegistry, Map<String, JsonNode> currentSchemaObject) {
-        this(metaSchemaData, schemaRegistry, currentSchemaObject, new LinkedList<>(Collections.singletonList(baseUri)));
+        this(metaSchemaData, schemaRegistry, currentSchemaObject, new ArrayDeque<>(Collections.singletonList(baseUri)));
     }
 
     SchemaParsingContext forChild(MetaSchemaData metaSchemaData, Map<String, JsonNode> currentSchemaObject, URI parentUri) {
-        LinkedList<URI> newUriStack = new LinkedList<>(uriStack);
+        ArrayDeque<URI> newUriStack = new ArrayDeque<>(uriStack);
         newUriStack.push(parentUri);
         return new SchemaParsingContext(metaSchemaData, schemaRegistry, currentSchemaObject, newUriStack);
     }
@@ -46,8 +46,14 @@ public final class SchemaParsingContext {
         return metaSchemaData.dialect.getSpecificationVersion();
     }
 
-    LinkedList<URI> getUriStack() {
-        return uriStack;
+    URI getGrandparentUri() {
+        Iterator<URI> it = uriStack.iterator();
+        URI parent = it.next();
+        if (it.hasNext()) {
+            return it.next();
+        } else {
+            return parent;
+        }
     }
 
     URI getBaseUri() {
