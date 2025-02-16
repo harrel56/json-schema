@@ -41,7 +41,7 @@ class MetaSchemaValidator {
         return schema.getMetaValidationData();
     }
 
-    private Schema resolveMetaSchema(JsonParser jsonParser, URI uri) {
+    Schema resolveMetaSchema(JsonParser jsonParser, URI uri) {
         CompoundUri compoundUri = CompoundUri.fromUri(uri);
         Schema schema = schemaRegistry.get(compoundUri);
         if (schema != null) {

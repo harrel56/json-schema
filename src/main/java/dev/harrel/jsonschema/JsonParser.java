@@ -63,6 +63,16 @@ final class JsonParser {
         unfinishedSchemas.put(baseUri, unfinishedSchema);
         providedSchemaId.ifPresent(id -> unfinishedSchemas.put(id, unfinishedSchema));
 
+        SpecificationVersion specVersion = resolveSpecVersion(metaSchemaUri);
+        if (specVersion.getOrder() <= SpecificationVersion.DRAFT4.getOrder()) {
+            providedSchemaId.ifPresent(unfinishedSchemas::remove);
+            idField = objectMapOptional.flatMap(obj -> JsonNodeUtil.getStringField(obj, Keyword.LEGACY_ID));
+            providedSchemaId = idField
+                    .map(UriUtil::getUriWithoutFragment)
+                    .filter(id -> !baseUri.equals(id));
+            providedSchemaId.ifPresent(id -> unfinishedSchemas.put(id, unfinishedSchema));
+        }
+
         URI finalUri = providedSchemaId.orElse(baseUri);
         MetaSchemaData metaSchemaData = validateAgainstMetaSchema(node, metaSchemaUri, finalUri.toString());
 
@@ -110,9 +120,14 @@ final class JsonParser {
 
     private void parseObject(SchemaParsingContext ctx, JsonNode node) {
         Map<String, JsonNode> objectMap = node.asObject();
-        Optional<String> idField = JsonNodeUtil.getStringField(objectMap, Keyword.ID);
+        SpecificationVersion specVersion = JsonNodeUtil.getStringField(objectMap, Keyword.SCHEMA)
+                .map(UriUtil::removeEmptyFragment)
+                .map(dialects::get)
+                .map(Dialect::getSpecificationVersion)
+                .orElse(ctx.getMetaValidationData().dialect.getSpecificationVersion());
+        Optional<String> idField = JsonNodeUtil.getStringField(objectMap, specVersion.getOrder() <= SpecificationVersion.DRAFT4.getOrder() ? Keyword.LEGACY_ID : Keyword.ID);
         boolean isEmbeddedSchema = idField
-                .map(id -> !id.startsWith("#") || ctx.getSpecificationVersion().getOrder() > SpecificationVersion.DRAFT7.getOrder())
+                .map(id -> !id.startsWith("#") || specVersion.getOrder() > SpecificationVersion.DRAFT7.getOrder())
                 .orElse(false);
 
         if (!isEmbeddedSchema) {
@@ -165,6 +180,18 @@ final class JsonParser {
         MetaSchemaData data = resolveMetaSchemaData(node, metaSchemaUri, uri);
         new VocabularyValidator().validateVocabularies(data.dialect, data.vocabularyObject);
         return data;
+    }
+
+    private SpecificationVersion resolveSpecVersion(URI metaSchemaUri) {
+        Dialect dialect = dialects.get(metaSchemaUri);
+        if (dialect == null) {
+            if (disabledSchemaValidation) {
+                dialect = defaultDialect;
+            } else {
+                dialect = metaSchemaValidator.resolveMetaSchema(this, metaSchemaUri).getMetaValidationData().dialect;
+            }
+        }
+        return dialect.getSpecificationVersion();
     }
 
     private MetaSchemaData resolveMetaSchemaData(JsonNode node, URI metaSchemaUri, String uri) {
