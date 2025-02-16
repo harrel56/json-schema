@@ -124,6 +124,19 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
     }
 
     @TestFactory
+    Stream<DynamicNode> draft4Format() {
+        Validator validator = new ValidatorFactory()
+                .withDefaultDialect(new Dialects.Draft4Dialect())
+                .withEvaluatorFactory(new FormatEvaluatorFactory())
+                .withJsonNodeFactory(getJsonNodeFactory())
+                .withSchemaResolver(createSchemaResolver())
+                .createValidator();
+
+        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, skippedFormatTests());
+        return generator.generate(getTestPath() + "/draft4/optional/format");
+    }
+
+    @TestFactory
     Stream<DynamicNode> draft2020Optional() {
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(getJsonNodeFactory())
@@ -190,6 +203,22 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
                 generator.generate(getTestPath() + "/draft6/optional/bignum" + getFileExtension()),
                 generator.generate(getTestPath() + "/draft6/optional/float-overflow" + getFileExtension()),
                 generator.generate(getTestPath() + "/draft6/optional/non-bmp-regex" + getFileExtension())
+        ).flatMap(Function.identity());
+    }
+
+    @TestFactory
+    Stream<DynamicNode> draft4Optional() {
+        Validator validator = new ValidatorFactory()
+                .withDefaultDialect(new Dialects.Draft4Dialect())
+                .withJsonNodeFactory(getJsonNodeFactory())
+                .withSchemaResolver(createSchemaResolver())
+                .createValidator();
+
+        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, Map.of());
+        return Stream.of(
+                generator.generate(getTestPath() + "/draft4/optional/bignum" + getFileExtension()),
+                generator.generate(getTestPath() + "/draft4/optional/float-overflow" + getFileExtension()),
+                generator.generate(getTestPath() + "/draft4/optional/non-bmp-regex" + getFileExtension())
         ).flatMap(Function.identity());
     }
 
