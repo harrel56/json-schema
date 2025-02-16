@@ -105,16 +105,16 @@ class CompoundSchemaTest {
         String schema = """
                 {
                   "$schema": "%s",
-                  "$id": "urn:compound",
+                  "%2$s": "urn:compound",
                   "$ref": "#/$defs/x",
                   "$defs": {
                     "x": {
                       "$schema": "urn:this-resolves-to-nothing",
-                      "$id": "#anchor",
+                      "%2$s": "#anchor",
                       "type": ["null"]
                     }
                   }
-                }""".formatted(version.getId());
+                }""".formatted(version.getId(), Keyword.getIdKeyword(version));
 
         Validator validator = new ValidatorFactory().createValidator();
         URI uri = validator.registerSchema(schema);
@@ -137,16 +137,16 @@ class CompoundSchemaTest {
         String schema = """
                 {
                   "$schema": "%s",
-                  "$id": "urn:compound",
+                  "%2$s": "urn:compound",
                   "$ref": "#/$defs/x",
                   "$defs": {
                     "x": {
                       "$schema": "urn:this-resolves-to-nothing",
-                      "$id": "well#anchor",
+                      "%2$s": "well#anchor",
                       "type": ["null"]
                     }
                   }
-                }""".formatted(version.getId());
+                }""".formatted(version.getId(), Keyword.getIdKeyword(version));
 
         Validator validator = new ValidatorFactory().createValidator();
         assertThatThrownBy(() -> validator.registerSchema(schema))

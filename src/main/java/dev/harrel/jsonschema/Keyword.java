@@ -16,6 +16,10 @@ public final class Keyword {
 
     private Keyword() {}
 
+    static String getIdKeyword(SpecificationVersion specVersion) {
+        return specVersion.getOrder() <= SpecificationVersion.DRAFT4.getOrder() ? Keyword.LEGACY_ID : Keyword.ID;
+    }
+
     /* Core */
     public static final String ID = "$id";
     public static final String SCHEMA = "$schema";

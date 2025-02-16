@@ -125,7 +125,7 @@ final class JsonParser {
                 .map(dialects::get)
                 .map(Dialect::getSpecificationVersion)
                 .orElse(ctx.getMetaValidationData().dialect.getSpecificationVersion());
-        Optional<String> idField = JsonNodeUtil.getStringField(objectMap, specVersion.getOrder() <= SpecificationVersion.DRAFT4.getOrder() ? Keyword.LEGACY_ID : Keyword.ID);
+        Optional<String> idField = JsonNodeUtil.getStringField(objectMap, Keyword.getIdKeyword(specVersion));
         boolean isEmbeddedSchema = idField
                 .map(id -> !id.startsWith("#") || specVersion.getOrder() > SpecificationVersion.DRAFT7.getOrder())
                 .orElse(false);

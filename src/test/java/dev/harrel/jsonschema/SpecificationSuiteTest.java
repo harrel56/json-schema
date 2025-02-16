@@ -68,7 +68,7 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
                 .withSchemaResolver(createSchemaResolver())
                 .createValidator();
 
-        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, skippedDraft7Tests());
+        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, skippedDraft4Tests());
         return generator.generate(getTestPath() + "/draft4");
     }
 
@@ -216,6 +216,16 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
         );
     }
 
+    private static Map<String, Map<String, Set<String>>> skippedDraft4Tests() {
+        return Map.of(
+                "ref", Map.of(
+                        "$ref prevents a sibling id from changing the base uri", Set.of(
+                                "$ref resolves to /definitions/base_foo, data does not validate",
+                                "$ref resolves to /definitions/base_foo, data validates"
+                        )
+                )
+        );
+    }
 
     private static Map<String, Map<String, Set<String>>> skippedFormatTests() {
         return Map.of(
