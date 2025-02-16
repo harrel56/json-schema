@@ -26,6 +26,7 @@ public class Draft4EvaluatorFactory extends AbstractEvaluatorFactory {
         map.put(DEPENDENCIES, new EvaluatorInfo(null, DependenciesLegacyEvaluator::new));
         map.put(MAXIMUM, new EvaluatorInfo(null, LegacyMaximumEvaluator::new));
         map.put(MINIMUM, new EvaluatorInfo(null, LegacyMinimumEvaluator::new));
+        map.put(REF, new EvaluatorInfo(null, LegacyRefEvaluator::new));
         map.remove(EXCLUSIVE_MAXIMUM);
         map.remove(EXCLUSIVE_MINIMUM);
         map.remove(PROPERTY_NAMES);

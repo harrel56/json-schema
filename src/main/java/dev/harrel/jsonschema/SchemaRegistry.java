@@ -99,7 +99,7 @@ final class SchemaRegistry {
                         .ifPresent(anchorString -> fragments.dynamicSchemas.put(anchorString, schema));
             }
         } else {
-            JsonNodeUtil.getStringField(objectMap, Keyword.getIdKeyword(ctx.getMetaValidationData().dialect.getSpecificationVersion()))
+            JsonNodeUtil.getStringField(objectMap, Keyword.getIdKeyword(ctx.getSpecificationVersion()))
                     .map(URI::create)
                     .map(URI::getFragment)
                     .ifPresent(anchorString -> fragments.additionalSchemas.put(anchorString, schema));

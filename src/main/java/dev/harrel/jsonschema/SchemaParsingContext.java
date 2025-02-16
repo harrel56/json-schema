@@ -1,7 +1,7 @@
 package dev.harrel.jsonschema;
 
 import java.net.URI;
-import java.util.Map;
+import java.util.*;
 
 import static java.util.Collections.unmodifiableMap;
 
@@ -13,29 +13,29 @@ import static java.util.Collections.unmodifiableMap;
  */
 public final class SchemaParsingContext {
     private final MetaSchemaData metaSchemaData;
-    private final URI baseUri;
-    private final URI parentUri;
     private final SchemaRegistry schemaRegistry;
     private final Map<String, JsonNode> currentSchemaObject;
+    private final LinkedList<URI> uriStack;
 
-    private SchemaParsingContext(MetaSchemaData metaSchemaData, URI baseUri, URI parentUri, SchemaRegistry schemaRegistry, Map<String, JsonNode> currentSchemaObject) {
+    private SchemaParsingContext(MetaSchemaData metaSchemaData, SchemaRegistry schemaRegistry, Map<String, JsonNode> currentSchemaObject, LinkedList<URI> uriStack) {
         this.metaSchemaData = metaSchemaData;
-        this.baseUri = baseUri;
-        this.parentUri = parentUri;
         this.schemaRegistry = schemaRegistry;
         this.currentSchemaObject = currentSchemaObject;
+        this.uriStack = uriStack;
     }
 
-    SchemaParsingContext(MetaSchemaData metaSchemaData, SchemaRegistry schemaRegistry, URI baseUri, Map<String, JsonNode> currentSchemaObject) {
-        this(metaSchemaData, baseUri, baseUri, schemaRegistry, currentSchemaObject);
+    SchemaParsingContext(MetaSchemaData metaSchemaData, URI baseUri, SchemaRegistry schemaRegistry, Map<String, JsonNode> currentSchemaObject) {
+        this(metaSchemaData, schemaRegistry, currentSchemaObject, new LinkedList<>(Collections.singletonList(baseUri)));
     }
 
     SchemaParsingContext forChild(MetaSchemaData metaSchemaData, Map<String, JsonNode> currentSchemaObject, URI parentUri) {
-        return new SchemaParsingContext(metaSchemaData, baseUri, parentUri, schemaRegistry, currentSchemaObject);
+        LinkedList<URI> newUriStack = new LinkedList<>(uriStack);
+        newUriStack.push(parentUri);
+        return new SchemaParsingContext(metaSchemaData, schemaRegistry, currentSchemaObject, newUriStack);
     }
 
     SchemaParsingContext forChild(Map<String, JsonNode> currentSchemaObject) {
-        return forChild(metaSchemaData, currentSchemaObject, parentUri);
+        return new SchemaParsingContext(metaSchemaData, schemaRegistry, currentSchemaObject, uriStack);
     }
 
     MetaSchemaData getMetaValidationData() {
@@ -46,8 +46,12 @@ public final class SchemaParsingContext {
         return metaSchemaData.dialect.getSpecificationVersion();
     }
 
+    LinkedList<URI> getUriStack() {
+        return uriStack;
+    }
+
     URI getBaseUri() {
-        return baseUri;
+        return uriStack.getLast();
     }
 
     /**
@@ -55,7 +59,7 @@ public final class SchemaParsingContext {
      * If there is no such parent, then the URI of root schema is returned.
      */
     public URI getParentUri() {
-        return parentUri;
+        return uriStack.getFirst();
     }
 
     /**
@@ -74,7 +78,7 @@ public final class SchemaParsingContext {
      * @return absolute URI
      */
     public String getAbsoluteUri(String jsonPointer) {
-        return baseUri + "#" + jsonPointer;
+        return getBaseUri() + "#" + jsonPointer;
     }
 
     /**
@@ -87,6 +91,6 @@ public final class SchemaParsingContext {
     }
 
     CompoundUri getCompoundUri(JsonNode node) {
-        return new CompoundUri(baseUri, node.getJsonPointer());
+        return new CompoundUri(getBaseUri(), node.getJsonPointer());
     }
 }

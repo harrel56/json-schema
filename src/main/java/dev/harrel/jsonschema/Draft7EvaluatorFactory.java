@@ -21,6 +21,7 @@ public class Draft7EvaluatorFactory extends AbstractEvaluatorFactory {
         map.put(ITEMS, new EvaluatorInfo(null, ItemsLegacyEvaluator::new));
         map.put(ADDITIONAL_ITEMS, new EvaluatorInfo(null, AdditionalItemsEvaluator::new));
         map.put(DEPENDENCIES, new EvaluatorInfo(null, DependenciesLegacyEvaluator::new));
+        map.put(REF, new EvaluatorInfo(null, LegacyRefEvaluator::new));
         map.remove(MAX_CONTAINS);
         map.remove(MIN_CONTAINS);
         map.remove(DEPENDENT_REQUIRED);

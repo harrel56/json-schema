@@ -614,3 +614,27 @@ class RecursiveRefEvaluator implements Evaluator {
         }
     }
 }
+
+class LegacyRefEvaluator implements Evaluator {
+    private final CompoundUri ref;
+
+    LegacyRefEvaluator(SchemaParsingContext ctx, JsonNode node) {
+        if (!node.isString()) {
+            throw new IllegalArgumentException();
+        }
+        if (ctx.getCurrentSchemaObject().containsKey(Keyword.getIdKeyword(ctx.getSpecificationVersion())) && ctx.getUriStack().size() > 1) {
+            this.ref = UriUtil.resolveUri(ctx.getUriStack().get(1), CompoundUri.fromString(node.asString()));
+        } else {
+            this.ref = UriUtil.resolveUri(ctx.getParentUri(), CompoundUri.fromString(node.asString()));
+        }
+    }
+
+    @Override
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
+        try {
+            return ctx.resolveRefAndValidate(ref, node) ? Result.success() : Result.failure();
+        } catch (SchemaNotFoundException e) {
+            return Result.failure(() -> String.format("Resolution of $ref [%s] failed", ref));
+        }
+    }
+}
