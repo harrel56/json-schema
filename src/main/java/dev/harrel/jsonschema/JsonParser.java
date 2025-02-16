@@ -188,6 +188,9 @@ final class JsonParser {
             if (disabledSchemaValidation) {
                 dialect = defaultDialect;
             } else {
+                if (unfinishedSchemas.containsKey(metaSchemaUri)) {
+                    throw MetaSchemaResolvingException.recursiveFailure(metaSchemaUri.toString());
+                }
                 dialect = metaSchemaValidator.resolveMetaSchema(this, metaSchemaUri).getMetaValidationData().dialect;
             }
         }
