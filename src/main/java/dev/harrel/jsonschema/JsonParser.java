@@ -183,6 +183,10 @@ final class JsonParser {
     }
 
     private SpecificationVersion resolveSpecVersion(URI metaSchemaUri) {
+        // todo can be removed if Dialect.getMetaSchema() is guaranteed non-null
+        if (metaSchemaUri == null) {
+            return defaultDialect.getSpecificationVersion();
+        }
         Dialect dialect = dialects.get(metaSchemaUri);
         if (dialect == null) {
             if (disabledSchemaValidation) {
