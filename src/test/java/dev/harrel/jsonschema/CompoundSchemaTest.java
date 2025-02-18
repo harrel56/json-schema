@@ -2,6 +2,8 @@ package dev.harrel.jsonschema;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.net.URI;
 
@@ -97,21 +99,22 @@ class CompoundSchemaTest {
         );
     }
 
-    @Test
-    void schemaKeywordIsIgnoredForFakeEmbeddedSchemasDraft7AnchorId() {
+    @ParameterizedTest
+    @MethodSource("dev.harrel.jsonschema.IdKeywordTest#lenientVersions")
+    void schemaKeywordIsIgnoredForFakeEmbeddedSchemasAnchorId(SpecificationVersion version) {
         String schema = """
                 {
-                  "$schema": "http://json-schema.org/draft-07/schema",
-                  "$id": "urn:compound",
+                  "$schema": "%s",
+                  "%2$s": "urn:compound",
                   "$ref": "#/$defs/x",
                   "$defs": {
                     "x": {
                       "$schema": "urn:this-resolves-to-nothing",
-                      "$id": "#anchor",
+                      "%2$s": "#anchor",
                       "type": ["null"]
                     }
                   }
-                }""";
+                }""".formatted(version.getId(), Keyword.getIdKeyword(version));
 
         Validator validator = new ValidatorFactory().createValidator();
         URI uri = validator.registerSchema(schema);
@@ -128,21 +131,22 @@ class CompoundSchemaTest {
         );
     }
 
-    @Test
-    void schemaKeywordIsNotIgnoredForDraft7MixedId() {
+    @ParameterizedTest
+    @MethodSource("dev.harrel.jsonschema.IdKeywordTest#lenientVersions")
+    void schemaKeywordIsNotIgnoredForMixedId(SpecificationVersion version) {
         String schema = """
                 {
-                  "$schema": "http://json-schema.org/draft-07/schema",
-                  "$id": "urn:compound",
+                  "$schema": "%s",
+                  "%2$s": "urn:compound",
                   "$ref": "#/$defs/x",
                   "$defs": {
                     "x": {
                       "$schema": "urn:this-resolves-to-nothing",
-                      "$id": "well#anchor",
+                      "%2$s": "well#anchor",
                       "type": ["null"]
                     }
                   }
-                }""";
+                }""".formatted(version.getId(), Keyword.getIdKeyword(version));
 
         Validator validator = new ValidatorFactory().createValidator();
         assertThatThrownBy(() -> validator.registerSchema(schema))

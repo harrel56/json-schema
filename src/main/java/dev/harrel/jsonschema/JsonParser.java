@@ -63,16 +63,26 @@ final class JsonParser {
         unfinishedSchemas.put(baseUri, unfinishedSchema);
         providedSchemaId.ifPresent(id -> unfinishedSchemas.put(id, unfinishedSchema));
 
+        SpecificationVersion specVersion = resolveSpecVersion(metaSchemaUri);
+        if (specVersion.getOrder() <= SpecificationVersion.DRAFT4.getOrder()) {
+            providedSchemaId.ifPresent(unfinishedSchemas::remove);
+            idField = objectMapOptional.flatMap(obj -> JsonNodeUtil.getStringField(obj, Keyword.LEGACY_ID));
+            providedSchemaId = idField
+                    .map(UriUtil::getUriWithoutFragment)
+                    .filter(id -> !baseUri.equals(id));
+            providedSchemaId.ifPresent(id -> unfinishedSchemas.put(id, unfinishedSchema));
+        }
+
         URI finalUri = providedSchemaId.orElse(baseUri);
         MetaSchemaData metaSchemaData = validateAgainstMetaSchema(node, metaSchemaUri, finalUri.toString());
 
         if (node.isBoolean()) {
-            SchemaParsingContext ctx = new SchemaParsingContext(metaSchemaData, schemaRegistry, baseUri, emptyMap());
+            SchemaParsingContext ctx = new SchemaParsingContext(metaSchemaData, baseUri, schemaRegistry, emptyMap());
             List<EvaluatorWrapper> evaluators = singletonList(new EvaluatorWrapper(null, node, Schema.getBooleanEvaluator(node.asBoolean())));
             schemaRegistry.registerSchema(ctx, node, evaluators);
         } else if (objectMapOptional.isPresent()) {
             Map<String, JsonNode> objectMap = objectMapOptional.get();
-            SchemaParsingContext ctx = new SchemaParsingContext(metaSchemaData, schemaRegistry, finalUri, objectMap);
+            SchemaParsingContext ctx = new SchemaParsingContext(metaSchemaData, finalUri, schemaRegistry, objectMap);
             idField.ifPresent(id -> validateIdField(ctx, id));
             List<EvaluatorWrapper> evaluators = parseEvaluators(ctx, objectMap, node.getJsonPointer());
             schemaRegistry.registerSchema(ctx, node, evaluators);
@@ -110,9 +120,14 @@ final class JsonParser {
 
     private void parseObject(SchemaParsingContext ctx, JsonNode node) {
         Map<String, JsonNode> objectMap = node.asObject();
-        Optional<String> idField = JsonNodeUtil.getStringField(objectMap, Keyword.ID);
+        SpecificationVersion specVersion = JsonNodeUtil.getStringField(objectMap, Keyword.SCHEMA)
+                .map(UriUtil::removeEmptyFragment)
+                .map(dialects::get)
+                .map(Dialect::getSpecificationVersion)
+                .orElse(ctx.getMetaValidationData().dialect.getSpecificationVersion());
+        Optional<String> idField = JsonNodeUtil.getStringField(objectMap, Keyword.getIdKeyword(specVersion));
         boolean isEmbeddedSchema = idField
-                .map(id -> !id.startsWith("#") || ctx.getSpecificationVersion().getOrder() > SpecificationVersion.DRAFT7.getOrder())
+                .map(id -> !id.startsWith("#") || specVersion.getOrder() > SpecificationVersion.DRAFT7.getOrder())
                 .orElse(false);
 
         if (!isEmbeddedSchema) {
@@ -167,6 +182,25 @@ final class JsonParser {
         return data;
     }
 
+    private SpecificationVersion resolveSpecVersion(URI metaSchemaUri) {
+        // todo can be removed if Dialect.getMetaSchema() is guaranteed non-null
+        if (metaSchemaUri == null) {
+            return defaultDialect.getSpecificationVersion();
+        }
+        Dialect dialect = dialects.get(metaSchemaUri);
+        if (dialect == null) {
+            if (disabledSchemaValidation) {
+                dialect = defaultDialect;
+            } else {
+                if (unfinishedSchemas.containsKey(metaSchemaUri)) {
+                    throw MetaSchemaResolvingException.recursiveFailure(metaSchemaUri.toString());
+                }
+                dialect = metaSchemaValidator.resolveMetaSchema(this, metaSchemaUri).getMetaValidationData().dialect;
+            }
+        }
+        return dialect.getSpecificationVersion();
+    }
+
     private MetaSchemaData resolveMetaSchemaData(JsonNode node, URI metaSchemaUri, String uri) {
         if (disabledSchemaValidation) {
             return new MetaSchemaData(dialects.getOrDefault(metaSchemaUri, defaultDialect));
@@ -207,11 +241,11 @@ final class JsonParser {
     private static void validateIdField(SchemaParsingContext ctx, String id) {
         URI uri = URI.create(id);
         if (ctx.getSpecificationVersion().getOrder() > SpecificationVersion.DRAFT7.getOrder()) {
-            if (uri.getFragment() != null && !uri.getFragment().isEmpty()) {
+            if (uri.getRawFragment() != null && !uri.getRawFragment().isEmpty()) {
                 throw new IllegalArgumentException(String.format("$id [%s] cannot contain non-empty fragments", id));
             }
         } else {
-            if (uri.getFragment() != null && uri.getFragment().startsWith("/")) {
+            if (uri.getRawFragment() != null && uri.getRawFragment().startsWith("/")) {
                 throw new IllegalArgumentException(String.format("$id [%s] cannot contain fragments starting with '/'", id));
             }
         }

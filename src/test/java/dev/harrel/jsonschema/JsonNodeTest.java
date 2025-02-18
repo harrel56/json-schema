@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
 public abstract class JsonNodeTest implements ProviderTest {
 
@@ -366,7 +365,7 @@ public abstract class JsonNodeTest implements ProviderTest {
     void isNotEqualToDifferentType() {
         JsonNodeFactory nodeFactory = getJsonNodeFactory();
         JsonNode node = nodeFactory.create("{}");
-        assertThat(node.equals(mock(JsonNode.class))).isFalse();
+        assertThat(node.equals(new StringNode("hello?", ""))).isFalse();
         assertThat(node.equals(new Object())).isFalse();
     }
 }

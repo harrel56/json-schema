@@ -143,6 +143,24 @@ class ExclusiveMaximumEvaluator implements Evaluator {
     }
 }
 
+class LegacyMaximumEvaluator implements Evaluator {
+    private final Evaluator delegate;
+
+    LegacyMaximumEvaluator(SchemaParsingContext ctx, JsonNode node) {
+        JsonNode exclusiveNode = ctx.getCurrentSchemaObject().get(Keyword.EXCLUSIVE_MAXIMUM);
+        if (exclusiveNode != null && exclusiveNode.isBoolean() && exclusiveNode.asBoolean()) {
+            this.delegate = new ExclusiveMaximumEvaluator(node);
+        } else {
+            this.delegate = new MaximumEvaluator(node);
+        }
+    }
+
+    @Override
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
+        return delegate.evaluate(ctx, node);
+    }
+}
+
 class MinimumEvaluator implements Evaluator {
     private final BigDecimal min;
 
@@ -188,6 +206,24 @@ class ExclusiveMinimumEvaluator implements Evaluator {
         } else {
             return Result.failure(() -> String.format("%s is less than or equal to %s", node.asNumber(), min));
         }
+    }
+}
+
+class LegacyMinimumEvaluator implements Evaluator {
+    private final Evaluator delegate;
+
+    LegacyMinimumEvaluator(SchemaParsingContext ctx, JsonNode node) {
+        JsonNode exclusiveNode = ctx.getCurrentSchemaObject().get(Keyword.EXCLUSIVE_MINIMUM);
+        if (exclusiveNode != null && exclusiveNode.isBoolean() && exclusiveNode.asBoolean()) {
+            this.delegate = new ExclusiveMinimumEvaluator(node);
+        } else {
+            this.delegate = new MinimumEvaluator(node);
+        }
+    }
+
+    @Override
+    public Result evaluate(EvaluationContext ctx, JsonNode node) {
+        return delegate.evaluate(ctx, node);
     }
 }
 

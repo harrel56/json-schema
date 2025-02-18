@@ -14,7 +14,7 @@ final class CompoundUri {
     final String fragment;
 
     static CompoundUri fromUri(URI uri) {
-        if (uri.getFragment() == null) {
+        if (uri.getRawFragment() == null) {
             return new CompoundUri(uri, "");
         } else {
             return fromString(uri.toString());
@@ -42,7 +42,7 @@ final class UriUtil {
     private UriUtil() {}
 
     static URI getUriWithoutFragment(URI uri) {
-        if (uri.getFragment() == null) {
+        if (uri.getRawFragment() == null) {
             return uri;
         } else {
             return getUriWithoutFragment(uri.toString());

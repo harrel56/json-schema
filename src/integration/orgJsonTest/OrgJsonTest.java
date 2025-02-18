@@ -92,6 +92,22 @@ class OrgJsonTest {
     }
 
     @Nested
+    class Draft6EvaluatorFactoryTest extends dev.harrel.jsonschema.Draft6EvaluatorFactoryTest {
+        @Override
+        public JsonNodeFactory getJsonNodeFactory() {
+            return createFactory();
+        }
+    }
+
+    @Nested
+    class Draft4EvaluatorFactoryTest extends dev.harrel.jsonschema.Draft4EvaluatorFactoryTest {
+        @Override
+        public JsonNodeFactory getJsonNodeFactory() {
+            return createFactory();
+        }
+    }
+
+    @Nested
     class JsonNodeFactoryTest extends dev.harrel.jsonschema.JsonNodeFactoryTest {
         @Override
         public JsonNodeFactory getJsonNodeFactory() {

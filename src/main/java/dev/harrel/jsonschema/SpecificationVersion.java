@@ -14,7 +14,9 @@ public enum SpecificationVersion {
     DRAFT2020_12(9, "https://json-schema.org/draft/2020-12/schema", "/draft2020-12.json", emptyList()),
     DRAFT2019_09(8, "https://json-schema.org/draft/2019-09/schema", "/dev/harrel/jsonschema/draft/2019-09/schema.json",
             Arrays.asList("meta/applicator", "meta/content", "meta/core", "meta/format", "meta/meta-data", "meta/validation")),
-    DRAFT7(7, "http://json-schema.org/draft-07/schema#", "/dev/harrel/jsonschema/draft-07/schema.json", emptyList());
+    DRAFT7(7, "http://json-schema.org/draft-07/schema#", "/dev/harrel/jsonschema/draft-07/schema.json", emptyList()),
+    DRAFT6(6, "http://json-schema.org/draft-06/schema#", "/dev/harrel/jsonschema/draft-06/schema.json", emptyList()),
+    DRAFT4(4, "http://json-schema.org/draft-04/schema#", "/dev/harrel/jsonschema/draft-04/schema.json", emptyList());
     private final int order;
     private final URI id;
     private final URI resourcePath;
