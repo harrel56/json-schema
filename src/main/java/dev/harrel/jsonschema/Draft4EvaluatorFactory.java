@@ -8,7 +8,7 @@ import java.util.Set;
 import static dev.harrel.jsonschema.Keyword.*;
 
 /**
- * {@code EvaluatorFactory} implementation that supports <a href="https://json-schema.org/draft-06/schema">draft 6</a> specification.
+ * {@code EvaluatorFactory} implementation that supports <a href="https://json-schema.org/draft-04/schema">draft 4</a> specification.
  */
 public class Draft4EvaluatorFactory extends AbstractEvaluatorFactory {
     public Draft4EvaluatorFactory() {
