@@ -49,6 +49,18 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
     }
 
     @TestFactory
+    Stream<DynamicNode> draft6Required() {
+        Validator validator = new ValidatorFactory()
+                .withDefaultDialect(new Dialects.Draft6Dialect())
+                .withJsonNodeFactory(getJsonNodeFactory())
+                .withSchemaResolver(createSchemaResolver())
+                .createValidator();
+
+        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, skippedDraft7Tests());
+        return generator.generate(getTestPath() + "/draft6");
+    }
+
+    @TestFactory
     Stream<DynamicNode> draft2020Format() {
         Validator validator = new ValidatorFactory()
                 .withEvaluatorFactory(new FormatEvaluatorFactory())
@@ -84,6 +96,19 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
 
         SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, skippedFormatTests());
         return generator.generate(getTestPath() + "/draft7/optional/format");
+    }
+
+    @TestFactory
+    Stream<DynamicNode> draft6Format() {
+        Validator validator = new ValidatorFactory()
+                .withDefaultDialect(new Dialects.Draft6Dialect())
+                .withEvaluatorFactory(new FormatEvaluatorFactory())
+                .withJsonNodeFactory(getJsonNodeFactory())
+                .withSchemaResolver(createSchemaResolver())
+                .createValidator();
+
+        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, skippedFormatTests());
+        return generator.generate(getTestPath() + "/draft6/optional/format");
     }
 
     @TestFactory
@@ -137,6 +162,22 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
                 generator.generate(getTestPath() + "/draft7/optional/cross-draft" + getFileExtension()),
                 generator.generate(getTestPath() + "/draft7/optional/float-overflow" + getFileExtension()),
                 generator.generate(getTestPath() + "/draft7/optional/non-bmp-regex" + getFileExtension())
+        ).flatMap(Function.identity());
+    }
+
+    @TestFactory
+    Stream<DynamicNode> draft6Optional() {
+        Validator validator = new ValidatorFactory()
+                .withDefaultDialect(new Dialects.Draft6Dialect())
+                .withJsonNodeFactory(getJsonNodeFactory())
+                .withSchemaResolver(createSchemaResolver())
+                .createValidator();
+
+        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, Map.of());
+        return Stream.of(
+                generator.generate(getTestPath() + "/draft6/optional/bignum" + getFileExtension()),
+                generator.generate(getTestPath() + "/draft6/optional/float-overflow" + getFileExtension()),
+                generator.generate(getTestPath() + "/draft6/optional/non-bmp-regex" + getFileExtension())
         ).flatMap(Function.identity());
     }
 

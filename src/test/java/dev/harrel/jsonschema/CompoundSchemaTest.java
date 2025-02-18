@@ -2,6 +2,8 @@ package dev.harrel.jsonschema;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.net.URI;
 
@@ -97,11 +99,12 @@ class CompoundSchemaTest {
         );
     }
 
-    @Test
-    void schemaKeywordIsIgnoredForFakeEmbeddedSchemasDraft7AnchorId() {
+    @ParameterizedTest
+    @MethodSource("dev.harrel.jsonschema.IdKeywordTest#lenientVersions")
+    void schemaKeywordIsIgnoredForFakeEmbeddedSchemasAnchorId(SpecificationVersion version) {
         String schema = """
                 {
-                  "$schema": "http://json-schema.org/draft-07/schema",
+                  "$schema": "%s",
                   "$id": "urn:compound",
                   "$ref": "#/$defs/x",
                   "$defs": {
@@ -111,7 +114,7 @@ class CompoundSchemaTest {
                       "type": ["null"]
                     }
                   }
-                }""";
+                }""".formatted(version.getId());
 
         Validator validator = new ValidatorFactory().createValidator();
         URI uri = validator.registerSchema(schema);
@@ -128,11 +131,12 @@ class CompoundSchemaTest {
         );
     }
 
-    @Test
-    void schemaKeywordIsNotIgnoredForDraft7MixedId() {
+    @ParameterizedTest
+    @MethodSource("dev.harrel.jsonschema.IdKeywordTest#lenientVersions")
+    void schemaKeywordIsNotIgnoredForMixedId(SpecificationVersion version) {
         String schema = """
                 {
-                  "$schema": "http://json-schema.org/draft-07/schema",
+                  "$schema": "%s",
                   "$id": "urn:compound",
                   "$ref": "#/$defs/x",
                   "$defs": {
@@ -142,7 +146,7 @@ class CompoundSchemaTest {
                       "type": ["null"]
                     }
                   }
-                }""";
+                }""".formatted(version.getId());
 
         Validator validator = new ValidatorFactory().createValidator();
         assertThatThrownBy(() -> validator.registerSchema(schema))

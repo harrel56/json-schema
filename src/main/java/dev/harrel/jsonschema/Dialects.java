@@ -23,20 +23,19 @@ public final class Dialects {
         map.put(URI.create(SpecificationVersion.DRAFT2020_12.getId()), new Draft2020Dialect());
         map.put(URI.create(SpecificationVersion.DRAFT2019_09.getId()), new Draft2019Dialect());
         map.put(UriUtil.removeEmptyFragment(SpecificationVersion.DRAFT7.getId()), new Draft7Dialect());
+        map.put(UriUtil.removeEmptyFragment(SpecificationVersion.DRAFT6.getId()), new Draft6Dialect());
         OFFICIAL_DIALECTS = Collections.unmodifiableMap(map);
     }
 
     /**
      * Dialect corresponding to <i>draft2020-12</i> specification.
      */
-    public static class Draft2020Dialect implements Dialect {
-        private final EvaluatorFactory evaluatorFactory;
-        private final Set<String> requiredVocabularies;
-        private final Map<String, Boolean> defaultVocabularyObject;
-
+    public static class Draft2020Dialect extends BaseDialect {
         public Draft2020Dialect() {
-            this.evaluatorFactory = new Draft2020EvaluatorFactory();
-            this.requiredVocabularies = singleton(Draft2020.CORE);
+            super(SpecificationVersion.DRAFT2020_12, new Draft2020EvaluatorFactory(), singleton(Draft2020.CORE), createDefaultVocabularyObject());
+        }
+
+        private static Map<String, Boolean> createDefaultVocabularyObject() {
             Map<String, Boolean> vocabs = new HashMap<>();
             vocabs.put(Draft2020.CORE, true);
             vocabs.put(Draft2020.APPLICATOR, true);
@@ -45,51 +44,19 @@ public final class Dialects {
             vocabs.put(Draft2020.META_DATA, true);
             vocabs.put(Draft2020.FORMAT_ANNOTATION, true);
             vocabs.put(Draft2020.CONTENT, true);
-            this.defaultVocabularyObject = unmodifiableMap(vocabs);
-        }
-
-        @Override
-        public SpecificationVersion getSpecificationVersion() {
-            return SpecificationVersion.DRAFT2020_12;
-        }
-
-        @Override
-        public String getMetaSchema() {
-            return SpecificationVersion.DRAFT2020_12.getId();
-        }
-
-        @Override
-        public EvaluatorFactory getEvaluatorFactory() {
-            return evaluatorFactory;
-        }
-
-        @Override
-        public Set<String> getSupportedVocabularies() {
-            return defaultVocabularyObject.keySet();
-        }
-
-        @Override
-        public Set<String> getRequiredVocabularies() {
-            return requiredVocabularies;
-        }
-
-        @Override
-        public Map<String, Boolean> getDefaultVocabularyObject() {
-            return defaultVocabularyObject;
+            return unmodifiableMap(vocabs);
         }
     }
 
     /**
      * Dialect corresponding to <i>draft2019-09</i> specification.
      */
-    public static class Draft2019Dialect implements Dialect {
-        private final EvaluatorFactory evaluatorFactory;
-        private final Set<String> requiredVocabularies;
-        private final Map<String, Boolean> defaultVocabularyObject;
-
+    public static class Draft2019Dialect extends BaseDialect {
         public Draft2019Dialect() {
-            this.evaluatorFactory = new Draft2019EvaluatorFactory();
-            this.requiredVocabularies = singleton(Draft2019.CORE);
+            super(SpecificationVersion.DRAFT2019_09, new Draft2019EvaluatorFactory(), singleton(Draft2019.CORE), createDefaultVocabularyObject());
+        }
+
+        private static Map<String, Boolean> createDefaultVocabularyObject() {
             Map<String, Boolean> vocabs = new HashMap<>();
             vocabs.put(Draft2019.CORE, true);
             vocabs.put(Draft2019.APPLICATOR, true);
@@ -97,17 +64,49 @@ public final class Dialects {
             vocabs.put(Draft2019.META_DATA, true);
             vocabs.put(Draft2019.FORMAT, false);
             vocabs.put(Draft2019.CONTENT, true);
-            this.defaultVocabularyObject = unmodifiableMap(vocabs);
+            return unmodifiableMap(vocabs);
+        }
+    }
+
+    /**
+     * Dialect corresponding to <i>draft7</i> specification.
+     */
+    public static class Draft7Dialect extends BaseDialect {
+        public Draft7Dialect() {
+            super(SpecificationVersion.DRAFT7, new Draft7EvaluatorFactory(), Collections.emptySet(), Collections.emptyMap());
+        }
+    }
+
+    /**
+     * Dialect corresponding to <i>draft6</i> specification.
+     */
+    public static class Draft6Dialect extends BaseDialect {
+        public Draft6Dialect() {
+            super(SpecificationVersion.DRAFT6, new Draft6EvaluatorFactory(), Collections.emptySet(), Collections.emptyMap());
+        }
+    }
+
+    private static class BaseDialect implements Dialect {
+        private final SpecificationVersion specificationVersion;
+        private final EvaluatorFactory evaluatorFactory;
+        private final Set<String> requiredVocabularies;
+        private final Map<String, Boolean> defaultVocabularyObject;
+
+        private BaseDialect(SpecificationVersion specificationVersion, EvaluatorFactory evaluatorFactory, Set<String> requiredVocabularies, Map<String, Boolean> defaultVocabularyObject) {
+            this.specificationVersion = specificationVersion;
+            this.evaluatorFactory = evaluatorFactory;
+            this.requiredVocabularies = requiredVocabularies;
+            this.defaultVocabularyObject = defaultVocabularyObject;
         }
 
         @Override
         public SpecificationVersion getSpecificationVersion() {
-            return SpecificationVersion.DRAFT2019_09;
+            return specificationVersion;
         }
 
         @Override
         public String getMetaSchema() {
-            return SpecificationVersion.DRAFT2019_09.getId();
+            return specificationVersion.getId();
         }
 
         @Override
@@ -128,47 +127,6 @@ public final class Dialects {
         @Override
         public Map<String, Boolean> getDefaultVocabularyObject() {
             return defaultVocabularyObject;
-        }
-    }
-
-    /**
-     * Dialect corresponding to <i>draft7</i> specification.
-     */
-    public static class Draft7Dialect implements Dialect {
-        private final EvaluatorFactory evaluatorFactory;
-
-        public Draft7Dialect() {
-            this.evaluatorFactory = new Draft7EvaluatorFactory();
-        }
-
-        @Override
-        public SpecificationVersion getSpecificationVersion() {
-            return SpecificationVersion.DRAFT7;
-        }
-
-        @Override
-        public String getMetaSchema() {
-            return SpecificationVersion.DRAFT7.getId();
-        }
-
-        @Override
-        public EvaluatorFactory getEvaluatorFactory() {
-            return evaluatorFactory;
-        }
-
-        @Override
-        public Set<String> getSupportedVocabularies() {
-            return Collections.emptySet();
-        }
-
-        @Override
-        public Set<String> getRequiredVocabularies() {
-            return Collections.emptySet();
-        }
-
-        @Override
-        public Map<String, Boolean> getDefaultVocabularyObject() {
-            return Collections.emptyMap();
         }
     }
 }
