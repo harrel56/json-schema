@@ -88,8 +88,8 @@ class IdKeywordTest {
 
         String schema = """
                 {
-                  "$id": "urn:test#/$defs/x"
-                }""";
+                  "%s": "urn:test#/$defs/x"
+                }""".formatted(Keyword.getIdKeyword(version));
         assertThatThrownBy(() -> validator.registerSchema(schema))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("$id [urn:test#/$defs/x] cannot contain fragments starting with '/'");
@@ -187,10 +187,10 @@ class IdKeywordTest {
                 {
                   "$defs": {
                     "x": {
-                      "$id": "urn:sub#/$defs/x"
+                      "%s": "urn:sub#/$defs/x"
                     }
                   }
-                }""";
+                }""".formatted(Keyword.getIdKeyword(version));
         assertThatThrownBy(() -> validator.registerSchema(schema))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("$id [urn:sub#/$defs/x] cannot contain fragments starting with '/'");

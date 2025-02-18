@@ -44,7 +44,7 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
                 .withSchemaResolver(createSchemaResolver())
                 .createValidator();
 
-        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, skippedDraft7Tests());
+        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, Map.of());
         return generator.generate(getTestPath() + "/draft7");
     }
 
@@ -56,8 +56,20 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
                 .withSchemaResolver(createSchemaResolver())
                 .createValidator();
 
-        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, skippedDraft7Tests());
+        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, Map.of());
         return generator.generate(getTestPath() + "/draft6");
+    }
+
+    @TestFactory
+    Stream<DynamicNode> draft4Required() {
+        Validator validator = new ValidatorFactory()
+                .withDefaultDialect(new Dialects.Draft4Dialect())
+                .withJsonNodeFactory(getJsonNodeFactory())
+                .withSchemaResolver(createSchemaResolver())
+                .createValidator();
+
+        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, Map.of());
+        return generator.generate(getTestPath() + "/draft4");
     }
 
     @TestFactory
@@ -109,6 +121,19 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
 
         SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, skippedFormatTests());
         return generator.generate(getTestPath() + "/draft6/optional/format");
+    }
+
+    @TestFactory
+    Stream<DynamicNode> draft4Format() {
+        Validator validator = new ValidatorFactory()
+                .withDefaultDialect(new Dialects.Draft4Dialect())
+                .withEvaluatorFactory(new FormatEvaluatorFactory())
+                .withJsonNodeFactory(getJsonNodeFactory())
+                .withSchemaResolver(createSchemaResolver())
+                .createValidator();
+
+        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, skippedFormatTests());
+        return generator.generate(getTestPath() + "/draft4/optional/format");
     }
 
     @TestFactory
@@ -181,6 +206,22 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
         ).flatMap(Function.identity());
     }
 
+    @TestFactory
+    Stream<DynamicNode> draft4Optional() {
+        Validator validator = new ValidatorFactory()
+                .withDefaultDialect(new Dialects.Draft4Dialect())
+                .withJsonNodeFactory(getJsonNodeFactory())
+                .withSchemaResolver(createSchemaResolver())
+                .createValidator();
+
+        SuiteTestGenerator generator = new SuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, Map.of());
+        return Stream.of(
+                generator.generate(getTestPath() + "/draft4/optional/bignum" + getFileExtension()),
+                generator.generate(getTestPath() + "/draft4/optional/float-overflow" + getFileExtension()),
+                generator.generate(getTestPath() + "/draft4/optional/non-bmp-regex" + getFileExtension())
+        ).flatMap(Function.identity());
+    }
+
     SchemaResolver createSchemaResolver() {
         return new RemoteSchemaResolver();
     }
@@ -192,18 +233,6 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
     String getFileExtension() {
         return ".json";
     }
-
-    private static Map<String, Map<String, Set<String>>> skippedDraft7Tests() {
-        return Map.of(
-                "ref", Map.of(
-                        "$ref prevents a sibling $id from changing the base uri", Set.of(
-                                "$ref resolves to /definitions/base_foo, data does not validate",
-                                "$ref resolves to /definitions/base_foo, data validates"
-                        )
-                )
-        );
-    }
-
 
     private static Map<String, Map<String, Set<String>>> skippedFormatTests() {
         return Map.of(

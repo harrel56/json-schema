@@ -24,6 +24,7 @@ public final class Dialects {
         map.put(URI.create(SpecificationVersion.DRAFT2019_09.getId()), new Draft2019Dialect());
         map.put(UriUtil.removeEmptyFragment(SpecificationVersion.DRAFT7.getId()), new Draft7Dialect());
         map.put(UriUtil.removeEmptyFragment(SpecificationVersion.DRAFT6.getId()), new Draft6Dialect());
+        map.put(UriUtil.removeEmptyFragment(SpecificationVersion.DRAFT4.getId()), new Draft4Dialect());
         OFFICIAL_DIALECTS = Collections.unmodifiableMap(map);
     }
 
@@ -83,6 +84,15 @@ public final class Dialects {
     public static class Draft6Dialect extends BaseDialect {
         public Draft6Dialect() {
             super(SpecificationVersion.DRAFT6, new Draft6EvaluatorFactory(), Collections.emptySet(), Collections.emptyMap());
+        }
+    }
+
+    /**
+     * Dialect corresponding to <i>draft4</i> specification.
+     */
+    public static class Draft4Dialect extends BaseDialect {
+        public Draft4Dialect() {
+            super(SpecificationVersion.DRAFT4, new Draft4EvaluatorFactory(), Collections.emptySet(), Collections.emptyMap());
         }
     }
 
