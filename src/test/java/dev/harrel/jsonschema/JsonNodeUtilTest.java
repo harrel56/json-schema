@@ -2,6 +2,9 @@ package dev.harrel.jsonschema;
 
 import dev.harrel.jsonschema.providers.JacksonNode;
 import dev.harrel.jsonschema.providers.OrgJsonNode;
+import org.junit.jupiter.api.DynamicNode;
+import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -14,6 +17,13 @@ class JsonNodeUtilTest {
     private final JsonNodeFactory factory1 = new JacksonNode.Factory();
     private final JsonNodeFactory factory2 = new OrgJsonNode.Factory();
 
+    @TestFactory
+    Stream<DynamicNode> x() {
+        return dataForEqualityChecks()
+                                .map(args -> DynamicTest.dynamicTest("123", () -> equalityChecks((String)args.get()[0], (String)args.get()[1], (boolean)args.get()[2]))
+                );
+    }
+
     @ParameterizedTest
     @MethodSource("dataForEqualityChecks")
     void equalityChecks(String json1, String json2, boolean expected) {
@@ -22,6 +32,8 @@ class JsonNodeUtilTest {
 
         assertThat(JsonNodeUtil.equals(node1, node2)).isEqualTo(expected);
         assertThat(JsonNodeUtil.equals(node2, node1)).isEqualTo(expected);
+        assertThat(node1.equals(node2)).isEqualTo(expected);
+        assertThat(node2.equals(node1)).isEqualTo(expected);
     }
 
     private static Stream<Arguments> dataForEqualityChecks() {
