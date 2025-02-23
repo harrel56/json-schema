@@ -169,7 +169,7 @@ public final class Validator {
     }
 
     private EvaluationContext createNewEvaluationContext() {
-        return new EvaluationContext(schemaNodeFactory, jsonParser, schemaRegistry, schemaResolver);
+        return new EvaluationContext(schemaNodeFactory, instanceNodeFactory, jsonParser, schemaRegistry, schemaResolver);
     }
 
     /**

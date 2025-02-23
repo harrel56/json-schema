@@ -20,12 +20,17 @@ class MetaSchemaData {
 }
 
 class MetaSchemaValidator {
-    private final JsonNodeFactory jsonNodeFactory;
+    private final JsonNodeFactory schemaNodeFactory;
+    private final JsonNodeFactory instanceNodeFactory;
     private final SchemaRegistry schemaRegistry;
     private final SchemaResolver schemaResolver;
 
-    MetaSchemaValidator(JsonNodeFactory jsonNodeFactory, SchemaRegistry schemaRegistry, SchemaResolver schemaResolver) {
-        this.jsonNodeFactory = Objects.requireNonNull(jsonNodeFactory);
+    MetaSchemaValidator(JsonNodeFactory schemaNodeFactory,
+                        JsonNodeFactory instanceNodeFactory,
+                        SchemaRegistry schemaRegistry,
+                        SchemaResolver schemaResolver) {
+        this.schemaNodeFactory = Objects.requireNonNull(schemaNodeFactory);
+        this.instanceNodeFactory = Objects.requireNonNull(instanceNodeFactory);
         this.schemaRegistry = Objects.requireNonNull(schemaRegistry);
         this.schemaResolver = Objects.requireNonNull(schemaResolver);
     }
@@ -33,7 +38,7 @@ class MetaSchemaValidator {
     MetaSchemaData validateSchema(JsonParser jsonParser, URI metaSchemaUri, String schemaUri, JsonNode node) {
         Objects.requireNonNull(metaSchemaUri);
         Schema schema = resolveMetaSchema(jsonParser, metaSchemaUri);
-        EvaluationContext ctx = new EvaluationContext(jsonNodeFactory, jsonParser, schemaRegistry, schemaResolver);
+        EvaluationContext ctx = new EvaluationContext(schemaNodeFactory, instanceNodeFactory, jsonParser, schemaRegistry, schemaResolver);
         if (!ctx.validateAgainstSchema(schema, node)) {
             throw new InvalidSchemaException(String.format("Schema [%s] failed to validate against meta-schema [%s]", schemaUri, metaSchemaUri),
                     new Validator.Result(false, ctx).getErrors());
@@ -61,7 +66,7 @@ class MetaSchemaValidator {
             throw MetaSchemaResolvingException.resolvingFailure(uri.toString());
         }
         try {
-            result.toJsonNode(jsonNodeFactory).ifPresent(node -> jsonParser.parseRootSchema(baseUri, node));
+            result.toJsonNode(schemaNodeFactory).ifPresent(node -> jsonParser.parseRootSchema(baseUri, node));
         } catch (Exception e) {
             throw MetaSchemaResolvingException.parsingFailure(uri.toString(), e);
         }

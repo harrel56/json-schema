@@ -13,7 +13,8 @@ import static java.util.Collections.unmodifiableList;
  * @see Evaluator
  */
 public final class EvaluationContext {
-    private final JsonNodeFactory jsonNodeFactory;
+    private final JsonNodeFactory schemaNodeFactory;
+    private final JsonNodeFactory instanceNodeFactory;
     private final JsonParser jsonParser;
     private final SchemaRegistry schemaRegistry;
     private final SchemaResolver schemaResolver;
@@ -25,11 +26,13 @@ public final class EvaluationContext {
     private final List<Annotation> annotations = new ArrayList<>();
     private final List<LazyError> errors = new ArrayList<>();
 
-    EvaluationContext(JsonNodeFactory jsonNodeFactory,
+    EvaluationContext(JsonNodeFactory schemaNodeFactory,
+                      JsonNodeFactory instanceNodeFactory,
                       JsonParser jsonParser,
                       SchemaRegistry schemaRegistry,
                       SchemaResolver schemaResolver) {
-        this.jsonNodeFactory = Objects.requireNonNull(jsonNodeFactory);
+        this.schemaNodeFactory = Objects.requireNonNull(schemaNodeFactory);
+        this.instanceNodeFactory = Objects.requireNonNull(instanceNodeFactory);
         this.jsonParser = Objects.requireNonNull(jsonParser);
         this.schemaRegistry = Objects.requireNonNull(schemaRegistry);
         this.schemaResolver = Objects.requireNonNull(schemaResolver);
@@ -118,6 +121,10 @@ public final class EvaluationContext {
             throw new SchemaNotFoundException(compoundUri);
         }
         return validateAgainstSchema(schema, node);
+    }
+
+    JsonNodeFactory getInstanceNodeFactory() {
+        return instanceNodeFactory;
     }
 
     List<Annotation> getAnnotations() {
@@ -275,7 +282,7 @@ public final class EvaluationContext {
             return null;
         }
         return schemaResolver.resolve(compoundUri.uri.toString())
-                .toJsonNode(jsonNodeFactory)
+                .toJsonNode(schemaNodeFactory)
                 .map(node -> {
                     jsonParser.parseRootSchema(compoundUri.uri, node);
                     return resolveSchema(compoundUri);
