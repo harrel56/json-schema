@@ -32,7 +32,7 @@ public final class ValidatorFactory {
         JsonNodeFactory schemaFactory = schemaNodeFactory.get();
         JsonNodeFactory instanceFactory = instanceNodeFactory.get();
         SchemaRegistry schemaRegistry = new SchemaRegistry();
-        MetaSchemaValidator metaSchemaValidator = new MetaSchemaValidator(schemaFactory, instanceFactory, schemaRegistry, schemaResolver);
+        MetaSchemaValidator metaSchemaValidator = new MetaSchemaValidator(schemaFactory, schemaRegistry, schemaResolver);
         JsonParser jsonParser = new JsonParser(dialectsCopy, defaultDialect, evaluatorFactory, schemaRegistry, metaSchemaValidator, disabledSchemaValidation);
         return new Validator(schemaFactory, instanceFactory, schemaResolver, schemaRegistry, jsonParser);
     }
