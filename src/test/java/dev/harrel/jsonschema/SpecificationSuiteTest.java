@@ -287,6 +287,11 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
                                 "ZERO WIDTH JOINER preceded by Virama",
                                 "ZERO WIDTH NON-JOINER preceded by Virama",
                                 "ZERO WIDTH NON-JOINER not preceded by Virama but matches regexp"
+                        ),
+                        "validation of separators in internationalized host names", Set.of(
+                                "ideographic full stop as label separator",
+                                "fullwidth full stop as label separator",
+                                "halfwidth ideographic full stop as label separator"
                         )
                 ),
                 "ipv4", Map.of(
