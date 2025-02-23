@@ -1,11 +1,9 @@
 package dev.harrel.jsonschema;
 
+import dev.harrel.jsonschema.providers.JacksonNode;
 import dev.harrel.jsonschema.providers.SnakeYamlNode;
 import dev.harrel.jsonschema.util.CustomJacksonNode;
-import org.junit.jupiter.api.DynamicContainer;
-import org.junit.jupiter.api.DynamicNode;
-import org.junit.jupiter.api.DynamicTest;
-import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.api.*;
 import org.junit.platform.commons.support.ReflectionSupport;
 
 import java.util.List;
@@ -13,11 +11,25 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class JsonNodeUtilTest {
+class JsonNodeEquivalenceTest {
+    @Test
+    void name() {
+        String schema = """
+                {
+                  "const": 
+                }""";
+        String instance = "";
+
+        Validator.Result res = new ValidatorFactory()
+                .withJsonNodeFactories(new SnakeYamlNode.Factory(), new JacksonNode.Factory())
+                .validate(schema, instance);
+    }
+
     @TestFactory
     Stream<DynamicNode> equalityWithYamlFactoryAcrossDifferentProviders() {
         JsonNodeFactory yamlFactory = new SnakeYamlNode.Factory();
-        return findAllFactories().stream().map(factory -> DynamicContainer.dynamicContainer(factory.getClass().getEnclosingClass().getSimpleName(),
+        return findAllFactories().stream().map(factory -> DynamicContainer.dynamicContainer(
+                factory.getClass().getEnclosingClass().getSimpleName(),
                 dataForEqualityChecks().map(data -> {
                             JsonNode node1 = yamlFactory.create(data.json1());
                             JsonNode node2 = factory.create(data.json2());
@@ -30,7 +42,8 @@ class JsonNodeUtilTest {
     @TestFactory
     Stream<DynamicNode> equalityWithExternalFactoryAcrossDifferentProviders() {
         JsonNodeFactory externalFactory = new CustomJacksonNode.Factory();
-        return findAllFactories().stream().map(factory -> DynamicContainer.dynamicContainer(factory.getClass().getEnclosingClass().getSimpleName(),
+        return findAllFactories().stream().map(factory -> DynamicContainer.dynamicContainer(
+                factory.getClass().getEnclosingClass().getSimpleName(),
                 dataForEqualityChecks().map(data -> {
                             JsonNode node1 = externalFactory.create(data.json1());
                             JsonNode node2 = factory.create(data.json2());
@@ -54,8 +67,6 @@ class JsonNodeUtilTest {
         assertThat(node2.equals(node1)).isFalse();
     }
 
-    private record EqualityData(String json1, String json2, boolean expected) {}
-
     private static List<JsonNodeFactory> findAllFactories() {
         return ReflectionSupport.findAllClassesInPackage(
                         "dev.harrel.jsonschema.providers",
@@ -66,6 +77,9 @@ class JsonNodeUtilTest {
                 .map(JsonNodeFactory.class::cast)
                 .toList();
     }
+
+    private record EqualityData(String json1, String json2, boolean expected) {}
+    private record ValidationData(String keyword, String value, String instance, boolean valid) {}
 
     private static Stream<EqualityData> dataForEqualityChecks() {
         return Stream.of(
@@ -110,6 +124,12 @@ class JsonNodeUtilTest {
                 new EqualityData("{\"abc\": {\"xyz\": [{}, 1, 2, {\"que\": 0.0}]}}", "{\"abc\": {\"xyz\": [{}, 1, 2, {\"que\": 0.0}]}}", true),
                 new EqualityData("{\"abc\": {\"xyz\": [{}, 1, 2, {\"que\": 0.1}]}}", "{\"abc\": {\"xyz\": [{}, 1, 2, {\"que\": 0.0}]}}", false),
                 new EqualityData("{\"abc\": {\"xyz\": [{}, 1, 2, {\"que\": 0.0}]}}", "{\"abc\": {\"xyz\": [{}, 1, 1, {\"que\": 0.0}]}}", false)
+        );
+    }
+
+    private static Stream<ValidationData> dataForValidation() {
+        return Stream.of(
+                new ValidationData(Keyword.CONST, "null", "null", true)
         );
     }
 }
