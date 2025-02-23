@@ -358,7 +358,8 @@ class PropertyNamesEvaluator implements Evaluator {
 
         boolean valid = true;
         for (String propName : node.asObject().keySet()) {
-            valid = ctx.resolveInternalRefAndValidate(schemaRef, new StringNode(propName, node.getJsonPointer())) && valid;
+            JsonNode nameNode = ctx.getInstanceNodeFactory().create("\"" + propName + "\"");
+            valid = ctx.resolveInternalRefAndValidate(schemaRef, new JsonNodeDelegate(nameNode, node.getJsonPointer())) && valid;
         }
         return valid ? Result.success() : Result.failure();
     }

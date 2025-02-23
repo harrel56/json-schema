@@ -237,7 +237,7 @@ public abstract class EvaluationPathTest implements ProviderTest {
         String instance = """
                 {
                   "a": true,
-                  "c": false,
+                  "c": false
                 }""";
         validator.registerSchema(uri, schema);
         Validator.Result result = validator.validate(uri, instance);

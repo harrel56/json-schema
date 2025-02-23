@@ -1,5 +1,6 @@
 package dev.harrel.jsonschema;
 
+import dev.harrel.jsonschema.util.JsonNodeMock;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -365,7 +366,7 @@ public abstract class JsonNodeTest implements ProviderTest {
     void isNotEqualToDifferentType() {
         JsonNodeFactory nodeFactory = getJsonNodeFactory();
         JsonNode node = nodeFactory.create("{}");
-        assertThat(node.equals(new StringNode("hello?", ""))).isFalse();
+        assertThat(node.equals(new JsonNodeMock())).isFalse();
         assertThat(node.equals(new Object())).isFalse();
     }
 }

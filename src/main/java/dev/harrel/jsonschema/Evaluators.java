@@ -48,6 +48,7 @@ class ConstEvaluator implements Evaluator {
 
     @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
+        node = node instanceof JsonNodeDelegate ? ((JsonNodeDelegate) node).unwrap() : node;
         return constNode.equals(node) ? Result.success() : Result.failure("Expected " + constNode.toPrintableString());
     }
 }
@@ -67,6 +68,7 @@ class EnumEvaluator implements Evaluator {
 
     @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
+        node = node instanceof JsonNodeDelegate ? ((JsonNodeDelegate) node).unwrap() : node;
         return enumNodes.contains(node) ? Result.success() : Result.failure(failMessage);
     }
 }
