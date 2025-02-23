@@ -1,6 +1,6 @@
 package dev.harrel.jsonschema;
 
-import dev.harrel.jsonschema.providers.ProviderUtil;
+import dev.harrel.jsonschema.providers.InternalProviderUtil;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static dev.harrel.jsonschema.providers.InternalProviderUtil.canUseNativeEquals;
 import static java.util.Collections.*;
 
 class TypeEvaluator implements Evaluator {
@@ -50,7 +51,7 @@ class ConstEvaluator implements Evaluator {
 
     @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
-        boolean valid = ProviderUtil.canUseNativeEquals(constNode) && ProviderUtil.canUseNativeEquals(node) ? constNode.equals(node) : JsonNodeUtil.equals(constNode, node);
+        boolean valid = canUseNativeEquals(constNode) && canUseNativeEquals(node) ? constNode.equals(node) : JsonNodeUtil.equals(constNode, node);
         return valid ? Result.success() : Result.failure("Expected " + constNode.toPrintableString());
     }
 }
@@ -67,12 +68,12 @@ class EnumEvaluator implements Evaluator {
         this.enumNodes = unmodifiableSet(new LinkedHashSet<>(node.asArray()));
         List<String> printList = enumNodes.stream().map(JsonNode::toPrintableString).collect(Collectors.toList());
         this.failMessage = String.format("Expected any of [%s]", printList);
-        this.canUseNativeEquals = ProviderUtil.canUseNativeEquals(node);
+        this.canUseNativeEquals = canUseNativeEquals(node);
     }
 
     @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
-        if (canUseNativeEquals && ProviderUtil.canUseNativeEquals(node)) {
+        if (canUseNativeEquals && canUseNativeEquals(node)) {
             return enumNodes.contains(node) ? Result.success() : Result.failure(failMessage);
         } else {
             for (JsonNode enumNode : enumNodes) {
@@ -381,7 +382,7 @@ class UniqueItemsEvaluator implements Evaluator {
         }
 
         List<JsonNode> jsonNodes = node.asArray();
-        if (ProviderUtil.canUseNativeEquals(node)) {
+        if (canUseNativeEquals(node)) {
             Set<JsonNode> parsed = new HashSet<>();
             for (int i = 0; i < jsonNodes.size(); i++) {
                 if (!parsed.add(jsonNodes.get(i))) {
