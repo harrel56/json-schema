@@ -207,6 +207,45 @@ public abstract class EvaluationPathTest implements ProviderTest {
     }
 
     @Test
+    void withValidPropertyNamesWithConst() {
+        String schema = """
+                {
+                  "$id": "urn:test",
+                  "propertyNames": {
+                    "const": "foo"
+                  }
+                }""";
+        String instance = """
+                {
+                  "foo": true
+                }""";
+        validator.registerSchema(uri, schema);
+        Validator.Result result = validator.validate(uri, instance);
+
+        assertThat(result.isValid()).isTrue();
+    }
+
+    @Test
+    void withValidPropertyNamesWithEnum() {
+        String schema = """
+                {
+                  "$id": "urn:test",
+                  "propertyNames": {
+                    "enum": ["a", "b", "c"]
+                  }
+                }""";
+        String instance = """
+                {
+                  "a": true,
+                  "c": false
+                }""";
+        validator.registerSchema(uri, schema);
+        Validator.Result result = validator.validate(uri, instance);
+
+        assertThat(result.isValid()).isTrue();
+    }
+
+    @Test
     void withInvalidPropertyNames() {
         String schema = """
                 {
@@ -232,6 +271,50 @@ public abstract class EvaluationPathTest implements ProviderTest {
                 "",
                 "maxLength",
                 "\"///\" is longer than 2 characters"
+        );
+    }
+
+    @Test
+    void withInvalidPropertyNamesWithConst() {
+        String schema = """
+                {
+                  "$id": "urn:test",
+                  "properties": {
+                    "outer": {
+                      "properties": {
+                        "arr": {
+                          "items": {
+                            "propertyNames": {
+                              "const": "foo"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+
+                }""";
+        String instance = """
+                {
+                  "outer": {
+                    "arr": [{
+                      "bar": true
+                    }]
+                  }
+                }""";
+        validator.registerSchema(uri, schema);
+        Validator.Result result = validator.validate(uri, instance);
+
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(1);
+        assertError(
+                errors.get(0),
+                "/properties/outer/properties/arr/items/propertyNames/const",
+                "urn:test#/properties/outer/properties/arr/items/propertyNames",
+                "/outer/arr/0",
+                "const",
+                "Expected foo"
         );
     }
 }

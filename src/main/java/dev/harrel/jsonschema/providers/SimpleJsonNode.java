@@ -27,10 +27,8 @@ abstract class SimpleJsonNode extends AbstractJsonNode<Object> {
             rawNode = node;
             return SimpleType.STRING;
         } else if (isDecimal(node)) {
-            rawNode = asNumber(node);
-            if (node instanceof BigDecimal && ((BigDecimal) node).stripTrailingZeros().scale() <= 0) {
-                return SimpleType.INTEGER;
-            } else if (node instanceof Double && ((Number) node).doubleValue() == Math.rint(((Number) node).doubleValue())) {
+            rawNode = asNumber(node).stripTrailingZeros();
+            if (canConvertToInteger((BigDecimal) rawNode)) {
                 return SimpleType.INTEGER;
             } else {
                 return SimpleType.NUMBER;
