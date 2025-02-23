@@ -1,7 +1,5 @@
 package dev.harrel.jsonschema;
 
-import dev.harrel.jsonschema.providers.InternalProviderUtil;
-
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Supplier;
