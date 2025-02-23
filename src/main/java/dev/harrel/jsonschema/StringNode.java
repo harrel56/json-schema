@@ -8,22 +8,18 @@ import java.util.Map;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 
-final class JsonNodeDelegate implements JsonNode {
-    private final JsonNode delegate;
+final class StringNode implements JsonNode {
+    private final String value;
     private final String jsonPointer;
 
-    JsonNodeDelegate(JsonNode delegate, String jsonPointer) {
-        this.delegate = delegate;
+    public StringNode(String value, String jsonPointer) {
+        this.value = value;
         this.jsonPointer = jsonPointer;
-    }
-
-    JsonNode unwrap() {
-        return delegate;
     }
 
     @Override
     public SimpleType getNodeType() {
-        return delegate.getNodeType();
+        return SimpleType.STRING;
     }
 
     @Override
@@ -33,31 +29,31 @@ final class JsonNodeDelegate implements JsonNode {
 
     @Override
     public boolean asBoolean() {
-        return delegate.asBoolean();
+        return false;
     }
 
     @Override
     public String asString() {
-        return delegate.asString();
+        return value;
     }
 
     @Override
     public BigInteger asInteger() {
-        return delegate.asInteger();
+        return null;
     }
 
     @Override
     public BigDecimal asNumber() {
-        return delegate.asNumber();
+        return null;
     }
 
     @Override
     public List<JsonNode> asArray() {
-        return delegate.asArray();
+        return emptyList();
     }
 
     @Override
     public Map<String, JsonNode> asObject() {
-        return delegate.asObject();
+        return emptyMap();
     }
 }
