@@ -1,5 +1,7 @@
 package dev.harrel.jsonschema;
 
+import dev.harrel.jsonschema.providers.ProviderUtil;
+
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Supplier;
@@ -48,13 +50,15 @@ class ConstEvaluator implements Evaluator {
 
     @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
-        return constNode.equals(node) ? Result.success() : Result.failure("Expected " + constNode.toPrintableString());
+        boolean valid = ProviderUtil.canUseNativeEquals(constNode) && ProviderUtil.canUseNativeEquals(node) ? constNode.equals(node) : JsonNodeUtil.equals(constNode, node);
+        return valid ? Result.success() : Result.failure("Expected " + constNode.toPrintableString());
     }
 }
 
 class EnumEvaluator implements Evaluator {
     private final Set<JsonNode> enumNodes;
     private final String failMessage;
+    private final boolean canUseNativeEquals;
 
     EnumEvaluator(JsonNode node) {
         if (!node.isArray()) {
@@ -63,11 +67,22 @@ class EnumEvaluator implements Evaluator {
         this.enumNodes = unmodifiableSet(new LinkedHashSet<>(node.asArray()));
         List<String> printList = enumNodes.stream().map(JsonNode::toPrintableString).collect(Collectors.toList());
         this.failMessage = String.format("Expected any of [%s]", printList);
+        this.canUseNativeEquals = ProviderUtil.canUseNativeEquals(node);
     }
 
     @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
-        return enumNodes.contains(node) ? Result.success() : Result.failure(failMessage);
+        if (canUseNativeEquals && ProviderUtil.canUseNativeEquals(node)) {
+            return enumNodes.contains(node) ? Result.success() : Result.failure(failMessage);
+        } else {
+            for (JsonNode enumNode : enumNodes) {
+                if (JsonNodeUtil.equals(enumNode, node)) {
+                    return Result.success();
+                }
+            }
+            return Result.failure(failMessage);
+        }
+
     }
 }
 
@@ -365,13 +380,25 @@ class UniqueItemsEvaluator implements Evaluator {
             return Result.success();
         }
 
-        Set<JsonNode> parsed = new HashSet<>();
         List<JsonNode> jsonNodes = node.asArray();
-        for (int i = 0; i < jsonNodes.size(); i++) {
-            if (!parsed.add(jsonNodes.get(i))) {
-                return Result.failure(String.format("Array contains non-unique item at index [%d]", i));
+        if (ProviderUtil.canUseNativeEquals(node)) {
+            Set<JsonNode> parsed = new HashSet<>();
+            for (int i = 0; i < jsonNodes.size(); i++) {
+                if (!parsed.add(jsonNodes.get(i))) {
+                    return Result.failure(String.format("Array contains non-unique item at index [%d]", i));
+                }
+            }
+        } else {
+            List<JsonNode> parsed = new ArrayList<>(jsonNodes.size());
+            for (int i = 0; i < jsonNodes.size(); i++) {
+                JsonNode element = jsonNodes.get(i);
+                if (parsed.stream().anyMatch(parsedNode -> JsonNodeUtil.equals(parsedNode, element))) {
+                    return Result.failure(String.format("Array contains non-unique item at index [%d]", i));
+                }
+                parsed.add(element);
             }
         }
+
         return Result.success();
     }
 }
