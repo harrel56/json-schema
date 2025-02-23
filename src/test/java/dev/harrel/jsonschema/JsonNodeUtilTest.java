@@ -1,35 +1,43 @@
 package dev.harrel.jsonschema;
 
-import dev.harrel.jsonschema.providers.JacksonNode;
-import dev.harrel.jsonschema.providers.OrgJsonNode;
+import dev.harrel.jsonschema.providers.SnakeYamlNode;
+import org.junit.jupiter.api.DynamicContainer;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
-import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.platform.commons.support.ReflectionSupport;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class JsonNodeUtilTest {
-    private final JsonNodeFactory factory1 = new JacksonNode.Factory();
-    private final JsonNodeFactory factory2 = new OrgJsonNode.Factory();
+    private final JsonNodeFactory baseFactory = new SnakeYamlNode.Factory();
 
     @TestFactory
-    Stream<DynamicNode> x() {
-        return dataForEqualityChecks()
-                                .map(args -> DynamicTest.dynamicTest("123", () -> equalityChecks((String)args.get()[0], (String)args.get()[1], (boolean)args.get()[2]))
-                );
+    Stream<DynamicNode> shouldProperlyCheckForEqualityCrossProviders() {
+        List<JsonNodeFactory> factories = ReflectionSupport.findAllClassesInPackage(
+                        "dev.harrel.jsonschema.providers",
+                        JsonNodeFactory.class::isAssignableFrom,
+                        name -> true)
+                .stream()
+                .map(ReflectionSupport::newInstance)
+                .map(JsonNodeFactory.class::cast)
+                .toList();
+        return factories.stream().map(factory -> DynamicContainer.dynamicContainer(factory.getClass().getEnclosingClass().getSimpleName(),
+                dataForEqualityChecks().map(args -> {
+                            JsonNode node1 = baseFactory.create((String) args.get()[0]);
+                            JsonNode node2 = factory.create((String) args.get()[1]);
+                            return DynamicTest.dynamicTest(Arrays.toString(args.get()), () -> checkEquality(node1, node2, (boolean) args.get()[2]));
+                        }
+                )));
+
     }
 
-    @ParameterizedTest
-    @MethodSource("dataForEqualityChecks")
-    void equalityChecks(String json1, String json2, boolean expected) {
-        JsonNode node1 = factory1.create(json1);
-        JsonNode node2 = factory2.create(json2);
-
+    private void checkEquality(JsonNode node1, JsonNode node2, boolean expected) {
         assertThat(JsonNodeUtil.equals(node1, node2)).isEqualTo(expected);
         assertThat(JsonNodeUtil.equals(node2, node1)).isEqualTo(expected);
         assertThat(node1.equals(node2)).isEqualTo(expected);
@@ -72,6 +80,7 @@ class JsonNodeUtilTest {
                 Arguments.of("{}", "{}", true),
                 Arguments.of("{}", "[]", false),
                 Arguments.of("{\"abc\": null}", "{\"abc\": null}", true),
+                Arguments.of("{\"abc\": null}", "{\"abc\": false}", false),
                 Arguments.of("{\"abc\": {}}", "{\"abc\": {}}", true),
                 Arguments.of("{\"abc\": {}}", "{}", false),
                 Arguments.of("{\"abc\": {\"xyz\": []}}", "{\"abc\": {\"xyz\": []}}", true),
