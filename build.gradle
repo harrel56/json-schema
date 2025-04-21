@@ -66,7 +66,7 @@ jsonProviders.forEach {
 }
 
 dependencies {
-    formatImplementation 'com.sanctionco.jmail:jmail:1.6.3'
+    formatImplementation 'com.sanctionco.jmail:jmail:2.0.0'
 
     jakartaJsonTestImplementation 'org.eclipse.parsson:parsson:1.1.7'
     testImplementation 'org.junit.platform:junit-platform-launcher:1.12.2'
