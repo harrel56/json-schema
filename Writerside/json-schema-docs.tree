@@ -4,8 +4,17 @@
 
 <instance-profile id="json-schema-docs"
                  name="dev.harrel:json-schema"
-                 start-page="starter-topic.md">
+                 start-page="about.md">
 
     <toc-element topic="about.md"/>
-    <toc-element topic="starter-topic.md"/>
+    <toc-element topic="Installation.md"/>
+    <toc-element topic="JSON-YAML-providers.md"/>
+    <toc-element topic="Basic-usage.md"/>
+    <toc-element topic="Format-validation.md"/>
+    <toc-element topic="Dialects.md"/>
+    <toc-element topic="Annotations.md"/>
+    <toc-element toc-title="Advanced configuration">
+        <toc-element topic="Custom-keywords.md"/>
+        <toc-element topic="Custom-dialects.md"/>
+    </toc-element>
 </instance-profile>
