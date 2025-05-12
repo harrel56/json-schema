@@ -39,9 +39,9 @@ repositories {
 
 def jsonProviders = [
         [id   : 'jackson', additionalVersions: ['2.2.0'],
-         group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.18.3'],
+         group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.19.0'],
         [id   : 'gson', additionalVersions: ['2.3'],
-         group: 'com.google.code.gson', name: 'gson', version: '2.13.0'],
+         group: 'com.google.code.gson', name: 'gson', version: '2.13.1'],
         [id   : 'orgJson', additionalVersions: ['20201115'],
          group: 'org.json', name: 'json', version: '20250107'],
         [id   : 'kotlinxJson', additionalVersions: ['1.0.0'],
@@ -66,7 +66,7 @@ jsonProviders.forEach {
 }
 
 dependencies {
-    formatImplementation 'com.sanctionco.jmail:jmail:1.6.3'
+    formatImplementation 'com.sanctionco.jmail:jmail:2.0.0'
 
     jakartaJsonTestImplementation 'org.eclipse.parsson:parsson:1.1.7'
     testImplementation 'org.junit.platform:junit-platform-launcher:1.12.2'
