@@ -9,7 +9,16 @@
     <toc-element toc-title="Getting started">
         <toc-element topic="about.md"/>
         <toc-element topic="Installation.md"/>
-        <toc-element topic="JSON-YAML-providers.md"/>
+        <toc-element topic="JSON-YAML-providers.md">
+            <toc-element topic="Jackson.md"/>
+            <toc-element topic="Gson.md"/>
+            <toc-element topic="JSON-org.md"/>
+            <toc-element topic="Jakarta-JSON.md"/>
+            <toc-element topic="Kotlinx-serialization.md"/>
+            <toc-element topic="SnakeYAML.md"/>
+            <toc-element topic="JSON-smart.md"/>
+            <toc-element topic="Jettison.md"/>
+        </toc-element>
     </toc-element>
     <toc-element topic="Basic-usage.md"/>
     <toc-element topic="Format-validation.md"/>
