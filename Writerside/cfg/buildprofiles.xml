@@ -6,6 +6,7 @@
     <build-profile instance="json-schema-docs">
         <variables>
             <noindex-content>false</noindex-content>
+            <primary-color>iris</primary-color>
             <showDownloadButton>true</showDownloadButton>
             <download-page>https://harrel.dev/json-schema</download-page>
             <download-title>Try online validator</download-title>
