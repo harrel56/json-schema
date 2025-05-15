@@ -7,8 +7,6 @@ import java.util.Map;
 
 /**
  * {@code JsonNode} interface is the main abstraction for provider-agnostic JSON node.
- * Implementations are required to implement {@link Object#equals(Object)} and {@link Object#hashCode()}.
- * Equality check must follow JSON equality rules, e.g. JSON properties order is not relevant.
  */
 public interface JsonNode {
     /**
