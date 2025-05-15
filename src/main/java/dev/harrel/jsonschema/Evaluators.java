@@ -30,7 +30,7 @@ class TypeEvaluator implements Evaluator {
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
         SimpleType nodeType = node.getNodeType();
         if (types.contains(nodeType) || nodeType == SimpleType.INTEGER && types.contains(SimpleType.NUMBER)) {
-            return Result.success("hellyea");
+            return Result.success();
         } else {
             return Result.failure(() -> {
                 List<String> typeNames = types.stream().map(SimpleType::getName).collect(Collectors.toList());
