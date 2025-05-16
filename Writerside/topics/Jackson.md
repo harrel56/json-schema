@@ -2,8 +2,6 @@
 
 ## Required dependency
 
-
-
 <tabs group='build-tool'>
 <tab title="Maven" group-key='maven'>
 
@@ -39,7 +37,7 @@ Adapter classes are:
 The [JsonNode](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/JsonNode.html) abstraction wraps a concrete class form JSON/YAML library,
 which is called a "provider node."
 It is possible to interact with the API using provider nodes directly,
-but there is no type information at compile time, so please ensure that you are using a correct class.
+but there is no type information at compile time, so please ensure that you are using the correct class.
 
 > Jackson's provider node is `com.fasterxml.jackson.databind.JsonNode` class.
 {style="note"}
