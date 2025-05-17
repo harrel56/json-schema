@@ -34,7 +34,7 @@ Adapter classes are:
 
 ## Provider node
 
-The [JsonNode](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/JsonNode.html) abstraction wraps a concrete class form JSON/YAML library,
+The [JsonNode](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/JsonNode.html) abstraction wraps a concrete class from JSON/YAML library,
 which is called a "provider node."
 It is possible to interact with the API using provider nodes directly,
 but there is no type information at compile time, so please ensure that you are using the correct class.
