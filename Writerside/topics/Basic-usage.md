@@ -48,6 +48,8 @@ Keep in mind that the "registration space" for schemas is common for one `Valida
 
 ### Error type
 
+[Documentation](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/Error.html).
+
 <deflist>
 <def title='error (String)'>
 Validation message.
@@ -77,6 +79,8 @@ Example: `https://harrel.dev/3077cb97#/properties/foo`
 </deflist>
 
 ### Annotation type
+[Documentation](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/Annotation.html).
+
 Please see a dedicated chapter: [Annotations](Annotations.md).
 
 ## Thread safety
