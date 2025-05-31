@@ -23,6 +23,7 @@
     <toc-element topic="Basic-usage.md"/>
     <toc-element topic="Format-validation.md"/>
     <toc-element topic="Dialects.md"/>
+    <toc-element topic="Resolving-schemas.md"/>
     <toc-element topic="Annotations.md"/>
     <toc-element toc-title="Advanced configuration">
         <toc-element topic="Custom-keywords.md"/>
