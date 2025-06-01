@@ -37,7 +37,8 @@ and will fall back to the matching predefined dialect or the default one.
 
 Every schema needs to be understood in the context of a specific dialect.
 Dialects consist of a few vital parts:
-1. **Specification version** - parsing schemas might behave differently depending on version value.
+1. [**Specification version**](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/SpecificationVersion.html) - 
+parsing schemas might behave differently depending on version value.
 2. [**Evaluator Factory**](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/EvaluatorFactory.html) - 
 class responsible for the creation of evaluators which in turn contain (mostly) validation logic.
 3. **Meta-schema URI** (optional) - every schema in this dialect must be valid against this meta-schema.
@@ -46,18 +47,59 @@ You can define which vocabularies are supported, required and enabled by default
 
 <table style='both'>
     <tr>
-        <td>Draft</td>
-        <td>Spec version</td>
-        <td>Evaluator factory</td>
-        <td>Meta-schema</td>
-        <td>Supported vocabs</td>
-        <td>Required vocabs</td>
+        <td></td>
+        <td>Draft 2020-12</td>
+        <td>Draft 2019-09</td>
+        <td>Draft 07</td>
+        <td>Draft 06</td>
+        <td>Draft 04</td>
     </tr>
     <tr>
-        <td>2020-12</td>
-        <td>SpecificationVersion.DRAFT2020_12</td>
-        <td>Draft2020EvaluatorFactory</td>
+        <td>Spec version</td>
+        <td><a href='https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/SpecificationVersion.html#DRAFT2020_12'>
+            SpecificationVersion.DRAFT2020_12
+        </a></td>
+        <td><a href='https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/SpecificationVersion.html#DRAFT2019_09'>
+            SpecificationVersion.DRAFT2019_09
+        </a></td>
+        <td><a href='https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/SpecificationVersion.html#DRAFT7'>
+            SpecificationVersion.DRAFT7
+        </a></td>
+        <td><a href='https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/SpecificationVersion.html#DRAFT6'>
+            SpecificationVersion.DRAFT6
+        </a></td>
+        <td><a href='https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/SpecificationVersion.html#DRAFT4'>
+            SpecificationVersion.DRAFT4
+        </a></td>
+    </tr>
+    <tr>
+        <td>Evaluator factory</td>
+        <td><a href='https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/Draft2020EvaluatorFactory.html'>
+            Draft2020EvaluatorFactory
+        </a></td>
+        <td><a href='https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/Draft2019EvaluatorFactory.html'>
+            Draft2019EvaluatorFactory
+        </a></td>
+        <td><a href='https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/Draft7EvaluatorFactory.html'>
+            Draft7EvaluatorFactory
+        </a></td>
+        <td><a href='https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/Draft6EvaluatorFactory.html'>
+            Draft6EvaluatorFactory
+        </a></td>
+        <td><a href='https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/Draft4EvaluatorFactory.html'>
+            Draft4EvaluatorFactory
+        </a></td>
+    </tr>
+    <tr>
+        <td>Meta-schema</td>
         <td>https://json-schema.org/draft/2020-12/schema</td>
+        <td>https://json-schema.org/draft/2019-09/schema</td>
+        <td>http://json-schema.org/draft-07/schema#</td>
+        <td>http://json-schema.org/draft-06/schema#</td>
+        <td>http://json-schema.org/draft-04/schema#</td>
+    </tr>
+    <tr>
+        <td>Supported vocabs</td>
         <td><ul>
             <li>https://json-schema.org/draft/2020-12/vocab/core</li>
             <li>https://json-schema.org/draft/2020-12/vocab/applicator</li>
@@ -69,20 +111,28 @@ You can define which vocabularies are supported, required and enabled by default
             <li>https://json-schema.org/draft/2020-12/vocab/content</li>
         </ul></td>
         <td><ul>
+            <li>https://json-schema.org/draft/2019-09/vocab/core</li>
+            <li>https://json-schema.org/draft/2019-09/vocab/applicator</li>
+            <li>https://json-schema.org/draft/2019-09/vocab/validation</li>
+            <li>https://json-schema.org/draft/2019-09/vocab/meta-data</li>
+            <li>https://json-schema.org/draft/2019-09/vocab/format</li>
+            <li>https://json-schema.org/draft/2019-09/vocab/content</li>
+        </ul></td>
+        <td>-</td>
+        <td>-</td>
+        <td>-</td>
+    </tr>
+    <tr>
+        <td>Required vocabs</td>
+        <td><ul>
             <li>https://json-schema.org/draft/2020-12/vocab/core</li>
         </ul></td>
-    </tr>
-    <tr>
-        <td>2019-09</td>
-    </tr>
-    <tr>
-        <td>07</td>
-    </tr>
-    <tr>
-        <td>06</td>
-    </tr>
-    <tr>
-        <td>04</td>
+        <td><ul>
+            <li>https://json-schema.org/draft/2019-09/vocab/core</li>
+        </ul></td>
+        <td>-</td>
+        <td>-</td>
+        <td>-</td>
     </tr>
 </table>
 
