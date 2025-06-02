@@ -18,7 +18,7 @@ new ValidatorFactory().withDefaultDialect(new Dialects.Draft2019Dialect());
 ## Meta-schemas
 Each schema is recommended to contain the `$schema` keyword to properly infer which dialect to use.
 `$schema` keyword must refer to a meta-schema against which the current schema will be validated.
-Resolution of meta-schemas follows the same [rules](Resolving-schemas.md) as for regular schemas.
+Resolution of meta-schemas follows the same [rules](Resolving-schemas.md#using-multiple-resolvers) as for regular schemas.
 
 > If resolution of meta-schema is unsuccessful, [MetaSchemaResolvingException](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/MetaSchemaResolvingException.html) is thrown.
 
