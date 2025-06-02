@@ -1,5 +1,6 @@
 package dev.harrel.jsonschema;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
@@ -32,6 +33,16 @@ class SchemaResolverTest {
                 });
         assertThatThrownBy(() -> validatorFactory.validate(SCHEMA, "{}"))
                 .isEqualTo(error);
+    }
+
+    @Test
+    void shouldFailForInvalidJsonString() {
+        ValidatorFactory validatorFactory = new ValidatorFactory()
+                .withDisabledSchemaValidation(true)
+                .withSchemaResolver(uri -> Result.fromString("oops"));
+        assertThatThrownBy(() -> validatorFactory.validate(SCHEMA, "{}"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasCauseInstanceOf(JsonParseException.class);
     }
 
     @Test
