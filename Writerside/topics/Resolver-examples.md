@@ -3,6 +3,8 @@
 ## HTTP resolver
 
 ```java
+import dev.harrel.jsonschema.SchemaResolver;
+
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
@@ -38,11 +40,14 @@ public class HttpResolver implements SchemaResolver {
         }
     }
 }
+
 ```
 
 ## Classpath resolver
 
 ```java
+import dev.harrel.jsonschema.SchemaResolver;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
