@@ -103,3 +103,180 @@ Some keywords defined by specification also define the annotation which they sho
         <td><code>List.of(0, 4, 5)</code></td>
     </tr>
 </table>
+
+## Examples
+
+### Object
+
+<table>
+    <tr>
+        <td>Schema</td>
+        <td>Instance</td>
+    </tr>
+    <tr>
+<td>
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:object",
+  "properties": {
+    "foo": {
+      "title": "foo schema",
+      "type": "number"
+    },
+    "bar": {
+      "$ref": "#/$defs/bar"
+    },
+    "baz": false
+  },
+  "unevaluatedProperties": true,
+  "$defs": {
+    "bar": {
+      "const": "bar"
+    }
+  }
+}
+```
+
+</td>
+<td>
+
+```json
+{
+  "foo": 1,
+  "bar": "bar",
+  "bax": {}
+}
+```
+
+</td>
+    </tr>
+</table>
+
+Produces the following annotations:
+
+<table>
+    <tr>
+        <td><code>annotation</code></td>
+        <td><code>evaluationPath</code></td>
+        <td><code>instanceLocation</code></td>
+        <td><code>keyword</code></td>
+        <td><code>schemaLocation</code></td>
+    </tr>
+    <tr>
+        <td><code>"foo schema"</code></td>
+        <td>/properties/foo/title</td>
+        <td>/foo</td>
+        <td>title</td>
+        <td>urn:object#/properties/foo</td>
+    </tr>
+    <tr>
+        <td><code>Set.of("bar", "foo")</code></td>
+        <td>/properties</td>
+        <td>(empty string)</td>
+        <td>properties</td>
+        <td>urn:object#</td>
+    </tr>
+    <tr>
+        <td><code>Set.of("bax")</code></td>
+        <td>/unevaluatedProperties</td>
+        <td>(empty string)</td>
+        <td>unevaluatedProperties</td>
+        <td>urn:object#</td>
+    </tr>
+</table>
+
+### Array
+
+<table>
+    <tr>
+        <td>Schema</td>
+        <td>Instance</td>
+    </tr>
+    <tr>
+<td>
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:array",
+  "prefixItems": [
+    { "type": "boolean" },
+    { "type": "string" }
+  ],
+  "items": {
+    "type": "number"
+  },
+  "contains": {
+    "unknownKeyword": "value",
+    "type": "number",
+    "multipleOf": 2
+  }
+}
+```
+
+</td>
+<td>
+
+```json
+[
+  true,
+  "second value",
+  1,
+  2,
+  3,
+  4
+]
+```
+
+</td>
+    </tr>
+</table>
+
+Produces the following annotations:
+
+<table>
+    <tr>
+        <td><code>annotation</code></td>
+        <td><code>evaluationPath</code></td>
+        <td><code>instanceLocation</code></td>
+        <td><code>keyword</code></td>
+        <td><code>schemaLocation</code></td>
+    </tr>
+    <tr>
+        <td><code>"value"</code></td>
+        <td>/contains/unknownKeyword</td>
+        <td>/3</td>
+        <td>unknownKeyword</td>
+        <td>urn:array#/contains</td>
+    </tr>
+    <tr>
+        <td><code>"value"</code></td>
+        <td>/contains/unknownKeyword</td>
+        <td>/5</td>
+        <td>unknownKeyword</td>
+        <td>urn:array#/contains</td>
+    </tr>
+    <tr>
+        <td><code>List.of(3, 5)</code></td>
+        <td>/contains</td>
+        <td>(empty string)</td>
+        <td>contains</td>
+        <td>urn:array#</td>
+    </tr>
+    <tr>
+        <td><code>2</code></td>
+        <td>/prefixItems</td>
+        <td>(empty string)</td>
+        <td>prefixItems</td>
+        <td>urn:array#</td>
+    </tr>
+    <tr>
+        <td><code>true</code></td>
+        <td>/items</td>
+        <td>(empty string)</td>
+        <td>items</td>
+        <td>urn:array#</td>
+    </tr>
+</table>
