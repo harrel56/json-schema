@@ -28,7 +28,9 @@
     </toc-element>
     <toc-element topic="Annotations.md"/>
     <toc-element toc-title="Advanced configuration">
-        <toc-element topic="Custom-keywords.md"/>
+        <toc-element topic="Custom-keywords.md">
+            <toc-element topic="Evaluators.md"/>
+        </toc-element>
         <toc-element topic="Custom-dialects.md"/>
         <toc-element topic="Custom-JSON-YAML-providers.md"/>
     </toc-element>
