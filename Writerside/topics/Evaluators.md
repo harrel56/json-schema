@@ -1,6 +1,6 @@
 # Evaluators
 
-Keyword logic is represented by [Evaluator](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/Evaluator.html) interface.
+[Evaluator](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/Evaluator.html) represents keyword logic.
 Each keyword can have **at most one** evaluator attached.
 
 ```java
@@ -20,7 +20,7 @@ public interface Evaluator {
 > Sometimes we want to call evaluator before/after another one,
 > and this can be achieved by overriding the default `getOrder()` method.
 
-## EvaluationContext
+## Evaluation context
 
 It can be used to trigger another schema validation process in several ways:
 - **Internal** - in most cases, you would want to use this one.
