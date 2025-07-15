@@ -117,6 +117,7 @@
       valid: true
     - description: line feed matches (line terminator)
       data: |2+
+
       valid: true
     - description: paragraph separator matches (line terminator)
       data: ' '
@@ -155,6 +156,7 @@
       valid: false
     - description: line feed does not match (line terminator)
       data: |2+
+
       valid: false
     - description: paragraph separator does not match (line terminator)
       data: ' '
