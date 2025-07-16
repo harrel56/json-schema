@@ -31,6 +31,7 @@
         <toc-element topic="Custom-keywords.md">
             <toc-element topic="Evaluators.md"/>
             <toc-element topic="Evaluator-factories.md"/>
+            <toc-element topic="Examples.md"/>
         </toc-element>
         <toc-element topic="Custom-dialects.md"/>
         <toc-element topic="Custom-JSON-YAML-providers.md"/>
