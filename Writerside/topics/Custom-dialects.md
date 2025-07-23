@@ -35,7 +35,47 @@ new ValidatorFactory().withDefaultDialect(new CustomDialect);
 > Other implementations might even forbid such configurations.
 {style=warning}
 
-## Dialect types:
+## Dialect types
+
+Depending on your needs, you might want to define only specific parts of a dialect.
+
+### Meta-schema only
+
+This is the only official way to extend/create dialects, and it's implementation-agnostic.
+
+**You will need:**
+1. The actual meta-schema: 
+    - It can be provided either by `SchemaResolver` or registered directly in `Validator` instance.
+    - It has to finally resolve to an actual concrete dialect (from dialect registry).
+    It cannot be recursive, either directly or indirectly - it may reference (by `$schema`) another "meta-schema only" dialect,
+    but eventually the chain of references must point to a dialect from the dialect registry.
+
+**It allows you:**
+1. Changing active vocabularies (by `$vocabulary` keyword). You can, for example, disable all validation keywords.
+2. Defining custom validation for your schemas.
+
+**You will not be able to:**
+1. Define custom keywords, as the logic cannot be expressed directly in JSON.
+2. Make the dialect independent of another one. As mentioned before: it eventually needs to point to a registered dialect.
+3. Change the supported, required and default vocabularies.
+
+### Dialect without meta-schema
+
+This is not really recommended approach as such a dialect can only be used as a default dialect.
+
+**You will need:**
+1. The actual implementation of `Dialect`.
+
+**It allows you (only for schemas lacking `$schema` keyword):**
+1. Defining custom keywords via `EvaluatorFactory`.
+2. Changing the supported, required and default vocabularies.
+
+**You will not be able to:**
+1. Affect
+
+
+
+### bop
 
 1. semi dialect: only metaschema: cannot change evaluator factory,
 must @schema to full dialect to resolve spec version. Mostly for simple vocab changes
