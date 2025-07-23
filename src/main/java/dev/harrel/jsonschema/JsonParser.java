@@ -202,7 +202,7 @@ final class JsonParser {
     }
 
     private MetaSchemaData resolveMetaSchemaData(JsonNode node, URI metaSchemaUri, String uri) {
-        if (disabledSchemaValidation) {
+        if (disabledSchemaValidation || metaSchemaUri == null) {
             return new MetaSchemaData(dialects.getOrDefault(metaSchemaUri, defaultDialect));
         }
 

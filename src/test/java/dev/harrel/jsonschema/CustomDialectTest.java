@@ -1,6 +1,7 @@
 package dev.harrel.jsonschema;
 
 import org.junit.jupiter.api.Named;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -12,6 +13,7 @@ import java.util.stream.Stream;
 
 import static dev.harrel.jsonschema.util.TestUtil.assertError;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 
 class CustomDialectTest {
     @ParameterizedTest
@@ -151,6 +153,24 @@ class CustomDialectTest {
         validator.registerSchema(schema);
 
         Validator.Result result = validator.validate(URI.create("urn:test"), schema);
+        assertThat(result.isValid()).isTrue();
+    }
+
+    @Test
+    void shouldSkipSchemaValidationWhenDefaultDialectLacksMetaSchema() {
+        var dialect = new Dialects.Draft2020Dialect() {
+            @Override
+            public String getMetaSchema() {
+                return null;
+            }
+        };
+        Validator validator = new ValidatorFactory().withDefaultDialect(dialect).createValidator();
+        validator.registerSchema("""
+                {
+                  "$id": "urn:test",
+                  "type": null
+                }""");
+        Validator.Result result = validator.validate(URI.create("urn:test"), "1");
         assertThat(result.isValid()).isTrue();
     }
 
