@@ -15,7 +15,7 @@ new ValidatorFactory().withDialect(new CustomDialect);
 > ```
 
 > Returning `null` from `getMetaSchema()` is **NOT** recommended, and it will prevent it from being registered.
-{style=warning}
+> {style=warning}
 
 Please note that overriding existing dialects in the registry is also possible.
 To do so, create a dialect implementation which returns the same value from `getMetaSchema()` as the one you want to override.
@@ -30,17 +30,19 @@ By default, the default dialect is `Draft 2020-12`. You can change it by calling
 new ValidatorFactory().withDefaultDialect(new CustomDialect);
 ```
 
+Moreover, if you set `disabledSchemaValidation` to `true`, 
+then the default dialect will be picked for any unknown (by dialect registry) `$schema` keyword values.
+
 > JSON Schema specification does not clearly define what should be done if `$schema` keyword is missing,
 > so relaying on that behavior is generally not recommended.
 > Other implementations might even forbid such configurations.
-{style=warning}
+> {style=warning}
 
 ## Dialect types
 
 Depending on your needs, you might want to define only specific parts of a dialect.
 
-### Meta-schema only
-
+<procedure title='Meta-schema only'>
 This is the only official way to extend/create dialects, and it's implementation-agnostic.
 
 **You will need:**
@@ -58,9 +60,9 @@ This is the only official way to extend/create dialects, and it's implementation
 1. Define custom keywords, as the logic cannot be expressed directly in JSON.
 2. Make the dialect independent of another one. As mentioned before: it eventually needs to point to a registered dialect.
 3. Change the supported, required and default vocabularies.
+</procedure>
 
-### Dialect without meta-schema
-
+<procedure title='Dialect without meta-schema'>
 This is not really recommended approach as such a dialect can only be used as a default dialect.
 
 **You will need:**
@@ -68,23 +70,52 @@ This is not really recommended approach as such a dialect can only be used as a 
 
 **It allows you (only for schemas lacking `$schema` keyword):**
 1. Defining custom keywords via `EvaluatorFactory`.
-2. Changing the supported, required and default vocabularies.
+2. Defining custom validation for your schemas. 
+3. Changing active vocabularies (by `$vocabulary` keyword). You can, for example, disable all validation keywords.
+4. Changing the supported, required and default vocabularies.
 
 **You will not be able to:**
-1. Affect
+1. Define custom validation for your schemas.
+2. Apply to schemas with resolvable `$schema` values.
+</procedure>
 
+<procedure title='Full dialect'>
+The combination of two previous approaches.
 
+**You will need:**
+1. The actual meta-schema:
+    - It can be provided either by `SchemaResolver` or registered directly in `Validator` instance.
+    - It can be recursive.
+2. The actual implementation of `Dialect`.
 
-### bop
+**It allows you:**
+1. Defining custom keywords via `EvaluatorFactory`.
+2. Changing the supported, required and default vocabularies.
+</procedure>
 
-1. semi dialect: only metaschema: cannot change evaluator factory,
-must @schema to full dialect to resolve spec version. Mostly for simple vocab changes
-2. defined dialect without metaschema: no custom meta validation, static vocabs
-3. full dialect with metaschema: can be recursive
+## Dialect resolution process
 
-Registering dialect must have schema URI !!!
-
-## What happens when dialect cannot be resolved?
+```mermaid
+---
+config:
+  theme: dark
+  layout: dagre
+  look: classic
+---
+flowchart TD
+    A[Does schema contain **$schema** keyword?]
+    A -- No --> B2[✔ Use default dialect]
+    A -- Yes --> B1[Is it present in dialect registry?]
+    B1 -- No --> C2[Is **disableSchemaValidation** set?]
+    B1 -- Yes --> C1[✔ Use dialect from the registry]
+    C2 -- No --> D2[✔ Use default dialect]
+    C2 -- No --> D3[Is meta-schema present in schema registry?]
+    D3 -- Yes --> E1[✔ Get meta-schema from registry and use its dialect]
+    D3 -- No --> E2[Follow schema resolution flow up the tree until:]
+    E2 --> F1[✔ Root meta-schema is resolved. Use its dialect]
+    E2 --> F2[❌ Resolution of meta-schema fails]
+    E2 --> F3[❌ Cycle found]
+```
 
 ## examples
  
@@ -99,5 +130,4 @@ And activating it by using custom metaschema
 
 ### Dialect without vocab hassle
 
-### 
 
