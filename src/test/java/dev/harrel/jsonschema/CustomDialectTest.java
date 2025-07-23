@@ -13,7 +13,6 @@ import java.util.stream.Stream;
 
 import static dev.harrel.jsonschema.util.TestUtil.assertError;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatNoException;
 
 class CustomDialectTest {
     @ParameterizedTest
