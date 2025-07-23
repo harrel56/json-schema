@@ -39,7 +39,7 @@ repositories {
 
 def jsonProviders = [
         [id   : 'jackson', additionalVersions: ['2.2.0'],
-         group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.19.1'],
+         group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.19.2'],
         [id   : 'gson', additionalVersions: ['2.3'],
          group: 'com.google.code.gson', name: 'gson', version: '2.13.1'],
         [id   : 'orgJson', additionalVersions: ['20201115'],
@@ -69,12 +69,12 @@ dependencies {
     formatImplementation 'com.sanctionco.jmail:jmail:2.0.2'
 
     jakartaJsonTestImplementation 'org.eclipse.parsson:parsson:1.1.7'
-    testImplementation 'org.junit.platform:junit-platform-launcher:1.13.3'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.13.3'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.3'
+    testImplementation 'org.junit.platform:junit-platform-launcher:1.13.4'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.13.4'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
     testImplementation 'org.assertj:assertj-core:3.27.3'
     testImplementation 'org.mockito:mockito-core:5.18.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.13.3'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.13.4'
     testRuntimeOnly 'org.eclipse.parsson:parsson:1.1.7'
 }
 
