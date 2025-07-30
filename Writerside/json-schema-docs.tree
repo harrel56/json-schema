@@ -28,7 +28,7 @@
     </toc-element>
     <toc-element topic="Annotations.md"/>
     <toc-element toc-title="Advanced configuration">
-        <toc-element topic="Custom-keywords.md">
+        <toc-element toc-title="Custom keywords">
             <toc-element topic="Evaluators.md"/>
             <toc-element topic="Evaluator-factories.md"/>
             <toc-element topic="Examples.md"/>

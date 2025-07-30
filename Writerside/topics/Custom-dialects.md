@@ -117,7 +117,7 @@ flowchart TD
     E2 --> F3[❌ Cycle found]
 ```
 
-## examples
+## Examples
  
 ### Format factory with vocab support
 
