@@ -60,7 +60,8 @@ public final class JettisonNode extends SimpleJsonNode {
         @Override
         public JsonNode wrap(Object node) {
             if (node instanceof JettisonNode) {
-                return new JettisonNode(((JettisonNode) node).node);
+                JettisonNode providerNode = (JettisonNode) node;
+                return providerNode.jsonPointer.isEmpty() ? providerNode : new JettisonNode((providerNode).node);
             } else {
                 return new JettisonNode(node);
             }
