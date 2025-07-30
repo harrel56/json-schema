@@ -55,7 +55,12 @@ public final class ValidatorFactory {
     public ValidatorFactory withDialect(Dialect dialect) {
         // todo lets make meta-schema non-nullable at some point
         if (dialect.getMetaSchema() != null) {
-            dialects.put(URI.create(dialect.getMetaSchema()), dialect);
+            CompoundUri uri = CompoundUri.fromString(dialect.getMetaSchema());
+            if (!uri.fragment.isEmpty()) {
+                throw new IllegalArgumentException(
+                        String.format("Dialect meta-schema [%s] cannot contain non-empty fragments", dialect.getMetaSchema()));
+            }
+            dialects.put(uri.uri, dialect);
         }
         return this;
     }
