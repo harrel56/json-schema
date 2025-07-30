@@ -75,10 +75,6 @@ final class UriUtil {
         }
     }
 
-    static String getJsonPointerParent(String pointer) {
-        return pointer.substring(0, pointer.lastIndexOf('/'));
-    }
-
     static CompoundUri resolveUri(URI baseUri, CompoundUri ref) {
         String fragment = urlDecode(ref.fragment);
         if (ref.uri.toString().isEmpty()) {
