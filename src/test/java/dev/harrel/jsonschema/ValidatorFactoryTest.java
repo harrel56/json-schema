@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.harrel.jsonschema.providers.JacksonNode;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.net.URI;
 import java.util.List;
@@ -24,6 +26,48 @@ class ValidatorFactoryTest {
                 }""";
         Validator.Result result = new ValidatorFactory()
                 .withDialect(new Dialects.Draft2020Dialect() {
+                    @Override
+                    public EvaluatorFactory getEvaluatorFactory() {
+                        return (ctx, fieldName, fieldNode) -> Optional.empty();
+                    }
+                })
+                .validate(schema, "null");
+        assertThat(result.isValid()).isTrue();
+    }
+
+    @Test
+    void shouldDisallowRegisteringDialectWithNonEmptyFragments() {
+        ValidatorFactory factory = new ValidatorFactory();
+        Dialect dialect = new Dialects.Draft2020Dialect() {
+            @Override
+            public String getMetaSchema() {
+                return "https://harrel.dev#/$defs/x";
+            }
+        };
+        assertThatThrownBy(() -> factory.withDialect(dialect))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Dialect meta-schema [https://harrel.dev#/$defs/x] cannot contain non-empty fragments");
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "http://json-schema.org/draft-07/schema,http://json-schema.org/draft-07/schema",
+            "http://json-schema.org/draft-07/schema#,http://json-schema.org/draft-07/schema",
+            "http://json-schema.org/draft-07/schema,http://json-schema.org/draft-07/schema#",
+            "http://json-schema.org/draft-07/schema#,http://json-schema.org/draft-07/schema#",
+    })
+    void shouldRegisterDialectWithoutEmptyFragment(String metaSchema, String metaSchemaRef) {
+        String schema = """
+                {
+                  "$schema": "%s",
+                  "type": "number"
+                }""".formatted(metaSchemaRef);
+        Validator.Result result = new ValidatorFactory()
+                .withDialect(new Dialects.Draft2020Dialect() {
+                    @Override
+                    public String getMetaSchema() {
+                        return metaSchema;
+                    }
                     @Override
                     public EvaluatorFactory getEvaluatorFactory() {
                         return (ctx, fieldName, fieldNode) -> Optional.empty();
