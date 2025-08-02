@@ -156,6 +156,28 @@ class ValidatorTest {
     }
 
     @Test
+    void validatesEmbeddedSchemaAndInstance() {
+        JsonNode wrappedSchema = new JacksonNode.Factory().create("""
+                {
+                  "embedded": %s
+                }""".formatted(RAW_SCHEMA));
+        JsonNode wrappedInstance = new JacksonNode.Factory().create("""
+                {
+                  "embedded": true
+                }""");
+
+        Validator validator = new ValidatorFactory().createValidator();
+        JsonNode jsonNode = wrappedInstance.asObject().get("embedded");
+        URI uri = validator.registerSchema(wrappedSchema.asObject().get("embedded"));
+        Validator.Result res = validator.validate(uri, jsonNode);
+        assertThat(res.isValid()).isFalse();
+        assertThat(res.getErrors()).hasSize(1);
+        assertThat(res.getErrors().getFirst().getEvaluationPath()).isEqualTo("/not");
+        assertThat(res.getErrors().getFirst().getSchemaLocation()).endsWith("#");
+        assertThat(res.getErrors().getFirst().getInstanceLocation()).isEqualTo("");
+    }
+
+    @Test
     void producesAnnotations() {
         Validator validator = new ValidatorFactory().createValidator();
         String schema = """
