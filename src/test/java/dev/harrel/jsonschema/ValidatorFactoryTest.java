@@ -197,6 +197,50 @@ class ValidatorFactoryTest {
     }
 
     @Test
+    void validateEmbeddedJsonNodeString() {
+        JsonNode wrappedSchema = new JacksonNode.Factory().create("""
+                {
+                  "embedded": %s
+                }""".formatted(RAW_SCHEMA));
+        Validator.Result res = new ValidatorFactory().validate(wrappedSchema.asObject().get("embedded"), RAW_INSTANCE);
+        assertThat(res.isValid()).isFalse();
+        assertThat(res.getErrors()).hasSize(1);
+        assertThat(res.getErrors().getFirst().getEvaluationPath()).isEqualTo("/type");
+        assertThat(res.getErrors().getFirst().getSchemaLocation()).endsWith("#");
+    }
+
+    @Test
+    void validateEmbeddedStringJsonNode() {
+        JsonNode wrappedInstance = new JacksonNode.Factory().create("""
+                {
+                  "embedded": %s
+                }""".formatted(RAW_INSTANCE));
+        Validator.Result res = new ValidatorFactory().validate(RAW_SCHEMA, wrappedInstance.asObject().get("embedded"));
+        assertThat(res.isValid()).isFalse();
+        assertThat(res.getErrors()).hasSize(1);
+        assertThat(res.getErrors().getFirst().getInstanceLocation()).isEqualTo("");
+    }
+
+    @Test
+    void validateEmbeddedJsonNodeJsonNode() {
+        JsonNode wrappedSchema = new JacksonNode.Factory().create("""
+                {
+                  "embedded": %s
+                }""".formatted(RAW_SCHEMA));
+        JsonNode wrappedInstance = new JacksonNode.Factory().create("""
+                {
+                  "embedded": %s
+                }""".formatted(RAW_INSTANCE));
+        Validator.Result res = new ValidatorFactory()
+                .validate(wrappedSchema.asObject().get("embedded"), wrappedInstance.asObject().get("embedded"));
+        assertThat(res.isValid()).isFalse();
+        assertThat(res.getErrors()).hasSize(1);
+        assertThat(res.getErrors().getFirst().getEvaluationPath()).isEqualTo("/type");
+        assertThat(res.getErrors().getFirst().getSchemaLocation()).endsWith("#");
+        assertThat(res.getErrors().getFirst().getInstanceLocation()).isEqualTo("");
+    }
+
+    @Test
     void refToExternalSubSchemaPasses() {
         String schema = """
                 {
