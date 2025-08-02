@@ -63,7 +63,7 @@ public final class Validator {
      * @return automatically generated URI for the registered schema <b>OR</b> value of <i>$id</i> keyword in <i>root</i> schema if present
      */
     public URI registerSchema(JsonNode schemaNode) {
-        return jsonParser.parseRootSchema(generateSchemaUri(), schemaNode);
+        return jsonParser.parseRootSchema(generateSchemaUri(), schemaNodeFactory.wrap(schemaNode));
     }
 
     /**
@@ -133,7 +133,7 @@ public final class Validator {
     public Result validate(URI schemaUri, JsonNode instanceNode) {
         Schema schema = getRootSchema(schemaUri);
         EvaluationContext ctx = createNewEvaluationContext();
-        boolean valid = ctx.validateAgainstSchema(schema, instanceNode);
+        boolean valid = ctx.validateAgainstSchema(schema, instanceNodeFactory.wrap(instanceNode));
         return new Result(valid, ctx);
     }
 

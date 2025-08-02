@@ -85,7 +85,8 @@ public final class KotlinxJsonNode extends AbstractJsonNode<JsonElement> {
         @Override
         public KotlinxJsonNode wrap(Object node) {
             if (node instanceof KotlinxJsonNode) {
-                return new KotlinxJsonNode(((KotlinxJsonNode) node).node);
+                KotlinxJsonNode providerNode = (KotlinxJsonNode) node;
+                return providerNode.jsonPointer.isEmpty() ? providerNode : new KotlinxJsonNode((providerNode).node);
             } else if (node instanceof JsonElement) {
                 return new KotlinxJsonNode((JsonElement) node);
             } else {

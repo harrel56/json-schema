@@ -28,6 +28,14 @@ public abstract class JsonNodeFactoryTest implements ProviderTest {
     }
 
     @Test
+    void shouldReuseNodeFromWrapIfAlreadyIsRootNode() {
+        JsonNodeFactory factory = getJsonNodeFactory();
+        JsonNode rootNode = factory.create("{}");
+        assertThat(factory.wrap(rootNode)).isSameAs(rootNode);
+
+    }
+
+    @Test
     void shouldFailWrapForInvalidArgument() {
         Object object = new Object();
         JsonNodeFactory factory = getJsonNodeFactory();

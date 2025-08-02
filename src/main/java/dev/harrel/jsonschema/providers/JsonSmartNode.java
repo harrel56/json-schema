@@ -70,7 +70,8 @@ public final class JsonSmartNode extends SimpleJsonNode {
         @Override
         public JsonSmartNode wrap(Object node) {
             if (node instanceof JsonSmartNode) {
-                return new JsonSmartNode(((JsonSmartNode) node).node);
+                JsonSmartNode providerNode = (JsonSmartNode) node;
+                return providerNode.jsonPointer.isEmpty() ? providerNode : new JsonSmartNode((providerNode).node);
             } else {
                 return new JsonSmartNode(node);
             }
