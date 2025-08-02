@@ -218,7 +218,7 @@ class ValidatorFactoryTest {
         Validator.Result res = new ValidatorFactory().validate(RAW_SCHEMA, wrappedInstance.asObject().get("embedded"));
         assertThat(res.isValid()).isFalse();
         assertThat(res.getErrors()).hasSize(1);
-        assertThat(res.getErrors().getFirst().getInstanceLocation()).isEqualTo("");
+        assertThat(res.getErrors().getFirst().getInstanceLocation()).isEmpty();
     }
 
     @Test
@@ -237,7 +237,7 @@ class ValidatorFactoryTest {
         assertThat(res.getErrors()).hasSize(1);
         assertThat(res.getErrors().getFirst().getEvaluationPath()).isEqualTo("/type");
         assertThat(res.getErrors().getFirst().getSchemaLocation()).endsWith("#");
-        assertThat(res.getErrors().getFirst().getInstanceLocation()).isEqualTo("");
+        assertThat(res.getErrors().getFirst().getInstanceLocation()).isEmpty();
     }
 
     @Test

@@ -174,7 +174,7 @@ class ValidatorTest {
         assertThat(res.getErrors()).hasSize(1);
         assertThat(res.getErrors().getFirst().getEvaluationPath()).isEqualTo("/not");
         assertThat(res.getErrors().getFirst().getSchemaLocation()).endsWith("#");
-        assertThat(res.getErrors().getFirst().getInstanceLocation()).isEqualTo("");
+        assertThat(res.getErrors().getFirst().getInstanceLocation()).isEmpty();
     }
 
     @Test
