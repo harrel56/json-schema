@@ -31,9 +31,20 @@
         <toc-element toc-title="Custom keywords">
             <toc-element topic="Evaluators.md"/>
             <toc-element topic="Evaluator-factories.md"/>
-            <toc-element topic="Examples.md"/>
+            <toc-element toc-title="Examples">
+                <toc-element topic="Custom-keyword-maximum-size.md"/>
+                <toc-element topic="Custom-keyword-property-with-shortest-name.md"/>
+                <toc-element topic="Custom-keyword-lenient-type.md"/>
+            </toc-element>
         </toc-element>
-        <toc-element topic="Custom-dialects.md"/>
+        <toc-element toc-title="Custom dialects">
+            <toc-element topic="Custom-dialects-details.md"/>
+            <toc-element toc-title="Examples">
+                <toc-element topic="Custom-dialect-format-assertions.md"/>
+                <toc-element topic="Custom-vocabulary.md"/>
+                <toc-element topic="Dialect-overwrite.md"/>
+            </toc-element>
+        </toc-element>
         <toc-element topic="Custom-JSON-YAML-providers.md"/>
     </toc-element>
 </instance-profile>

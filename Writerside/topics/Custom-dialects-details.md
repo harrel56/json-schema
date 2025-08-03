@@ -1,4 +1,4 @@
-# Custom dialects
+# Dialect details
 
 ## Dialect registry
 
@@ -30,7 +30,7 @@ By default, the default dialect is `Draft 2020-12`. You can change it by calling
 new ValidatorFactory().withDefaultDialect(new CustomDialect);
 ```
 
-Moreover, if you set `disabledSchemaValidation` to `true`, 
+Moreover, if you set `disabledSchemaValidation` to `true`,
 then the default dialect will be picked for any unknown (by dialect registry) `$schema` keyword values.
 
 > JSON Schema specification does not clearly define what should be done if `$schema` keyword is missing,
@@ -46,11 +46,11 @@ Depending on your needs, you might want to define only specific parts of a diale
 This is the only official way to extend/create dialects, and it's implementation-agnostic.
 
 **You will need:**
-1. The actual meta-schema: 
+1. The actual meta-schema:
     - It can be provided either by `SchemaResolver` or registered directly in `Validator` instance.
     - It has to finally resolve to an actual concrete dialect (from dialect registry).
-    It cannot be recursive, either directly or indirectly - it may reference (by `$schema`) another "meta-schema only" dialect,
-    but eventually the chain of references must point to a dialect from the dialect registry.
+      It cannot be recursive, either directly or indirectly - it may reference (by `$schema`) another "meta-schema only" dialect,
+      but eventually the chain of references must point to a dialect from the dialect registry.
 
 **It allows you:**
 1. Changing active vocabularies (by `$vocabulary` keyword). You can, for example, disable all validation keywords.
@@ -70,7 +70,7 @@ This is not really recommended approach as such a dialect can only be used as a 
 
 **It allows you (only for schemas lacking `$schema` keyword):**
 1. Defining custom keywords via `EvaluatorFactory`.
-2. Defining custom validation for your schemas. 
+2. Defining custom validation for your schemas.
 3. Changing active vocabularies (by `$vocabulary` keyword). You can, for example, disable all validation keywords.
 4. Changing the supported, required and default vocabularies.
 
@@ -116,18 +116,3 @@ flowchart TD
     E2 --> F2[❌ Resolution of meta-schema fails]
     E2 --> F3[❌ Cycle found]
 ```
-
-## Examples
- 
-### Format factory with vocab support
-
-### Another case with vocabs
-
-maybe custom keyword, how to check for vocabs in evaluator factory (package access currently :().
-And activating it by using custom metaschema
-
-### Overwrite draft2020-12
-
-### Dialect without vocab hassle
-
-
