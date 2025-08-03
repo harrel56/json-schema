@@ -77,12 +77,12 @@ final class JsonParser {
         MetaSchemaData metaSchemaData = validateAgainstMetaSchema(node, metaSchemaUri, finalUri.toString());
 
         if (node.isBoolean()) {
-            SchemaParsingContext ctx = new SchemaParsingContext(metaSchemaData, baseUri, schemaRegistry, emptyMap());
+            SchemaParsingContext ctx = new SchemaParsingContext(metaSchemaData, baseUri, emptyMap());
             List<EvaluatorWrapper> evaluators = singletonList(new EvaluatorWrapper(null, node, Schema.getBooleanEvaluator(node.asBoolean())));
             schemaRegistry.registerSchema(ctx, node, evaluators);
         } else if (objectMapOptional.isPresent()) {
             Map<String, JsonNode> objectMap = objectMapOptional.get();
-            SchemaParsingContext ctx = new SchemaParsingContext(metaSchemaData, finalUri, schemaRegistry, objectMap);
+            SchemaParsingContext ctx = new SchemaParsingContext(metaSchemaData, finalUri, objectMap);
             idField.ifPresent(id -> validateIdField(ctx, id));
             List<EvaluatorWrapper> evaluators = parseEvaluators(ctx, objectMap, node.getJsonPointer());
             schemaRegistry.registerSchema(ctx, node, evaluators);

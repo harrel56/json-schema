@@ -13,29 +13,27 @@ import static java.util.Collections.unmodifiableMap;
  */
 public final class SchemaParsingContext {
     private final MetaSchemaData metaSchemaData;
-    private final SchemaRegistry schemaRegistry;
     private final Map<String, JsonNode> currentSchemaObject;
     private final Deque<URI> uriStack;
 
-    private SchemaParsingContext(MetaSchemaData metaSchemaData, SchemaRegistry schemaRegistry, Map<String, JsonNode> currentSchemaObject, Deque<URI> uriStack) {
+    private SchemaParsingContext(MetaSchemaData metaSchemaData, Map<String, JsonNode> currentSchemaObject, Deque<URI> uriStack) {
         this.metaSchemaData = Objects.requireNonNull(metaSchemaData);
-        this.schemaRegistry = Objects.requireNonNull(schemaRegistry);
         this.currentSchemaObject = Objects.requireNonNull(currentSchemaObject);
         this.uriStack = Objects.requireNonNull(uriStack);
     }
 
-    SchemaParsingContext(MetaSchemaData metaSchemaData, URI baseUri, SchemaRegistry schemaRegistry, Map<String, JsonNode> currentSchemaObject) {
-        this(metaSchemaData, schemaRegistry, currentSchemaObject, new ArrayDeque<>(Collections.singletonList(baseUri)));
+    SchemaParsingContext(MetaSchemaData metaSchemaData, URI baseUri, Map<String, JsonNode> currentSchemaObject) {
+        this(metaSchemaData, currentSchemaObject, new ArrayDeque<>(Collections.singletonList(baseUri)));
     }
 
     SchemaParsingContext forChild(MetaSchemaData metaSchemaData, Map<String, JsonNode> currentSchemaObject, URI parentUri) {
         ArrayDeque<URI> newUriStack = new ArrayDeque<>(uriStack);
         newUriStack.push(parentUri);
-        return new SchemaParsingContext(metaSchemaData, schemaRegistry, currentSchemaObject, newUriStack);
+        return new SchemaParsingContext(metaSchemaData, currentSchemaObject, newUriStack);
     }
 
     SchemaParsingContext forChild(Map<String, JsonNode> currentSchemaObject) {
-        return new SchemaParsingContext(metaSchemaData, schemaRegistry, currentSchemaObject, uriStack);
+        return new SchemaParsingContext(metaSchemaData, currentSchemaObject, uriStack);
     }
 
     MetaSchemaData getMetaSchemaData() {
