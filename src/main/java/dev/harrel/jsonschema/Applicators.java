@@ -622,7 +622,7 @@ class LegacyRefEvaluator implements Evaluator {
         if (!node.isString()) {
             throw new IllegalArgumentException();
         }
-        if (ctx.getCurrentSchemaObject().containsKey(Keyword.getIdKeyword(ctx.getSpecificationVersion()))) {
+        if (ctx.getCurrentSchemaObject().containsKey(Keyword.getIdKeyword(ctx.getDialect().getSpecificationVersion()))) {
             this.ref = UriUtil.resolveUri(ctx.getGrandparentUri(), CompoundUri.fromString(node.asString()));
         } else {
             this.ref = UriUtil.resolveUri(ctx.getParentUri(), CompoundUri.fromString(node.asString()));

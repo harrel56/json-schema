@@ -77,12 +77,12 @@ final class JsonParser {
         MetaSchemaData metaSchemaData = validateAgainstMetaSchema(node, metaSchemaUri, finalUri.toString());
 
         if (node.isBoolean()) {
-            SchemaParsingContext ctx = new SchemaParsingContext(metaSchemaData, baseUri, schemaRegistry, emptyMap());
+            SchemaParsingContext ctx = new SchemaParsingContext(metaSchemaData, baseUri, emptyMap());
             List<EvaluatorWrapper> evaluators = singletonList(new EvaluatorWrapper(null, node, Schema.getBooleanEvaluator(node.asBoolean())));
             schemaRegistry.registerSchema(ctx, node, evaluators);
         } else if (objectMapOptional.isPresent()) {
             Map<String, JsonNode> objectMap = objectMapOptional.get();
-            SchemaParsingContext ctx = new SchemaParsingContext(metaSchemaData, finalUri, schemaRegistry, objectMap);
+            SchemaParsingContext ctx = new SchemaParsingContext(metaSchemaData, finalUri, objectMap);
             idField.ifPresent(id -> validateIdField(ctx, id));
             List<EvaluatorWrapper> evaluators = parseEvaluators(ctx, objectMap, node.getJsonPointer());
             schemaRegistry.registerSchema(ctx, node, evaluators);
@@ -124,7 +124,7 @@ final class JsonParser {
                 .map(UriUtil::removeEmptyFragment)
                 .map(dialects::get)
                 .map(Dialect::getSpecificationVersion)
-                .orElse(ctx.getMetaValidationData().dialect.getSpecificationVersion());
+                .orElse(ctx.getDialect().getSpecificationVersion());
         Optional<String> idField = JsonNodeUtil.getStringField(objectMap, Keyword.getIdKeyword(specVersion));
         boolean isEmbeddedSchema = idField
                 .map(id -> !id.startsWith("#") || specVersion.getOrder() > SpecificationVersion.DRAFT7.getOrder())
@@ -142,7 +142,7 @@ final class JsonParser {
             MetaSchemaData metaSchemaData = JsonNodeUtil.getStringField(objectMap, Keyword.SCHEMA)
                     .map(UriUtil::removeEmptyFragment)
                     .map(metaSchemaUri -> validateAgainstMetaSchema(node, metaSchemaUri, idUri.toString()))
-                    .orElse(ctx.getMetaValidationData());
+                    .orElse(ctx.getMetaSchemaData());
 
             URI uri = ctx.getParentUri().resolve(idUri);
             SchemaParsingContext newCtx = ctx.forChild(metaSchemaData, objectMap, uri);
@@ -158,7 +158,7 @@ final class JsonParser {
         List<EvaluatorWrapper> evaluators = new ArrayList<>();
         JsonNode refOverride = null;
         /* until draft2019, $ref must ignore sibling keywords */
-        if (ctx.getSpecificationVersion().getOrder() <= SpecificationVersion.DRAFT7.getOrder()) {
+        if (ctx.getDialect().getSpecificationVersion().getOrder() <= SpecificationVersion.DRAFT7.getOrder()) {
             refOverride = object.get(Keyword.REF);
         }
 
@@ -224,7 +224,7 @@ final class JsonParser {
 
         /* If this is a registered dialect and meta-schema defines no vocabs, use vocabs from dialect */
         if (metaSchemaData.vocabularyObject == null) {
-            return new MetaSchemaData(dialect, dialect.getDefaultVocabularyObject(), dialect.getDefaultVocabularyObject().keySet());
+            return new MetaSchemaData(dialect);
         } else {
             return new MetaSchemaData(dialect, metaSchemaData.vocabularyObject, metaSchemaData.activeVocabularies);
         }
@@ -232,15 +232,15 @@ final class JsonParser {
 
     private EvaluatorFactory createEvaluatorFactory(SchemaParsingContext ctx) {
         if (evaluatorFactory != null) {
-            return EvaluatorFactory.compose(evaluatorFactory, ctx.getMetaValidationData().dialect.getEvaluatorFactory());
+            return EvaluatorFactory.compose(evaluatorFactory, ctx.getDialect().getEvaluatorFactory());
         } else {
-            return ctx.getMetaValidationData().dialect.getEvaluatorFactory();
+            return ctx.getDialect().getEvaluatorFactory();
         }
     }
 
     private static void validateIdField(SchemaParsingContext ctx, String id) {
         URI uri = URI.create(id);
-        if (ctx.getSpecificationVersion().getOrder() > SpecificationVersion.DRAFT7.getOrder()) {
+        if (ctx.getDialect().getSpecificationVersion().getOrder() > SpecificationVersion.DRAFT7.getOrder()) {
             if (uri.getRawFragment() != null && !uri.getRawFragment().isEmpty()) {
                 throw new IllegalArgumentException(String.format("$id [%s] cannot contain non-empty fragments", id));
             }

@@ -56,7 +56,7 @@ final class SchemaRegistry {
     void registerSchema(SchemaParsingContext ctx,
                         JsonNode schemaNode,
                         List<EvaluatorWrapper> evaluators) {
-        Schema schema = new Schema(ctx.getParentUri(), ctx.getAbsoluteUri(schemaNode), evaluators, ctx.getMetaValidationData(), ctx.getCurrentSchemaObject());
+        Schema schema = new Schema(ctx.getParentUri(), ctx.getAbsoluteUri(schemaNode), evaluators, ctx.getMetaSchemaData(), ctx.getCurrentSchemaObject());
         state.createIfAbsent(ctx.getBaseUri()).schemas.put(schemaNode.getJsonPointer(), schema);
         registerAnchorsIfPresent(ctx, schemaNode, schema);
     }
@@ -74,7 +74,7 @@ final class SchemaRegistry {
                     String newJsonPointer = e.getKey().substring(schemaNode.getJsonPointer().length());
                     idFragments.additionalSchemas.put(newJsonPointer, e.getValue());
                 });
-        Schema identifiableSchema = new Schema(ctx.getParentUri(), ctx.getAbsoluteUri(schemaNode), evaluators, ctx.getMetaValidationData(), ctx.getCurrentSchemaObject());
+        Schema identifiableSchema = new Schema(ctx.getParentUri(), ctx.getAbsoluteUri(schemaNode), evaluators, ctx.getMetaSchemaData(), ctx.getCurrentSchemaObject());
         idFragments.schemas.put("", identifiableSchema);
         baseFragments.schemas.put(schemaNode.getJsonPointer(), identifiableSchema);
         registerAnchorsIfPresent(ctx, schemaNode, identifiableSchema);
@@ -87,10 +87,10 @@ final class SchemaRegistry {
         Map<String, JsonNode> objectMap = schemaNode.asObject();
         Fragments fragments = state.createIfAbsent(ctx.getParentUri());
 
-        if (ctx.getSpecificationVersion().getOrder() > SpecificationVersion.DRAFT7.getOrder()) {
+        if (ctx.getDialect().getSpecificationVersion().getOrder() > SpecificationVersion.DRAFT7.getOrder()) {
             JsonNodeUtil.getStringField(objectMap, Keyword.ANCHOR)
                     .ifPresent(anchorString -> fragments.additionalSchemas.put(anchorString, schema));
-            if (ctx.getSpecificationVersion() == SpecificationVersion.DRAFT2019_09) {
+            if (ctx.getDialect().getSpecificationVersion() == SpecificationVersion.DRAFT2019_09) {
                 JsonNodeUtil.getBooleanField(objectMap, Keyword.RECURSIVE_ANCHOR)
                         .filter(anchor -> anchor)
                         .ifPresent(anchorString -> fragments.dynamicSchemas.put("", schema));
@@ -99,7 +99,7 @@ final class SchemaRegistry {
                         .ifPresent(anchorString -> fragments.dynamicSchemas.put(anchorString, schema));
             }
         } else {
-            JsonNodeUtil.getStringField(objectMap, Keyword.getIdKeyword(ctx.getSpecificationVersion()))
+            JsonNodeUtil.getStringField(objectMap, Keyword.getIdKeyword(ctx.getDialect().getSpecificationVersion()))
                     .map(URI::create)
                     .map(URI::getFragment)
                     .ifPresent(anchorString -> fragments.additionalSchemas.put(anchorString, schema));
