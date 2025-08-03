@@ -184,7 +184,7 @@ class CustomDialectTest {
     static class CustomEvaluatorFactory implements EvaluatorFactory {
         @Override
         public Optional<Evaluator> create(SchemaParsingContext spc, String fieldName, JsonNode fieldNode) {
-            if ("custom".equals(fieldName) && spc.getMetaValidationData().activeVocabularies.contains("urn:custom-vocab")) {
+            if ("custom".equals(fieldName) && spc.getMetaSchemaData().activeVocabularies.contains("urn:custom-vocab")) {
                 return Optional.of((ctx, node) -> {
                     if (node.isString() && node.asString().equals("custom")) {
                         return Evaluator.Result.success();

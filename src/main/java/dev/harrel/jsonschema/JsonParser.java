@@ -124,7 +124,7 @@ final class JsonParser {
                 .map(UriUtil::removeEmptyFragment)
                 .map(dialects::get)
                 .map(Dialect::getSpecificationVersion)
-                .orElse(ctx.getMetaValidationData().dialect.getSpecificationVersion());
+                .orElse(ctx.getMetaSchemaData().dialect.getSpecificationVersion());
         Optional<String> idField = JsonNodeUtil.getStringField(objectMap, Keyword.getIdKeyword(specVersion));
         boolean isEmbeddedSchema = idField
                 .map(id -> !id.startsWith("#") || specVersion.getOrder() > SpecificationVersion.DRAFT7.getOrder())
@@ -142,7 +142,7 @@ final class JsonParser {
             MetaSchemaData metaSchemaData = JsonNodeUtil.getStringField(objectMap, Keyword.SCHEMA)
                     .map(UriUtil::removeEmptyFragment)
                     .map(metaSchemaUri -> validateAgainstMetaSchema(node, metaSchemaUri, idUri.toString()))
-                    .orElse(ctx.getMetaValidationData());
+                    .orElse(ctx.getMetaSchemaData());
 
             URI uri = ctx.getParentUri().resolve(idUri);
             SchemaParsingContext newCtx = ctx.forChild(metaSchemaData, objectMap, uri);
@@ -232,9 +232,9 @@ final class JsonParser {
 
     private EvaluatorFactory createEvaluatorFactory(SchemaParsingContext ctx) {
         if (evaluatorFactory != null) {
-            return EvaluatorFactory.compose(evaluatorFactory, ctx.getMetaValidationData().dialect.getEvaluatorFactory());
+            return EvaluatorFactory.compose(evaluatorFactory, ctx.getMetaSchemaData().dialect.getEvaluatorFactory());
         } else {
-            return ctx.getMetaValidationData().dialect.getEvaluatorFactory();
+            return ctx.getMetaSchemaData().dialect.getEvaluatorFactory();
         }
     }
 

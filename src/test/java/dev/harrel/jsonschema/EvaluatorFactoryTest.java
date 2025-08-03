@@ -27,7 +27,7 @@ abstract class EvaluatorFactoryTest implements ProviderTest {
     }
 
     void testSupportedKeyword(String keyword, Set<SimpleType> supportedTypes) {
-        EvaluatorFactory evaluatorFactory = ctx.getMetaValidationData().dialect.getEvaluatorFactory();
+        EvaluatorFactory evaluatorFactory = ctx.getMetaSchemaData().dialect.getEvaluatorFactory();
         for (var entry : TYPE_MAP.entrySet()) {
             JsonNode wrappedNode = getJsonNodeFactory().create("{\"%s\": %s}".formatted(keyword, entry.getValue()));
             Optional<Evaluator> evaluator = evaluatorFactory.create(ctx, keyword, wrappedNode.asObject().get(keyword));
@@ -44,7 +44,7 @@ abstract class EvaluatorFactoryTest implements ProviderTest {
     }
 
     void testUnsupportedKeyword(String keyword) {
-        EvaluatorFactory evaluatorFactory = ctx.getMetaValidationData().dialect.getEvaluatorFactory();
+        EvaluatorFactory evaluatorFactory = ctx.getMetaSchemaData().dialect.getEvaluatorFactory();
         for (var entry : TYPE_MAP.entrySet()) {
             JsonNode wrappedNode = getJsonNodeFactory().create("{\"%s\": %s}".formatted(keyword, entry.getValue()));
             Optional<Evaluator> evaluator = evaluatorFactory.create(ctx, keyword, wrappedNode.asObject().get(keyword));
@@ -57,7 +57,7 @@ abstract class EvaluatorFactoryTest implements ProviderTest {
     }
 
     void testIgnoredKeyword(String keyword) {
-        EvaluatorFactory evaluatorFactory = ctx.getMetaValidationData().dialect.getEvaluatorFactory();
+        EvaluatorFactory evaluatorFactory = ctx.getMetaSchemaData().dialect.getEvaluatorFactory();
         for (var entry : TYPE_MAP.entrySet()) {
             JsonNode wrappedNode = getJsonNodeFactory().create("{\"%s\": %s}".formatted(keyword, entry.getValue()));
             Optional<Evaluator> evaluator = evaluatorFactory.create(ctx, keyword, wrappedNode.asObject().get(keyword));

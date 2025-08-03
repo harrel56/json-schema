@@ -115,7 +115,7 @@ public final class FormatEvaluatorFactory implements EvaluatorFactory {
      */
     public FormatEvaluatorFactory(Set<String> vocabularies) {
         Set<String> vocabsCopy = unmodifiableSet(new HashSet<>(vocabularies));
-        this.vocabPredicate = ctx -> !Collections.disjoint(vocabsCopy, ctx.getMetaValidationData().activeVocabularies);
+        this.vocabPredicate = ctx -> !Collections.disjoint(vocabsCopy, ctx.getMetaSchemaData().activeVocabularies);
     }
 
     @Override

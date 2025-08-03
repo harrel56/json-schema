@@ -38,7 +38,7 @@ public final class SchemaParsingContext {
         return new SchemaParsingContext(metaSchemaData, schemaRegistry, currentSchemaObject, uriStack);
     }
 
-    MetaSchemaData getMetaValidationData() {
+    MetaSchemaData getMetaSchemaData() {
         return metaSchemaData;
     }
 
