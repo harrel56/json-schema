@@ -9,9 +9,9 @@ class MetaSchemaData {
     final Set<String> activeVocabularies;
 
     MetaSchemaData(Dialect dialect, Map<String, Boolean> vocabularyObject, Set<String> activeVocabularies) {
-        this.dialect = dialect;
+        this.dialect = Objects.requireNonNull(dialect);
         this.vocabularyObject = vocabularyObject;
-        this.activeVocabularies = activeVocabularies;
+        this.activeVocabularies = Objects.requireNonNull(activeVocabularies);
     }
 
     MetaSchemaData(Dialect dialect) {

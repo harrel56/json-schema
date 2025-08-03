@@ -224,7 +224,7 @@ final class JsonParser {
 
         /* If this is a registered dialect and meta-schema defines no vocabs, use vocabs from dialect */
         if (metaSchemaData.vocabularyObject == null) {
-            return new MetaSchemaData(dialect, dialect.getDefaultVocabularyObject(), dialect.getDefaultVocabularyObject().keySet());
+            return new MetaSchemaData(dialect);
         } else {
             return new MetaSchemaData(dialect, metaSchemaData.vocabularyObject, metaSchemaData.activeVocabularies);
         }

@@ -18,10 +18,10 @@ public final class SchemaParsingContext {
     private final Deque<URI> uriStack;
 
     private SchemaParsingContext(MetaSchemaData metaSchemaData, SchemaRegistry schemaRegistry, Map<String, JsonNode> currentSchemaObject, Deque<URI> uriStack) {
-        this.metaSchemaData = metaSchemaData;
-        this.schemaRegistry = schemaRegistry;
-        this.currentSchemaObject = currentSchemaObject;
-        this.uriStack = uriStack;
+        this.metaSchemaData = Objects.requireNonNull(metaSchemaData);
+        this.schemaRegistry = Objects.requireNonNull(schemaRegistry);
+        this.currentSchemaObject = Objects.requireNonNull(currentSchemaObject);
+        this.uriStack = Objects.requireNonNull(uriStack);
     }
 
     SchemaParsingContext(MetaSchemaData metaSchemaData, URI baseUri, SchemaRegistry schemaRegistry, Map<String, JsonNode> currentSchemaObject) {
@@ -60,6 +60,10 @@ public final class SchemaParsingContext {
         return uriStack.getLast();
     }
 
+    CompoundUri getCompoundUri(JsonNode node) {
+        return new CompoundUri(getBaseUri(), node.getJsonPointer());
+    }
+
     /**
      * Returns URI of the closest parent schema that contains <i>$id</i> keyword.
      * If there is no such parent, then the URI of root schema is returned.
@@ -94,9 +98,5 @@ public final class SchemaParsingContext {
      */
     public Map<String, JsonNode> getCurrentSchemaObject() {
         return unmodifiableMap(currentSchemaObject);
-    }
-
-    CompoundUri getCompoundUri(JsonNode node) {
-        return new CompoundUri(getBaseUri(), node.getJsonPointer());
     }
 }
