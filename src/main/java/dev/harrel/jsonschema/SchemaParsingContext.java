@@ -42,10 +42,6 @@ public final class SchemaParsingContext {
         return metaSchemaData;
     }
 
-    SpecificationVersion getSpecificationVersion() {
-        return metaSchemaData.dialect.getSpecificationVersion();
-    }
-
     URI getGrandparentUri() {
         Iterator<URI> it = uriStack.iterator();
         URI parent = it.next();
@@ -98,5 +94,23 @@ public final class SchemaParsingContext {
      */
     public Map<String, JsonNode> getCurrentSchemaObject() {
         return unmodifiableMap(currentSchemaObject);
+    }
+
+    /**
+     * Returns the dialect in which the schema is being parsed.
+     *
+     * @return current dialect
+     */
+    public Dialect getDialect() {
+        return metaSchemaData.dialect;
+    }
+
+    /**
+     * Returns currently active vocabularies.
+     *
+     * @return set of vocabularies (never null)
+     */
+    public Set<String> getActiveVocabularies() {
+        return metaSchemaData.activeVocabularies;
     }
 }

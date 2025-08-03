@@ -87,10 +87,10 @@ final class SchemaRegistry {
         Map<String, JsonNode> objectMap = schemaNode.asObject();
         Fragments fragments = state.createIfAbsent(ctx.getParentUri());
 
-        if (ctx.getSpecificationVersion().getOrder() > SpecificationVersion.DRAFT7.getOrder()) {
+        if (ctx.getDialect().getSpecificationVersion().getOrder() > SpecificationVersion.DRAFT7.getOrder()) {
             JsonNodeUtil.getStringField(objectMap, Keyword.ANCHOR)
                     .ifPresent(anchorString -> fragments.additionalSchemas.put(anchorString, schema));
-            if (ctx.getSpecificationVersion() == SpecificationVersion.DRAFT2019_09) {
+            if (ctx.getDialect().getSpecificationVersion() == SpecificationVersion.DRAFT2019_09) {
                 JsonNodeUtil.getBooleanField(objectMap, Keyword.RECURSIVE_ANCHOR)
                         .filter(anchor -> anchor)
                         .ifPresent(anchorString -> fragments.dynamicSchemas.put("", schema));
@@ -99,7 +99,7 @@ final class SchemaRegistry {
                         .ifPresent(anchorString -> fragments.dynamicSchemas.put(anchorString, schema));
             }
         } else {
-            JsonNodeUtil.getStringField(objectMap, Keyword.getIdKeyword(ctx.getSpecificationVersion()))
+            JsonNodeUtil.getStringField(objectMap, Keyword.getIdKeyword(ctx.getDialect().getSpecificationVersion()))
                     .map(URI::create)
                     .map(URI::getFragment)
                     .ifPresent(anchorString -> fragments.additionalSchemas.put(anchorString, schema));

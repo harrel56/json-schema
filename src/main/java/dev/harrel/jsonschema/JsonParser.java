@@ -124,7 +124,7 @@ final class JsonParser {
                 .map(UriUtil::removeEmptyFragment)
                 .map(dialects::get)
                 .map(Dialect::getSpecificationVersion)
-                .orElse(ctx.getMetaSchemaData().dialect.getSpecificationVersion());
+                .orElse(ctx.getDialect().getSpecificationVersion());
         Optional<String> idField = JsonNodeUtil.getStringField(objectMap, Keyword.getIdKeyword(specVersion));
         boolean isEmbeddedSchema = idField
                 .map(id -> !id.startsWith("#") || specVersion.getOrder() > SpecificationVersion.DRAFT7.getOrder())
@@ -158,7 +158,7 @@ final class JsonParser {
         List<EvaluatorWrapper> evaluators = new ArrayList<>();
         JsonNode refOverride = null;
         /* until draft2019, $ref must ignore sibling keywords */
-        if (ctx.getSpecificationVersion().getOrder() <= SpecificationVersion.DRAFT7.getOrder()) {
+        if (ctx.getDialect().getSpecificationVersion().getOrder() <= SpecificationVersion.DRAFT7.getOrder()) {
             refOverride = object.get(Keyword.REF);
         }
 
@@ -232,15 +232,15 @@ final class JsonParser {
 
     private EvaluatorFactory createEvaluatorFactory(SchemaParsingContext ctx) {
         if (evaluatorFactory != null) {
-            return EvaluatorFactory.compose(evaluatorFactory, ctx.getMetaSchemaData().dialect.getEvaluatorFactory());
+            return EvaluatorFactory.compose(evaluatorFactory, ctx.getDialect().getEvaluatorFactory());
         } else {
-            return ctx.getMetaSchemaData().dialect.getEvaluatorFactory();
+            return ctx.getDialect().getEvaluatorFactory();
         }
     }
 
     private static void validateIdField(SchemaParsingContext ctx, String id) {
         URI uri = URI.create(id);
-        if (ctx.getSpecificationVersion().getOrder() > SpecificationVersion.DRAFT7.getOrder()) {
+        if (ctx.getDialect().getSpecificationVersion().getOrder() > SpecificationVersion.DRAFT7.getOrder()) {
             if (uri.getRawFragment() != null && !uri.getRawFragment().isEmpty()) {
                 throw new IllegalArgumentException(String.format("$id [%s] cannot contain non-empty fragments", id));
             }
