@@ -109,6 +109,6 @@ public final class SchemaParsingContext {
      * @return set of vocabularies (never null)
      */
     public Set<String> getActiveVocabularies() {
-        return metaSchemaData.activeVocabularies;
+        return Collections.unmodifiableSet(metaSchemaData.activeVocabularies);
     }
 }
