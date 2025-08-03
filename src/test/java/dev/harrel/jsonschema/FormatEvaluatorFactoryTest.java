@@ -21,7 +21,7 @@ class FormatEvaluatorFactoryTest {
         FormatEvaluatorFactory factory = new FormatEvaluatorFactory(vocabs);
 
         SchemaParsingContext ctx = mock(SchemaParsingContext.class);
-        when(ctx.getMetaSchemaData()).thenReturn(new MetaSchemaData(new Dialects.Draft2020Dialect(), Map.of(), Set.of("c")));
+        when(ctx.getActiveVocabularies()).thenReturn(Set.of("c"));
         Optional<Evaluator> evaluator = factory.create(ctx, "format", nodeFactory.create("\"date\""));
         assertThat(evaluator).isPresent();
     }
@@ -46,7 +46,7 @@ class FormatEvaluatorFactoryTest {
         vocabs.remove("c");
 
         SchemaParsingContext ctx = mock(SchemaParsingContext.class);
-        when(ctx.getMetaSchemaData()).thenReturn(new MetaSchemaData(new Dialects.Draft2020Dialect(), Map.of(), Set.of("c")));
+        when(ctx.getActiveVocabularies()).thenReturn(Set.of("c"));
         Optional<Evaluator> evaluator = factory.create(ctx, "format", nodeFactory.create("\"date\""));
         assertThat(evaluator).isPresent();
     }
