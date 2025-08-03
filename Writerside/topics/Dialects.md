@@ -139,4 +139,4 @@ You can define which vocabularies are supported, required and enabled by default
 
 ## Custom dialects
 
-Please see a dedicated chapter: [Custom dialects](Custom-dialects.md)
+Please see a dedicated chapter [Custom dialects](Custom-dialects-details.md).
