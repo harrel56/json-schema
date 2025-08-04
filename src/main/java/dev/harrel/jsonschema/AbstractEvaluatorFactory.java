@@ -34,7 +34,7 @@ abstract class AbstractEvaluatorFactory implements EvaluatorFactory {
             }
         }
 
-        if (evaluatorInfo.vocabulary != null && !ctx.getMetaValidationData().activeVocabularies.contains(evaluatorInfo.vocabulary)) {
+        if (evaluatorInfo.vocabulary != null && !ctx.getActiveVocabularies().contains(evaluatorInfo.vocabulary)) {
             return Optional.empty();
         }
 
