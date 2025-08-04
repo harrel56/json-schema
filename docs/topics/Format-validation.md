@@ -78,6 +78,6 @@ This will only enable format validation when `Vocabulary.Draft2020.FORMAT_ASSERT
 ## Adding custom formats
 
 Adding custom formats is generally the same as adding custom keywords.
-See [Custom keywords](Custom-keywords.md) for more information.
+See [Custom keywords](Evaluators.md) for more information.
 You can add new formats on top of the default ones by using `EvaluatorFactory.compose` or
 by composition and delegation to `FormatEvaluatorFactory`.
