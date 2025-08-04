@@ -40,10 +40,8 @@ jobs:
         with:
           name: docs
 
-      - run: ls -la
-
       - name: Unzip artifact
-        run: unzip -O UTF-8 -qq "artifacts/webHelpJSON-SCHEMA-DOCS2-all.zip" -d dir
+        run: unzip -O UTF-8 -qq "webHelpJSON-SCHEMA-DOCS2-all.zip" -d dir
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
