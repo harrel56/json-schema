@@ -1,7 +1,4 @@
-import dev.harrel.jsonschema.JsonNode;
-import dev.harrel.jsonschema.JsonNodeFactory;
-import dev.harrel.jsonschema.SimpleType;
-import dev.harrel.jsonschema.ValidatorFactory;
+import dev.harrel.jsonschema.*;
 import dev.harrel.jsonschema.providers.SnakeYamlNode;
 import dev.harrel.jsonschema.util.JsonNodeMock;
 import org.assertj.core.api.AssertionsForClassTypes;
@@ -22,8 +19,9 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class SnakeYamlTest {
-    private JsonNodeFactory createFactory() {
+class SnakeYamlTest extends ProviderTestBundle {
+    @Override
+    public JsonNodeFactory getJsonNodeFactory() {
         return new SnakeYamlNode.Factory();
     }
 
@@ -48,7 +46,7 @@ class SnakeYamlTest {
     @Test
     void shouldWrapForValidArgument() {
         Node object = new Yaml().compose(new StringReader("hello:"));
-        JsonNode wrap = createFactory().wrap(object);
+        JsonNode wrap = getJsonNodeFactory().wrap(object);
         assertThat(wrap).isNotNull();
         assertThat(wrap.getNodeType()).isEqualTo(SimpleType.OBJECT);
     }
@@ -56,7 +54,7 @@ class SnakeYamlTest {
     @Test
     void shouldFailWrapForInvalidArgument() {
         JsonNode node = new JsonNodeMock();
-        JsonNodeFactory factory = createFactory();
+        JsonNodeFactory factory = getJsonNodeFactory();
         AssertionsForClassTypes.assertThatThrownBy(() -> factory.wrap(node))
                 .isInstanceOf(IllegalArgumentException.class);
     }
@@ -72,7 +70,7 @@ class SnakeYamlTest {
                   nested2:
                     0: 0
                 """;
-        JsonNode node = createFactory().create(yamlString);
+        JsonNode node = getJsonNodeFactory().create(yamlString);
         assertThat(node.isObject()).isTrue();
         Map<String, JsonNode> nodeMap = node.asObject();
         assertThat(nodeMap).containsOnlyKeys("1", "1.2", "true", "null", "nested1");
@@ -95,7 +93,7 @@ class SnakeYamlTest {
                 1: 1
                 '1': '1'
                 """;
-        JsonNodeFactory factory = createFactory();
+        JsonNodeFactory factory = getJsonNodeFactory();
         assertThatThrownBy(() -> factory.create(yamlString))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("""
@@ -116,7 +114,7 @@ class SnakeYamlTest {
                         3: 3
                         3: 3
                 """;
-        JsonNodeFactory factory = createFactory();
+        JsonNodeFactory factory = getJsonNodeFactory();
         assertThatThrownBy(() -> factory.create(yamlString))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("""
@@ -134,7 +132,7 @@ class SnakeYamlTest {
                     - 2
                 ref: *foo
                 """;
-        JsonNode node = createFactory().create(yamlString);
+        JsonNode node = getJsonNodeFactory().create(yamlString);
         assertThat(node.isObject()).isTrue();
         Map<String, JsonNode> nodeMap = node.asObject();
         assertThat(nodeMap).containsOnlyKeys("foo", "ref");
@@ -164,7 +162,7 @@ class SnakeYamlTest {
                     - 2
                   nested: *foo
                 """;
-        JsonNode node = createFactory().create(yamlString);
+        JsonNode node = getJsonNodeFactory().create(yamlString);
         assertThat(node.isObject()).isTrue();
         Map<String, JsonNode> nodeMap = node.asObject();
         assertThat(nodeMap).containsOnlyKeys("foo");
@@ -205,7 +203,7 @@ class SnakeYamlTest {
                   name: ref
                   new: true
                 """;
-        JsonNode node = createFactory().create(yamlString);
+        JsonNode node = getJsonNodeFactory().create(yamlString);
         assertThat(node.isObject()).isTrue();
         Map<String, JsonNode> nodeMap = node.asObject();
         assertThat(nodeMap).containsOnlyKeys("foo", "ref");
@@ -229,7 +227,7 @@ class SnakeYamlTest {
         @ParameterizedTest
         @ValueSource(strings = {"true", "True", "TRUE", "on", "On", "ON", "yes", "Yes", "YES"})
         void shouldSupportBooleanTruthyValues(String value) {
-            JsonNode node = createFactory().create(value);
+            JsonNode node = getJsonNodeFactory().create(value);
             assertThat(node.isBoolean()).isTrue();
             assertThat(node.asBoolean()).isTrue();
         }
@@ -237,7 +235,7 @@ class SnakeYamlTest {
         @ParameterizedTest
         @ValueSource(strings = {"false", "False", "FALSE", "off", "Off", "OFF", "no", "No", "NO"})
         void shouldSupportBooleanFalsyValues(String value) {
-            JsonNode node = createFactory().create(value);
+            JsonNode node = getJsonNodeFactory().create(value);
             assertThat(node.isBoolean()).isTrue();
             assertThat(node.asBoolean()).isFalse();
         }
@@ -245,7 +243,7 @@ class SnakeYamlTest {
         @ParameterizedTest
         @ValueSource(strings = {"0b111111", "077", "0x3f", "1:3"})
         void shouldSupportIntsInDifferentBase(String value) {
-            JsonNode node = createFactory().create(value);
+            JsonNode node = getJsonNodeFactory().create(value);
             assertThat(node.isInteger()).isTrue();
             assertThat(node.isNumber()).isTrue();
             assertThat(node.asInteger()).isEqualTo(63);
@@ -254,7 +252,7 @@ class SnakeYamlTest {
 
         @Test
         void shouldSupportIntInBase60WithFloatingPoint() {
-            JsonNode node = createFactory().create("12:21.0");
+            JsonNode node = getJsonNodeFactory().create("12:21.0");
             assertThat(node.isInteger()).isTrue();
             assertThat(node.isNumber()).isTrue();
             assertThat(node.asInteger()).isEqualTo(741);
@@ -263,7 +261,7 @@ class SnakeYamlTest {
 
         @Test
         void shouldSupportFloatsInBase60() {
-            JsonNode node = createFactory().create("12:21.12");
+            JsonNode node = getJsonNodeFactory().create("12:21.12");
             assertThat(node.isInteger()).isFalse();
             assertThat(node.isNumber()).isTrue();
             /* I believe it should be 741.2? Well, not sure how floating points should work in different bases */
@@ -274,129 +272,9 @@ class SnakeYamlTest {
         @ParameterizedTest
         @ValueSource(strings = {".inf", "-.inf", ".Inf", ".INF", ".nan", "-.nan", ".Nan", ".NAN"})
         void shouldTreatSpecialFloatsAsStrings(String value) {
-            JsonNode node = createFactory().create(value);
+            JsonNode node = getJsonNodeFactory().create(value);
             assertThat(node.isString()).isTrue();
             assertThat(node.asString()).isEqualTo(value);
-        }
-    }
-
-    @Nested
-    class SpecificationSuiteTest extends dev.harrel.jsonschema.SpecificationSuiteTest {
-        @Override
-        public JsonNodeFactory getJsonNodeFactory() {
-            return createFactory();
-        }
-    }
-
-    @Nested
-    class YamlSpecificationSuiteTest extends dev.harrel.jsonschema.YamlSpecificationSuiteTest {
-        @Override
-        public JsonNodeFactory getJsonNodeFactory() {
-            return createFactory();
-        }
-    }
-
-    @Nested
-    class SupplementarySuiteTest extends dev.harrel.jsonschema.SupplementarySuiteTest {
-        @Override
-        public JsonNodeFactory getJsonNodeFactory() {
-            return createFactory();
-        }
-    }
-
-    @Nested
-    class Draft2020EvaluatorFactoryTest extends dev.harrel.jsonschema.Draft2020EvaluatorFactoryTest {
-        @Override
-        public JsonNodeFactory getJsonNodeFactory() {
-            return createFactory();
-        }
-    }
-
-    @Nested
-    class Draft2019EvaluatorFactoryTest extends dev.harrel.jsonschema.Draft2019EvaluatorFactoryTest {
-        @Override
-        public JsonNodeFactory getJsonNodeFactory() {
-            return createFactory();
-        }
-    }
-
-    @Nested
-    class Draft7EvaluatorFactoryTest extends dev.harrel.jsonschema.Draft7EvaluatorFactoryTest {
-        @Override
-        public JsonNodeFactory getJsonNodeFactory() {
-            return createFactory();
-        }
-    }
-
-    @Nested
-    class Draft6EvaluatorFactoryTest extends dev.harrel.jsonschema.Draft6EvaluatorFactoryTest {
-        @Override
-        public JsonNodeFactory getJsonNodeFactory() {
-            return createFactory();
-        }
-    }
-
-    @Nested
-    class Draft4EvaluatorFactoryTest extends dev.harrel.jsonschema.Draft4EvaluatorFactoryTest {
-        @Override
-        public JsonNodeFactory getJsonNodeFactory() {
-            return createFactory();
-        }
-    }
-
-    @Nested
-    class JsonNodeFactoryTest extends dev.harrel.jsonschema.JsonNodeFactoryTest {
-        @Override
-        public JsonNodeFactory getJsonNodeFactory() {
-            return createFactory();
-        }
-    }
-
-    @Nested
-    class JsonNodeTest extends dev.harrel.jsonschema.JsonNodeTest {
-        @Override
-        public JsonNodeFactory getJsonNodeFactory() {
-            return createFactory();
-        }
-    }
-
-    @Nested
-    class MetaSchemaTest extends dev.harrel.jsonschema.MetaSchemaTest {
-        @Override
-        public JsonNodeFactory getJsonNodeFactory() {
-            return createFactory();
-        }
-    }
-
-    @Nested
-    class VocabulariesTest extends dev.harrel.jsonschema.VocabulariesTest {
-        @Override
-        public JsonNodeFactory getJsonNodeFactory() {
-            return createFactory();
-        }
-    }
-
-    @Nested
-    class JsonPointerEscapingTest extends dev.harrel.jsonschema.JsonPointerEscapingTest {
-        @Override
-        public JsonNodeFactory getJsonNodeFactory() {
-            return createFactory();
-        }
-    }
-
-    @Nested
-    class EvaluationPathTest extends dev.harrel.jsonschema.EvaluationPathTest {
-        @Override
-        public JsonNodeFactory getJsonNodeFactory() {
-            return createFactory();
-        }
-    }
-
-    @Nested
-    class DisabledSchemaValidationTest extends dev.harrel.jsonschema.DisabledSchemaValidationTest {
-        @Override
-        public JsonNodeFactory getJsonNodeFactory() {
-            return createFactory();
         }
     }
 }

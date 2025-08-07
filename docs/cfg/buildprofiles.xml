@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE buildprofiles SYSTEM "https://resources.jetbrains.com/writerside/1.0/build-profiles.dtd">
+<buildprofiles xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/build-profiles.xsd"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <build-profile instance="json-schema-docs">
+        <variables>
+            <noindex-content>false</noindex-content>
+            <primary-color>iris</primary-color>
+            <showDownloadButton>true</showDownloadButton>
+            <download-page>https://harrel.dev/json-schema</download-page>
+            <download-title>Try online validator</download-title>
+            <enable-contribution>true</enable-contribution>
+            <contribute-url>https://github.com/harrel56/json-schema/tree/master/Writerside</contribute-url>
+            <product-web-url>https://github.com/harrel56/json-schema</product-web-url>
+        </variables>
+        <footer>
+            <social type="github" href="https://github.com/harrel56/json-schema">Github repository</social>
+            <link href="https://harrel.dev">Homepage</link>
+            <link href="https://harrel.dev/json-schema">Online validator</link>
+            <link href="https://javadoc.io/doc/dev.harrel/json-schema">JavaDoc</link>
+            <link href="https://mvnrepository.com/artifact/dev.harrel/json-schema">Maven</link>
+        </footer>
+    </build-profile>
+
+</buildprofiles>
