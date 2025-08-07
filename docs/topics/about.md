@@ -8,7 +8,7 @@
     - [Draft 07](https://www.learnjsonschema.com/draft7/) [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie.report%2Fbadges%2Fjava-dev.harrel.json-schema%2Fcompliance%2Fdraft7.json&color=brightgreen)](https://bowtie.report/#/dialects/draft7),
     - [Draft 06](https://www.learnjsonschema.com/draft6/) [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie.report%2Fbadges%2Fjava-dev.harrel.json-schema%2Fcompliance%2Fdraft6.json&color=brightgreen)](https://bowtie.report/#/dialects/draft6),
     - [Draft 04](https://www.learnjsonschema.com/draft4/) [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie.report%2Fbadges%2Fjava-dev.harrel.json-schema%2Fcompliance%2Fdraft4.json&color=brightgreen)](https://bowtie.report/#/dialects/draft4),
-- support for [custom keywords](Custom-keywords.md),
+- support for [custom keywords](https://harrel56.github.io/json-schema/evaluators.html),
 - support for [annotation collection](Annotations.md),
 - support for [format validation](Format-validation.md) (for a price of one additional dependency 😉),
 - compatible with most of the JSON/YAML libraries ([supported libraries](JSON-YAML-providers.md)),
