@@ -13,7 +13,7 @@ apply from: 'setup/reporting.gradle'
 apply from: 'setup/testing.gradle'
 
 group 'dev.harrel'
-version '1.8.1'
+version '1.8.2'
 
 compileJava {
     sourceCompatibility = JavaVersion.VERSION_1_8
