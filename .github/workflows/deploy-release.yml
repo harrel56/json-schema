@@ -49,5 +49,4 @@ jobs:
   poke-maven-central:
     runs-on: ubuntu-latest
     steps:
-      run: |
-        curl -X POST "${{ secrets.SONATYPE_REPO }}/manual/upload/defaultRepository/dev.harrel"
+      - run: curl -X POST "${{ secrets.SONATYPE_REPO }}/manual/upload/defaultRepository/dev.harrel"
