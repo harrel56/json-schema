@@ -50,4 +50,6 @@ jobs:
     needs: build-and-deploy
     runs-on: ubuntu-latest
     steps:
-      - run: curl -X POST "${{ secrets.SONATYPE_REPO }}/manual/upload/defaultRepository/dev.harrel"
+      - run: |
+         curl -X POST "https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/dev.harrel" \
+          -H Authorization: Bearer $(echo -n "${{ secrets.SONATYPE_USERNAME }}:${{ secrets.SONATYPE_PASSWORD }}" | base64)
