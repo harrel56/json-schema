@@ -52,4 +52,4 @@ jobs:
     steps:
       - run: |
          curl -X POST "https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/dev.harrel" \
-          -H Authorization: Bearer ${{ secrets.SONATYPE_TOKEN }}
+          -H "Authorization: Bearer ${{ secrets.SONATYPE_TOKEN }}"
