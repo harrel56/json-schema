@@ -10,7 +10,7 @@ publishing {
         }
         maven {
             name = 'sonatype'
-            url = 'https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2'
+            url = findProperty('sonatypeRepo')
             credentials {
                 username = findProperty('sonatypeUsername')
                 password = findProperty('sonatypePassword')

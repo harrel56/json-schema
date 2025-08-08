@@ -45,3 +45,9 @@ jobs:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.SONATYPE_PASSWORD }}
         run: ./gradlew publishSonatypePublicationToSonatypeRepository
+
+  poke-maven-central:
+    runs-on: ubuntu-latest
+    steps:
+      run: |
+        curl -X POST "${{ secrets.SONATYPE_REPO }}/manual/upload/defaultRepository/dev.harrel"
