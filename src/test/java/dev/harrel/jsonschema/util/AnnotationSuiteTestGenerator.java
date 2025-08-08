@@ -1,5 +1,6 @@
 package dev.harrel.jsonschema.util;
 
+import dev.harrel.jsonschema.Annotation;
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.Validator;
 import org.junit.jupiter.api.Assertions;
@@ -15,21 +16,23 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertWith;
 import static org.junit.jupiter.api.DynamicContainer.dynamicContainer;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
-public class SuiteTestGenerator {
-    private static final Logger logger = Logger.getLogger("SuiteTestGenerator");
-
+public class AnnotationSuiteTestGenerator {
     private final ProviderMapper mapper;
     private final Validator validator;
-    private final Map<String, Map<String, Set<String>>> skippedTests;
+    private final Map<String, Set<String>> skippedTests;
 
-    public SuiteTestGenerator(ProviderMapper mapper, Validator validator, Map<String, Map<String, Set<String>>> skippedTests) {
+    public AnnotationSuiteTestGenerator(ProviderMapper mapper, Validator validator, Map<String, Set<String>> skippedTests) {
         this.mapper = mapper;
         this.validator = validator;
         this.skippedTests = skippedTests;
@@ -55,34 +58,30 @@ public class SuiteTestGenerator {
 
     private Stream<DynamicNode> readTestFile(Path path) {
         try {
-            List<TestBundle> bundles = mapper.readTestBundles(Files.readString(path));
+            List<AnnotationTestBundle> bundles = mapper.readAnnotationTestBundles(Files.readString(path));
             return bundles.stream().map(bundle -> readBundle(path.getFileName().toString(), bundle));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
-    private DynamicNode readBundle(String fileName, TestBundle bundle) {
+    private DynamicNode readBundle(String fileName, AnnotationTestBundle bundle) {
         return dynamicContainer(
                 bundle.description(),
                 bundle.tests().stream().map(testCase -> readTestCase(fileName, bundle, testCase))
         );
     }
 
-    private DynamicNode readTestCase(String fileName, TestBundle bundle, TestCase testCase) {
-        boolean skipped = skippedTests.getOrDefault(stripExtension(fileName), Map.of())
-                .getOrDefault(bundle.description(), Set.of())
-                .contains(testCase.description());
+    private DynamicNode readTestCase(String fileName, AnnotationTestBundle bundle, AnnotationTestCase testCase) {
+        boolean skipped = skippedTests.getOrDefault(fileName, Set.of())
+                .contains(bundle.description());
 
-        return dynamicTest(testCase.description(), () ->
-                testValidation(bundle.description(), testCase.description(), bundle.schema(), testCase.data(), testCase.valid(), skipped));
+        return dynamicTest(testCase.instance().toPrintableString(), () ->
+                testValidation(fileName, bundle.description(), bundle.schema(), testCase.instance(), testCase.assertions(), skipped));
     }
 
-    private String stripExtension(String fileName) {
-        return fileName.substring(0, fileName.lastIndexOf('.'));
-    }
-
-    private void testValidation(String bundle, String name, JsonNode schema, JsonNode instance, boolean valid, boolean skipped) {
+    private void testValidation(String fileName, String bundle, JsonNode schema, JsonNode instance,
+                                List<AnnotationAssertion> assertions, boolean skipped) {
         Assumptions.assumeFalse(skipped);
 //        Assumptions.assumeTrue(bundle.equals("schema that uses custom metaschema with with no validation vocabulary"));
 //        Assumptions.assumeTrue(name.equals("no validation: invalid number, but it still validates"));
@@ -90,7 +89,26 @@ public class SuiteTestGenerator {
 //        logger.info("%s: %s".formatted(bundle, name));
 //        logger.info(String.valueOf(valid));
 
-        URI uri = validator.registerSchema(schema);
-        Assertions.assertEquals(valid, validator.validate(uri, instance).isValid());
+        Validator.Result res = validator.validate(validator.registerSchema(schema), instance);
+        assertThat(res.isValid()).isTrue();
+        System.out.println(fileName);
+        System.out.println(bundle);
+        System.out.println(assertions);
+        assertThat(assertions).allSatisfy(assertion -> {
+            List<Annotation> annotations = res.getAnnotations().stream().filter(anno ->
+                            anno.getInstanceLocation().equals(assertion.location()) && anno.getKeyword().equals(assertion.keyword()))
+                    .toList();
+            if (assertion.expected().isEmpty()) {
+                assertThat(annotations).isEmpty();
+            } else {
+                assertThat(assertion.expected()).allSatisfy((location, value) -> {
+                    Optional<Object> annotation = annotations.stream()
+                            .filter(anno -> anno.getSchemaLocation().endsWith(location))
+                            .map(Annotation::getAnnotation)
+                            .findFirst();
+                    assertThat(annotation).hasValue(value);
+                });
+            }
+        });
     }
 }

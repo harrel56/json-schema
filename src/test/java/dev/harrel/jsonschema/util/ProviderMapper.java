@@ -6,6 +6,7 @@ import dev.harrel.jsonschema.JsonNodeFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static dev.harrel.jsonschema.util.SuiteTestGenerator.*;
 
@@ -37,4 +38,45 @@ public class ProviderMapper {
         }
         return testBundles;
     }
+
+    List<AnnotationTestBundle> readAnnotationTestBundles(String jsonString) {
+        JsonNode rootNode = factory.create(jsonString);
+        List<AnnotationTestBundle> bundles = new ArrayList<>();
+        for (JsonNode arrayNode : rootNode.asObject().get("suite").asArray()) {
+            Map<String, JsonNode> bundle = arrayNode.asObject();
+            String description = bundle.get("description").asString();
+            String compatibility = bundle.get("description").asString();
+            JsonNode schema = factory.wrap(bundle.get("schema"));
+
+            List<AnnotationTestCase> tests = new ArrayList<>();
+            for (JsonNode arrayNode2 : bundle.get("tests").asArray()) {
+                Map<String, JsonNode> testCase = arrayNode2.asObject();
+                JsonNode instance = factory.wrap(testCase.get("instance"));
+
+                List<AnnotationAssertion> assertions = new ArrayList<>();
+                for (JsonNode arrayNode3 : testCase.get("assertions").asArray()) {
+                    Map<String, JsonNode> assertion = arrayNode3.asObject();
+                    String location = assertion.get("location").asString();
+                    String keyword = assertion.get("keyword").asString();
+                    Map<String, String> expected = assertion.get("expected").asObject().entrySet()
+                            .stream()
+                            .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().asString()));
+                    assertions.add(new AnnotationAssertion(location, keyword, expected));
+                }
+                tests.add(new AnnotationTestCase(instance, assertions));
+            }
+            bundles.add(new AnnotationTestBundle(description, compatibility, schema, tests));
+        }
+        return bundles;
+    }
 }
+
+record TestBundle(String description, JsonNode schema, List<TestCase> tests) {}
+
+record TestCase(String description, JsonNode data, boolean valid) {}
+
+record AnnotationTestBundle(String description, String compatibility, JsonNode schema, List<AnnotationTestCase> tests) {}
+
+record AnnotationTestCase(JsonNode instance, List<AnnotationAssertion> assertions) {}
+
+record AnnotationAssertion(String location, String keyword, Map<String, String> expected) {}
