@@ -47,6 +47,7 @@ jobs:
         run: ./gradlew publishSonatypePublicationToSonatypeRepository
 
   poke-maven-central:
+    needs: build-and-deploy
     runs-on: ubuntu-latest
     steps:
       - run: curl -X POST "${{ secrets.SONATYPE_REPO }}/manual/upload/defaultRepository/dev.harrel"
