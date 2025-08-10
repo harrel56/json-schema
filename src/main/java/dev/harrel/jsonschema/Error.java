@@ -17,4 +17,9 @@ public class Error extends EvaluationItem {
     public String getError() {
         return error;
     }
+
+    @Override
+    public String toString() {
+        return "Error{" + super.toString() + ", error=" + error + "}";
+    }
 }

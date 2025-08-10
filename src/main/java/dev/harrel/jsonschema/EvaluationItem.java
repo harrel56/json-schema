@@ -45,6 +45,14 @@ class EvaluationItem {
     public String getKeyword() {
         return keyword;
     }
+
+    @Override
+    public String toString() {
+        return "keyword=" + keyword +
+                ", evaluationPath=" + evaluationPath +
+                ", schemaLocation=" + schemaLocation +
+                ", instanceLocation=" + instanceLocation;
+    }
 }
 
 final class LazyError extends EvaluationItem {
