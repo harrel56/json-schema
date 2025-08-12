@@ -17,7 +17,7 @@ public class Draft7EvaluatorFactory extends AbstractEvaluatorFactory {
     }
 
     private static Map<String, EvaluatorInfo> createEvaluatorMap() {
-        Map<String, EvaluatorInfo> map = createDefaultEvaluatorsMap(null, null, null, null);
+        Map<String, EvaluatorInfo> map = createDefaultEvaluatorsMap(new VocabularyData());
         map.put(ITEMS, new EvaluatorInfo(null, ItemsLegacyEvaluator::new));
         map.put(ADDITIONAL_ITEMS, new EvaluatorInfo(null, AdditionalItemsEvaluator::new));
         map.put(DEPENDENCIES, new EvaluatorInfo(null, DependenciesLegacyEvaluator::new));

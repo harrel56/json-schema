@@ -18,7 +18,8 @@ public class Draft2020EvaluatorFactory extends AbstractEvaluatorFactory {
     }
 
     private static Map<String, EvaluatorInfo> createEvaluatorMap() {
-        Map<String, EvaluatorInfo> map = createDefaultEvaluatorsMap(Draft2020.CORE, Draft2020.APPLICATOR, Draft2020.UNEVALUATED, Draft2020.VALIDATION);
+        Map<String, EvaluatorInfo> map = createDefaultEvaluatorsMap(new VocabularyData(Draft2020.CORE, Draft2020.APPLICATOR,
+                Draft2020.UNEVALUATED, Draft2020.VALIDATION, Draft2020.META_DATA, Draft2020.CONTENT));
         map.put(DYNAMIC_REF, new EvaluatorInfo(Draft2020.CORE, DynamicRefEvaluator::new));
         map.put(ITEMS, new EvaluatorInfo(Draft2020.APPLICATOR, ItemsEvaluator::new));
         map.put(PREFIX_ITEMS, new EvaluatorInfo(Draft2020.APPLICATOR, PrefixItemsEvaluator::new));
