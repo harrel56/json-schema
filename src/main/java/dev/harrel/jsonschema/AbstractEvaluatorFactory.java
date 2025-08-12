@@ -28,7 +28,7 @@ abstract class AbstractEvaluatorFactory implements EvaluatorFactory {
         EvaluatorInfo evaluatorInfo = evaluatorsMap.get(fieldName);
         if (evaluatorInfo == null) {
             if (node.isString()) {
-                return Optional.of(new AnnotationEvaluator(node.asString()));
+                return Optional.of(new AnnotationEvaluator(node));
             } else {
                 return Optional.empty();
             }
@@ -39,7 +39,7 @@ abstract class AbstractEvaluatorFactory implements EvaluatorFactory {
         }
 
         try {
-            return Optional.of(evaluatorInfo.creator.apply(ctx, node));
+            return Optional.ofNullable(evaluatorInfo.creator.apply(ctx, node));
         } catch (Exception e) {
             return Optional.empty();
         }
@@ -85,6 +85,31 @@ abstract class AbstractEvaluatorFactory implements EvaluatorFactory {
         map.put(UNEVALUATED_ITEMS, new EvaluatorInfo(data.unevaluatedVocab, UnevaluatedItemsEvaluator::new));
         map.put(UNEVALUATED_PROPERTIES, new EvaluatorInfo(data.unevaluatedVocab, UnevaluatedPropertiesEvaluator::new));
 
+        map.put(TITLE, new EvaluatorInfo(data.metaDataVocab,
+                (ctx, node) -> node.isString() ? new AnnotationEvaluator(node) : null));
+        map.put(DESCRIPTION, new EvaluatorInfo(data.metaDataVocab,
+                (ctx, node) -> node.isString() ? new AnnotationEvaluator(node) : null));
+        map.put(DEFAULT, new EvaluatorInfo(data.metaDataVocab, (ctx, node) -> new AnnotationEvaluator(node)));
+        map.put(DEPRECATED, new EvaluatorInfo(data.metaDataVocab,
+                (ctx, node) -> node.isBoolean() ? new AnnotationEvaluator(node) : null));
+        map.put(READ_ONLY, new EvaluatorInfo(data.metaDataVocab,
+                (ctx, node) -> node.isBoolean() ? new AnnotationEvaluator(node) : null));
+        map.put(WRITE_ONLY, new EvaluatorInfo(data.metaDataVocab,
+                (ctx, node) -> node.isBoolean() ? new AnnotationEvaluator(node) : null));
+        map.put(EXAMPLES, new EvaluatorInfo(data.metaDataVocab, (ctx, node) -> new AnnotationEvaluator(node)));
+
+        map.put(CONTENT_MEDIA_TYPE, new EvaluatorInfo(data.contentVocab,
+                (ctx, node) -> node.isString() ? new ContentAnnotationEvaluator(node) : null));
+        map.put(CONTENT_ENCODING, new EvaluatorInfo(data.contentVocab,
+                (ctx, node) -> node.isString() ? new ContentAnnotationEvaluator(node) : null));
+        map.put(CONTENT_SCHEMA, new EvaluatorInfo(data.contentVocab, (ctx, node) -> {
+            if (ctx.getCurrentSchemaObject().containsKey(CONTENT_MEDIA_TYPE)) {
+                return new ContentAnnotationEvaluator(node);
+            } else {
+                return null;
+            }
+        }));
+
         return map;
     }
 
@@ -103,7 +128,7 @@ abstract class AbstractEvaluatorFactory implements EvaluatorFactory {
         final String applicatorVocab;
         final String unevaluatedVocab;
         final String validationVocab;
-        final String metaSchemaVocab;
+        final String metaDataVocab;
         final String contentVocab;
 
         VocabularyData() {
@@ -114,27 +139,42 @@ abstract class AbstractEvaluatorFactory implements EvaluatorFactory {
                        String applicatorVocab,
                        String unevaluatedVocab,
                        String validationVocab,
-                       String metaSchemaVocab,
+                       String metaDataVocab,
                        String contentVocab) {
             this.coreVocab = coreVocab;
             this.applicatorVocab = applicatorVocab;
             this.unevaluatedVocab = unevaluatedVocab;
             this.validationVocab = validationVocab;
-            this.metaSchemaVocab = metaSchemaVocab;
+            this.metaDataVocab = metaDataVocab;
             this.contentVocab = contentVocab;
         }
     }
 
     static class AnnotationEvaluator implements Evaluator {
-        private final String annotation;
+        final Object annotation;
 
-        public AnnotationEvaluator(String annotation) {
-            this.annotation = annotation;
+        public AnnotationEvaluator(JsonNode node) {
+            this.annotation = JsonNodeUtil.getValue(node);
         }
 
         @Override
         public Result evaluate(EvaluationContext ctx, JsonNode node) {
             return Result.success(annotation);
+        }
+    }
+
+    static class ContentAnnotationEvaluator extends AnnotationEvaluator {
+        ContentAnnotationEvaluator(JsonNode node) {
+            super(node);
+        }
+
+        @Override
+        public Result evaluate(EvaluationContext ctx, JsonNode node) {
+            if (node.isString()) {
+                return Result.success(annotation);
+            } else {
+                return Result.success();
+            }
         }
     }
 }

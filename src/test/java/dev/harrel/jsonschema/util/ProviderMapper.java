@@ -2,6 +2,7 @@ package dev.harrel.jsonschema.util;
 
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.JsonNodeFactory;
+import dev.harrel.jsonschema.TestJsonNodeUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,9 +59,9 @@ public class ProviderMapper {
                     Map<String, JsonNode> assertion = arrayNode3.asObject();
                     String location = assertion.get("location").asString();
                     String keyword = assertion.get("keyword").asString();
-                    Map<String, String> expected = assertion.get("expected").asObject().entrySet()
+                    Map<String, Object> expected = assertion.get("expected").asObject().entrySet()
                             .stream()
-                            .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().asString()));
+                            .collect(Collectors.toMap(Map.Entry::getKey, e -> TestJsonNodeUtil.getValue(e.getValue())));
                     assertions.add(new AnnotationAssertion(location, keyword, expected));
                 }
                 tests.add(new AnnotationTestCase(instance, assertions));
@@ -79,4 +80,4 @@ record AnnotationTestBundle(String description, String compatibility, JsonNode s
 
 record AnnotationTestCase(JsonNode instance, List<AnnotationAssertion> assertions) {}
 
-record AnnotationAssertion(String location, String keyword, Map<String, String> expected) {}
+record AnnotationAssertion(String location, String keyword, Map<String, Object> expected) {}
