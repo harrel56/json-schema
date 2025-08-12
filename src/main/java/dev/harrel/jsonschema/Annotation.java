@@ -17,4 +17,9 @@ public class Annotation extends EvaluationItem {
     public Object getAnnotation() {
         return annotation;
     }
+
+    @Override
+    public String toString() {
+        return "Annotation{" + super.toString() + ", annotation=" + annotation + "}";
+    }
 }
