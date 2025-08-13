@@ -96,7 +96,8 @@ abstract class AbstractEvaluatorFactory implements EvaluatorFactory {
                 (ctx, node) -> node.isBoolean() ? new AnnotationEvaluator(node) : null));
         map.put(WRITE_ONLY, new EvaluatorInfo(data.metaDataVocab,
                 (ctx, node) -> node.isBoolean() ? new AnnotationEvaluator(node) : null));
-        map.put(EXAMPLES, new EvaluatorInfo(data.metaDataVocab, (ctx, node) -> new AnnotationEvaluator(node)));
+        map.put(EXAMPLES, new EvaluatorInfo(data.metaDataVocab,
+                (ctx, node) -> node.isArray() ? new AnnotationEvaluator(node) : null));
 
         map.put(CONTENT_MEDIA_TYPE, new EvaluatorInfo(data.contentVocab,
                 (ctx, node) -> node.isString() ? new ContentAnnotationEvaluator(node) : null));
