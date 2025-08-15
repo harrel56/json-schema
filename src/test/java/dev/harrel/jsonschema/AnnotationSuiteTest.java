@@ -15,12 +15,67 @@ import java.util.stream.Stream;
 public abstract class AnnotationSuiteTest implements ProviderTest {
 
     @TestFactory
-    Stream<DynamicNode> annotationTests() {
+    Stream<DynamicNode> draft2020AnnotationTests() {
+        Dialect dialect = new Dialects.Draft2020Dialect();
         Validator validator = new ValidatorFactory()
                 .withJsonNodeFactory(getJsonNodeFactory())
+                .withDefaultDialect(dialect)
                 .createValidator();
 
-        AnnotationSuiteTestGenerator generator = new AnnotationSuiteTestGenerator(new ProviderMapper(getJsonNodeFactory()), validator, Map.of());
+        AnnotationSuiteTestGenerator generator = new AnnotationSuiteTestGenerator(dialect.getSpecificationVersion(),
+                new ProviderMapper(getJsonNodeFactory()), validator, Map.of());
+        return generator.generate("/suite-annotation");
+    }
+
+    @TestFactory
+    Stream<DynamicNode> draft2019AnnotationTests() {
+        Dialect dialect = new Dialects.Draft2019Dialect();
+        Validator validator = new ValidatorFactory()
+                .withJsonNodeFactory(getJsonNodeFactory())
+                .withDefaultDialect(dialect)
+                .createValidator();
+
+        AnnotationSuiteTestGenerator generator = new AnnotationSuiteTestGenerator(dialect.getSpecificationVersion(),
+                new ProviderMapper(getJsonNodeFactory()), validator, Map.of());
+        return generator.generate("/suite-annotation");
+    }
+
+    @TestFactory
+    Stream<DynamicNode> draft7AnnotationTests() {
+        Dialect dialect = new Dialects.Draft7Dialect();
+        Validator validator = new ValidatorFactory()
+                .withJsonNodeFactory(getJsonNodeFactory())
+                .withDefaultDialect(dialect)
+                .createValidator();
+
+        AnnotationSuiteTestGenerator generator = new AnnotationSuiteTestGenerator(dialect.getSpecificationVersion(),
+                new ProviderMapper(getJsonNodeFactory()), validator, Map.of());
+        return generator.generate("/suite-annotation");
+    }
+
+    @TestFactory
+    Stream<DynamicNode> draft6AnnotationTests() {
+        Dialect dialect = new Dialects.Draft6Dialect();
+        Validator validator = new ValidatorFactory()
+                .withJsonNodeFactory(getJsonNodeFactory())
+                .withDefaultDialect(dialect)
+                .createValidator();
+
+        AnnotationSuiteTestGenerator generator = new AnnotationSuiteTestGenerator(dialect.getSpecificationVersion(),
+                new ProviderMapper(getJsonNodeFactory()), validator, Map.of());
+        return generator.generate("/suite-annotation");
+    }
+
+    @TestFactory
+    Stream<DynamicNode> draft4AnnotationTests() {
+        Dialect dialect = new Dialects.Draft4Dialect();
+        Validator validator = new ValidatorFactory()
+                .withJsonNodeFactory(getJsonNodeFactory())
+                .withDefaultDialect(dialect)
+                .createValidator();
+
+        AnnotationSuiteTestGenerator generator = new AnnotationSuiteTestGenerator(dialect.getSpecificationVersion(),
+                new ProviderMapper(getJsonNodeFactory()), validator, Map.of());
         return generator.generate("/suite-annotation");
     }
 }

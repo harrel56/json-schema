@@ -7,6 +7,7 @@ import dev.harrel.jsonschema.TestJsonNodeUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static dev.harrel.jsonschema.util.SuiteTestGenerator.*;
@@ -46,7 +47,9 @@ public class ProviderMapper {
         for (JsonNode arrayNode : rootNode.asObject().get("suite").asArray()) {
             Map<String, JsonNode> bundle = arrayNode.asObject();
             String description = bundle.get("description").asString();
-            String compatibility = bundle.get("description").asString();
+            String compatibility = Optional.ofNullable(bundle.get("compatibility"))
+                    .map(JsonNode::asString)
+                    .orElse(null);
             JsonNode schema = factory.wrap(bundle.get("schema"));
 
             List<AnnotationTestCase> tests = new ArrayList<>();

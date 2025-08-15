@@ -2,6 +2,7 @@ package dev.harrel.jsonschema.util;
 
 import dev.harrel.jsonschema.Annotation;
 import dev.harrel.jsonschema.JsonNode;
+import dev.harrel.jsonschema.SpecificationVersion;
 import dev.harrel.jsonschema.Validator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assumptions;
@@ -14,10 +15,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -28,11 +26,16 @@ import static org.junit.jupiter.api.DynamicContainer.dynamicContainer;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
 public class AnnotationSuiteTestGenerator {
+    private final SpecificationVersion specificationVersion;
     private final ProviderMapper mapper;
     private final Validator validator;
     private final Map<String, Set<String>> skippedTests;
 
-    public AnnotationSuiteTestGenerator(ProviderMapper mapper, Validator validator, Map<String, Set<String>> skippedTests) {
+    public AnnotationSuiteTestGenerator(SpecificationVersion specificationVersion,
+                                        ProviderMapper mapper,
+                                        Validator validator,
+                                        Map<String, Set<String>> skippedTests) {
+        this.specificationVersion = specificationVersion;
         this.mapper = mapper;
         this.validator = validator;
         this.skippedTests = skippedTests;
@@ -66,6 +69,10 @@ public class AnnotationSuiteTestGenerator {
     }
 
     private DynamicNode readBundle(String fileName, AnnotationTestBundle bundle) {
+        Set<SpecificationVersion> supportedVersions = getSupportedVersion(bundle.compatibility());
+        if (!supportedVersions.contains(specificationVersion)) {
+            return dynamicContainer(bundle.description(), Stream.of());
+        }
         return dynamicContainer(
                 bundle.description(),
                 bundle.tests().stream().map(testCase -> readTestCase(fileName, bundle, testCase))
@@ -80,6 +87,30 @@ public class AnnotationSuiteTestGenerator {
                 testValidation(fileName, bundle.description(), bundle.schema(), testCase.instance(), testCase.assertions(), skipped));
     }
 
+    private Set<SpecificationVersion> getSupportedVersion(String compatibility) {
+        if (compatibility == null) {
+            return EnumSet.allOf(SpecificationVersion.class);
+        }
+        Set<SpecificationVersion> res = EnumSet.noneOf(SpecificationVersion.class);
+        switch (compatibility) {
+            case "3":
+            case "4":
+                res.add(SpecificationVersion.DRAFT4);
+            case "6":
+                res.add(SpecificationVersion.DRAFT6);
+            case "7":
+                res.add(SpecificationVersion.DRAFT7);
+            case "2019":
+                res.add(SpecificationVersion.DRAFT2019_09);
+            case "2020":
+                res.add(SpecificationVersion.DRAFT2020_12);
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported compatibility: " + compatibility);
+        }
+        return res;
+    }
+
     private void testValidation(String fileName, String bundle, JsonNode schema, JsonNode instance,
                                 List<AnnotationAssertion> assertions, boolean skipped) {
         Assumptions.assumeFalse(skipped);
@@ -91,9 +122,6 @@ public class AnnotationSuiteTestGenerator {
 
         Validator.Result res = validator.validate(validator.registerSchema(schema), instance);
         assertThat(res.isValid()).isTrue();
-        System.out.println(fileName);
-        System.out.println(bundle);
-        System.out.println(assertions);
         assertThat(assertions).allSatisfy(assertion -> {
             List<Annotation> annotations = res.getAnnotations().stream().filter(anno ->
                             anno.getInstanceLocation().equals(assertion.location()) && anno.getKeyword().equals(assertion.keyword()))
