@@ -67,7 +67,7 @@ final class UriUtil {
         }
     }
 
-    static URI uriWithFragment(URI uri, String fragment) {
+    static URI getUriWithFragment(URI uri, String fragment) {
         try {
             if (uri.isOpaque()) {
                 return new URI(uri.getScheme(), uri.getSchemeSpecificPart(), fragment);
