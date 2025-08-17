@@ -85,6 +85,11 @@ public final class SchemaParsingContext {
         return getBaseUri() + "#" + jsonPointer;
     }
 
+    /* Hidden for now, unsure about naming */
+    URI getTrueAbsoluteUri(String jsonPointer) {
+        return UriUtil.uriWithFragment(getBaseUri(), jsonPointer);
+    }
+
     /**
      * Returns JSON object which is currently being parsed in form of map.
      *
