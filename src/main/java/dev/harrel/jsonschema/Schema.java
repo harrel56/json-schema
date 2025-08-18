@@ -10,19 +10,17 @@ final class Schema {
     private static final Evaluator FALSE_EVALUATOR = (ctx, node) -> Result.failure("False schema always fails");
 
     private final URI parentUri;
-    private final String schemaLocation;
-    private final String schemaLocationFragment;
+    private final URI schemaLocation;
     private final List<EvaluatorWrapper> evaluators;
     private final MetaSchemaData metaSchemaData;
 
     Schema(URI parentUri,
-           String schemaLocation,
+           URI schemaLocation,
            List<EvaluatorWrapper> evaluators,
            MetaSchemaData metaSchemaData,
            Map<String, JsonNode> objectMap) {
         this.parentUri = Objects.requireNonNull(parentUri);
         this.schemaLocation = Objects.requireNonNull(schemaLocation);
-        this.schemaLocationFragment = UriUtil.getJsonPointer(schemaLocation);
         this.evaluators = evaluators;
         this.evaluators.sort(Comparator.comparingInt(Evaluator::getOrder));
 
@@ -42,12 +40,8 @@ final class Schema {
         return parentUri;
     }
 
-    String getSchemaLocation() {
+    URI getSchemaLocation() {
         return schemaLocation;
-    }
-
-    String getSchemaLocationFragment() {
-        return schemaLocationFragment;
     }
 
     List<EvaluatorWrapper> getEvaluators() {

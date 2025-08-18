@@ -2,6 +2,7 @@ package dev.harrel.jsonschema;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
@@ -66,12 +67,20 @@ final class UriUtil {
         }
     }
 
-    static String getJsonPointer(String uri) {
-        int fragmentIdx = uri.indexOf('#');
-        if (fragmentIdx < 0) {
-            return "";
-        } else {
-            return uri.substring(fragmentIdx + 1);
+    static URI getUriWithFragment(URI uri, String fragment) {
+        try {
+            if (uri.isOpaque()) {
+                return new URI(uri.getScheme(), uri.getSchemeSpecificPart(), fragment);
+            }
+            if (uri.getHost() == null) {
+                // registry-based uri case
+                return new URI(uri.getScheme(), uri.getAuthority(), uri.getPath(), null, fragment);
+            } else {
+                // server-based uri case
+                return new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort(), uri.getPath(), null, fragment);
+            }
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException(e);
         }
     }
 
