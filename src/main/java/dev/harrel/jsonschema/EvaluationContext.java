@@ -188,7 +188,7 @@ public final class EvaluationContext {
             int errorsBefore = errors.size();
             Evaluator.Result result = evaluator.evaluate(this, node);
             if (result.getAnnotation() != null) {
-                Annotation annotation = new Annotation(evaluationPath, schema.getSchemaLocation(), node.getJsonPointer(), evaluator.getKeyword(), result.getAnnotation());
+                Annotation annotation = new Annotation(evaluationPath, schema.getSchemaLocation().toString(), node.getJsonPointer(), evaluator.getKeyword(), result.getAnnotation());
                 siblingAnnotations.put(evaluator.getKeyword(), annotation);
                 annotations.add(annotation);
             }
@@ -197,7 +197,7 @@ public final class EvaluationContext {
                 errors.subList(errorsBefore, errors.size()).clear();
             } else {
                 valid = false;
-                errors.add(new LazyError(evaluationPath, schema.getSchemaLocation(), node.getJsonPointer(), evaluator.getKeyword(), result.getErrorSupplier()));
+                errors.add(new LazyError(evaluationPath, schema.getSchemaLocation().toString(), node.getJsonPointer(), evaluator.getKeyword(), result.getErrorSupplier()));
             }
             evaluationStack.pop();
         }
@@ -214,7 +214,7 @@ public final class EvaluationContext {
     }
 
     private boolean validateAgainstRefSchema(Schema schema, JsonNode node) {
-        refStack.push(new RefStackItem(schema.getSchemaLocationFragment(), evaluationStack.peek()));
+        refStack.push(new RefStackItem(schema.getSchemaLocation().getFragment(), evaluationStack.peek()));
         boolean valid = validateAgainstSchema(schema, node);
         refStack.pop();
         return valid;
