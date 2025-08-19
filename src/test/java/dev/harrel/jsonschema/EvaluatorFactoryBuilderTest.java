@@ -54,7 +54,7 @@ class EvaluatorFactoryBuilderTest {
                   "type": "number"
                 }""";
         EvaluatorFactory factory = new EvaluatorFactory.Builder()
-                .withKeyword("type", (node) -> new AbstractEvaluatorFactory.AnnotationEvaluator(node.asString()))
+                .withKeyword("type", (node) -> new StringAnnotationEvaluator(node.asString()))
                 .build();
 
         Validator.Result result = new ValidatorFactory().withEvaluatorFactory(factory).validate(schema, "null");
@@ -79,8 +79,8 @@ class EvaluatorFactoryBuilderTest {
                   "minLength": 5
                 }""";
         EvaluatorFactory factory = new EvaluatorFactory.Builder()
-                .withKeyword("type", (node) -> new AbstractEvaluatorFactory.AnnotationEvaluator(node.asString()))
-                .withKeyword("minLength", (node) -> new AbstractEvaluatorFactory.AnnotationEvaluator(node.asInteger().toString()))
+                .withKeyword("type", (node) -> new StringAnnotationEvaluator(node.asString()))
+                .withKeyword("minLength", (node) -> new StringAnnotationEvaluator(node.asInteger().toString()))
                 .build();
 
         Validator.Result result = new ValidatorFactory().withEvaluatorFactory(factory).validate(schema, "\"a\"");
@@ -113,7 +113,7 @@ class EvaluatorFactoryBuilderTest {
                   "minLength": 5
                 }""";
         EvaluatorFactory factory = new EvaluatorFactory.Builder()
-                .withKeyword("type", (node) -> new AbstractEvaluatorFactory.AnnotationEvaluator(node.asString()))
+                .withKeyword("type", (node) -> new StringAnnotationEvaluator(node.asString()))
                 .withKeyword("minLength", () -> null)
                 .build();
 
@@ -139,7 +139,7 @@ class EvaluatorFactoryBuilderTest {
                   "minLength": 5
                 }""";
         EvaluatorFactory factory = new EvaluatorFactory.Builder()
-                .withKeyword("type", (node) -> new AbstractEvaluatorFactory.AnnotationEvaluator(node.asString()))
+                .withKeyword("type", (node) -> new StringAnnotationEvaluator(node.asString()))
                 .withKeyword("minLength", () -> {throw new RuntimeException("oops");})
                 .build();
 
@@ -164,8 +164,8 @@ class EvaluatorFactoryBuilderTest {
                   "type": "number"
                 }""";
         EvaluatorFactory factory = new EvaluatorFactory.Builder()
-                .withKeyword("type", () -> new AbstractEvaluatorFactory.AnnotationEvaluator("reg1"))
-                .withKeyword("type", () -> new AbstractEvaluatorFactory.AnnotationEvaluator("reg2"))
+                .withKeyword("type", () -> new StringAnnotationEvaluator("reg1"))
+                .withKeyword("type", () -> new StringAnnotationEvaluator("reg2"))
                 .build();
 
         Validator.Result result = new ValidatorFactory().withEvaluatorFactory(factory).validate(schema, "\"a\"");
@@ -180,5 +180,18 @@ class EvaluatorFactoryBuilderTest {
                 "type",
                 "reg2"
         );
+    }
+
+    private static class StringAnnotationEvaluator implements Evaluator {
+        private final String annotation;
+
+        private StringAnnotationEvaluator(String annotation) {
+            this.annotation = annotation;
+        }
+
+        @Override
+        public Result evaluate(EvaluationContext ctx, JsonNode node) {
+            return Result.success(annotation);
+        }
     }
 }

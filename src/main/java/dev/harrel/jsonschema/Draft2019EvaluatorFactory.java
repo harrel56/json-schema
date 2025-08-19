@@ -18,7 +18,8 @@ public class Draft2019EvaluatorFactory extends AbstractEvaluatorFactory {
     }
 
     private static Map<String, EvaluatorInfo> createEvaluatorMap() {
-        Map<String, EvaluatorInfo> map = createDefaultEvaluatorsMap(Draft2019.CORE, Draft2019.APPLICATOR, Draft2019.APPLICATOR, Draft2019.VALIDATION);
+        Map<String, EvaluatorInfo> map = createDefaultEvaluatorsMap(new VocabularyData(Draft2019.CORE, Draft2019.APPLICATOR,
+                Draft2019.APPLICATOR, Draft2019.VALIDATION, Draft2019.META_DATA, Draft2019.CONTENT));
         map.put(RECURSIVE_REF, new EvaluatorInfo(Draft2019.CORE, (ctx, node) -> new RecursiveRefEvaluator(node)));
         map.put(ITEMS, new EvaluatorInfo(Draft2019.APPLICATOR, ItemsLegacyEvaluator::new));
         map.put(ADDITIONAL_ITEMS, new EvaluatorInfo(Draft2019.APPLICATOR, AdditionalItemsEvaluator::new));
