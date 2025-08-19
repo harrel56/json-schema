@@ -25,7 +25,7 @@ jobs:
             tests/draft7
             tests/draft2019-09
             tests/draft2020-12
-            annotations/test
+            annotations/tests
 
       - name: Remove unused draft versions
         run: |
