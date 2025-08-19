@@ -1,5 +1,4 @@
 {
-  "$schema": "../test-suite.schema.json",
   "description": "The format vocabulary",
   "suite": [
     {
