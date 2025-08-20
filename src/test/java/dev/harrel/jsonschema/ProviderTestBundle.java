@@ -20,6 +20,14 @@ public abstract class ProviderTestBundle implements ProviderTest {
     }
 
     @Nested
+    class AnnotationSuiteTest extends dev.harrel.jsonschema.AnnotationSuiteTest {
+        @Override
+        public JsonNodeFactory getJsonNodeFactory() {
+            return ProviderTestBundle.this.getJsonNodeFactory();
+        }
+    }
+
+    @Nested
     class Draft2020EvaluatorFactoryTest extends dev.harrel.jsonschema.Draft2020EvaluatorFactoryTest {
         @Override
         public JsonNodeFactory getJsonNodeFactory() {

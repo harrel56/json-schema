@@ -25,6 +25,7 @@ jobs:
             tests/draft7
             tests/draft2019-09
             tests/draft2020-12
+            annotations/tests
 
       - name: Remove unused draft versions
         run: |
@@ -40,6 +41,7 @@ jobs:
         run: |
           rsync -r --delete test-suite/remotes json-schema/src/test/resources/suite
           rsync -r --delete test-suite/tests json-schema/src/test/resources/suite
+          rsync -r --delete test-suite/annotations/tests/ json-schema/src/test/resources/suite-annotation
 
       - name: Generate branch name
         run: echo "BRANCH_NAME=chore/update-test-suite-$(date +"%Y%m%d-%H%M%S")" >> $GITHUB_ENV

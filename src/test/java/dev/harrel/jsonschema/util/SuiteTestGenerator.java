@@ -64,27 +64,23 @@ public class SuiteTestGenerator {
 
     private DynamicNode readBundle(String fileName, TestBundle bundle) {
         return dynamicContainer(
-                bundle.description,
-                bundle.tests.stream().map(testCase -> readTestCase(fileName, bundle, testCase))
+                bundle.description(),
+                bundle.tests().stream().map(testCase -> readTestCase(fileName, bundle, testCase))
         );
     }
 
     private DynamicNode readTestCase(String fileName, TestBundle bundle, TestCase testCase) {
         boolean skipped = skippedTests.getOrDefault(stripExtension(fileName), Map.of())
-                .getOrDefault(bundle.description, Set.of())
-                .contains(testCase.description);
+                .getOrDefault(bundle.description(), Set.of())
+                .contains(testCase.description());
 
-        return dynamicTest(testCase.description, () ->
-                testValidation(bundle.description, testCase.description, bundle.schema, testCase.data, testCase.valid, skipped));
+        return dynamicTest(testCase.description(), () ->
+                testValidation(bundle.description(), testCase.description(), bundle.schema(), testCase.data(), testCase.valid(), skipped));
     }
 
     private String stripExtension(String fileName) {
         return fileName.substring(0, fileName.lastIndexOf('.'));
     }
-
-    record TestBundle(String description, JsonNode schema, List<TestCase> tests) {}
-
-    record TestCase(String description, JsonNode data, boolean valid) {}
 
     private void testValidation(String bundle, String name, JsonNode schema, JsonNode instance, boolean valid, boolean skipped) {
         Assumptions.assumeFalse(skipped);

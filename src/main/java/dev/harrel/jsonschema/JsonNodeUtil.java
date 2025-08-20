@@ -9,6 +9,26 @@ import java.util.stream.Collectors;
 final class JsonNodeUtil {
     private JsonNodeUtil() {}
 
+    static Object getValue(JsonNode node) {
+        switch (node.getNodeType()) {
+            case NULL:
+                return null;
+            case BOOLEAN:
+                return node.asBoolean();
+            case STRING:
+                return node.asString();
+            case INTEGER:
+                return node.asInteger();
+            case NUMBER:
+                return node.asNumber();
+            case OBJECT:
+            case ARRAY:
+                return node;
+            default:
+                throw new IllegalArgumentException(String.format("Unknown nodeType [%s]", node.getNodeType()));
+        }
+    }
+
     static Optional<Map<String, JsonNode>> getAsObject(JsonNode node) {
         return node.isObject() ? Optional.of(node.asObject()) : Optional.empty();
     }

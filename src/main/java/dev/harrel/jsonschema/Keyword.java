@@ -72,6 +72,20 @@ public final class Keyword {
     public static final String UNEVALUATED_ITEMS = "unevaluatedItems";
     public static final String UNEVALUATED_PROPERTIES = "unevaluatedProperties";
 
+    /* Meta-data */
+    public static final String TITLE = "title";
+    public static final String DESCRIPTION = "description";
+    public static final String DEFAULT = "default";
+    public static final String DEPRECATED = "deprecated";
+    public static final String READ_ONLY = "readOnly";
+    public static final String WRITE_ONLY = "writeOnly";
+    public static final String EXAMPLES = "examples";
+
+    /* Content */
+    public static final String CONTENT_MEDIA_TYPE = "contentMediaType";
+    public static final String CONTENT_ENCODING= "contentEncoding";
+    public static final String CONTENT_SCHEMA= "contentSchema";
+
     /* draft2019-09 */
     public static final String ADDITIONAL_ITEMS = "additionalItems";
     public static final String RECURSIVE_REF = "$recursiveRef";
