@@ -56,14 +56,21 @@ class EvaluationItem {
 }
 
 final class LazyError extends EvaluationItem {
+    private final Supplier<String> instanceLocationSupplier;
     private final Supplier<String> errorSupplier;
 
-    public LazyError(String evaluationPath, String schemaLocation, String instanceLocation, String keyword, Supplier<String> errorSupplier) {
-        super(evaluationPath, schemaLocation, instanceLocation, keyword);
+    public LazyError(String evaluationPath, String schemaLocation, Supplier<String> instanceLocationSupplier, String keyword, Supplier<String> errorSupplier) {
+        super(evaluationPath, schemaLocation, null, keyword);
+        this.instanceLocationSupplier = instanceLocationSupplier;
         this.errorSupplier = errorSupplier;
     }
 
     Error toError() {
         return new Error(getEvaluationPath(), getSchemaLocation(), getInstanceLocation(), getKeyword(), errorSupplier.get());
+    }
+
+    @Override
+    public String getInstanceLocation() {
+        return instanceLocationSupplier.get();
     }
 }

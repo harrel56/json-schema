@@ -14,19 +14,27 @@ import static java.util.Collections.*;
 abstract class AbstractJsonNode<T> implements JsonNode {
     private final SimpleType nodeType;
     final T node;
-    final String jsonPointer;
-    Object rawNode;
-    BigInteger rawBigInt;
+    final AbstractJsonNode<T> parent;
+    final Object segment;
+    String _jsonPointer;
+    Object _rawNode;
+    BigInteger _rawBigInt;
 
-    AbstractJsonNode(T node, String jsonPointer) {
+    AbstractJsonNode(T node, AbstractJsonNode<T> parent, Object segment) {
         this.nodeType = computeNodeType(node);
         this.node = node;
-        this.jsonPointer = Objects.requireNonNull(jsonPointer);
+        this.parent = parent;
+        this.segment = Objects.requireNonNull(segment);
     }
 
     @Override
     public String getJsonPointer() {
-        return jsonPointer;
+        if (_jsonPointer != null) {
+            return _jsonPointer;
+        }
+        StringBuilder sb = new StringBuilder();
+        buildJsonPointer(sb);
+        return sb.toString();
     }
 
     @Override
@@ -36,43 +44,43 @@ abstract class AbstractJsonNode<T> implements JsonNode {
 
     @Override
     public boolean asBoolean() {
-        return (Boolean) rawNode;
+        return (Boolean) _rawNode;
     }
 
     @Override
     public String asString() {
-        return Objects.toString(rawNode);
+        return Objects.toString(_rawNode);
     }
 
     @Override
     public BigInteger asInteger() {
-        if (rawBigInt == null) {
-            rawBigInt = asNumber().toBigInteger();
+        if (_rawBigInt == null) {
+            _rawBigInt = asNumber().toBigInteger();
         }
-        return rawBigInt;
+        return _rawBigInt;
     }
 
     @Override
     public BigDecimal asNumber() {
-        return (BigDecimal) rawNode;
+        return (BigDecimal) _rawNode;
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public final List<JsonNode> asArray() {
-        if (this.rawNode == null) {
-            rawNode = unmodifiableList(createArray());
+        if (this._rawNode == null) {
+            _rawNode = unmodifiableList(createArray());
         }
-        return (List<JsonNode>) rawNode;
+        return (List<JsonNode>) _rawNode;
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public final Map<String, JsonNode> asObject() {
-        if (this.rawNode == null) {
-            rawNode = unmodifiableMap(createObject());
+        if (this._rawNode == null) {
+            _rawNode = unmodifiableMap(createObject());
         }
-        return (Map<String, JsonNode>) rawNode;
+        return (Map<String, JsonNode>) _rawNode;
     }
 
     @Override
@@ -90,9 +98,9 @@ abstract class AbstractJsonNode<T> implements JsonNode {
         ensureInitialized();
         other.ensureInitialized();
         if (getNodeType() == SimpleType.INTEGER) {
-            return Objects.equals(rawBigInt, other.rawBigInt);
+            return Objects.equals(_rawBigInt, other._rawBigInt);
         } else {
-            return Objects.equals(rawNode, other.rawNode);
+            return Objects.equals(_rawNode, other._rawNode);
         }
     }
 
@@ -100,9 +108,9 @@ abstract class AbstractJsonNode<T> implements JsonNode {
     public final int hashCode() {
         ensureInitialized();
         if (getNodeType() == SimpleType.INTEGER) {
-            return Objects.hashCode(rawBigInt);
+            return Objects.hashCode(_rawBigInt);
         } else {
-            return Objects.hashCode(rawNode);
+            return Objects.hashCode(_rawNode);
         }
     }
 
@@ -114,6 +122,19 @@ abstract class AbstractJsonNode<T> implements JsonNode {
         } else if (nodeType == SimpleType.OBJECT) {
             asObject();
         }
+    }
+
+    private void buildJsonPointer(StringBuilder sb) {
+        if (_jsonPointer != null) {
+            sb.append(_jsonPointer);
+            return;
+        }
+        if (parent != null) {
+            parent.buildJsonPointer(sb);
+            sb.append('/');
+        }
+        sb.append(segment instanceof String ? JsonNode.encodeJsonPointer((String) segment) : segment);
+        _jsonPointer = sb.toString();
     }
 
     abstract List<JsonNode> createArray();

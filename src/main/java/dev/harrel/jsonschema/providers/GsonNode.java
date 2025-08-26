@@ -12,12 +12,12 @@ import java.math.BigDecimal;
 import java.util.*;
 
 public final class GsonNode extends AbstractJsonNode<JsonElement> {
-    private GsonNode(JsonElement node, String jsonPointer) {
-        super(Objects.requireNonNull(node), jsonPointer);
+    private GsonNode(JsonElement node, GsonNode parent, Object segment) {
+        super(Objects.requireNonNull(node), parent, segment);
     }
 
     public GsonNode(JsonElement node) {
-        this(node, "");
+        this(node, null, "");
     }
 
     @Override
@@ -26,7 +26,7 @@ public final class GsonNode extends AbstractJsonNode<JsonElement> {
         List<JsonNode> result = new ArrayList<>(array.size());
         int i = 0;
         for (JsonElement elem : array) {
-            result.add(new GsonNode(elem, jsonPointer + "/" + i++));
+            result.add(new GsonNode(elem, this, i++));
         }
         return result;
     }
@@ -36,7 +36,7 @@ public final class GsonNode extends AbstractJsonNode<JsonElement> {
         Set<Map.Entry<String, JsonElement>> objectMap = node.getAsJsonObject().entrySet();
         Map<String, JsonNode> result = MapUtil.newHashMap(objectMap.size());
         for (Map.Entry<String, JsonElement> entry : objectMap) {
-            result.put(entry.getKey(), new GsonNode(entry.getValue(), this.jsonPointer + "/" + JsonNode.encodeJsonPointer(entry.getKey())));
+            result.put(entry.getKey(), new GsonNode(entry.getValue(), this, entry.getKey()));
         }
         return result;
     }
@@ -52,14 +52,14 @@ public final class GsonNode extends AbstractJsonNode<JsonElement> {
         } else {
             JsonPrimitive jsonPrimitive = node.getAsJsonPrimitive();
             if (jsonPrimitive.isBoolean()) {
-                rawNode = node.getAsBoolean();
+                _rawNode = node.getAsBoolean();
                 return SimpleType.BOOLEAN;
             } else if (jsonPrimitive.isString()) {
-                rawNode = node.getAsString();
+                _rawNode = node.getAsString();
                 return SimpleType.STRING;
             } else {
-                rawNode = jsonPrimitive.getAsBigDecimal();
-                if (canConvertToInteger((BigDecimal) rawNode)) {
+                _rawNode = jsonPrimitive.getAsBigDecimal();
+                if (canConvertToInteger((BigDecimal) _rawNode)) {
                     return SimpleType.INTEGER;
                 } else {
                     return SimpleType.NUMBER;
@@ -77,7 +77,7 @@ public final class GsonNode extends AbstractJsonNode<JsonElement> {
         public GsonNode wrap(Object node) {
             if (node instanceof GsonNode) {
                 GsonNode providerNode = (GsonNode) node;
-                return providerNode.jsonPointer.isEmpty() ? providerNode : new GsonNode((providerNode).node);
+                return providerNode.parent == null ? providerNode : new GsonNode((providerNode).node);
             } else if (node instanceof JsonElement) {
                 return new GsonNode((JsonElement) node);
             } else {

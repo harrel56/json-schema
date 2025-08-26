@@ -13,12 +13,12 @@ import static net.minidev.json.parser.JSONParser.MODE_JSON_SIMPLE;
 
 public final class JsonSmartNode extends SimpleJsonNode {
 
-    private JsonSmartNode(Object node, String jsonPointer) {
-        super(node, jsonPointer);
+    private JsonSmartNode(Object node, JsonSmartNode parent, Object segment) {
+        super(node, parent, segment);
     }
 
     public JsonSmartNode(Object node) {
-        this(node, "");
+        this(node, null, "");
     }
 
     @Override
@@ -26,7 +26,7 @@ public final class JsonSmartNode extends SimpleJsonNode {
         JSONArray jsonArray = (JSONArray) node;
         List<JsonNode> result = new ArrayList<>(jsonArray.size());
         for (int i = 0; i < jsonArray.size(); i++) {
-            result.add(new JsonSmartNode(jsonArray.get(i), jsonPointer + "/" + i));
+            result.add(new JsonSmartNode(jsonArray.get(i), this, i));
         }
         return result;
     }
@@ -36,7 +36,7 @@ public final class JsonSmartNode extends SimpleJsonNode {
         Set<Map.Entry<String, Object>> objectMap = ((JSONObject) node).entrySet();
         Map<String, JsonNode> result = MapUtil.newHashMap(objectMap.size());
         for (Map.Entry<String, Object> entry : objectMap) {
-            result.put(entry.getKey(), new JsonSmartNode(entry.getValue(), jsonPointer + "/" + JsonNode.encodeJsonPointer(entry.getKey())));
+            result.put(entry.getKey(), new JsonSmartNode(entry.getValue(), this, entry.getKey()));
         }
         return result;
     }
@@ -71,7 +71,7 @@ public final class JsonSmartNode extends SimpleJsonNode {
         public JsonSmartNode wrap(Object node) {
             if (node instanceof JsonSmartNode) {
                 JsonSmartNode providerNode = (JsonSmartNode) node;
-                return providerNode.jsonPointer.isEmpty() ? providerNode : new JsonSmartNode((providerNode).node);
+                return providerNode.parent == null ? providerNode : new JsonSmartNode((providerNode).node);
             } else {
                 return new JsonSmartNode(node);
             }

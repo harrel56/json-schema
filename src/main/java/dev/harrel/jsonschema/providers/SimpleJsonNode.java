@@ -6,8 +6,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 abstract class SimpleJsonNode extends AbstractJsonNode<Object> {
-    SimpleJsonNode(Object node, String jsonPointer) {
-        super(node, jsonPointer);
+    SimpleJsonNode(Object node, AbstractJsonNode<Object> parent, Object segment) {
+        super(node, parent, segment);
     }
 
     abstract boolean isNull(Object node);
@@ -21,20 +21,20 @@ abstract class SimpleJsonNode extends AbstractJsonNode<Object> {
         if (isNull(node)) {
             return SimpleType.NULL;
         } else if (isBoolean(node)) {
-            rawNode = node;
+            _rawNode = node;
             return SimpleType.BOOLEAN;
         } else if (isString(node)) {
-            rawNode = node;
+            _rawNode = node;
             return SimpleType.STRING;
         } else if (isDecimal(node)) {
-            rawNode = asNumber(node).stripTrailingZeros();
-            if (canConvertToInteger((BigDecimal) rawNode)) {
+            _rawNode = asNumber(node).stripTrailingZeros();
+            if (canConvertToInteger((BigDecimal) _rawNode)) {
                 return SimpleType.INTEGER;
             } else {
                 return SimpleType.NUMBER;
             }
         } else if (isInteger(node)) {
-            rawNode = asNumber(node);
+            _rawNode = asNumber(node);
             return SimpleType.INTEGER;
         } else if (isArray(node)) {
             return SimpleType.ARRAY;
@@ -48,7 +48,7 @@ abstract class SimpleJsonNode extends AbstractJsonNode<Object> {
         if (node instanceof BigDecimal) {
             return (BigDecimal) node;
         } else if (node instanceof BigInteger) {
-            rawBigInt = (BigInteger) node;
+            _rawBigInt = (BigInteger) node;
             return new BigDecimal((BigInteger) node);
         } else if (node instanceof Double) {
             return BigDecimal.valueOf((Double) node);

@@ -11,19 +11,19 @@ import java.math.BigDecimal;
 import java.util.*;
 
 public final class JacksonNode extends AbstractJsonNode<com.fasterxml.jackson.databind.JsonNode> {
-    private JacksonNode(com.fasterxml.jackson.databind.JsonNode node, String jsonPointer) {
-        super(Objects.requireNonNull(node), jsonPointer);
+    private JacksonNode(com.fasterxml.jackson.databind.JsonNode node, JacksonNode parent, Object segment) {
+        super(Objects.requireNonNull(node), parent, segment);
     }
 
     public JacksonNode(com.fasterxml.jackson.databind.JsonNode node) {
-        this(node, "");
+        this(node, null, "");
     }
 
     @Override
     List<JsonNode> createArray() {
         List<JsonNode> elements = new ArrayList<>(node.size());
         for (Iterator<com.fasterxml.jackson.databind.JsonNode> iterator = node.elements(); iterator.hasNext(); ) {
-            elements.add(new JacksonNode(iterator.next(), jsonPointer + "/" + elements.size()));
+            elements.add(new JacksonNode(iterator.next(), this, elements.size()));
         }
         return elements;
     }
@@ -33,7 +33,7 @@ public final class JacksonNode extends AbstractJsonNode<com.fasterxml.jackson.da
         Map<String, JsonNode> map = MapUtil.newHashMap(node.size());
         for (Iterator<Map.Entry<String, com.fasterxml.jackson.databind.JsonNode>> iterator = node.fields(); iterator.hasNext(); ) {
             Map.Entry<String, com.fasterxml.jackson.databind.JsonNode> entry = iterator.next();
-            map.put(entry.getKey(), new JacksonNode(entry.getValue(), jsonPointer + "/" + JsonNode.encodeJsonPointer(entry.getKey())));
+            map.put(entry.getKey(), new JacksonNode(entry.getValue(), this, entry.getKey()));
         }
         return map;
     }
@@ -44,14 +44,14 @@ public final class JacksonNode extends AbstractJsonNode<com.fasterxml.jackson.da
             case NULL:
                 return SimpleType.NULL;
             case BOOLEAN:
-                rawNode = node.asBoolean();
+                _rawNode = node.asBoolean();
                 return SimpleType.BOOLEAN;
             case STRING:
-                rawNode = node.asText();
+                _rawNode = node.asText();
                 return SimpleType.STRING;
             case NUMBER:
-                rawNode = node.decimalValue();
-                if (canConvertToInteger((BigDecimal) rawNode)) {
+                _rawNode = node.decimalValue();
+                if (canConvertToInteger((BigDecimal) _rawNode)) {
                     return SimpleType.INTEGER;
                 } else {
                     return SimpleType.NUMBER;
@@ -80,7 +80,7 @@ public final class JacksonNode extends AbstractJsonNode<com.fasterxml.jackson.da
         public JacksonNode wrap(Object node) {
             if (node instanceof JacksonNode) {
                 JacksonNode providerNode = (JacksonNode) node;
-                return providerNode.jsonPointer.isEmpty() ? providerNode : new JacksonNode((providerNode).node);
+                return providerNode.parent == null ? providerNode : new JacksonNode((providerNode).node);
             } else if (node instanceof com.fasterxml.jackson.databind.JsonNode) {
                 return new JacksonNode((com.fasterxml.jackson.databind.JsonNode) node);
             } else {

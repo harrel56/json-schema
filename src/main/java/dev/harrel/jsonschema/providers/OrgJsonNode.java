@@ -10,12 +10,12 @@ import java.util.*;
 
 public final class OrgJsonNode extends SimpleJsonNode {
 
-    private OrgJsonNode(Object node, String jsonPointer) {
-        super(Objects.requireNonNull(node), jsonPointer);
+    private OrgJsonNode(Object node, OrgJsonNode parent, Object segment) {
+        super(Objects.requireNonNull(node), parent, segment);
     }
 
     public OrgJsonNode(Object node) {
-        this(node, "");
+        this(node, null, "");
     }
 
     @Override
@@ -23,7 +23,7 @@ public final class OrgJsonNode extends SimpleJsonNode {
         JSONArray jsonArray = (JSONArray) node;
         List<JsonNode> elements = new ArrayList<>(jsonArray.length());
         for (Object o : jsonArray) {
-            elements.add(new OrgJsonNode(o, jsonPointer + "/" + elements.size()));
+            elements.add(new OrgJsonNode(o, this, elements.size()));
         }
         return elements;
     }
@@ -33,7 +33,7 @@ public final class OrgJsonNode extends SimpleJsonNode {
         JSONObject jsonObject = (JSONObject) node;
         Map<String, JsonNode> map = MapUtil.newHashMap(jsonObject.length());
         for (String key : jsonObject.keySet()) {
-            map.put(key, new OrgJsonNode(jsonObject.get(key), jsonPointer + "/" + JsonNode.encodeJsonPointer(key)));
+            map.put(key, new OrgJsonNode(jsonObject.get(key), this, key));
         }
         return map;
     }
@@ -58,7 +58,7 @@ public final class OrgJsonNode extends SimpleJsonNode {
         public JsonNode wrap(Object node) {
             if (node instanceof OrgJsonNode) {
                 OrgJsonNode providerNode = (OrgJsonNode) node;
-                return providerNode.jsonPointer.isEmpty() ? providerNode : new OrgJsonNode((providerNode).node);
+                return providerNode.parent == null ? providerNode : new OrgJsonNode((providerNode).node);
             } else {
                 return new OrgJsonNode(node);
             }

@@ -19,12 +19,12 @@ public final class SnakeYamlNode extends AbstractJsonNode<Node> {
     private static final SafeConstructor.ConstructYamlInt INT_CREATOR = CONSTR.new ConstructYamlInt();
     private static final SafeConstructor.ConstructYamlFloat NUMBER_CREATOR = CONSTR.new ConstructYamlFloat();
 
-    private SnakeYamlNode(Node node, String jsonPointer) {
-        super(Objects.requireNonNull(node), jsonPointer);
+    private SnakeYamlNode(Node node, SnakeYamlNode parent, Object segment) {
+        super(Objects.requireNonNull(node), parent, segment);
     }
 
     private SnakeYamlNode(Node node) {
-        this(node, "");
+        this(node, null, "");
     }
 
     @Override
@@ -32,7 +32,7 @@ public final class SnakeYamlNode extends AbstractJsonNode<Node> {
         List<Node> arrayNode = ((SequenceNode) node).getValue();
         List<JsonNode> elements = new ArrayList<>(arrayNode.size());
         for (int i = 0; i < arrayNode.size(); i++) {
-            elements.add(new SnakeYamlNode(arrayNode.get(i), jsonPointer + "/" + i));
+            elements.add(new SnakeYamlNode(arrayNode.get(i), this, i));
         }
         return elements;
     }
@@ -43,7 +43,7 @@ public final class SnakeYamlNode extends AbstractJsonNode<Node> {
         Map<String, JsonNode> map = MapUtil.newHashMap(objectNode.size());
         for (NodeTuple entry : objectNode) {
             String key = ((ScalarNode) entry.getKeyNode()).getValue();
-            map.put(key, new SnakeYamlNode(entry.getValueNode(), jsonPointer + "/" + JsonNode.encodeJsonPointer(key)));
+            map.put(key, new SnakeYamlNode(entry.getValueNode(), this, key));
         }
         return map;
     }
@@ -59,25 +59,25 @@ public final class SnakeYamlNode extends AbstractJsonNode<Node> {
         if (node.getTag() == Tag.NULL) {
             return SimpleType.NULL;
         } else if (node.getTag() == Tag.BOOL) {
-            rawNode = BOOLEAN_CREATOR.construct(node);
+            _rawNode = BOOLEAN_CREATOR.construct(node);
             return SimpleType.BOOLEAN;
         } else if (node.getTag() == Tag.INT) {
-            rawNode = intToBigDecimal(node);
+            _rawNode = intToBigDecimal(node);
             return SimpleType.INTEGER;
         } else if (node.getTag() == Tag.FLOAT) {
             String asString = ((ScalarNode) node).getValue().toLowerCase();
             if (asString.contains(".inf") || asString.contains(".nan")) {
-                rawNode = ((ScalarNode) node).getValue();
+                _rawNode = ((ScalarNode) node).getValue();
                 return SimpleType.STRING;
             }
-            rawNode = floatToBigDecimal(node);
-            if (canConvertToInteger((BigDecimal) rawNode)) {
+            _rawNode = floatToBigDecimal(node);
+            if (canConvertToInteger((BigDecimal) _rawNode)) {
                 return SimpleType.INTEGER;
             } else {
                 return SimpleType.NUMBER;
             }
         } else {
-            rawNode = ((ScalarNode) node).getValue();
+            _rawNode = ((ScalarNode) node).getValue();
             return SimpleType.STRING;
         }
     }
@@ -87,7 +87,7 @@ public final class SnakeYamlNode extends AbstractJsonNode<Node> {
         if (intObject instanceof Integer || intObject instanceof Long) {
             return BigDecimal.valueOf(((Number) intObject).longValue());
         } else {
-            rawBigInt = (BigInteger) intObject;
+            _rawBigInt = (BigInteger) intObject;
             return new BigDecimal((BigInteger) intObject);
         }
     }
@@ -116,7 +116,7 @@ public final class SnakeYamlNode extends AbstractJsonNode<Node> {
         public JsonNode wrap(Object node) {
             if (node instanceof SnakeYamlNode) {
                 SnakeYamlNode providerNode = (SnakeYamlNode) node;
-                return providerNode.jsonPointer.isEmpty() ? providerNode : new SnakeYamlNode((providerNode).node);
+                return providerNode.parent == null ? providerNode : new SnakeYamlNode((providerNode).node);
             } else if (node instanceof Node) {
                 Node providerNode = (Node) node;
                 assertKeyUniqueness(providerNode);

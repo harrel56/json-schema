@@ -12,12 +12,12 @@ import java.math.BigDecimal;
 import java.util.*;
 
 public final class JakartaJsonNode extends AbstractJsonNode<JsonValue> {
-    private JakartaJsonNode(JsonValue node, String jsonPointer) {
-        super(Objects.requireNonNull(node), jsonPointer);
+    private JakartaJsonNode(JsonValue node, JakartaJsonNode parent, Object segment) {
+        super(Objects.requireNonNull(node), parent, segment);
     }
 
     public JakartaJsonNode(JsonValue node) {
-        this(node, "");
+        this(node, null, "");
     }
 
     @Override
@@ -25,7 +25,7 @@ public final class JakartaJsonNode extends AbstractJsonNode<JsonValue> {
         JsonArray jsonArray = node.asJsonArray();
         List<JsonNode> result = new ArrayList<>(jsonArray.size());
         for (int i = 0; i < jsonArray.size(); i++) {
-            result.add(new JakartaJsonNode(jsonArray.get(i), jsonPointer + "/" + i));
+            result.add(new JakartaJsonNode(jsonArray.get(i), this, i));
         }
         return result;
     }
@@ -35,7 +35,7 @@ public final class JakartaJsonNode extends AbstractJsonNode<JsonValue> {
         Set<Map.Entry<String, JsonValue>> objectMap = node.asJsonObject().entrySet();
         Map<String, JsonNode> result = MapUtil.newHashMap(objectMap.size());
         for (Map.Entry<String, JsonValue> entry : objectMap) {
-            result.put(entry.getKey(), new JakartaJsonNode(entry.getValue(), jsonPointer + "/" + JsonNode.encodeJsonPointer(entry.getKey())));
+            result.put(entry.getKey(), new JakartaJsonNode(entry.getValue(), this, entry.getKey()));
         }
         return result;
     }
@@ -50,17 +50,17 @@ public final class JakartaJsonNode extends AbstractJsonNode<JsonValue> {
             case OBJECT:
                 return SimpleType.OBJECT;
             case STRING:
-                rawNode = ((JsonString) node).getString();
+                _rawNode = ((JsonString) node).getString();
                 return SimpleType.STRING;
             case TRUE:
-                rawNode = Boolean.TRUE;
+                _rawNode = Boolean.TRUE;
                 return SimpleType.BOOLEAN;
             case FALSE:
-                rawNode = Boolean.FALSE;
+                _rawNode = Boolean.FALSE;
                 return SimpleType.BOOLEAN;
             case NUMBER:
-                rawNode = ((JsonNumber) node).bigDecimalValue();
-                if (canConvertToInteger((BigDecimal) rawNode)) {
+                _rawNode = ((JsonNumber) node).bigDecimalValue();
+                if (canConvertToInteger((BigDecimal) _rawNode)) {
                     return SimpleType.INTEGER;
                 } else {
                     return SimpleType.NUMBER;
@@ -85,7 +85,7 @@ public final class JakartaJsonNode extends AbstractJsonNode<JsonValue> {
         public JakartaJsonNode wrap(Object node) {
             if (node instanceof JakartaJsonNode) {
                 JakartaJsonNode providerNode = (JakartaJsonNode) node;
-                return providerNode.jsonPointer.isEmpty() ? providerNode : new JakartaJsonNode((providerNode).node);
+                return providerNode.parent == null ? providerNode : new JakartaJsonNode((providerNode).node);
             } else if (node instanceof JsonValue) {
                 return new JakartaJsonNode((JsonValue) node);
             } else {

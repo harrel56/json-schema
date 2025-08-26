@@ -11,12 +11,12 @@ import java.util.*;
 
 public final class JettisonNode extends SimpleJsonNode {
 
-    private JettisonNode(Object node, String jsonPointer) {
-        super(Objects.requireNonNull(node), jsonPointer);
+    private JettisonNode(Object node, JettisonNode parent, Object segment) {
+        super(Objects.requireNonNull(node), parent, segment);
     }
 
     public JettisonNode(Object node) {
-        this(node, "");
+        this(node, null, "");
     }
 
     @Override
@@ -24,7 +24,7 @@ public final class JettisonNode extends SimpleJsonNode {
         JSONArray arrayNode = (JSONArray) node;
         List<JsonNode> elements = new ArrayList<>(arrayNode.length());
         for (int i = 0; i < arrayNode.length(); ++i) {
-            elements.add(new JettisonNode(arrayNode.opt(i), jsonPointer + "/" + elements.size()));
+            elements.add(new JettisonNode(arrayNode.opt(i), this, elements.size()));
         }
         return elements;
     }
@@ -36,7 +36,7 @@ public final class JettisonNode extends SimpleJsonNode {
         Map<String, JsonNode> map = MapUtil.newHashMap(jsonObject.length());
         for (Object object : jsonObject.toMap().entrySet()) {
             Map.Entry<Object, Object> entry = (Map.Entry<Object, Object>) object;
-            map.put(entry.getKey().toString(), new JettisonNode(entry.getValue(), jsonPointer + "/" + JsonNode.encodeJsonPointer(entry.getKey().toString())));
+            map.put(entry.getKey().toString(), new JettisonNode(entry.getValue(), this, entry.getKey()));
         }
         return map;
     }
@@ -61,7 +61,7 @@ public final class JettisonNode extends SimpleJsonNode {
         public JsonNode wrap(Object node) {
             if (node instanceof JettisonNode) {
                 JettisonNode providerNode = (JettisonNode) node;
-                return providerNode.jsonPointer.isEmpty() ? providerNode : new JettisonNode((providerNode).node);
+                return providerNode.parent == null ? providerNode : new JettisonNode((providerNode).node);
             } else {
                 return new JettisonNode(node);
             }

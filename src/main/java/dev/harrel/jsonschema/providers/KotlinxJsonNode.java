@@ -9,12 +9,12 @@ import java.math.BigDecimal;
 import java.util.*;
 
 public final class KotlinxJsonNode extends AbstractJsonNode<JsonElement> {
-    private KotlinxJsonNode(JsonElement node, String jsonPointer) {
-        super(Objects.requireNonNull(node), jsonPointer);
+    private KotlinxJsonNode(JsonElement node, KotlinxJsonNode parent, Object segment) {
+        super(Objects.requireNonNull(node), parent, segment);
     }
 
     private KotlinxJsonNode(JsonElement node) {
-        this(node, "");
+        this(node, null, "");
     }
 
     @Override
@@ -22,7 +22,7 @@ public final class KotlinxJsonNode extends AbstractJsonNode<JsonElement> {
         JsonArray array = (JsonArray) node;
         List<JsonNode> result = new ArrayList<>(array.size());
         for (int i = 0; i < array.size(); i++) {
-            result.add(new KotlinxJsonNode(array.get(i), jsonPointer + "/" + i));
+            result.add(new KotlinxJsonNode(array.get(i), this, i));
         }
         return result;
     }
@@ -32,7 +32,7 @@ public final class KotlinxJsonNode extends AbstractJsonNode<JsonElement> {
         JsonObject object = (JsonObject) node;
         Map<String, JsonNode> result = MapUtil.newHashMap(object.size());
         for (Map.Entry<String, JsonElement> entry : object.getEntries()) {
-            result.put(entry.getKey(), new KotlinxJsonNode(entry.getValue(), this.jsonPointer + "/" + JsonNode.encodeJsonPointer(entry.getKey())));
+            result.put(entry.getKey(), new KotlinxJsonNode(entry.getValue(), this, entry.getKey()));
         }
         return result;
     }
@@ -49,19 +49,19 @@ public final class KotlinxJsonNode extends AbstractJsonNode<JsonElement> {
             JsonPrimitive primitive = (JsonPrimitive) node;
             String content = primitive.getContent();
             if (primitive.isString()) {
-                rawNode = content;
+                _rawNode = content;
                 return SimpleType.STRING;
             }
             if ("true".equals(content)) {
-                rawNode = Boolean.TRUE;
+                _rawNode = Boolean.TRUE;
                 return SimpleType.BOOLEAN;
             }
             if ("false".equals(content)) {
-                rawNode = Boolean.FALSE;
+                _rawNode = Boolean.FALSE;
                 return SimpleType.BOOLEAN;
             }
-            rawNode = new BigDecimal(content);
-            if (canConvertToInteger((BigDecimal) rawNode)) {
+            _rawNode = new BigDecimal(content);
+            if (canConvertToInteger((BigDecimal) _rawNode)) {
                 return SimpleType.INTEGER;
             } else {
                 return SimpleType.NUMBER;
@@ -86,7 +86,7 @@ public final class KotlinxJsonNode extends AbstractJsonNode<JsonElement> {
         public KotlinxJsonNode wrap(Object node) {
             if (node instanceof KotlinxJsonNode) {
                 KotlinxJsonNode providerNode = (KotlinxJsonNode) node;
-                return providerNode.jsonPointer.isEmpty() ? providerNode : new KotlinxJsonNode((providerNode).node);
+                return providerNode.parent == null ? providerNode : new KotlinxJsonNode((providerNode).node);
             } else if (node instanceof JsonElement) {
                 return new KotlinxJsonNode((JsonElement) node);
             } else {

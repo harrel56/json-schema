@@ -197,7 +197,7 @@ public final class EvaluationContext {
                 errors.subList(errorsBefore, errors.size()).clear();
             } else {
                 valid = false;
-                errors.add(new LazyError(evaluationPath, schema.getSchemaLocation().toString(), node.getJsonPointer(), evaluator.getKeyword(), result.getErrorSupplier()));
+                errors.add(new LazyError(evaluationPath, schema.getSchemaLocation().toString(), node::getJsonPointer, evaluator.getKeyword(), result.getErrorSupplier()));
             }
             evaluationStack.pop();
         }
