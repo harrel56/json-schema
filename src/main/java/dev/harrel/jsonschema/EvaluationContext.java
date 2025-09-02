@@ -167,6 +167,14 @@ public final class EvaluationContext {
         return props;
     }
 
+    boolean validateAgainstRootSchema(Schema schema, JsonNode node) {
+        String fragment = schema.getSchemaLocation().getRawFragment();
+        if (fragment != null && !fragment.isEmpty()) {
+            refStack.add(new RefStackItem(schema.getSchemaLocation().getFragment(), ""));
+        }
+        return validateAgainstSchema(schema, node);
+    }
+
     boolean validateAgainstSchema(Schema schema, JsonNode node) {
         boolean outOfDynamicScope = !schema.getParentUri().equals(dynamicScope.peek());
         if (outOfDynamicScope) {

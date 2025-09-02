@@ -256,7 +256,7 @@ class ValidatorTest {
         assertThat(errors).hasSize(1);
         assertError(
                 errors.get(0),
-                "/$defs/sub/type",
+                "/type",
                 "urn:test#/$defs/sub",
                 "",
                 "type",
@@ -286,7 +286,7 @@ class ValidatorTest {
         assertThat(errors).hasSize(1);
         assertError(
                 errors.get(0),
-                "/$defs/sub/type",
+                "/type",
                 "urn:test#/$defs/sub",
                 "",
                 "type",
@@ -335,15 +335,14 @@ class ValidatorTest {
     void supportsMultipleWaysOfReferencing() {
         String schema = """
                 {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
                   "$defs": {
                     "x": {
                       "$id": "urn:sub#"
                     }
                   }
                 }""";
-        Validator validator = new ValidatorFactory()
-                .withDisabledSchemaValidation(true)
-                .createValidator();
+        Validator validator = new ValidatorFactory().createValidator();
 
         validator.registerSchema(URI.create("https://test.com/schema"), schema);
         Validator.Result result = validator.validate(URI.create("https://test.com/schema"), "true");
@@ -360,5 +359,64 @@ class ValidatorTest {
 
         result = validator.validate(URI.create("urn:sub#"), "true");
         assertThat(result.isValid()).isTrue();
+    }
+
+    @Test
+    void shouldAllowValidatingAgainstJsonPointerSchema() {
+        String schema = """
+                {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "$defs": {
+                    "x": {
+                      "$ref": "#/$defs/y"
+                    },
+                    "y": {
+                      "type": "null"
+                    }
+                  }
+                }""";
+        Validator validator = new ValidatorFactory().createValidator();
+
+        validator.registerSchema(URI.create("https://test.com/schema"), schema);
+        Validator.Result result = validator.validate(URI.create("https://test.com/schema#/$defs/x"), "1");
+        assertThat(result.isValid()).isFalse();
+        assertError(
+                result.getErrors().get(0),
+                "/$ref/type",
+                "https://test.com/schema#/$defs/y",
+                "",
+                "type",
+                "Value is [integer] but should be [null]"
+        );
+    }
+
+    @Test
+    void shouldAllowValidatingAgainstAnchorSchema() {
+        String schema = """
+                {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "$defs": {
+                    "x": {
+                      "$anchor": "x",
+                      "$ref": "#/$defs/y"
+                    },
+                    "y": {
+                      "type": "null"
+                    }
+                  }
+                }""";
+        Validator validator = new ValidatorFactory().createValidator();
+
+        validator.registerSchema(URI.create("https://test.com/schema"), schema);
+        Validator.Result result = validator.validate(URI.create("https://test.com/schema#x"), "1");
+        assertThat(result.isValid()).isFalse();
+        assertError(
+                result.getErrors().get(0),
+                "/$ref/type",
+                "https://test.com/schema#/$defs/y",
+                "",
+                "type",
+                "Value is [integer] but should be [null]"
+        );
     }
 }
