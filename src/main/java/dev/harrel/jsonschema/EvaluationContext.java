@@ -168,7 +168,8 @@ public final class EvaluationContext {
     }
 
     boolean validateAgainstRootSchema(Schema schema, JsonNode node) {
-        if (schema.getSchemaLocation().getFragment() != null) {
+        String fragment = schema.getSchemaLocation().getRawFragment();
+        if (fragment != null && !fragment.isEmpty()) {
             refStack.add(new RefStackItem(schema.getSchemaLocation().getFragment(), ""));
         }
         return validateAgainstSchema(schema, node);
