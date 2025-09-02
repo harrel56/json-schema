@@ -134,6 +134,73 @@ class SchemaResolverTest {
     }
 
     @Test
+    void shouldRegisterExternalSchemaWithAlias() {
+        SchemaResolver resolver = uri ->
+                switch (uri) {
+                    case "https://harrel.dev/a/b/root.json" -> SchemaResolver.Result.fromString(
+                            """
+                                    {
+                                      "$id": "/maybe-not-root.json",
+                                      "type": "object",
+                                      "properties": {
+                                        "x": {
+                                          "type": "null"
+                                        }
+                                      }
+                                    }""");
+                    default -> SchemaResolver.Result.empty();
+                };
+        Validator validator = new ValidatorFactory()
+                .withDisabledSchemaValidation(true)
+                .withSchemaResolver(resolver)
+                .createValidator();
+
+        String instance1 = """
+                {
+                  "x": 1
+                }""";
+        Validator.Result result = validator.validate(URI.create("https://harrel.dev/a/b/root.json"), instance1);
+
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(1);
+        assertError(
+                errors.get(0),
+                "/properties/x/type",
+                "https://harrel.dev/maybe-not-root.json#/properties/x", // well, who knows if retrieval URI or $id one should be used?
+                "/x",
+                "type",
+                "Value is [integer] but should be [null]"
+        );
+
+        result = validator.validate(URI.create("https://harrel.dev/maybe-not-root.json#"), instance1);
+        assertThat(result.isValid()).isFalse();
+        errors = result.getErrors();
+        assertThat(errors).hasSize(1);
+        assertError(
+                errors.get(0),
+                "/properties/x/type",
+                "https://harrel.dev/maybe-not-root.json#/properties/x",
+                "/x",
+                "type",
+                "Value is [integer] but should be [null]"
+        );
+
+        result = validator.validate(URI.create("https://harrel.dev/a/b/root.json#/properties/x"), instance1);
+        assertThat(result.isValid()).isFalse();
+        errors = result.getErrors();
+        assertThat(errors).hasSize(1);
+        assertError(
+                errors.get(0),
+                "/type",
+                "https://harrel.dev/maybe-not-root.json#/properties/x",
+                "",
+                "type",
+                "Value is [object] but should be [null]"
+        );
+    }
+
+    @Test
     void shouldResolveRelativeExternalRefs() {
         SchemaResolver resolver = uri ->
                 switch (uri) {
