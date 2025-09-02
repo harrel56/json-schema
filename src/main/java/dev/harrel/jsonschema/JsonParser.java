@@ -58,14 +58,8 @@ final class JsonParser {
         UnfinishedSchema unfinishedSchema = new UnfinishedSchema();
         unfinishedSchemas.put(baseUri, unfinishedSchema);
 
-        Optional<URI> newIdUri = objectMapOptional.flatMap(obj -> JsonNodeUtil.getStringField(obj, Keyword.ID))
-                .map(UriUtil::getUriWithoutFragment)
-                .filter(id -> !baseUri.equals(id))
-                .map(baseUri::resolve);
-        Optional<URI> legacyIdUri = objectMapOptional.flatMap(obj -> JsonNodeUtil.getStringField(obj, Keyword.LEGACY_ID))
-                .map(UriUtil::getUriWithoutFragment)
-                .filter(id -> !baseUri.equals(id))
-                .map(baseUri::resolve);
+        Optional<URI> newIdUri = objectMapOptional.flatMap(obj -> getIdUri(obj, baseUri, Keyword.ID));
+        Optional<URI> legacyIdUri = objectMapOptional.flatMap(obj -> getIdUri(obj, baseUri, Keyword.LEGACY_ID));
 
         newIdUri.ifPresent(id -> unfinishedSchemas.put(id, unfinishedSchema));
         legacyIdUri.ifPresent(id -> unfinishedSchemas.put(id, unfinishedSchema));
@@ -81,7 +75,6 @@ final class JsonParser {
             newIdUri.ifPresent(unfinishedSchemas::remove);
             idField = objectMapOptional.flatMap(obj -> JsonNodeUtil.getStringField(obj, Keyword.LEGACY_ID));
             providedSchemaId = legacyIdUri;
-
         }
 
         if (providedSchemaId.isPresent() && !providedSchemaId.get().isAbsolute()) {
@@ -252,6 +245,13 @@ final class JsonParser {
         } else {
             return ctx.getDialect().getEvaluatorFactory();
         }
+    }
+
+    private static Optional<URI> getIdUri(Map<String, JsonNode> object, URI baseUri, String keyword) {
+        return JsonNodeUtil.getStringField(object, keyword)
+                .map(UriUtil::getUriWithoutFragment)
+                .filter(id -> !baseUri.equals(id))
+                .map(baseUri::resolve);
     }
 
     private static void validateIdField(SchemaParsingContext ctx, String id) {
