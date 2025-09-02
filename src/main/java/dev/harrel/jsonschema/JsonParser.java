@@ -54,23 +54,39 @@ final class JsonParser {
                 )
                 .map(UriUtil::removeEmptyFragment)
                 .orElse(null);
-        Optional<String> idField = objectMapOptional.flatMap(obj -> JsonNodeUtil.getStringField(obj, Keyword.ID));
-        Optional<URI> providedSchemaId = idField
-                .map(UriUtil::getUriWithoutFragment)
-                .filter(id -> !baseUri.equals(id));
 
         UnfinishedSchema unfinishedSchema = new UnfinishedSchema();
         unfinishedSchemas.put(baseUri, unfinishedSchema);
-        providedSchemaId.ifPresent(id -> unfinishedSchemas.put(id, unfinishedSchema));
 
+        Optional<URI> newIdUri = objectMapOptional.flatMap(obj -> JsonNodeUtil.getStringField(obj, Keyword.ID))
+                .map(UriUtil::getUriWithoutFragment)
+                .filter(id -> !baseUri.equals(id))
+                .map(baseUri::resolve);
+        Optional<URI> legacyIdUri = objectMapOptional.flatMap(obj -> JsonNodeUtil.getStringField(obj, Keyword.LEGACY_ID))
+                .map(UriUtil::getUriWithoutFragment)
+                .filter(id -> !baseUri.equals(id))
+                .map(baseUri::resolve);
+
+        newIdUri.ifPresent(id -> unfinishedSchemas.put(id, unfinishedSchema));
+        legacyIdUri.ifPresent(id -> unfinishedSchemas.put(id, unfinishedSchema));
         SpecificationVersion specVersion = resolveSpecVersion(metaSchemaUri);
-        if (specVersion.getOrder() <= SpecificationVersion.DRAFT4.getOrder()) {
-            providedSchemaId.ifPresent(unfinishedSchemas::remove);
+
+        Optional<String> idField;
+        Optional<URI> providedSchemaId;
+        if (specVersion.getOrder() > SpecificationVersion.DRAFT4.getOrder()) {
+            legacyIdUri.ifPresent(unfinishedSchemas::remove);
+            idField = objectMapOptional.flatMap(obj -> JsonNodeUtil.getStringField(obj, Keyword.ID));
+            providedSchemaId = newIdUri;
+        } else {
+            newIdUri.ifPresent(unfinishedSchemas::remove);
             idField = objectMapOptional.flatMap(obj -> JsonNodeUtil.getStringField(obj, Keyword.LEGACY_ID));
-            providedSchemaId = idField
-                    .map(UriUtil::getUriWithoutFragment)
-                    .filter(id -> !baseUri.equals(id));
-            providedSchemaId.ifPresent(id -> unfinishedSchemas.put(id, unfinishedSchema));
+            providedSchemaId = legacyIdUri;
+
+        }
+
+        if (providedSchemaId.isPresent() && !providedSchemaId.get().isAbsolute()) {
+            throw new IllegalArgumentException(String.format(
+                    "Resolution of $id [%s] against base URI [%s] did not produce an absolute URI.", providedSchemaId.get(), baseUri));
         }
 
         URI finalUri = providedSchemaId.orElse(baseUri);
