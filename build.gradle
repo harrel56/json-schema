@@ -39,7 +39,7 @@ repositories {
 
 def jsonProviders = [
         [id   : 'jackson', additionalVersions: ['2.2.0'],
-         group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.19.2'],
+         group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.20.0'],
         [id   : 'gson', additionalVersions: ['2.3'],
          group: 'com.google.code.gson', name: 'gson', version: '2.13.1'],
         [id   : 'orgJson', additionalVersions: ['20201115'],
@@ -53,7 +53,7 @@ def jsonProviders = [
         [id   : 'jsonSmart', additionalVersions: ['1.1'],
          group: 'net.minidev', name: 'json-smart', version: '2.6.0'],
         [id   : 'snakeYaml', additionalVersions: ['1.26', '2.0'],
-         group: 'org.yaml', name: 'snakeyaml', version: '2.4'],
+         group: 'org.yaml', name: 'snakeyaml', version: '2.5'],
 ]
 
 setupJava8Test(jsonProviders[0])
