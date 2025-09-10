@@ -127,7 +127,7 @@ public final class EvaluationContext {
     }
 
     Object getSiblingAnnotation(String sibling) {
-        Annotation annotation = stateStack.element().siblingAnnotations.get(sibling);
+        Annotation annotation = stateStack.element().getSiblingAnnotation(sibling);
         return annotation == null ? null : annotation.getAnnotation();
     }
 
@@ -174,7 +174,7 @@ public final class EvaluationContext {
     }
 
     boolean validateAgainstSchema(Schema schema, JsonNode node) {
-        EvalState state = new EvalState(schema.getParentUri(), annotations.size(), new HashMap<>());
+        EvalState state = new EvalState(schema.getParentUri(), annotations.size());
         stateStack.push(state);
 
         List<EvaluatorWrapper> evaluators = schema.getEvaluators();
@@ -188,7 +188,7 @@ public final class EvaluationContext {
             Evaluator.Result result = evaluator.evaluate(this, node);
             if (result.getAnnotation() != null) {
                 Annotation annotation = new Annotation(evaluationPath, schema.getSchemaLocation().toString(), node.getJsonPointer(), evaluator.getKeyword(), result.getAnnotation());
-                state.siblingAnnotations.put(evaluator.getKeyword(), annotation);
+                state.setSiblingAnnotation(evaluator.getKeyword(), annotation);
                 annotations.add(annotation);
             }
             if (result.isValid()) {
@@ -295,18 +295,6 @@ public final class EvaluationContext {
         private RefStackItem(String schemaLocation, String evaluationPath) {
             this.schemaLocation = schemaLocation;
             this.evaluationPath = evaluationPath;
-        }
-    }
-
-    private static class EvalState {
-        private final URI schemaUri;
-        private final int annotationsBefore;
-        private final Map<String, Annotation> siblingAnnotations;
-
-        private EvalState(URI schemaUri, int annotationsBefore, Map<String, Annotation> siblingAnnotations) {
-            this.schemaUri = schemaUri;
-            this.annotationsBefore = annotationsBefore;
-            this.siblingAnnotations = siblingAnnotations;
         }
     }
 }
