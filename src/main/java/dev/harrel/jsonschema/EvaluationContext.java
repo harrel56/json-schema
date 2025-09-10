@@ -234,8 +234,14 @@ public final class EvaluationContext {
         }
 
         Iterator<EvalState> it = stateStack.descendingIterator();
+        URI last = null;
         while (it.hasNext()) {
-            Schema schema = schemaRegistry.getDynamic(new CompoundUri(it.next().schemaUri, compoundUri.fragment));
+            URI schemaUri = it.next().schemaUri;
+            if (schemaUri.equals(last)) {
+                continue;
+            }
+            last = schemaUri;
+            Schema schema = schemaRegistry.getDynamic(new CompoundUri(schemaUri, compoundUri.fragment));
             if (schema != null) {
                 return schema;
             }
@@ -245,7 +251,12 @@ public final class EvaluationContext {
 
     private Schema resolveRecursiveSchema() {
         Schema schema = schemaRegistry.get(stateStack.element().schemaUri);
+        URI last = null;
         for (EvalState state : stateStack) {
+            if (state.schemaUri.equals(last)) {
+                continue;
+            }
+            last = state.schemaUri;
             Schema recursedSchema = schemaRegistry.getDynamic(state.schemaUri);
             if (recursedSchema == null) {
                 return schema;
