@@ -14,7 +14,7 @@
       "type": "null"
     }
   },
-  "$id": "root",
+  "$id": "urn:root",
   "properties": {
     "foo": {
       "$ref": "reffed",

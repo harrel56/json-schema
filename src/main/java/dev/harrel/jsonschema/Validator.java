@@ -97,7 +97,7 @@ public final class Validator {
      * @return URI provided by user <b>OR</b> value of <i>$id</i> keyword in <i>root</i> schema if present
      */
     public URI registerSchema(URI uri, JsonNode schemaNode) {
-        return jsonParser.parseRootSchema(uri, schemaNode);
+        return jsonParser.parseRootSchema(generateSchemaUri().resolve(uri), schemaNode);
     }
 
     /**
@@ -138,6 +138,9 @@ public final class Validator {
     }
 
     private Schema getRootSchema(URI uri) {
+        if (!uri.isAbsolute()) {
+            uri = generateSchemaUri().resolve(uri);
+        }
         CompoundUri compoundUri = CompoundUri.fromUri(uri);
         Schema schema = schemaRegistry.get(compoundUri);
         if (schema != null) {

@@ -134,13 +134,80 @@ class SchemaResolverTest {
     }
 
     @Test
+    void shouldRegisterExternalSchemaWithAlias() {
+        SchemaResolver resolver = uri ->
+                switch (uri) {
+                    case "https://harrel.dev/a/b/root.json" -> SchemaResolver.Result.fromString(
+                            """
+                                    {
+                                      "$id": "/maybe-not-root.json",
+                                      "type": "object",
+                                      "properties": {
+                                        "x": {
+                                          "type": "null"
+                                        }
+                                      }
+                                    }""");
+                    default -> SchemaResolver.Result.empty();
+                };
+        Validator validator = new ValidatorFactory()
+                .withDisabledSchemaValidation(true)
+                .withSchemaResolver(resolver)
+                .createValidator();
+
+        String instance1 = """
+                {
+                  "x": 1
+                }""";
+        Validator.Result result = validator.validate(URI.create("https://harrel.dev/a/b/root.json"), instance1);
+
+        assertThat(result.isValid()).isFalse();
+        List<Error> errors = result.getErrors();
+        assertThat(errors).hasSize(1);
+        assertError(
+                errors.get(0),
+                "/properties/x/type",
+                "https://harrel.dev/maybe-not-root.json#/properties/x", // well, who knows if retrieval URI or $id one should be used?
+                "/x",
+                "type",
+                "Value is [integer] but should be [null]"
+        );
+
+        result = validator.validate(URI.create("https://harrel.dev/maybe-not-root.json#"), instance1);
+        assertThat(result.isValid()).isFalse();
+        errors = result.getErrors();
+        assertThat(errors).hasSize(1);
+        assertError(
+                errors.get(0),
+                "/properties/x/type",
+                "https://harrel.dev/maybe-not-root.json#/properties/x",
+                "/x",
+                "type",
+                "Value is [integer] but should be [null]"
+        );
+
+        result = validator.validate(URI.create("https://harrel.dev/a/b/root.json#/properties/x"), instance1);
+        assertThat(result.isValid()).isFalse();
+        errors = result.getErrors();
+        assertThat(errors).hasSize(1);
+        assertError(
+                errors.get(0),
+                "/type",
+                "https://harrel.dev/maybe-not-root.json#/properties/x",
+                "",
+                "type",
+                "Value is [object] but should be [null]"
+        );
+    }
+
+    @Test
     void shouldResolveRelativeExternalRefs() {
         SchemaResolver resolver = uri ->
                 switch (uri) {
-                    case "a/b/root.json" -> SchemaResolver.Result.fromString(
+                    case "https://harrel.dev/a/b/root.json" -> SchemaResolver.Result.fromString(
                             """
                                     {
-                                      "$id": "a/b/root.json",
+                                      "$id": "/a/b/root.json",
                                       "type": "object",
                                       "properties": {
                                         "x": {
@@ -148,10 +215,10 @@ class SchemaResolverTest {
                                         }
                                       }
                                     }""");
-                    case "a/b/subschema.json" -> SchemaResolver.Result.fromString(
+                    case "https://harrel.dev/a/b/subschema.json" -> SchemaResolver.Result.fromString(
                             """
                                     {
-                                      "$id": "a/b/subschema.json",
+                                      "$id": "/a/b/subschema.json",
                                       "$defs": {
                                         "reqFields": {
                                           "required": ["y"]
@@ -177,7 +244,7 @@ class SchemaResolverTest {
         assertError(
                 errors.get(0),
                 "/properties/x/$ref/required",
-                "a/b/subschema.json#/$defs/reqFields",
+                "https://harrel.dev/a/b/subschema.json#/$defs/reqFields",
                 "/x",
                 "required",
                 "Object does not have some of the required properties [[y]]"
@@ -197,17 +264,17 @@ class SchemaResolverTest {
     void shouldResolveExternalRefsChain() {
         SchemaResolver resolver = uri ->
                 switch (uri) {
-                    case "a/b/x" -> SchemaResolver.Result.fromString(
+                    case "https://harrel.dev/a/b/x" -> SchemaResolver.Result.fromString(
                             """
                                     {
-                                      "$id": "a/b/x",
+                                      "$id": "/a/b/x",
                                       "$ref": "y#/$defs/y"
                                     }"""
                     );
-                    case "a/b/y" -> SchemaResolver.Result.fromString(
+                    case "https://harrel.dev/a/b/y" -> SchemaResolver.Result.fromString(
                             """
                                     {
-                                      "$id": "a/b/y",
+                                      "$id": "/a/b/y",
                                       "$defs": {
                                         "y": {
                                           "$ref": "z#/$defs/z"
@@ -215,10 +282,10 @@ class SchemaResolverTest {
                                       }
                                     }"""
                     );
-                    case "a/b/z" -> SchemaResolver.Result.fromString(
+                    case "https://harrel.dev/a/b/z" -> SchemaResolver.Result.fromString(
                             """
                                     {
-                                      "$id": "a/b/z",
+                                      "$id": "/a/b/z",
                                       "$defs": {
                                         "z": {
                                           "$ref": "https://external.com/a/b/c#/$defs/c"

@@ -77,7 +77,7 @@ public abstract class EvaluationPathTest implements ProviderTest {
     @Test
     void withId() {
         validator.registerSchema(uri, readResource("/evaluation-path/id.schema.json"));
-        Validator.Result result = validator.validate(URI.create("root"), readResource("/evaluation-path/id.instance.json"));
+        Validator.Result result = validator.validate(URI.create("urn:root"), readResource("/evaluation-path/id.instance.json"));
 
         assertThat(result.isValid()).isFalse();
         List<Error> errors = result.getErrors();
@@ -85,7 +85,7 @@ public abstract class EvaluationPathTest implements ProviderTest {
         assertError(
                 errors.get(0),
                 "/properties/foo/$ref/properties/bar/$ref/type",
-                "root#/$defs/reffed2",
+                "urn:root#/$defs/reffed2",
                 "/foo/bar",
                 "type"
         );

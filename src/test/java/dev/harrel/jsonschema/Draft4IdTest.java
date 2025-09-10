@@ -108,10 +108,9 @@ class Draft4IdTest {
     @Test
     void shouldFailForPreloadedRecursiveDraft4MetaSchema() {
         Validator validator = new ValidatorFactory().createValidator();
-        /* This probably should contain more detailed message but as an edge case I guess it's fine */
         assertThatThrownBy(() -> validator.registerSchema(RECURSIVE_DRAFT_4_META_SCHEMA))
                 .isInstanceOf(MetaSchemaResolvingException.class)
-                .hasMessage("Cannot resolve meta-schema [urn:recursive-draft4]");
+                .hasMessage("Parsing meta-schema [urn:recursive-draft4] failed - only dialects explicitly added to a validator can be recursive");
     }
 
     @Test
