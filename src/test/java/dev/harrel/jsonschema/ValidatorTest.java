@@ -4,11 +4,16 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.harrel.jsonschema.providers.JacksonNode;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static dev.harrel.jsonschema.util.TestUtil.assertAnnotation;
 import static dev.harrel.jsonschema.util.TestUtil.assertError;
@@ -418,5 +423,79 @@ class ValidatorTest {
                 "type",
                 "Value is [integer] but should be [null]"
         );
+    }
+
+    @ParameterizedTest
+    @MethodSource("resolutionData")
+    void shouldFollowUriResolutionSemantics(String registrationUri, String id, String validationUri) {
+        Validator validator = new ValidatorFactory().createValidator();
+        validator.registerSchema(URI.create(registrationUri), """
+                {
+                  "$id": "%s",
+                  "title": "hello",
+                  "type": "number"
+                }""".formatted(id));
+
+        Validator.Result res = validator.validate(URI.create(validationUri), "123");
+        assertThat(res.isValid()).isTrue();
+        assertThat(res.getAnnotations()).hasSize(1);
+        assertThat(res.getAnnotations().getFirst().getAnnotation()).isEqualTo("hello");
+
+        res = validator.validate(URI.create(registrationUri), "123");
+        assertThat(res.isValid()).isTrue();
+        assertThat(res.getAnnotations()).hasSize(1);
+        assertThat(res.getAnnotations().getFirst().getAnnotation()).isEqualTo("hello");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"api/schemas/123", "/api/schemas/123", "", "/", "../", "/..", "."})
+    void shouldThrowIfOpaqueRegistrationUriWithRelativeId(String id) {
+        Validator validator = new ValidatorFactory().createValidator();
+        URI registrationUri = URI.create("urn:test");
+        String schema = """
+                {
+                  "$id": "%s"
+                }""".formatted(id);
+        assertThatThrownBy(() -> validator.registerSchema(registrationUri, schema))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Resolution of $id [%s] against base URI [urn:test] did not produce an absolute URI.".formatted(id));
+    }
+
+    private static Stream<Arguments> resolutionData() {
+        return Stream.of(
+                Arguments.of("https://json-schema.org", "https://json-schema.com", "https://json-schema.com"),
+                Arguments.of("https://json-schema.org", "/root", "https://json-schema.org/root"),
+                Arguments.of("https://json-schema.org/api/schemas", "my-schema", "https://json-schema.org/api/my-schema"),
+                Arguments.of("https://json-schema.org/api/schemas/", "my-schema", "https://json-schema.org/api/schemas/my-schema"),
+                Arguments.of("https://json-schema.org/api/schemas/", "/my-schema", "https://json-schema.org/my-schema"),
+                Arguments.of("https://json-schema.org/api/schemas", "/api/schemas", "https://json-schema.org/api/schemas"),
+                Arguments.of("https://json-schema.org/api/schemas/", "/api/schemas", "https://json-schema.org/api/schemas"),
+                Arguments.of("https://json-schema.org/api/schemas", "api/schemas", "https://json-schema.org/api/api/schemas"),
+                Arguments.of("https://json-schema.org/api/schemas/", "api/schemas", "https://json-schema.org/api/schemas/api/schemas"),
+                Arguments.of("https://json-schema.org/api/schemas", "urn:schema", "urn:schema"),
+                Arguments.of("https://json-schema.org/api/schemas", "urn:schema", "urn:schema"),
+                Arguments.of("https://json-schema.org/api/schemas/123", "..", "https://json-schema.org/api/"),
+                Arguments.of("https://json-schema.org/api/schemas/123", "../", "https://json-schema.org/api/"),
+                Arguments.of("https://json-schema.org/api/schemas/123", "../..", "https://json-schema.org/"),
+                Arguments.of("https://json-schema.org/api/schemas/123", "", "https://json-schema.org/api/schemas/"),
+                Arguments.of("https://json-schema.org/api/schemas/123", ".", "https://json-schema.org/api/schemas/123"),
+                Arguments.of("https://json-schema.org/api/schemas/123", "./", "https://json-schema.org/api/schemas/123"),
+                Arguments.of("/api/schemas/123", "321", "https://harrel.dev/api/schemas/321"),
+                Arguments.of("/api/schemas/123", "/321", "https://harrel.dev/321"),
+                Arguments.of("api/schemas/123", "321", "https://harrel.dev/api/schemas/321"),
+                Arguments.of("api/schemas/123", "/321", "https://harrel.dev/321"),
+                Arguments.of("", "321", "https://harrel.dev/321"),
+                Arguments.of(".", "321", "https://harrel.dev/321"),
+                Arguments.of("./", "321", "https://harrel.dev/321"),
+                Arguments.of("..", "321", "https://harrel.dev/321"),
+                Arguments.of("../", "321", "https://harrel.dev/../321"),
+                Arguments.of("../", "..", "https://harrel.dev/../.."),
+                Arguments.of(".", "321", "https://harrel.dev/321"),
+                Arguments.of(".", "/321", "https://harrel.dev/321"),
+                Arguments.of("api/schemas/123", "https://json-schema.org/321", "https://json-schema.org/321"),
+                Arguments.of("api/schemas/123", "urn:test", "urn:test"),
+                Arguments.of("urn:schema", "urn:test", "urn:test"),
+                Arguments.of("urn:schema", "https://json-schema.org/321", "https://json-schema.org/321")
+                );
     }
 }
