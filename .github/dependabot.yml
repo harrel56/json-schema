@@ -4,6 +4,11 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    ignore:
+      - dependency-name: 'org.junit.jupiter:*'
+        versions: ['>=6.0.0']
+      - dependency-name: 'org.junit.platform:*'
+        versions: [ '>=6.0.0' ]
     groups:
       all:
         patterns:
