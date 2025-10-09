@@ -201,8 +201,7 @@ public final class FormatEvaluatorFactory implements EvaluatorFactory {
 
     private static String uuidOperator(String value) {
         try {
-            UUID.fromString(value);
-            return value.length() == 36 ? null : String.format("\"%s\" UUID has invalid length", value);
+            return UUID.fromString(value).toString().equalsIgnoreCase(value) ? null : String.format("\"%s\" UUID is invalid", value);
         } catch (Exception e) {
             return e.getMessage();
         }
