@@ -246,7 +246,9 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
                         "validation of date-time strings", Set.of(
                                 /* leap seconds not supported */
                                 "a valid date-time with a leap second, UTC",
-                                "a valid date-time with a leap second, with minus offset"
+                                "a valid date-time with a leap second, with minus offset",
+                                /* extended year is supported */
+                                "invalid extended year"
                         )
                 ),
                 "time", Map.of(
