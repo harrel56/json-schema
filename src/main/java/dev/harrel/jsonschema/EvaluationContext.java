@@ -17,10 +17,8 @@ public final class EvaluationContext {
     private final JsonParser jsonParser;
     private final SchemaRegistry schemaRegistry;
     private final SchemaResolver schemaResolver;
-    private final Deque<URI> dynamicScope = new ArrayDeque<>();
+    private final Deque<EvalState> stateStack = new ArrayDeque<>();
     private final Deque<RefStackItem> refStack = new ArrayDeque<>();
-    private final Deque<Integer> annotationsBeforeStack = new ArrayDeque<>();
-    private final Deque<Map<String, Annotation>> siblingAnnotationsStack = new ArrayDeque<>();
     private final Deque<String> evaluationStack = new ArrayDeque<>();
     private final List<Annotation> annotations = new ArrayList<>();
     private final List<LazyError> errors = new ArrayList<>();
@@ -129,13 +127,13 @@ public final class EvaluationContext {
     }
 
     Object getSiblingAnnotation(String sibling) {
-        Annotation annotation = siblingAnnotationsStack.element().get(sibling);
+        Annotation annotation = stateStack.element().getSiblingAnnotation(sibling);
         return annotation == null ? null : annotation.getAnnotation();
     }
 
     @SuppressWarnings("unchecked")
     Map.Entry<Integer, Set<Integer>> calculateEvaluatedItems(String instanceLocation) {
-        int fromIdx = annotationsBeforeStack.element();
+        int fromIdx = stateStack.element().annotationsBefore;
         Set<Integer> items = new HashSet<>();
         int maxIdx = 0;
         for (int i = fromIdx; i < annotations.size(); i++) {
@@ -156,7 +154,7 @@ public final class EvaluationContext {
 
     @SuppressWarnings("unchecked")
     Set<String> calculateEvaluatedProperties(String instanceLocation) {
-        int fromIdx = annotationsBeforeStack.element();
+        int fromIdx = stateStack.element().annotationsBefore;
         Set<String> props = new HashSet<>();
         for (int i = fromIdx; i < annotations.size(); i++) {
             Annotation annotation = annotations.get(i);
@@ -176,15 +174,8 @@ public final class EvaluationContext {
     }
 
     boolean validateAgainstSchema(Schema schema, JsonNode node) {
-        boolean outOfDynamicScope = !schema.getParentUri().equals(dynamicScope.peek());
-        if (outOfDynamicScope) {
-            dynamicScope.push(schema.getParentUri());
-        }
-
-        int annotationsBefore = annotations.size();
-        Map<String, Annotation> siblingAnnotations = new HashMap<>();
-        annotationsBeforeStack.push(annotationsBefore);
-        siblingAnnotationsStack.push(siblingAnnotations);
+        EvalState state = new EvalState(schema.getParentUri(), annotations.size());
+        stateStack.push(state);
 
         List<EvaluatorWrapper> evaluators = schema.getEvaluators();
         int evaluatorsSize = evaluators.size();
@@ -197,7 +188,7 @@ public final class EvaluationContext {
             Evaluator.Result result = evaluator.evaluate(this, node);
             if (result.getAnnotation() != null) {
                 Annotation annotation = new Annotation(evaluationPath, schema.getSchemaLocation().toString(), node.getJsonPointer(), evaluator.getKeyword(), result.getAnnotation());
-                siblingAnnotations.put(evaluator.getKeyword(), annotation);
+                state.setSiblingAnnotation(evaluator.getKeyword(), annotation);
                 annotations.add(annotation);
             }
             if (result.isValid()) {
@@ -211,13 +202,9 @@ public final class EvaluationContext {
         }
         if (!valid) {
             /* Discarding annotations */
-            annotations.subList(annotationsBefore, annotations.size()).clear();
+            annotations.subList(state.annotationsBefore, annotations.size()).clear();
         }
-        siblingAnnotationsStack.pop();
-        annotationsBeforeStack.pop();
-        if (outOfDynamicScope) {
-            dynamicScope.pop();
-        }
+        stateStack.pop();
         return valid;
     }
 
@@ -246,9 +233,15 @@ public final class EvaluationContext {
             return staticSchema;
         }
 
-        Iterator<URI> it = dynamicScope.descendingIterator();
+        Iterator<EvalState> it = stateStack.descendingIterator();
+        URI last = null;
         while (it.hasNext()) {
-            Schema schema = schemaRegistry.getDynamic(new CompoundUri(it.next(), compoundUri.fragment));
+            URI schemaUri = it.next().schemaUri;
+            if (schemaUri.equals(last)) {
+                continue;
+            }
+            last = schemaUri;
+            Schema schema = schemaRegistry.getDynamic(new CompoundUri(schemaUri, compoundUri.fragment));
             if (schema != null) {
                 return schema;
             }
@@ -257,9 +250,14 @@ public final class EvaluationContext {
     }
 
     private Schema resolveRecursiveSchema() {
-        Schema schema = schemaRegistry.get(dynamicScope.element());
-        for (URI uri : dynamicScope) {
-            Schema recursedSchema = schemaRegistry.getDynamic(uri);
+        Schema schema = schemaRegistry.get(stateStack.element().schemaUri);
+        URI last = null;
+        for (EvalState state : stateStack) {
+            if (state.schemaUri.equals(last)) {
+                continue;
+            }
+            last = state.schemaUri;
+            Schema recursedSchema = schemaRegistry.getDynamic(state.schemaUri);
             if (recursedSchema == null) {
                 return schema;
             } else {
