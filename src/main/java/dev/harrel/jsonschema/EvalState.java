@@ -4,7 +4,7 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
-class EvalState {
+final class EvalState {
     private final Annotation[] annotations = new Annotation[12];
     private Map<String, Annotation> annotationsMap;
     final URI schemaUri;
