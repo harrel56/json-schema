@@ -93,3 +93,26 @@ When resolving an external schema, it will:
 4. Invoke the internal resolver which only resolves official meta-schemas. if `Result.empty()` returned, go to the next step.
 5. If it was a direct validation call reference, it will throw [SchemaNotFoundException](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/SchemaNotFoundException.html).
 If it was referenced via `$ref` keyword (or similar), the validation against this keyword will fail.
+
+## Details of ID resolution
+
+Every schema has its own retrieval URI:
+1. If parsed via `SchemaResolver` - it's equal to the URI for which the resolution is performed.
+2. If registered via `Validator` and registration URI was provided - it's the same as the registration URI.
+3. If registered via `Validator` and registration URI was **NOT** provided - a unique retrieval URI is generated in the form of `https://harrel.dev/{randomSeed}`.
+
+> Every schema can always be found under its retrieval URI.
+{style="note"}
+
+Additionally, every schema can have its own `$id` (`id` in older drafts) defined. 
+This causes the schema to be registered under additional URI:
+1. If `$id` is an absolute URI - it's registered as it is.
+2. If `$id` is a relative URI - it's resolved against retrieval URI. For example: `https://harrel.dev/12345678` + `/my-schema` -> `https://harrel.dev/my-schema`.
+3. If `$id` is a relative URI and registration (retrieval) URI is also relative - first, retrieval URI is resolved against a generated URI, and then the `$id` is resolved against the result. For example: `https://harrel.dev/12345678` + `/schemas/registration` + `/my-schema` -> `https://harrel.dev/schemas/my-schema`.
+
+> Please keep in mind that specification explicitly discourages usage of non-absolute URIs in `$id`s.
+{style="warning"}
+
+> Using relative URIs when registering or retrieving schema is also discouraged and only works for backward compatibility reasons.
+> Support for such cases might be removed in future versions.
+{style="warning"}
