@@ -352,13 +352,11 @@
     - description: when if is true and has no unevaluated properties
       data:
         foo: then
-        bar: bar
-      valid: false
+      valid: true
     - description: when if is true and has unevaluated properties
       data:
         foo: then
         bar: bar
-        baz: baz
       valid: false
     - description: when if is false and has no unevaluated properties
       data:
