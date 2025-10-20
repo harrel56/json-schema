@@ -329,7 +329,7 @@ class DependentSchemasEvaluator implements Evaluator {
         if (failedFields.isEmpty()) {
             return Result.success();
         } else {
-            return Result.failure(() -> String.format("Object does not match dependent schemas for some properties %s", failedFields));
+            return Result.formattedFailure("dependentSchemas", failedFields);
         }
     }
 
