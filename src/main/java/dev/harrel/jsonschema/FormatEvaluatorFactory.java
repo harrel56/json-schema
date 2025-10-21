@@ -148,9 +148,11 @@ public final class FormatEvaluatorFactory implements EvaluatorFactory {
             case "ipv6":
                 return v -> InternetProtocolAddress.validateIpv6(v).isPresent() ? null : String.format("\"%s\" is not a valid IPv6 address", v);
             case "uri":
-            case "iri":
                 return FormatEvaluatorFactory::uriOperator;
+            case "iri":
+                return FormatEvaluatorFactory::iriOperator;
             case "uri-reference":
+                return FormatEvaluatorFactory::uriReferenceOperator;
             case "iri-reference":
                 return tryOf(URI::create);
             case "uuid":
@@ -191,12 +193,28 @@ public final class FormatEvaluatorFactory implements EvaluatorFactory {
     }
 
     private static String uriOperator(String value) {
+        String err = validateAscii(value);
+        if (err != null) {
+            return err;
+        }
+        return iriOperator(value);
+    }
+
+    private static String iriOperator(String value) {
         try {
             URI uri = URI.create(value);
             return uri.isAbsolute() ? null : String.format("\"%s\" is a relative URI", uri);
         } catch (Exception e) {
             return e.getMessage();
         }
+    }
+
+    private static String uriReferenceOperator(String value) {
+        String err = validateAscii(value);
+        if (err != null) {
+            return err;
+        }
+        return tryOf(URI::create).apply(value);
     }
 
     private static String uuidOperator(String value) {
@@ -244,5 +262,14 @@ public final class FormatEvaluatorFactory implements EvaluatorFactory {
 
     private static String invalidRjpMessage(String value) {
         return String.format("\"%s\" is not a valid relative-json-pointer", value);
+    }
+
+    private static String validateAscii(String value) {
+        for (int i = 0; i < value.length(); i++) {
+            if (value.charAt(i) >= '\u0080') {
+                return String.format("\"%s\" contains non-ASCII characters", value);
+            }
+        }
+        return null;
     }
 }
