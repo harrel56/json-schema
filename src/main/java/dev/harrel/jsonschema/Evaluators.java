@@ -11,6 +11,7 @@ import static java.util.Collections.*;
 
 class TypeEvaluator implements Evaluator {
     private final Set<SimpleType> types;
+    private final List<String> typeNames;
 
     TypeEvaluator(JsonNode node) {
         if (!node.isString() && !node.isArray()) {
@@ -24,6 +25,7 @@ class TypeEvaluator implements Evaluator {
                     .map(SimpleType::fromName)
                     .collect(Collectors.toCollection(LinkedHashSet::new));
         }
+        this.typeNames = types.stream().map(SimpleType::getName).collect(Collectors.toList());
     }
 
     @Override
@@ -32,10 +34,7 @@ class TypeEvaluator implements Evaluator {
         if (types.contains(nodeType) || nodeType == SimpleType.INTEGER && types.contains(SimpleType.NUMBER)) {
             return Result.success();
         } else {
-            return Result.failure(() -> {
-                List<String> typeNames = types.stream().map(SimpleType::getName).collect(Collectors.toList());
-                return String.format("Value is [%s] but should be %s", nodeType.getName(), typeNames);
-            });
+            return Result.formattedFailure("type", nodeType.getName(), typeNames);
         }
     }
 }
@@ -50,13 +49,13 @@ class ConstEvaluator implements Evaluator {
     @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
         boolean valid = canUseNativeEquals(constNode) && canUseNativeEquals(node) ? constNode.equals(node) : JsonNodeUtil.equals(constNode, node);
-        return valid ? Result.success() : Result.failure("Expected " + constNode.toPrintableString());
+        return valid ? Result.success() : Result.formattedFailure("const", constNode.toPrintableString());
     }
 }
 
 class EnumEvaluator implements Evaluator {
     private final Set<JsonNode> enumNodes;
-    private final String failMessage;
+    private final List<String> nodesToPrint;
     private final boolean canUseNativeEquals;
 
     EnumEvaluator(JsonNode node) {
@@ -64,22 +63,21 @@ class EnumEvaluator implements Evaluator {
             throw new IllegalArgumentException();
         }
         this.enumNodes = unmodifiableSet(new LinkedHashSet<>(node.asArray()));
-        List<String> printList = enumNodes.stream().map(JsonNode::toPrintableString).collect(Collectors.toList());
-        this.failMessage = String.format("Expected any of [%s]", printList);
+        this.nodesToPrint= enumNodes.stream().map(JsonNode::toPrintableString).collect(Collectors.toList());
         this.canUseNativeEquals = canUseNativeEquals(node);
     }
 
     @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (canUseNativeEquals && canUseNativeEquals(node)) {
-            return enumNodes.contains(node) ? Result.success() : Result.failure(failMessage);
+            return enumNodes.contains(node) ? Result.success() : Result.formattedFailure("enum", nodesToPrint);
         } else {
             for (JsonNode enumNode : enumNodes) {
                 if (JsonNodeUtil.equals(enumNode, node)) {
                     return Result.success();
                 }
             }
-            return Result.failure(failMessage);
+            return Result.formattedFailure("enum", nodesToPrint);
         }
 
     }
@@ -104,7 +102,7 @@ class MultipleOfEvaluator implements Evaluator {
         if (node.asNumber().remainder(factor).doubleValue() == 0.0) {
             return Result.success();
         } else {
-            return Result.failure(() -> String.format("%s is not multiple of %s", node.asNumber(), factor));
+            return Result.formattedFailure("multipleOf", node.asNumber(), factor);
         }
     }
 }
@@ -128,7 +126,7 @@ class MaximumEvaluator implements Evaluator {
         if (node.asNumber().compareTo(max) <= 0) {
             return Result.success();
         } else {
-            return Result.failure(() -> String.format("%s is greater than %s", node.asNumber(), max));
+            return Result.formattedFailure("maximum", node.asNumber(), max);
         }
     }
 }
@@ -152,7 +150,7 @@ class ExclusiveMaximumEvaluator implements Evaluator {
         if (node.asNumber().compareTo(max) < 0) {
             return Result.success();
         } else {
-            return Result.failure(() -> String.format("%s is greater or equal to %s", node.asNumber(), max));
+            return Result.formattedFailure("exclusiveMaximum", node.asNumber(), max);
         }
     }
 }
@@ -194,7 +192,7 @@ class MinimumEvaluator implements Evaluator {
         if (node.asNumber().compareTo(min) >= 0) {
             return Result.success();
         } else {
-            return Result.failure(() -> String.format("%s is less than %s", node.asNumber(), min));
+            return Result.formattedFailure("minimum", node.asNumber(), min);
         }
     }
 }
@@ -218,7 +216,7 @@ class ExclusiveMinimumEvaluator implements Evaluator {
         if (node.asNumber().compareTo(min) > 0) {
             return Result.success();
         } else {
-            return Result.failure(() -> String.format("%s is less than or equal to %s", node.asNumber(), min));
+            return Result.formattedFailure("exclusiveMinimum", node.asNumber(), min);
         }
     }
 }
@@ -261,7 +259,7 @@ class MaxLengthEvaluator implements Evaluator {
         if (string.codePointCount(0, string.length()) <= maxLength) {
             return Result.success();
         } else {
-            return Result.failure(() -> String.format("\"%s\" is longer than %d characters", string, maxLength));
+            return Result.formattedFailure("maxLength", string, maxLength);
         }
     }
 }
@@ -286,7 +284,7 @@ class MinLengthEvaluator implements Evaluator {
         if (string.codePointCount(0, string.length()) >= minLength) {
             return Result.success();
         } else {
-            return Result.failure(() -> String.format("\"%s\" is shorter than %d characters", string, minLength));
+            return Result.formattedFailure("minLength", string, minLength);
         }
     }
 }
@@ -310,7 +308,7 @@ class PatternEvaluator implements Evaluator {
         if (pattern.matcher(node.asString()).find()) {
             return Result.success();
         } else {
-            return Result.failure(() -> String.format("\"%s\" does not match regular expression [%s]", node.asString(), pattern));
+            return Result.formattedFailure("pattern", node.asString(), pattern);
         }
     }
 }
@@ -334,7 +332,7 @@ class MaxItemsEvaluator implements Evaluator {
         if (node.asArray().size() <= maxItems) {
             return Result.success();
         } else {
-            return Result.failure(() -> String.format("Array has more than %d items", maxItems));
+            return Result.formattedFailure("maxItems", maxItems);
         }
     }
 }
@@ -358,7 +356,7 @@ class MinItemsEvaluator implements Evaluator {
         if (node.asArray().size() >= minItems) {
             return Result.success();
         } else {
-            return Result.failure(() -> String.format("Array has less than %d items", minItems));
+            return Result.formattedFailure("minItems", minItems);
         }
     }
 }
@@ -384,7 +382,7 @@ class UniqueItemsEvaluator implements Evaluator {
             Set<JsonNode> parsed = new HashSet<>();
             for (int i = 0; i < jsonNodes.size(); i++) {
                 if (!parsed.add(jsonNodes.get(i))) {
-                    return Result.failure(String.format("Array contains non-unique item at index [%d]", i));
+                    return Result.formattedFailure("uniqueItems", i);
                 }
             }
         } else {
@@ -392,7 +390,7 @@ class UniqueItemsEvaluator implements Evaluator {
             for (int i = 0; i < jsonNodes.size(); i++) {
                 JsonNode element = jsonNodes.get(i);
                 if (parsed.stream().anyMatch(parsedNode -> JsonNodeUtil.equals(parsedNode, element))) {
-                    return Result.failure(String.format("Array contains non-unique item at index [%d]", i));
+                    return Result.formattedFailure("uniqueItems", i);
                 }
                 parsed.add(element);
             }
@@ -423,7 +421,7 @@ class MaxContainsEvaluator implements Evaluator {
         if (containsCount <= max) {
             return Result.success();
         } else {
-            return Result.failure(() -> String.format("Array contains more than %d matching items", max));
+            return Result.formattedFailure("maxContains", max);
         }
     }
 
@@ -454,7 +452,7 @@ class MinContainsEvaluator implements Evaluator {
         if (containsCount >= min) {
             return Result.success();
         } else {
-            return Result.failure(() -> String.format("Array contains less than %d matching items", min));
+            return Result.formattedFailure("minContains", min);
         }
     }
 
@@ -483,7 +481,7 @@ class MaxPropertiesEvaluator implements Evaluator {
         if (node.asObject().size() <= max) {
             return Result.success();
         } else {
-            return Result.failure(() -> String.format("Object has more than %d properties", max));
+            return Result.formattedFailure("maxProperties", max);
         }
     }
 }
@@ -507,7 +505,7 @@ class MinPropertiesEvaluator implements Evaluator {
         if (node.asObject().size() >= min) {
             return Result.success();
         } else {
-            return Result.failure(() -> String.format("Object has less than %d properties", min));
+            return Result.formattedFailure("minProperties", min);
         }
     }
 }
@@ -532,12 +530,12 @@ class RequiredEvaluator implements Evaluator {
         if (keys.containsAll(requiredProperties)) {
             return Result.success();
         } else {
-            Supplier<String> messageSupplier = () -> {
+            Supplier<Object[]> args = () -> {
                 HashSet<String> unsatisfied = new HashSet<>(requiredProperties);
                 unsatisfied.removeAll(keys);
-                return String.format("Object does not have some of the required properties [%s]", unsatisfied);
+                return new Object[]{unsatisfied};
             };
-            return Result.failure(messageSupplier);
+            return Result.formattedFailure("required", args);
         }
     }
 }
@@ -600,10 +598,11 @@ class DependentRequiredEvaluator implements Evaluator {
         if (objectKeys.containsAll(requiredSet)) {
             return Result.success();
         } else {
-            return Result.failure(() -> {
+            Supplier<Object[]> args = () -> {
                 requiredSet.removeAll(objectKeys);
-                return String.format("Object does not have some of the required properties [%s]", requiredSet);
-            });
+                return new Object[]{requiredSet};
+            };
+            return Result.formattedFailure("dependentRequired", args);
         }
     }
 

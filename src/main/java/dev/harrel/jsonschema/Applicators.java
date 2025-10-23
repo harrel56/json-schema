@@ -384,10 +384,10 @@ class IfThenElseEvaluator implements Evaluator {
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (ctx.resolveInternalRefAndValidate(ifRef, node)) {
             boolean valid = thenRef == null || ctx.resolveInternalRefAndValidate(thenRef, node);
-            return valid ? Result.success() : Result.failure("Value matches against schema from 'if' but does not match against schema from 'then'");
+            return valid ? Result.success() : Result.formattedFailure("ifThen");
         } else {
             boolean valid = elseRef == null || ctx.resolveInternalRefAndValidate(elseRef, node);
-            return valid ? Result.success() : Result.failure("Value does not match against schema from 'if' and 'else'");
+            return valid ? Result.success() : Result.formattedFailure("ifElse");
         }
     }
 }
@@ -414,7 +414,7 @@ class AllOfEvaluator implements Evaluator {
         if (unmatchedIndexes.isEmpty()) {
             return Result.success();
         }
-        return Result.failure(() -> String.format("Value does not match against the schemas at indexes %s", unmatchedIndexes));
+        return Result.formattedFailure("allOf", unmatchedIndexes);
     }
 }
 
@@ -434,7 +434,7 @@ class AnyOfEvaluator implements Evaluator {
         for (CompoundUri ref : refs) {
             valid = ctx.resolveInternalRefAndValidate(ref, node) || valid;
         }
-        return valid ? Result.success() : Result.failure("Value does not match against any of the schemas");
+        return valid ? Result.success() : Result.formattedFailure("anyOf");
     }
 }
 
@@ -463,7 +463,7 @@ class OneOfEvaluator implements Evaluator {
         if (matchedIndexes.isEmpty()) {
             return Result.failure("Value does not match against any of the schemas");
         }
-        return Result.failure(() -> String.format("Value matches against more than one schema. Matched schema indexes %s", matchedIndexes));
+        return Result.formattedFailure("oneOf", matchedIndexes);
     }
 }
 
@@ -480,7 +480,7 @@ class NotEvaluator implements Evaluator {
     @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
         boolean valid = !ctx.resolveInternalRefAndValidate(schemaUri, node);
-        return valid ? Result.success() : Result.failure("Value matches against given schema but it must not");
+        return valid ? Result.success() : Result.formattedFailure("not");
     }
 }
 
@@ -570,7 +570,7 @@ class RefEvaluator implements Evaluator {
         try {
             return ctx.resolveRefAndValidate(ref, node) ? Result.success() : Result.failure();
         } catch (SchemaNotFoundException e) {
-            return Result.failure(() -> String.format("Resolution of $ref [%s] failed", ref));
+            return Result.formattedFailure("$ref", ref);
         }
     }
 }
@@ -590,7 +590,7 @@ class DynamicRefEvaluator implements Evaluator {
         try {
             return ctx.resolveDynamicRefAndValidate(ref, node) ? Result.success() : Result.failure();
         } catch (SchemaNotFoundException e) {
-            return Result.failure(() -> String.format("Resolution of $dynamicRef [%s] failed", ref));
+            return Result.formattedFailure("$dynamicRef", ref);
         }
     }
 }
@@ -610,7 +610,7 @@ class RecursiveRefEvaluator implements Evaluator {
         try {
             return ctx.resolveRecursiveRefAndValidate(ref, node) ? Result.success() : Result.failure();
         } catch (SchemaNotFoundException e) {
-            return Result.failure(() -> String.format("Resolution of $recursiveRef [%s] failed", ref));
+            return Result.formattedFailure("$recursiveRef", ref);
         }
     }
 }
@@ -634,7 +634,7 @@ class LegacyRefEvaluator implements Evaluator {
         try {
             return ctx.resolveRefAndValidate(ref, node) ? Result.success() : Result.failure();
         } catch (SchemaNotFoundException e) {
-            return Result.failure(() -> String.format("Resolution of $ref [%s] failed", ref));
+            return Result.formattedFailure("$ref", ref);
         }
     }
 }
