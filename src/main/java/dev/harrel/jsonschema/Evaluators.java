@@ -49,13 +49,12 @@ class ConstEvaluator implements Evaluator {
     @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
         boolean valid = canUseNativeEquals(constNode) && canUseNativeEquals(node) ? constNode.equals(node) : JsonNodeUtil.equals(constNode, node);
-        return valid ? Result.success() : Result.formattedFailure("const", constNode.toPrintableString());
+        return valid ? Result.success() : Result.formattedFailure("const", node.toPrintableString(), constNode.toPrintableString());
     }
 }
 
 class EnumEvaluator implements Evaluator {
     private final Set<JsonNode> enumNodes;
-    private final List<String> nodesToPrint;
     private final boolean canUseNativeEquals;
 
     EnumEvaluator(JsonNode node) {
@@ -63,23 +62,25 @@ class EnumEvaluator implements Evaluator {
             throw new IllegalArgumentException();
         }
         this.enumNodes = unmodifiableSet(new LinkedHashSet<>(node.asArray()));
-        this.nodesToPrint= enumNodes.stream().map(JsonNode::toPrintableString).collect(Collectors.toList());
         this.canUseNativeEquals = canUseNativeEquals(node);
     }
 
     @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
         if (canUseNativeEquals && canUseNativeEquals(node)) {
-            return enumNodes.contains(node) ? Result.success() : Result.formattedFailure("enum", nodesToPrint);
+            return enumNodes.contains(node) ? Result.success() : Result.formattedFailure("enum", createArgsSupplier(node));
         } else {
             for (JsonNode enumNode : enumNodes) {
                 if (JsonNodeUtil.equals(enumNode, node)) {
                     return Result.success();
                 }
             }
-            return Result.formattedFailure("enum", nodesToPrint);
+            return Result.formattedFailure("enum", createArgsSupplier(node));
         }
+    }
 
+    private Supplier<Object[]> createArgsSupplier(JsonNode node) {
+        return () -> new Object[]{node.toPrintableString(), enumNodes.stream().map(JsonNode::toPrintableString).collect(Collectors.toList())};
     }
 }
 
@@ -99,10 +100,11 @@ class MultipleOfEvaluator implements Evaluator {
             return Result.success();
         }
 
-        if (node.asNumber().remainder(factor).doubleValue() == 0.0) {
+        BigDecimal number = node.asNumber();
+        if (number.remainder(factor).doubleValue() == 0.0) {
             return Result.success();
         } else {
-            return Result.formattedFailure("multipleOf", node.asNumber(), factor);
+            return Result.formattedFailure("multipleOf", number, factor);
         }
     }
 }
@@ -123,10 +125,11 @@ class MaximumEvaluator implements Evaluator {
             return Result.success();
         }
 
-        if (node.asNumber().compareTo(max) <= 0) {
+        BigDecimal number = node.asNumber();
+        if (number.compareTo(max) <= 0) {
             return Result.success();
         } else {
-            return Result.formattedFailure("maximum", node.asNumber(), max);
+            return Result.formattedFailure("maximum", number, max);
         }
     }
 }
@@ -147,10 +150,11 @@ class ExclusiveMaximumEvaluator implements Evaluator {
             return Result.success();
         }
 
-        if (node.asNumber().compareTo(max) < 0) {
+        BigDecimal number = node.asNumber();
+        if (number.compareTo(max) < 0) {
             return Result.success();
         } else {
-            return Result.formattedFailure("exclusiveMaximum", node.asNumber(), max);
+            return Result.formattedFailure("exclusiveMaximum", number, max);
         }
     }
 }
@@ -189,10 +193,11 @@ class MinimumEvaluator implements Evaluator {
             return Result.success();
         }
 
-        if (node.asNumber().compareTo(min) >= 0) {
+        BigDecimal number = node.asNumber();
+        if (number.compareTo(min) >= 0) {
             return Result.success();
         } else {
-            return Result.formattedFailure("minimum", node.asNumber(), min);
+            return Result.formattedFailure("minimum", number, min);
         }
     }
 }
@@ -213,10 +218,11 @@ class ExclusiveMinimumEvaluator implements Evaluator {
             return Result.success();
         }
 
-        if (node.asNumber().compareTo(min) > 0) {
+        BigDecimal number = node.asNumber();
+        if (number.compareTo(min) > 0) {
             return Result.success();
         } else {
-            return Result.formattedFailure("exclusiveMinimum", node.asNumber(), min);
+            return Result.formattedFailure("exclusiveMinimum", number, min);
         }
     }
 }
@@ -305,10 +311,11 @@ class PatternEvaluator implements Evaluator {
             return Result.success();
         }
 
-        if (pattern.matcher(node.asString()).find()) {
+        String string = node.asString();
+        if (pattern.matcher(string).find()) {
             return Result.success();
         } else {
-            return Result.formattedFailure("pattern", node.asString(), pattern);
+            return Result.formattedFailure("pattern", string, pattern);
         }
     }
 }
@@ -329,10 +336,11 @@ class MaxItemsEvaluator implements Evaluator {
             return Result.success();
         }
 
-        if (node.asArray().size() <= maxItems) {
+        int arraySize = node.asArray().size();
+        if (arraySize <= maxItems) {
             return Result.success();
         } else {
-            return Result.formattedFailure("maxItems", maxItems);
+            return Result.formattedFailure("maxItems", arraySize, maxItems);
         }
     }
 }
@@ -353,10 +361,11 @@ class MinItemsEvaluator implements Evaluator {
             return Result.success();
         }
 
-        if (node.asArray().size() >= minItems) {
+        int arraySize = node.asArray().size();
+        if (arraySize >= minItems) {
             return Result.success();
         } else {
-            return Result.formattedFailure("minItems", minItems);
+            return Result.formattedFailure("minItems", arraySize, minItems);
         }
     }
 }
@@ -421,7 +430,7 @@ class MaxContainsEvaluator implements Evaluator {
         if (containsCount <= max) {
             return Result.success();
         } else {
-            return Result.formattedFailure("maxContains", max);
+            return Result.formattedFailure("maxContains", containsCount, max);
         }
     }
 
@@ -452,7 +461,7 @@ class MinContainsEvaluator implements Evaluator {
         if (containsCount >= min) {
             return Result.success();
         } else {
-            return Result.formattedFailure("minContains", min);
+            return Result.formattedFailure("minContains", containsCount, min);
         }
     }
 
@@ -478,10 +487,11 @@ class MaxPropertiesEvaluator implements Evaluator {
             return Result.success();
         }
 
-        if (node.asObject().size() <= max) {
+        int propsSize = node.asObject().size();
+        if (propsSize <= max) {
             return Result.success();
         } else {
-            return Result.formattedFailure("maxProperties", max);
+            return Result.formattedFailure("maxProperties", propsSize, max);
         }
     }
 }
@@ -502,10 +512,11 @@ class MinPropertiesEvaluator implements Evaluator {
             return Result.success();
         }
 
-        if (node.asObject().size() >= min) {
+        int propsSize = node.asObject().size();
+        if (propsSize >= min) {
             return Result.success();
         } else {
-            return Result.formattedFailure("minProperties", min);
+            return Result.formattedFailure("minProperties", propsSize, min);
         }
     }
 }
