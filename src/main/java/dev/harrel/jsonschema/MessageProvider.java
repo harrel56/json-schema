@@ -1,6 +1,11 @@
 package dev.harrel.jsonschema;
 
+import org.jetbrains.annotations.NotNull;
+
+import java.text.FieldPosition;
+import java.text.Format;
 import java.text.MessageFormat;
+import java.text.ParsePosition;
 import java.util.Objects;
 import java.util.ResourceBundle;
 
@@ -25,6 +30,23 @@ class ResourceMessageProvider implements MessageProvider {
         if (args.length == 0) {
             return template;
         }
-        return MessageFormat.format(template, args);
+        MessageFormat messageFormat = new MessageFormat(template);
+        for (int i = 0; i < args.length; i++) {
+            if (args[i] instanceof Number) {
+                messageFormat.setFormat(i, new Format() {
+                    @Override
+                    public StringBuffer format(Object obj, @NotNull StringBuffer toAppendTo, @NotNull FieldPosition pos) {
+                        System.out.println(obj.getClass());
+                        return toAppendTo.append(obj.toString());
+                    }
+
+                    @Override
+                    public Object parseObject(String source, @NotNull ParsePosition pos) {
+                        return null;
+                    }
+                });
+            }
+        }
+        return messageFormat.format(args);
     }
 }
