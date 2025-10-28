@@ -49,7 +49,31 @@ class ErrorMessagesTest {
                 Arguments.argumentSet("maximum (int + float)", """
                         {"maximum": 10}""", "10.0001", "10.0001 is greater than 10"),
                 Arguments.argumentSet("maximum (float + float + int)", """
-                        {"maximum": 10.555555}""", "10.555556", "10.555556 is greater than 10.555555")
+                        {"maximum": 10.555555}""", "10.555556", "10.555556 is greater than 10.555555"),
+                Arguments.argumentSet("exclusiveMaximum (int + int)", """
+                        {"exclusiveMaximum": 10}""", "10", "10 is greater than or equal to 10"),
+                Arguments.argumentSet("exclusiveMaximum (float + int)", """
+                        {"exclusiveMaximum": 10.99}""", "11", "11 is greater than or equal to 10.99"),
+                Arguments.argumentSet("exclusiveMaximum (int + float)", """
+                        {"exclusiveMaximum": 10}""", "10.0001", "10.0001 is greater than or equal to 10"),
+                Arguments.argumentSet("exclusiveMaximum (float + float + int)", """
+                        {"exclusiveMaximum": 10.555556}""", "10.555556", "10.555556 is greater than or equal to 10.555556"),
+                Arguments.argumentSet("minimum (int + int)", """
+                        {"minimum": 11}""", "10", "10 is less than 11"),
+                Arguments.argumentSet("minimum (float + int)", """
+                        {"minimum": 10.0001}""", "10", "10 is less than 10.0001"),
+                Arguments.argumentSet("minimum (int + float)", """
+                        {"minimum": 10}""", "9.9999", "9.9999 is less than 10"),
+                Arguments.argumentSet("minimum (float + float + int)", """
+                        {"minimum": 10.555555}""", "10.555554", "10.555554 is less than 10.555555"),
+                Arguments.argumentSet("exclusiveMinimum (int + int)", """
+                        {"exclusiveMinimum": 10}""", "10", "10 is less than or equal to 10"),
+                Arguments.argumentSet("exclusiveMinimum (float + int)", """
+                        {"exclusiveMinimum": 10.0001}""", "10", "10 is less than or equal to 10.0001"),
+                Arguments.argumentSet("exclusiveMinimum (int + float)", """
+                        {"exclusiveMinimum": 10}""", "9.9999", "9.9999 is less than or equal to 10"),
+                Arguments.argumentSet("exclusiveMinimum (float + float + int)", """
+                        {"exclusiveMinimum": 10.555555}""", "10.555555", "10.555555 is less than or equal to 10.555555")
         );
     }
 }

@@ -1,7 +1,5 @@
 package dev.harrel.jsonschema;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.text.FieldPosition;
 import java.text.Format;
 import java.text.MessageFormat;
@@ -9,6 +7,9 @@ import java.text.ParsePosition;
 import java.util.Objects;
 import java.util.ResourceBundle;
 
+/**
+ * todo
+ */
 public interface MessageProvider {
     String getMessage(String key, Object... args);
 
@@ -17,7 +18,7 @@ public interface MessageProvider {
     }
 }
 
-class ResourceMessageProvider implements MessageProvider {
+final class ResourceMessageProvider implements MessageProvider {
     private final ResourceBundle resourceBundle;
 
     ResourceMessageProvider(ResourceBundle resourceBundle) {
@@ -33,20 +34,21 @@ class ResourceMessageProvider implements MessageProvider {
         MessageFormat messageFormat = new MessageFormat(template);
         for (int i = 0; i < args.length; i++) {
             if (args[i] instanceof Number) {
-                messageFormat.setFormat(i, new Format() {
-                    @Override
-                    public StringBuffer format(Object obj, @NotNull StringBuffer toAppendTo, @NotNull FieldPosition pos) {
-                        System.out.println(obj.getClass());
-                        return toAppendTo.append(obj.toString());
-                    }
-
-                    @Override
-                    public Object parseObject(String source, @NotNull ParsePosition pos) {
-                        return null;
-                    }
-                });
+                messageFormat.setFormat(i, new StringFormat());
             }
         }
         return messageFormat.format(args);
+    }
+
+    private static final class StringFormat extends Format {
+        @Override
+        public StringBuffer format(Object obj, StringBuffer toAppendTo, FieldPosition pos) {
+            return toAppendTo.append(obj);
+        }
+
+        @Override
+        public Object parseObject(String source, ParsePosition pos) {
+            throw new UnsupportedOperationException();
+        }
     }
 }
