@@ -39,7 +39,7 @@ repositories {
 
 def jsonProviders = [
         [id   : 'jackson', additionalVersions: ['2.2.0'],
-         group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.20.0'],
+         group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.20.1'],
         [id   : 'gson', additionalVersions: ['2.3'],
          group: 'com.google.code.gson', name: 'gson', version: '2.13.2'],
         [id   : 'orgJson', additionalVersions: ['20201115'],
@@ -66,15 +66,15 @@ jsonProviders.forEach {
 }
 
 dependencies {
-    formatImplementation 'com.sanctionco.jmail:jmail:2.0.2'
+    formatImplementation 'com.sanctionco.jmail:jmail:2.1.0'
 
     jakartaJsonTestImplementation 'org.eclipse.parsson:parsson:1.1.7'
-    testImplementation 'org.junit.platform:junit-platform-launcher:1.14.0'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.14.0'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.14.0'
+    testImplementation 'org.junit.platform:junit-platform-launcher:1.14.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.14.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.14.1'
     testImplementation 'org.assertj:assertj-core:3.27.6'
     testImplementation 'org.mockito:mockito-core:5.20.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.14.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.14.1'
     testRuntimeOnly 'org.eclipse.parsson:parsson:1.1.7'
 }
 
