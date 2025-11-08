@@ -12,7 +12,9 @@ class ErrorMessagesTest {
     @ParameterizedTest
     @MethodSource("evaluators")
     void evaluatorErrorMessages(String schema, String instance, String msg) {
-        Validator.Result res = new ValidatorFactory().validate(schema, instance);
+        Validator.Result res = new ValidatorFactory()
+                .withDisabledSchemaValidation(true)
+                .validate(schema, instance);
         assertThat(res.isValid()).isFalse();
         assertThat(res.getErrors()).hasSize(1);
         assertThat(res.getErrors().getFirst().getError()).isEqualTo(msg);
@@ -73,7 +75,31 @@ class ErrorMessagesTest {
                 Arguments.argumentSet("exclusiveMinimum (int + float)", """
                         {"exclusiveMinimum": 10}""", "9.9999", "9.9999 is less than or equal to 10"),
                 Arguments.argumentSet("exclusiveMinimum (float + float + int)", """
-                        {"exclusiveMinimum": 10.555555}""", "10.555555", "10.555555 is less than or equal to 10.555555")
+                        {"exclusiveMinimum": 10.555555}""", "10.555555", "10.555555 is less than or equal to 10.555555"),
+                Arguments.argumentSet("maxLength", """
+                        {"maxLength": 4}""", "\"hello\"", "\"hello\" is longer than 4 characters"),
+                Arguments.argumentSet("minLength", """
+                        {"minLength": 4}""", "\"hi\"", "\"hi\" is shorter than 4 characters"),
+                Arguments.argumentSet("pattern", """
+                        {"pattern": "x{3,4}"}""", "\"xx\"", "\"xx\" does not match regular expression x{3,4}"),
+                Arguments.argumentSet("maxItems", """
+                        {"maxItems": 2}""", "[1, 2, 3]", "Array has more than 2 items"),
+                Arguments.argumentSet("minItems", """
+                        {"minItems": 2}""", "[1]", "Array has less than 2 items"),
+                Arguments.argumentSet("uniqueItems", """
+                        {"uniqueItems": true}""", "[1, 1]", "Array contains non-unique item at index 1"),
+                Arguments.argumentSet("maxContains", """
+                        {"maxContains": 0, "contains": {"type": "number"}}""", "[1]", "Array contains more than 0 matching items"),
+                Arguments.argumentSet("minContains", """
+                        {"minContains": 2, "contains": {"type": "number"}}""", "[1]", "Array contains less than 2 matching items"),
+                Arguments.argumentSet("maxProperties", """
+                        {"maxProperties": 1}""", "{\"a\": 1, \"b\": 2}", "Object has more than 1 properties"),
+                Arguments.argumentSet("minProperties", """
+                        {"minProperties": 1}""", "{}", "Object has less than 1 properties"),
+                Arguments.argumentSet("required", """
+                        {"required": ["a"]}""", "{}", "Object does not have some of the required properties [a]"),
+                Arguments.argumentSet("dependentRequired", """
+                        {"dependentRequired": {"a": ["b", "c"]}}""", "{\"a\": 1, \"c\": 3}", "Object does not have some of the required properties [b]")
         );
     }
 }
