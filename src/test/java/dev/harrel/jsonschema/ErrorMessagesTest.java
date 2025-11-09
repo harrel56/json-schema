@@ -10,8 +10,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ErrorMessagesTest {
     @ParameterizedTest
-    @MethodSource("evaluators")
-    void evaluatorErrorMessages(String schema, String instance, String msg) {
+    @MethodSource("validators")
+    void validatorErrorMessages(String schema, String instance, String msg) {
         Validator.Result res = new ValidatorFactory()
                 .withDisabledSchemaValidation(true)
                 .validate(schema, instance);
@@ -20,7 +20,17 @@ class ErrorMessagesTest {
         assertThat(res.getErrors().getFirst().getError()).isEqualTo(msg);
     }
 
-    private static Stream<Arguments> evaluators() {
+    @ParameterizedTest
+    @MethodSource("applicators")
+    void applicatorErrorMessages(String schema, String instance, String msg) {
+        Validator.Result res = new ValidatorFactory()
+                .withDisabledSchemaValidation(true)
+                .validate(schema, instance);
+        assertThat(res.isValid()).isFalse();
+        assertThat(res.getErrors().getLast().getError()).isEqualTo(msg);
+    }
+
+    private static Stream<Arguments> validators() {
         return Stream.of(
                 Arguments.argumentSet("type", """
                         {"type": "number"}""", "{}", "Value is [object] but should be [number]"),
@@ -100,6 +110,30 @@ class ErrorMessagesTest {
                         {"required": ["a"]}""", "{}", "Object does not have some of the required properties [a]"),
                 Arguments.argumentSet("dependentRequired", """
                         {"dependentRequired": {"a": ["b", "c"]}}""", "{\"a\": 1, \"c\": 3}", "Object does not have some of the required properties [b]")
+        );
+    }
+
+    private static Stream<Arguments> applicators() {
+        return Stream.of(
+                Arguments.argumentSet("dependentSchemas", """
+                        {"dependentSchemas": {"a": false}}""", "{\"a\": 1}", "Object does not match dependent schemas for some properties [a]"),
+                Arguments.argumentSet("if + then", """
+                        {"if": true, "then": false}""", "null", "Value matches against schema from 'if' but does not match against schema from 'then'"),
+                Arguments.argumentSet("if + else", """
+                        {"if": false, "else": false}""", "null", "Value does not match against schema from 'if' and 'else'"),
+                Arguments.argumentSet("allOf", """
+                        {"allOf": [false, true, false]}""", "null", "Value does not match against the schemas at indexes [0, 2]"),
+                Arguments.argumentSet("anyOf", """
+                        {"anyOf": [false, false]}""", "null", "Value does not match against any of the schemas"),
+                Arguments.argumentSet("oneOf", """
+                        {"oneOf": [true, false, true]}""", "null", "Value matches against more than one schema. Matched schema indexes [0, 2]"),
+                Arguments.argumentSet("not", """
+                        {"not": true}""", "null", "Value matches against given schema but it must not"),
+                Arguments.argumentSet("$ref", """
+                        {"$ref": "https://schema.com"}""", "null", "Resolution of $ref [https://schema.com] failed"),
+                Arguments.argumentSet("$dynamicRef", """
+                        {"$id": "https://schema.com", "$dynamicRef": "#oops"}""", "null", "Resolution of $dynamicRef [https://schema.com#oops] failed")
+                // $recursiveRef: seems that it cannot fail
         );
     }
 }
