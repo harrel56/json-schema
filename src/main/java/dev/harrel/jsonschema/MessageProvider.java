@@ -25,6 +25,10 @@ final class ResourceMessageProvider implements MessageProvider {
         this.resourceBundle = Objects.requireNonNull(resourceBundle);
     }
 
+    static ResourceMessageProvider createDefault() {
+        return new ResourceMessageProvider(ResourceBundle.getBundle("dev.harrel.jsonschema.messages"));
+    }
+
     @Override
     public String getMessage(String key, Object... args) {
         String template = resourceBundle.getString(key);
