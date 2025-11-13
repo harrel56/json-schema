@@ -19,7 +19,6 @@ public interface MessageProvider {
 }
 
 final class ResourceMessageProvider implements MessageProvider {
-    static final ResourceBundle DEFAULT_BUNDLE = ResourceBundle.getBundle("dev.harrel.jsonschema.messages");
     private final ResourceBundle resourceBundle;
 
     ResourceMessageProvider(ResourceBundle resourceBundle) {

@@ -25,7 +25,7 @@ class ResourceMessageProviderTest {
     @Test
     void shouldCascadeReadProperties() {
         Locale.setDefault(Locale.of("es", "ES", "variant1"));
-        ResourceMessageProvider provider = new ResourceMessageProvider(ResourceMessageProvider.DEFAULT_BUNDLE);
+        MessageProvider provider = MessageProvider.fromResourceBundle(createDefaultBundle());
 
         assertThat(provider.getMessage("type")).isEqualTo("type (es-ES-variant1)");
         assertThat(provider.getMessage("const")).isEqualTo("const (es-ES)");
@@ -36,8 +36,8 @@ class ResourceMessageProviderTest {
     @Test
     void shouldCascadeReadPropertiesWithExplicitLocale() {
         Locale locale = Locale.of("es", "ES", "variant1");
-        String bundleName = ResourceMessageProvider.DEFAULT_BUNDLE.getBaseBundleName();
-        ResourceMessageProvider provider = new ResourceMessageProvider(ResourceBundle.getBundle(bundleName, locale));
+        String bundleName = createDefaultBundle().getBaseBundleName();
+        MessageProvider provider = MessageProvider.fromResourceBundle(ResourceBundle.getBundle(bundleName, locale));
 
         assertThat(provider.getMessage("type")).isEqualTo("type (es-ES-variant1)");
         assertThat(provider.getMessage("const")).isEqualTo("const (es-ES)");
@@ -48,7 +48,7 @@ class ResourceMessageProviderTest {
     @Test
     void shouldCascadeReadPropertiesWithScript() {
         Locale.setDefault(Locale.forLanguageTag("es-Latn-AR"));
-        ResourceMessageProvider provider = new ResourceMessageProvider(ResourceMessageProvider.DEFAULT_BUNDLE);
+        MessageProvider provider = MessageProvider.fromResourceBundle(createDefaultBundle());
 
         assertThat(provider.getMessage("type")).isEqualTo("type (es-AR)");
         assertThat(provider.getMessage("enum")).isEqualTo("enum (es-AR)");
@@ -61,7 +61,7 @@ class ResourceMessageProviderTest {
     @Test
     void shouldCascadeReadJavaClassBundles() {
         Locale.setDefault(Locale.of("fr", "FR"));
-        ResourceMessageProvider provider = new ResourceMessageProvider(ResourceMessageProvider.DEFAULT_BUNDLE);
+        MessageProvider provider = MessageProvider.fromResourceBundle(createDefaultBundle());
 
         assertThat(provider.getMessage("type")).isEqualTo("type (fr-FR)");
         assertThat(provider.getMessage("enum")).isEqualTo("enum (fr-FR)");
@@ -71,7 +71,7 @@ class ResourceMessageProviderTest {
 
     @Test
     void shouldFailForMissingKey() {
-        ResourceMessageProvider provider = new ResourceMessageProvider(ResourceMessageProvider.DEFAULT_BUNDLE);
+        MessageProvider provider = MessageProvider.fromResourceBundle(createDefaultBundle());
         assertThatThrownBy(() -> provider.getMessage("missingKey", 1, 2))
                 .isInstanceOf(MissingResourceException.class)
                 .hasMessage("Can't find resource for bundle java.util.PropertyResourceBundle, key missingKey");
@@ -80,7 +80,7 @@ class ResourceMessageProviderTest {
     @Test
     void shouldSupportMapBasedBundle() {
         Locale.setDefault(Locale.of("es", "ES", "variant1"));
-        ResourceMessageProvider provider = new ResourceMessageProvider(new MapBundle(Map.of("type", "type (map)")));
+        MessageProvider provider = MessageProvider.fromResourceBundle(new MapBundle(Map.of("type", "type (map)")));
 
         assertThat(provider.getMessage("type")).isEqualTo("type (map)");
         assertThat(provider.getMessage("const")).isEqualTo("const (es-ES)");
@@ -90,7 +90,7 @@ class ResourceMessageProviderTest {
 
     @Test
     void shouldNotLosePrecisionOnNumberArguments() {
-        ResourceMessageProvider provider = new ResourceMessageProvider(new MapBundle(Map.of("test", "{0}")));
+        MessageProvider provider = MessageProvider.fromResourceBundle(new MapBundle(Map.of("test", "{0}")));
 
         assertThat(provider.getMessage("test", 0)).isEqualTo("0");
         assertThat(provider.getMessage("test", -1)).isEqualTo("-1");
@@ -103,12 +103,16 @@ class ResourceMessageProviderTest {
         assertThat(provider.getMessage("test", bigDec)).isEqualTo("3.14159265358979323846264338327950288419716939937510582097494459230");
     }
 
+    private static ResourceBundle createDefaultBundle() {
+        return ResourceBundle.getBundle("dev.harrel.jsonschema.messages");
+    }
+
     static class MapBundle extends ResourceBundle {
         private final Map<String, String> messages;
 
         MapBundle(Map<String, String> messages) {
             this.messages = messages;
-            this.setParent(ResourceMessageProvider.DEFAULT_BUNDLE);
+            this.setParent(createDefaultBundle());
         }
 
         @Override

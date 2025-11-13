@@ -20,7 +20,7 @@ public final class ValidatorFactory {
     private Supplier<JsonNodeFactory> schemaNodeFactory = JacksonNode.Factory::new;
     private Supplier<JsonNodeFactory> instanceNodeFactory = schemaNodeFactory;
     private SchemaResolver schemaResolver = new DefaultSchemaResolver();
-    private MessageProvider messageProvider = new ResourceMessageProvider(ResourceMessageProvider.DEFAULT_BUNDLE);
+    private MessageProvider messageProvider = MessageProvider.fromResourceBundle(ResourceBundle.getBundle("dev.harrel.jsonschema.messages"));
     private boolean disabledSchemaValidation = false;
 
     /**
