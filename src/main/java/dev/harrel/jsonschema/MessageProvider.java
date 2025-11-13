@@ -19,14 +19,11 @@ public interface MessageProvider {
 }
 
 final class ResourceMessageProvider implements MessageProvider {
+    static final ResourceBundle DEFAULT_BUNDLE = ResourceBundle.getBundle("dev.harrel.jsonschema.messages");
     private final ResourceBundle resourceBundle;
 
     ResourceMessageProvider(ResourceBundle resourceBundle) {
         this.resourceBundle = Objects.requireNonNull(resourceBundle);
-    }
-
-    static ResourceMessageProvider createDefault() {
-        return new ResourceMessageProvider(ResourceBundle.getBundle("dev.harrel.jsonschema.messages"));
     }
 
     @Override
