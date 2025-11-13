@@ -8,11 +8,37 @@ import java.util.Objects;
 import java.util.ResourceBundle;
 
 /**
- * todo
+ * {@code MessageProvider} interface provides a strategy for supplying error/validation messages.
+ * For the majority of cases, the default implementation which comes with every {@link Validator} and {@link ValidatorFactory} is sufficient.
+ * If you only want to:
+ * <ul>
+ *     <li>provide a message for a custom keyword,</li>
+ *     <li>add translations for existing keywords,</li>
+ *     <li>override an existing error message</li>
+ * </ul>
+ * you can put a translations file {@code messages_{lang}_{country}.properties} in a {@code dev.harrel.jsonschema} package,
+ * and it will be picked up automatically.
+ * If you want to use different location, you can achieve it by calling {@link MessageProvider#fromResourceBundle(ResourceBundle)}
+ * with your customized {@link ResourceBundle}
+ *
+ * @implNote Please note that a default implementation will throw {@link java.util.MissingResourceException}
+ * when there is no message for given key.
  */
 public interface MessageProvider {
+    /**
+     * Returns a final message which will be presented to the user.
+     * It will be called only for failures registered via {@link Evaluator.Result#formattedFailure(String, Object...)}.
+     * @param key key of the message template
+     * @param args additional arguments for the message template
+     * @return final internationalized message
+     */
     String getMessage(String key, Object... args);
 
+    /**
+     * Returns a {@code MessageProvider} implementation based on a {@link ResourceBundle}.
+     * @param resourceBundle a resource bundle to use
+     * @return {@code MessageProvider} implementation based on a {@link ResourceBundle}
+     */
     static MessageProvider fromResourceBundle(ResourceBundle resourceBundle) {
         return new ResourceMessageProvider(resourceBundle);
     }

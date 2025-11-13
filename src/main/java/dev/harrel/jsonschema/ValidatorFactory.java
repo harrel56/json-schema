@@ -135,7 +135,10 @@ public final class ValidatorFactory {
     }
 
     /**
-     * TODO
+     * Sets {@link MessageProvider} to be used for message resolution.
+     *
+     * @param messageProvider {@code MessageProvider} to be used
+     * @return self
      */
     public ValidatorFactory withMessageProvider(MessageProvider messageProvider) {
         this.messageProvider = Objects.requireNonNull(messageProvider);
