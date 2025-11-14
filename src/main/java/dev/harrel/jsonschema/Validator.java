@@ -4,9 +4,6 @@ import dev.harrel.jsonschema.providers.JacksonNode;
 
 import java.net.URI;
 import java.util.*;
-import java.util.stream.Collectors;
-
-import static java.util.Collections.unmodifiableList;
 
 /**
  * Main class for performing JSON schema validation. It can be created via {@link ValidatorFactory}.
