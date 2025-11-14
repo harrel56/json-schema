@@ -105,6 +105,8 @@ public interface Evaluator {
         /**
          * Factory method for failed evaluation result with a message looked up by the provided key.
          * See {@link MessageProvider}.
+         * Default {@code MessageProvider} implementation uses {@link java.util.ResourceBundle} for message lookup and
+         * {@link java.text.MessageFormat} for formatting.
          *
          * @param key key value under which the message template can be found
          * @param args arguments which will be used to format the message
