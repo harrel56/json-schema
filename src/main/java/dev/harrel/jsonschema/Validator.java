@@ -4,9 +4,6 @@ import dev.harrel.jsonschema.providers.JacksonNode;
 
 import java.net.URI;
 import java.util.*;
-import java.util.stream.Collectors;
-
-import static java.util.Collections.unmodifiableList;
 
 /**
  * Main class for performing JSON schema validation. It can be created via {@link ValidatorFactory}.
@@ -20,17 +17,20 @@ public final class Validator {
     private final JsonNodeFactory schemaNodeFactory;
     private final JsonNodeFactory instanceNodeFactory;
     private final SchemaResolver schemaResolver;
+    private final MessageProvider messageProvider;
     private final SchemaRegistry schemaRegistry;
     private final JsonParser jsonParser;
 
     Validator(JsonNodeFactory schemaNodeFactory,
               JsonNodeFactory instanceNodeFactory,
               SchemaResolver schemaResolver,
+              MessageProvider messageProvider,
               SchemaRegistry schemaRegistry,
               JsonParser jsonParser) {
         this.schemaNodeFactory = Objects.requireNonNull(schemaNodeFactory);
         this.instanceNodeFactory = Objects.requireNonNull(instanceNodeFactory);
         this.schemaResolver = Objects.requireNonNull(schemaResolver);
+        this.messageProvider = Objects.requireNonNull(messageProvider);
         this.schemaRegistry = Objects.requireNonNull(schemaRegistry);
         this.jsonParser = Objects.requireNonNull(jsonParser);
     }
@@ -172,7 +172,7 @@ public final class Validator {
     }
 
     private EvaluationContext createNewEvaluationContext() {
-        return new EvaluationContext(schemaNodeFactory, jsonParser, schemaRegistry, schemaResolver);
+        return new EvaluationContext(schemaNodeFactory, jsonParser, schemaRegistry, schemaResolver, messageProvider);
     }
 
     /**
@@ -185,10 +185,7 @@ public final class Validator {
 
         Result(boolean valid, EvaluationContext ctx) {
             this.valid = valid;
-            this.errors = unmodifiableList(ctx.getErrors().stream()
-                    .map(LazyError::toError)
-                    .filter(e -> e.getError() != null)
-                    .collect(Collectors.toList()));
+            this.errors = ctx.resolveErrors();
             this.annotations = ctx.getAnnotations();
         }
 

@@ -1,5 +1,6 @@
 package dev.harrel.jsonschema;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -49,17 +50,20 @@ public interface Evaluator {
      * {@code Result} class represents evaluation outcome.
      */
     final class Result {
-        private static final Result SUCCESSFUL_RESULT = new Result(true, null, null);
-        private static final Result FAILED_RESULT = new Result(false, null, () -> null);
+        private static final Result SUCCESSFUL_RESULT = new Result(true, null, null, null);
+        private static final Result FAILED_RESULT = new Result(false, null, null, null);
 
         private final boolean valid;
         private final Object annotation;
-        private final Supplier<String> errorSupplier;
+        /* Either bundle key or hardcoded message */
+        private final String error;
+        private final Supplier<Object[]> argsSupplier;
 
-        private Result(boolean valid, Object annotation, Supplier<String> errorSupplier) {
+        private Result(boolean valid, Object annotation, String error, Supplier<Object[]> argsSupplier) {
             this.valid = valid;
             this.annotation = annotation;
-            this.errorSupplier = errorSupplier;
+            this.error = error;
+            this.argsSupplier = argsSupplier;
         }
 
         /**
@@ -77,7 +81,7 @@ public interface Evaluator {
          * @return {@link Result}
          */
         public static Result success(Object annotation) {
-            return new Result(true, annotation, null);
+            return new Result(true, annotation, null, null);
         }
 
         /**
@@ -90,26 +94,43 @@ public interface Evaluator {
         }
 
         /**
-         * Factory method for failed evaluation result with message.
+         * Factory method for failed evaluation result with a hardcoded message.
          *
          * @return {@link Result}
          */
         public static Result failure(String message) {
-            return new Result(false, null, () -> message);
+            return new Result(false, null, message, null);
+        }
+
+        /**
+         * Factory method for failed evaluation result with a message looked up by the provided key.
+         * See {@link MessageProvider}.
+         * Default {@code MessageProvider} implementation uses {@link java.util.ResourceBundle} for message lookup and
+         * {@link java.text.MessageFormat} for formatting.
+         *
+         * @param key key value under which the message template can be found
+         * @param args arguments which will be used to format the message
+         * @return {@link Result}
+         */
+        public static Result formattedFailure(String key, Object... args) {
+            Objects.requireNonNull(key);
+            Objects.requireNonNull(args);
+            return new Result(false, null, key, () -> args);
         }
 
         /**
          * Lazy error message construction is internal for now.
          */
-        static Result failure(Supplier<String> messageSupplier) {
-            return new Result(false, null, messageSupplier);
+        static Result formattedFailure(String key, Supplier<Object[]> argsSupplier) {
+            Objects.requireNonNull(argsSupplier);
+            return new Result(false, null, key, argsSupplier);
         }
 
         /**
          * Just for unevaluated vocabulary so it sees unevaluated items properly even on errors.
          */
         static Result annotatedFailure(Object annotation) {
-            return new Result(false, annotation, () -> null);
+            return new Result(false, annotation, null, null);
         }
 
         boolean isValid() {
@@ -120,8 +141,12 @@ public interface Evaluator {
             return annotation;
         }
 
-        Supplier<String> getErrorSupplier() {
-            return errorSupplier;
+        String getError() {
+            return error;
+        }
+
+        Supplier<Object[]> getArgsSupplier() {
+            return argsSupplier;
         }
     }
 }

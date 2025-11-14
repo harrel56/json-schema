@@ -23,17 +23,22 @@ class MetaSchemaValidator {
     private final JsonNodeFactory jsonNodeFactory;
     private final SchemaRegistry schemaRegistry;
     private final SchemaResolver schemaResolver;
+    private final MessageProvider messageProvider;
 
-    MetaSchemaValidator(JsonNodeFactory jsonNodeFactory, SchemaRegistry schemaRegistry, SchemaResolver schemaResolver) {
+    MetaSchemaValidator(JsonNodeFactory jsonNodeFactory,
+                        SchemaRegistry schemaRegistry,
+                        SchemaResolver schemaResolver,
+                        MessageProvider messageProvider) {
         this.jsonNodeFactory = Objects.requireNonNull(jsonNodeFactory);
         this.schemaRegistry = Objects.requireNonNull(schemaRegistry);
         this.schemaResolver = Objects.requireNonNull(schemaResolver);
+        this.messageProvider = Objects.requireNonNull(messageProvider);
     }
 
     MetaSchemaData validateSchema(JsonParser jsonParser, URI metaSchemaUri, String schemaUri, JsonNode node) {
         Objects.requireNonNull(metaSchemaUri);
         Schema schema = resolveMetaSchema(jsonParser, metaSchemaUri);
-        EvaluationContext ctx = new EvaluationContext(jsonNodeFactory, jsonParser, schemaRegistry, schemaResolver);
+        EvaluationContext ctx = new EvaluationContext(jsonNodeFactory, jsonParser, schemaRegistry, schemaResolver, messageProvider);
         if (!ctx.validateAgainstSchema(schema, node)) {
             throw new InvalidSchemaException(String.format("Schema [%s] failed to validate against meta-schema [%s]", schemaUri, metaSchemaUri),
                     new Validator.Result(false, ctx).getErrors());

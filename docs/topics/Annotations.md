@@ -9,7 +9,7 @@ List<Annotation> annotations = result.getAnnotations();
 ```
 
 Annotation collection is described in detail in [specification](https://json-schema.org/draft/2020-12/json-schema-core#name-annotations).
-Some annotation will be discarded and not present in the final result.
+Some annotations will be discarded and not present in the final result.
 
 > The default behavior of provided evaluator factories is to treat any unknown keyword as an annotation (as long as its value is of a string type).
 {style="note"}

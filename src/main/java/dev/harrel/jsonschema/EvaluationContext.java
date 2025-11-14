@@ -17,20 +17,23 @@ public final class EvaluationContext {
     private final JsonParser jsonParser;
     private final SchemaRegistry schemaRegistry;
     private final SchemaResolver schemaResolver;
+    private final MessageProvider messageProvider;
     private final Deque<EvalState> stateStack = new ArrayDeque<>();
     private final Deque<RefStackItem> refStack = new ArrayDeque<>();
     private final Deque<String> evaluationStack = new ArrayDeque<>();
     private final List<Annotation> annotations = new ArrayList<>();
-    private final List<LazyError> errors = new ArrayList<>();
+    private final List<RawError> errors = new ArrayList<>();
 
     EvaluationContext(JsonNodeFactory jsonNodeFactory,
                       JsonParser jsonParser,
                       SchemaRegistry schemaRegistry,
-                      SchemaResolver schemaResolver) {
+                      SchemaResolver schemaResolver,
+                      MessageProvider messageProvider) {
         this.jsonNodeFactory = Objects.requireNonNull(jsonNodeFactory);
         this.jsonParser = Objects.requireNonNull(jsonParser);
         this.schemaRegistry = Objects.requireNonNull(schemaRegistry);
         this.schemaResolver = Objects.requireNonNull(schemaResolver);
+        this.messageProvider = Objects.requireNonNull(messageProvider);
         this.evaluationStack.push("");
     }
 
@@ -122,8 +125,21 @@ public final class EvaluationContext {
         return unmodifiableList(annotations);
     }
 
-    List<LazyError> getErrors() {
-        return unmodifiableList(errors);
+    List<Error> resolveErrors() {
+        List<Error> result = new ArrayList<>(errors.size());
+        for (RawError rawError : errors) {
+            if (rawError.error == null) {
+                continue;
+            }
+            String msg;
+            if (rawError.argsSupplier == null) {
+                msg = rawError.error;
+            } else {
+                msg = messageProvider.getMessage(rawError.error, rawError.argsSupplier.get());
+            }
+            result.add(new Error(rawError.getEvaluationPath(), rawError.getSchemaLocation(), rawError.getInstanceLocation(), rawError.getKeyword(), msg));
+        }
+        return unmodifiableList(result);
     }
 
     Object getSiblingAnnotation(String sibling) {
@@ -196,7 +212,7 @@ public final class EvaluationContext {
                 errors.subList(errorsBefore, errors.size()).clear();
             } else {
                 valid = false;
-                errors.add(new LazyError(evaluationPath, schema.getSchemaLocation().toString(), node.getJsonPointer(), evaluator.getKeyword(), result.getErrorSupplier()));
+                errors.add(new RawError(evaluationPath, schema.getSchemaLocation().toString(), node.getJsonPointer(), evaluator.getKeyword(), result.getError(), result.getArgsSupplier()));
             }
             evaluationStack.pop();
         }

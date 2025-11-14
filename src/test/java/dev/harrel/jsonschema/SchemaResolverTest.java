@@ -247,7 +247,7 @@ class SchemaResolverTest {
                 "https://harrel.dev/a/b/subschema.json#/$defs/reqFields",
                 "/x",
                 "required",
-                "Object does not have some of the required properties [[y]]"
+                "Object does not have some of the required properties [y]"
         );
 
         String instance2 = """
