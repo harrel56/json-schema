@@ -50,4 +50,5 @@ Evaluation can result in either:
 - success with an annotation (`Evaluator.Result.success(Object annotation)`),
 - failure (`Evaluator.Result.failure()`),
 - failure with a message (`Evaluator.Result.failure(String message)`).
+- failure with an [internationalized message](Internationalization.md) (`Evaluator.Result.formattedFailure(String key, Object... args)`).
 
