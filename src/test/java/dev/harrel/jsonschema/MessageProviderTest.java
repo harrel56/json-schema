@@ -26,4 +26,31 @@ class MessageProviderTest {
         assertThat(res.getErrors().get(0).getError()).isEqualTo("Sam is 21 years old");
         assertThat(res.getErrors().get(1).getError()).isEqualTo("type");
     }
+
+    @Test
+    void shouldNotRunMessageProviderForIntermittentErrors() {
+        String schema = """
+                {
+                  "anyOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "fail": true
+                }""";
+        EvaluatorFactory factory = new EvaluatorFactory.Builder()
+                .withKeyword("fail", () -> (ctx, node) -> Evaluator.Result.failure("Failed!"))
+                .build();
+        Validator.Result res = new ValidatorFactory()
+                .withMessageProvider(((key, args) -> {throw new UnsupportedOperationException();}))
+                .withEvaluatorFactory(factory)
+                .validate(schema, "1");
+
+        assertThat(res.isValid()).isFalse();
+        assertThat(res.getErrors()).hasSize(1);
+        assertThat(res.getErrors().getFirst().getError()).isEqualTo("Failed!");
+    }
 }
