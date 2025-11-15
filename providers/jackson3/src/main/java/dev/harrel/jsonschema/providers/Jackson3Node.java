@@ -78,9 +78,9 @@ public final class Jackson3Node extends AbstractJsonNode<tools.jackson.databind.
         @Override
         public Jackson3Node wrap(Object node) {
             if (node instanceof Jackson3Node providerNode) {
-                return providerNode.jsonPointer.isEmpty() ? providerNode : new Jackson3Node((providerNode).node);
-            } else if (node instanceof tools.jackson.databind.JsonNode) {
-                return new Jackson3Node((tools.jackson.databind.JsonNode) node);
+                return providerNode.jsonPointer.isEmpty() ? providerNode : new Jackson3Node(providerNode.node);
+            } else if (node instanceof tools.jackson.databind.JsonNode providerNode) {
+                return new Jackson3Node(providerNode);
             } else {
                 throw new IllegalArgumentException("Cannot wrap object which is not an instance of tools.jackson.databind.JsonNode");
             }
