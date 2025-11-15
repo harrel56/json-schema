@@ -45,8 +45,6 @@ public class SuiteTestGenerator {
                     .map(Path::of)
                     .filter(file -> resourcePath.equals(file.toString()) || resourcePath.equals(file.getParent().toString()))
                     .toList();
-            System.out.println(resourcePath);
-            System.out.println(matchingResources.size());
             if (matchingResources.isEmpty()) {
                 throw new IllegalArgumentException("Resource not found");
             }
