@@ -39,7 +39,7 @@ def jsonProviders = [
          group: 'org.yaml', name: 'snakeyaml', version: '2.5'],
 ]
 
-setupJava8Test(jsonProviders[0])
+//setupJava8Test(jsonProviders[0])
 jsonProviders.forEach {
     java.registerFeature(it.id, {
         usingSourceSet(sourceSets.main)
@@ -51,12 +51,13 @@ jsonProviders.forEach {
 dependencies {
     formatImplementation 'com.sanctionco.jmail:jmail:2.1.0'
 
+    jakartaJsonTestImplementation 'org.eclipse.parsson:parsson:1.1.7'
+    testRuntimeOnly 'org.eclipse.parsson:parsson:1.1.7'
+
     testFixturesApi 'org.junit.platform:junit-platform-launcher:1.14.1'
     testFixturesApi 'org.junit.jupiter:junit-jupiter-api:5.14.1'
     testFixturesApi 'org.junit.jupiter:junit-jupiter:5.14.1'
     testFixturesApi 'org.assertj:assertj-core:3.27.6'
     testFixturesApi 'org.mockito:mockito-core:5.20.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.14.1'
-    jakartaJsonTestImplementation 'org.eclipse.parsson:parsson:1.1.7'
-    testRuntimeOnly 'org.eclipse.parsson:parsson:1.1.7'
+    testFixturesRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.14.1'
 }
