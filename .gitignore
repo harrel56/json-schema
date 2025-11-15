@@ -3,5 +3,5 @@
 /.gradle/
 /out/
 /build/
-/build/classes/java/main/
-/build/classes/java/test/
+/lib/build
+/providers/*/build
