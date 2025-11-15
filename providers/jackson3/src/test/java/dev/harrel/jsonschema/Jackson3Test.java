@@ -1,7 +1,7 @@
 package dev.harrel.jsonschema;
 
 import dev.harrel.jsonschema.providers.GsonNode;
-import dev.harrel.jsonschema.providers.JacksonNode;
+import dev.harrel.jsonschema.providers.Jackson3Node;
 import dev.harrel.jsonschema.util.JsonNodeMock;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Test;
@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class Jackson3Test extends ProviderTestBundle {
     @Override
     public JsonNodeFactory getJsonNodeFactory() {
-        return new JacksonNode.Factory();
+        return new Jackson3Node.Factory();
     }
 
     @Test
@@ -24,13 +24,15 @@ class Jackson3Test extends ProviderTestBundle {
     @Test
     void shouldPassForJacksonFactory() {
         new ValidatorFactory()
-                .withJsonNodeFactory(new JacksonNode.Factory())
+                .withJsonNodeFactory(getJsonNodeFactory())
                 .validate("{}", "{}");
     }
 
     @Test
     void shouldPassForDefaultFactory() {
-        new ValidatorFactory().validate("{}", "{}");
+        new ValidatorFactory()
+                .withJsonNodeFactory(getJsonNodeFactory())
+                .validate("{}", "{}");
     }
 
     @Test
@@ -45,7 +47,7 @@ class Jackson3Test extends ProviderTestBundle {
     @Test
     void shouldWrapForValidArgument() {
         tools.jackson.databind.JsonNode object = new ObjectMapper().readTree("{}");
-        JacksonNode wrap = new JacksonNode.Factory().wrap(object);
+        Jackson3Node wrap = new Jackson3Node.Factory().wrap(object);
         assertThat(wrap).isNotNull();
         assertThat(wrap.getNodeType()).isEqualTo(SimpleType.OBJECT);
     }
@@ -53,7 +55,7 @@ class Jackson3Test extends ProviderTestBundle {
     @Test
     void shouldFailWrapForInvalidArgument() {
         dev.harrel.jsonschema.JsonNode node = new JsonNodeMock();
-        JacksonNode.Factory factory = new JacksonNode.Factory();
+        JsonNodeFactory factory = getJsonNodeFactory();
         assertThatThrownBy(() -> factory.wrap(node))
                 .isInstanceOf(IllegalArgumentException.class);
     }
