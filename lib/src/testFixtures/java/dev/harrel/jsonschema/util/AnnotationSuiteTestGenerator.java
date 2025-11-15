@@ -39,14 +39,14 @@ public class AnnotationSuiteTestGenerator {
         try {
             InputStream is = getClass().getResourceAsStream("/files.index");
             String[] resources = new String(is.readAllBytes()).split(System.lineSeparator());
-            List<String> matchingResources = Arrays.stream(resources)
-                    .filter(file -> file.startsWith(resourcePath))
+            List<Path> matchingResources = Arrays.stream(resources)
+                    .map(Path::of)
+                    .filter(file -> resourcePath.equals(file.toString()) || resourcePath.equals(file.getParent().toString()))
                     .toList();
             if (matchingResources.isEmpty()) {
                 throw new IllegalArgumentException("Resource not found");
             }
             return matchingResources.stream()
-                    .map(Path::of)
                     .map(path -> dynamicContainer(path.getFileName().toString(), readTestResource(path)));
         } catch (Exception e) {
             throw new IllegalArgumentException(e);
