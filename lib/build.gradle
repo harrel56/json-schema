@@ -1,3 +1,7 @@
+plugins {
+    id 'java-test-fixtures'
+}
+
 apply from: 'setup/publishing.gradle'
 apply from: 'setup/reporting.gradle'
 apply from: 'setup/testing.gradle'
@@ -47,12 +51,12 @@ jsonProviders.forEach {
 dependencies {
     formatImplementation 'com.sanctionco.jmail:jmail:2.1.0'
 
-    jakartaJsonTestImplementation 'org.eclipse.parsson:parsson:1.1.7'
-    testImplementation 'org.junit.platform:junit-platform-launcher:1.14.1'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.14.1'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.14.1'
-    testImplementation 'org.assertj:assertj-core:3.27.6'
-    testImplementation 'org.mockito:mockito-core:5.20.0'
+    testFixturesApi 'org.junit.platform:junit-platform-launcher:1.14.1'
+    testFixturesApi 'org.junit.jupiter:junit-jupiter-api:5.14.1'
+    testFixturesApi 'org.junit.jupiter:junit-jupiter:5.14.1'
+    testFixturesApi 'org.assertj:assertj-core:3.27.6'
+    testFixturesApi 'org.mockito:mockito-core:5.20.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.14.1'
+    jakartaJsonTestImplementation 'org.eclipse.parsson:parsson:1.1.7'
     testRuntimeOnly 'org.eclipse.parsson:parsson:1.1.7'
 }

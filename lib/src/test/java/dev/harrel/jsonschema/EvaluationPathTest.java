@@ -8,7 +8,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.Set;
 
-import static dev.harrel.jsonschema.util.TestUtil.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)

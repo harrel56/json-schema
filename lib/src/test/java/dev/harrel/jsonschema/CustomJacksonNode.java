@@ -1,11 +1,8 @@
-package dev.harrel.jsonschema.util;
+package dev.harrel.jsonschema;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
-import dev.harrel.jsonschema.JsonNode;
-import dev.harrel.jsonschema.JsonNodeFactory;
-import dev.harrel.jsonschema.SimpleType;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;

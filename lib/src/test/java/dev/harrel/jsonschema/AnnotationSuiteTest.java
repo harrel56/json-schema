@@ -2,14 +2,10 @@ package dev.harrel.jsonschema;
 
 import dev.harrel.jsonschema.util.AnnotationSuiteTestGenerator;
 import dev.harrel.jsonschema.util.ProviderMapper;
-import dev.harrel.jsonschema.util.RemoteSchemaResolver;
-import dev.harrel.jsonschema.util.SuiteTestGenerator;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 
 import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 public abstract class AnnotationSuiteTest implements ProviderTest {

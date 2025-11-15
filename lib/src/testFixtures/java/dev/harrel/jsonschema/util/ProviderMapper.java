@@ -10,8 +10,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static dev.harrel.jsonschema.util.SuiteTestGenerator.*;
-
 public class ProviderMapper {
     private final JsonNodeFactory factory;
 

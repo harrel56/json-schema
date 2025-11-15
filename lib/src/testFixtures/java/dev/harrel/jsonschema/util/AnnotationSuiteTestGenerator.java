@@ -10,14 +10,11 @@ import org.junit.jupiter.api.DynamicNode;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.function.Consumer;
-import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;

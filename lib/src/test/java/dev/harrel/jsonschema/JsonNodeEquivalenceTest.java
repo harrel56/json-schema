@@ -1,7 +1,6 @@
 package dev.harrel.jsonschema;
 
 import dev.harrel.jsonschema.providers.SnakeYamlNode;
-import dev.harrel.jsonschema.util.CustomJacksonNode;
 import org.junit.jupiter.api.DynamicContainer;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.DynamicTest;
