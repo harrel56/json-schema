@@ -61,3 +61,14 @@ dependencies {
     testFixturesApi 'org.mockito:mockito-core:5.20.0'
     testFixturesRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.14.1'
 }
+
+processTestFixturesResources {
+    def fileNames = []
+    eachFile {
+        fileNames.add "/${it.path}"
+    }
+    doLast {
+        def indexFile = new File(destinationDir, 'files.index')
+        indexFile.text = fileNames.join(System.lineSeparator())
+    }
+}

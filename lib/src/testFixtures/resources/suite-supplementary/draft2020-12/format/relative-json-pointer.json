@@ -1,0 +1,41 @@
+[
+  {
+    "description": "RJP format",
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "format": "relative-json-pointer"
+    },
+    "tests": [
+      {
+        "description": "#1 allow only arabic numbers in the first segment",
+        "data": "২",
+        "valid": false
+      },
+      {
+        "description": "#2 allow only arabic numbers in the first segment",
+        "data": "९",
+        "valid": false
+      },
+      {
+        "description": "#3 allow only arabic numbers in the first segment",
+        "data": "۴",
+        "valid": false
+      },
+      {
+        "description": "#4 allow only arabic numbers in the first segment",
+        "data": "۴#",
+        "valid": false
+      },
+      {
+        "description": "#5 allow only arabic numbers in the first segment",
+        "data": "۴/abc",
+        "valid": false
+      },
+      {
+        "description": "allow any chars in the second segment",
+        "data": "1/۴/abc",
+        "valid": true
+      }
+    ]
+  }
+]

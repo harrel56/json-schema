@@ -1,0 +1,24 @@
+{
+  "$defs": {
+    "reffed": {
+      "$id": "reffed",
+      "type": "object",
+      "properties": {
+        "bar": {
+          "$ref": "reffed2"
+        }
+      }
+    },
+    "reffed2": {
+      "$id": "reffed2",
+      "type": "null"
+    }
+  },
+  "$id": "urn:root",
+  "properties": {
+    "foo": {
+      "$ref": "reffed",
+      "maxItems": 2
+    }
+  }
+}

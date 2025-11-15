@@ -4,21 +4,18 @@ import dev.harrel.jsonschema.Annotation;
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.SpecificationVersion;
 import dev.harrel.jsonschema.Validator;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.DynamicNode;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UncheckedIOException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertWith;
 import static org.junit.jupiter.api.DynamicContainer.dynamicContainer;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
@@ -40,26 +37,27 @@ public class AnnotationSuiteTestGenerator {
 
     public Stream<DynamicNode> generate(String resourcePath) {
         try {
-            URL url = getClass().getResource(resourcePath);
-            if (url == null) {
+            InputStream is = getClass().getResourceAsStream("/files.index");
+            String[] resources = new String(is.readAllBytes()).split(System.lineSeparator());
+            List<String> matchingResources = Arrays.stream(resources)
+                    .filter(file -> file.startsWith(resourcePath))
+                    .toList();
+            if (matchingResources.isEmpty()) {
                 throw new IllegalArgumentException("Resource not found");
             }
-            Path path = Paths.get(url.toURI());
-            if (Files.isRegularFile(path)) {
-                return Stream.of(dynamicContainer(path.getFileName().toString(), readTestFile(path)));
-            }
-            return Files.list(path)
-                    .filter(Files::isRegularFile)
-                    .map(p -> dynamicContainer(p.getFileName().toString(), readTestFile(p)));
+            return matchingResources.stream()
+                    .map(Path::of)
+                    .map(path -> dynamicContainer(path.getFileName().toString(), readTestResource(path)));
         } catch (Exception e) {
             throw new IllegalArgumentException(e);
         }
     }
 
-    private Stream<DynamicNode> readTestFile(Path path) {
+    private Stream<DynamicNode> readTestResource(Path resourcePath) {
         try {
-            List<AnnotationTestBundle> bundles = mapper.readAnnotationTestBundles(Files.readString(path));
-            return bundles.stream().map(bundle -> readBundle(path.getFileName().toString(), bundle));
+            byte[] content = getClass().getResourceAsStream(resourcePath.toString()).readAllBytes();
+            List<AnnotationTestBundle> bundles = mapper.readAnnotationTestBundles(new String(content));
+            return bundles.stream().map(bundle -> readBundle(resourcePath.getFileName().toString(), bundle));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

@@ -1,0 +1,23 @@
+{
+  "$defs": {
+    "reffed": {
+      "$anchor": "reffed",
+      "type": "object",
+      "properties": {
+        "bar": {
+          "$ref": "#reffed2"
+        }
+      }
+    },
+    "reffed2": {
+      "$anchor": "reffed2",
+      "type": "null"
+    }
+  },
+  "properties": {
+    "foo": {
+      "$ref": "#reffed",
+      "maxItems": 2
+    }
+  }
+}

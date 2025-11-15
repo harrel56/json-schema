@@ -1,0 +1,55 @@
+- description: integer
+  schema:
+    type: integer
+  tests:
+    - description: a bignum is an integer
+      data: 1.2345678910111214e+52
+      valid: true
+    - description: a negative bignum is an integer
+      data: -1.2345678910111214e+52
+      valid: true
+- description: number
+  schema:
+    type: number
+  tests:
+    - description: a bignum is a number
+      data: 9.824928374923492e+52
+      valid: true
+    - description: a negative bignum is a number
+      data: -9.824928374923492e+52
+      valid: true
+- description: string
+  schema:
+    type: string
+  tests:
+    - description: a bignum is not a string
+      data: 9.824928374923492e+52
+      valid: false
+- description: maximum integer comparison
+  schema:
+    maximum: 1.8446744073709552e+19
+  tests:
+    - description: comparison works for high numbers
+      data: 1.8446744073709552e+19
+      valid: true
+- description: float comparison with high precision
+  schema:
+    exclusiveMaximum: 9.727837981879871e+26
+  tests:
+    - description: comparison works for high numbers
+      data: 9.727837981879871e+26
+      valid: false
+- description: minimum integer comparison
+  schema:
+    minimum: -1.8446744073709552e+19
+  tests:
+    - description: comparison works for very negative numbers
+      data: -1.8446744073709552e+19
+      valid: true
+- description: float comparison with high precision on negative numbers
+  schema:
+    exclusiveMinimum: -9.727837981879871e+26
+  tests:
+    - description: comparison works for very negative numbers
+      data: -9.727837981879871e+26
+      valid: false
