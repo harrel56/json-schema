@@ -34,4 +34,4 @@ new ValidatorFactory().withMessageProvider(MessageProvider.fromResourceBundle(sp
 > Changing location of resource bundle is also possible if required,
 > but be aware that doing so will lose the default english translations
 > and you will be required to provide a translation for every keyword
-> as for any missing translation a `MissingResourceException` will be thrown.
+> as for any missing translations a `MissingResourceException` will be thrown.
