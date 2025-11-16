@@ -2,7 +2,6 @@ plugins {
     id 'java-test-fixtures'
 }
 
-apply from: 'setup/publishing.gradle'
 apply from: 'setup/reporting.gradle'
 apply from: 'setup/testing.gradle'
 
@@ -69,5 +68,20 @@ processTestFixturesResources {
     doLast {
         def indexFile = new File(destinationDir, 'files.index')
         indexFile.text = fileNames.join(System.lineSeparator())
+    }
+}
+
+// don't publish test-fixtures jar
+components.java.withVariantsFromConfiguration(configurations.testFixturesApiElements) {
+    skip()
+}
+components.java.withVariantsFromConfiguration(configurations.testFixturesRuntimeElements) {
+    skip()
+}
+
+publishing {
+    publications.withType(MavenPublication).configureEach {
+        pom.name = 'json-schema'
+        pom.description = 'Library for JSON schema validation'
     }
 }

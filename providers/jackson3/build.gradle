@@ -14,7 +14,7 @@ dependencies {
 }
 
 jacocoTestReport {
-    executionData fileTree(project.rootDir.absolutePath).include("build/jacoco/*.exec")
+//    executionData fileTree(project.absolutePath).include("build/jacoco/*.exec")
 
     reports.html.required = false
     reports.csv.required = true
@@ -33,66 +33,8 @@ sonar {
 }
 
 publishing {
-    repositories {
-        maven {
-            name = 'reposilite'
-            url = findProperty('reposiliteSnapshots')
-            credentials {
-                username = findProperty('reposiliteUsername')
-                password = findProperty('reposilitePassword')
-            }
-        }
-        maven {
-            name = 'sonatype'
-            url = findProperty('sonatypeRepo')
-            credentials {
-                username = findProperty('sonatypeUsername')
-                password = findProperty('sonatypePassword')
-            }
-        }
+    publications.withType(MavenPublication).configureEach {
+        pom.name = 'Jackson 3.x JSON provider'
+        pom.description = 'A JSON provider for new Jackson versions (3.x)'
     }
-    publications {
-        local(MavenPublication) {
-            from components.java
-        }
-        sonatype(MavenPublication) {
-            from components.java
-            pom {
-                name = 'Jackson 3.x JSON provider'
-                description = 'A JSON provider for new Jackson versions (3.x)'
-                url = 'https://github.com/harrel56/json-schema'
-                licenses {
-                    license {
-                        name = 'MIT'
-                        url = 'https://github.com/harrel56/json-schema/blob/master/LICENSE'
-                        distribution = 'repo'
-                    }
-                }
-                developers {
-                    developer {
-                        id = 'harrel56'
-                        name = 'Harrel'
-                        url = 'https://harrel.dev'
-                    }
-                }
-                scm {
-                    url = 'https://github.com/harrel56/json-schema'
-                    connection = 'scm:git:git://github.com/harrel56/json-schema.git'
-                    developerConnection = 'scm:git:git://github.com/harrel56/json-schema.git'
-                }
-                issueManagement {
-                    system = 'GitHub'
-                    url = 'https://github.com/harrel56/json-schema/issues'
-                }
-            }
-        }
-    }
-}
-
-signing {
-    if (findProperty('signingKey') != null) {
-        def decodedKey = new String(findProperty('signingKey').decodeBase64())
-        useInMemoryPgpKeys(decodedKey, findProperty('signingPassword'))
-    }
-    sign publishing.publications.sonatype
 }
