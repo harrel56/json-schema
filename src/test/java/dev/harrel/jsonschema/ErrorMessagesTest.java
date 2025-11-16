@@ -1,5 +1,6 @@
 package dev.harrel.jsonschema;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -9,6 +10,16 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ErrorMessagesTest {
+    @Test
+    void falseSchemaErrorMessage() {
+        Validator.Result res = new ValidatorFactory()
+                .withDisabledSchemaValidation(true)
+                .validate("false", "{}");
+        assertThat(res.isValid()).isFalse();
+        assertThat(res.getErrors()).hasSize(1);
+        assertThat(res.getErrors().getFirst().getError()).isEqualTo("False schema always fails");
+    }
+
     @ParameterizedTest
     @MethodSource("validators")
     void validatorErrorMessages(String schema, String instance, String msg) {

@@ -7,7 +7,7 @@ import static dev.harrel.jsonschema.Evaluator.Result;
 
 final class Schema {
     private static final Evaluator TRUE_EVALUATOR = (ctx, node) -> Result.success();
-    private static final Evaluator FALSE_EVALUATOR = (ctx, node) -> Result.failure("False schema always fails");
+    private static final Evaluator FALSE_EVALUATOR = (ctx, node) -> Result.formattedFailure("falseSchema");
 
     private final URI parentUri;
     private final URI schemaLocation;
