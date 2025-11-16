@@ -103,6 +103,27 @@ class ResourceMessageProviderTest {
         assertThat(provider.getMessage("test", bigDec)).isEqualTo("3.14159265358979323846264338327950288419716939937510582097494459230");
     }
 
+    @Test
+    void explicitFormatShouldOverrideNumberFormatting() {
+        MessageProvider provider = MessageProvider.fromResourceBundle(new MapBundle(Map.of(
+                "number", "{0,number}",
+                "integer", "{0,number,integer}",
+                "percent", "{0,number,percent}",
+                "currency", "{0,number,currency}",
+                "places", "{0,number,#.#####}",
+                "choice", "{0,choice,0#nope|1#yes|2#more yes}"
+        )));
+
+        assertThat(provider.getMessage("number", 0.00000000000001)).isEqualTo("0");
+        assertThat(provider.getMessage("integer", 0.1)).isEqualTo("0");
+        assertThat(provider.getMessage("percent", 0.01)).isEqualTo("1%");
+        assertThat(provider.getMessage("currency", 0.001)).isEqualTo("$0.00");
+        assertThat(provider.getMessage("places", 1.123456)).isEqualTo("1.12346");
+        assertThat(provider.getMessage("choice", 0)).isEqualTo("nope");
+        assertThat(provider.getMessage("choice", 1)).isEqualTo("yes");
+        assertThat(provider.getMessage("choice", 10)).isEqualTo("more yes");
+    }
+
     private static ResourceBundle createDefaultBundle() {
         return ResourceBundle.getBundle("dev.harrel.jsonschema.messages");
     }
