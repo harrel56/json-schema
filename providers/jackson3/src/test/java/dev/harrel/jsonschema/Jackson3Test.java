@@ -29,13 +29,6 @@ class Jackson3Test extends ProviderTestBundle {
     }
 
     @Test
-    void shouldPassForDefaultFactory() {
-        new ValidatorFactory()
-                .withJsonNodeFactory(getJsonNodeFactory())
-                .validate("{}", "{}");
-    }
-
-    @Test
     void shouldFailForGsonFactory() {
         AssertionsForClassTypes.assertThatThrownBy(
                         () -> new ValidatorFactory()

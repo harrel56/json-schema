@@ -14,7 +14,7 @@ ext.setupJava8Test = (Map data) -> {
     }
 
     def sourceSet = sourceSets.getByName(taskName)
-    configurations.getByName(configName).extendsFrom configurations.testImplementation, configurations.formatImplementation
+    configurations.getByName(configName).extendsFrom configurations.testFixturesApi
     dependencies.add(configName, [group: data.group, name: data.name, version: data.version])
     tasks.register(taskName, Test) {
         useJUnitPlatform()
