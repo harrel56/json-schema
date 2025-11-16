@@ -125,8 +125,10 @@ class ErrorMessagesTest {
                         {"if": false, "else": false}""", "null", "Value does not match against schema from 'if' and 'else'"),
                 Arguments.argumentSet("allOf", """
                         {"allOf": [false, true, false]}""", "null", "Value does not match against the schemas at indexes [0, 2]"),
-                Arguments.argumentSet("anyOf", """
+                Arguments.argumentSet("anyOf (0 matches)", """
                         {"anyOf": [false, false]}""", "null", "Value does not match against any of the schemas"),
+                Arguments.argumentSet("oneOf (2 matches)", """
+                        {"oneOf": [false, false]}""", "null", "Value does not match against any of the schemas"),
                 Arguments.argumentSet("oneOf", """
                         {"oneOf": [true, false, true]}""", "null", "Value matches against more than one schema. Matched schema indexes [0, 2]"),
                 Arguments.argumentSet("not", """

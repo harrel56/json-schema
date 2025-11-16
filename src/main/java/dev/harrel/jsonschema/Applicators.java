@@ -456,14 +456,7 @@ class OneOfEvaluator implements Evaluator {
                 matchedIndexes.add(i);
             }
         }
-
-        if (matchedIndexes.size() == 1) {
-            return Result.success();
-        }
-        if (matchedIndexes.isEmpty()) {
-            return Result.failure("Value does not match against any of the schemas");
-        }
-        return Result.formattedFailure("oneOf", matchedIndexes);
+        return matchedIndexes.size() == 1 ? Result.success() : Result.formattedFailure("oneOf", matchedIndexes.size(), matchedIndexes);
     }
 }
 
