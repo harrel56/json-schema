@@ -1,5 +1,6 @@
 rootProject.name = 'json-schema'
 
-include ':lib'
+include ':json-schema'
+project(':json-schema').projectDir = file('lib')
 include ':jackson3'
 project(':jackson3').projectDir = file('providers/jackson3')

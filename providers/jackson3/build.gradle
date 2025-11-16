@@ -1,4 +1,4 @@
-group 'dev.harrel.json.provider'
+group 'dev.harrel.json.providers'
 
 compileJava {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -7,8 +7,8 @@ compileJava {
 }
 
 dependencies {
-    implementation project(':lib')
+    implementation project(':json-schema')
     implementation 'tools.jackson.core:jackson-databind:3.0.2'
 
-    testImplementation testFixtures(project(':lib'))
+    testImplementation testFixtures(project(':json-schema'))
 }

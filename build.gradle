@@ -11,6 +11,9 @@ subprojects {
     apply plugin: 'jacoco'
     apply plugin: 'org.sonarqube'
 
+    group 'dev.harrel'
+    version '1.8.2'
+
     repositories {
         mavenCentral()
     }
