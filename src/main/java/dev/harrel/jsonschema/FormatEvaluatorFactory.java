@@ -73,33 +73,6 @@ import static java.util.Collections.unmodifiableSet;
  */
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public final class FormatEvaluatorFactory implements EvaluatorFactory {
-    private static final class FormatEvaluator implements Evaluator {
-        private final UnaryOperator<String> operator;
-
-        private FormatEvaluator(UnaryOperator<String> operator) {
-            this.operator = operator;
-        }
-
-        @Override
-        public Result evaluate(EvaluationContext ctx, JsonNode node) {
-            if (!node.isString()) {
-                return Result.success();
-            }
-            String value = node.asString();
-            String err = operator.apply(value);
-            return err == null ? Result.success(value) : Result.failure(err);
-        }
-    }
-
-    private static final Pattern DURATION_PATTERN = Pattern.compile(
-            "P(?:\\d+W|T(?:\\d+H(?:\\d+M(?:\\d+S)?)?|\\d+M(?:\\d+S)?|\\d+S)|(?:\\d+D|\\d+M(?:\\d+D)?|\\d+Y(?:\\d+M(?:\\d+D)?)?)(?:T(?:\\d+H(?:\\d+M(?:\\d+S)?)?|\\d+M(?:\\d+S)?|\\d+S))?)",
-            Pattern.CASE_INSENSITIVE
-    );
-    private static final Pattern HOSTNAME_PATTERN = Pattern.compile(
-            "([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])(\\.([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9]))*",
-            Pattern.CASE_INSENSITIVE
-    );
-
     private final Predicate<SchemaParsingContext> vocabPredicate;
 
     /**
@@ -123,153 +96,203 @@ public final class FormatEvaluatorFactory implements EvaluatorFactory {
         if (!"format".equals(fieldName) || !fieldNode.isString() || !vocabPredicate.test(ctx)) {
             return Optional.empty();
         }
-        return Optional.ofNullable(getOperator(fieldNode.asString()))
-                .map(FormatEvaluator::new);
+        return Optional.of(new FormatEvaluator(fieldNode.asString()));
     }
 
-    private UnaryOperator<String> getOperator(String format) {
-        switch (format) {
-            case "date":
-                return tryOf(DateTimeFormatter.ISO_DATE::parse);
-            case "date-time":
-                return tryOf(DateTimeFormatter.ISO_DATE_TIME::parse);
-            case "time":
-                return tryOf(DateTimeFormatter.ISO_TIME::parse);
-            case "duration":
-                return v -> DURATION_PATTERN.matcher(v).matches() ? null : String.format("\"%s\" is not a valid duration string", v);
-            case "email":
-            case "idn-email":
-                return v -> JMail.isValid(v) ? null : String.format("\"%s\" is not a valid email address", v);
-            case "hostname":
-            case "idn-hostname":
-                return v -> HOSTNAME_PATTERN.matcher(v).matches() ? null : String.format("\"%s\" is not a valid hostname", v);
-            case "ipv4":
-                return v -> InternetProtocolAddress.validateIpv4(v).isPresent() ? null : String.format("\"%s\" is not a valid IPv4 address", v);
-            case "ipv6":
-                return v -> InternetProtocolAddress.validateIpv6(v).isPresent() ? null : String.format("\"%s\" is not a valid IPv6 address", v);
-            case "uri":
-                return FormatEvaluatorFactory::uriOperator;
-            case "iri":
-                return FormatEvaluatorFactory::iriOperator;
-            case "uri-reference":
-                return FormatEvaluatorFactory::uriReferenceOperator;
-            case "iri-reference":
-                return tryOf(URI::create);
-            case "uuid":
-                return FormatEvaluatorFactory::uuidOperator;
-            case "uri-template":
-                return FormatEvaluatorFactory::uriTemplateOperator;
-            case "json-pointer":
-                return v -> validateJsonPointer(v) ? null : String.format("\"%s\" is not a valid json-pointer", v);
-            case "relative-json-pointer":
-                return FormatEvaluatorFactory::rjpOperator;
-            case "regex":
-                return tryOf(Pattern::compile);
-            default:
-                return null;
+    private static final class FormatException extends Exception {
+        FormatException() {
+            this(null);
+        }
+
+        FormatException(String message) {
+            super(message, null, false, false);
         }
     }
 
-    private static UnaryOperator<String> tryOf(Consumer<String> op) {
-        return v -> {
-            try {
-                op.accept(v);
-                return null;
-            } catch (Exception e) {
-                return e.getMessage();
-            }
-        };
+    @FunctionalInterface
+    private interface FormatOperator {
+        void validateFormat(String value) throws FormatException;
     }
 
-    private static boolean validateJsonPointer(String pointer) {
-        if (pointer.isEmpty()) {
+    private static final class FormatEvaluator implements Evaluator {
+        private static final Pattern DURATION_PATTERN = Pattern.compile(
+                "P(?:\\d+W|T(?:\\d+H(?:\\d+M(?:\\d+S)?)?|\\d+M(?:\\d+S)?|\\d+S)|(?:\\d+D|\\d+M(?:\\d+D)?|\\d+Y(?:\\d+M(?:\\d+D)?)?)(?:T(?:\\d+H(?:\\d+M(?:\\d+S)?)?|\\d+M(?:\\d+S)?|\\d+S))?)",
+                Pattern.CASE_INSENSITIVE
+        );
+        private static final Pattern HOSTNAME_PATTERN = Pattern.compile(
+                "([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])(\\.([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9]))*",
+                Pattern.CASE_INSENSITIVE
+        );
+
+        private final String format;
+        private final FormatOperator operator;
+
+        private FormatEvaluator(String format) {
+            this.format = format;
+            this.operator = getOperator(format);
+        }
+
+        @Override
+        public Result evaluate(EvaluationContext ctx, JsonNode node) {
+            if (!node.isString()) {
+                return Result.success();
+            }
+            String value = node.asString();
+            try {
+                operator.validateFormat(value);
+                return Result.success(value);
+            } catch (FormatException e) {
+                return Result.formattedFailure("format", value, format, e.getMessage());
+            }
+        }
+
+        private static FormatOperator getOperator(String format) {
+            switch (format) {
+                case "date":
+                    return tryOf(DateTimeFormatter.ISO_DATE::parse);
+                case "date-time":
+                    return tryOf(DateTimeFormatter.ISO_DATE_TIME::parse);
+                case "time":
+                    return tryOf(DateTimeFormatter.ISO_TIME::parse);
+                case "duration":
+                    return predicateOf(v -> DURATION_PATTERN.matcher(v).matches());
+                case "email":
+                case "idn-email":
+                    return predicateOf(JMail::isValid);
+                case "hostname":
+                case "idn-hostname":
+                    return predicateOf(v -> HOSTNAME_PATTERN.matcher(v).matches());
+                case "ipv4":
+                    return predicateOf(v -> InternetProtocolAddress.validateIpv4(v).isPresent());
+                case "ipv6":
+                    return predicateOf(v -> InternetProtocolAddress.validateIpv6(v).isPresent());
+                case "uri":
+                    return FormatEvaluator::uriOperator;
+                case "iri":
+                    return FormatEvaluator::iriOperator;
+                case "uri-reference":
+                    return FormatEvaluator::uriReferenceOperator;
+                case "iri-reference":
+                    return tryOf(URI::create);
+                case "uuid":
+                    return FormatEvaluator::uuidOperator;
+                case "uri-template":
+                    return predicateOf(FormatEvaluator::validateUriTemplate);
+                case "json-pointer":
+                    return predicateOf(FormatEvaluator::validateJsonPointer);
+                case "relative-json-pointer":
+                    return predicateOf(FormatEvaluator::validateRjp);
+                case "regex":
+                    return tryOf(Pattern::compile);
+                default:
+                    return v -> {};
+            }
+        }
+
+        private static FormatOperator tryOf(Consumer<String> op) {
+            return v -> {
+                try {
+                    op.accept(v);
+                } catch (RuntimeException e) {
+                    throw new FormatException(e.getMessage());
+                }
+            };
+        }
+
+        private static FormatOperator predicateOf(Predicate<String> predicate) {
+            return v -> {
+                if (!predicate.test(v)) {
+                    throw new FormatException();
+                }
+            };
+        }
+
+        private static boolean validateJsonPointer(String pointer) {
+            if (pointer.isEmpty()) {
+                return true;
+            }
+            if (!pointer.startsWith("/")) {
+                return false;
+            }
+            String decoded = pointer.replace("~0", "").replace("~1", "");
+            return !decoded.contains("~");
+        }
+
+        private static void uriOperator(String value) throws FormatException {
+            asciiOperator(value);
+            iriOperator(value);
+        }
+
+        private static void iriOperator(String value) throws FormatException {
+            try {
+                if (!URI.create(value).isAbsolute()) {
+                    throw new FormatException(String.format("\"%s\" is a relative URI", value));
+                }
+            } catch (RuntimeException e) {
+                throw new FormatException(e.getMessage());
+            }
+        }
+
+        private static void uriReferenceOperator(String value) throws FormatException {
+            asciiOperator(value);
+            try {
+                URI.create(value);
+            } catch (RuntimeException e) {
+                throw new FormatException(e.getMessage());
+            }
+        }
+
+        private static void uuidOperator(String value) throws FormatException {
+            try {
+                if (!UUID.fromString(value).toString().equalsIgnoreCase(value)) {
+                    throw new FormatException();
+                }
+            } catch (RuntimeException e) {
+                throw new FormatException(e.getMessage());
+            }
+        }
+
+        private static boolean validateUriTemplate(String value) {
+            int level = 0;
+            for (int i = 0; i < value.length(); i++) {
+                char c = value.charAt(i);
+                if (c == '{') {
+                    level++;
+                } else if (c == '}' && level > 0) {
+                    level--;
+                }
+            }
+            return level == 0;
+        }
+
+        private static boolean validateRjp(String value) {
+            int firstSegmentEndIdx = value.length();
+            for (int i = 0; i < value.length(); i++) {
+                char c = value.charAt(i);
+                if (c == '#' || c == '/') {
+                    firstSegmentEndIdx = i;
+                    break;
+                }
+                if (c < '0' || c > '9') {
+                    return false;
+                }
+            }
+            String firstSegment = value.substring(0, firstSegmentEndIdx);
+            String secondSegment = value.substring(firstSegmentEndIdx);
+            if (firstSegment.isEmpty() ||
+                    firstSegment.length() > 1 && firstSegment.startsWith("0") || // no leading zeros
+                    !"#".equals(secondSegment) && !validateJsonPointer(secondSegment)) {
+                return false;
+            }
             return true;
         }
-        if (!pointer.startsWith("/")) {
-            return false;
-        }
-        String decoded = pointer.replace("~0", "").replace("~1", "");
-        return !decoded.contains("~");
-    }
 
-    private static String uriOperator(String value) {
-        String err = validateAscii(value);
-        if (err != null) {
-            return err;
-        }
-        return iriOperator(value);
-    }
-
-    private static String iriOperator(String value) {
-        try {
-            URI uri = URI.create(value);
-            return uri.isAbsolute() ? null : String.format("\"%s\" is a relative URI", uri);
-        } catch (Exception e) {
-            return e.getMessage();
-        }
-    }
-
-    private static String uriReferenceOperator(String value) {
-        String err = validateAscii(value);
-        if (err != null) {
-            return err;
-        }
-        return tryOf(URI::create).apply(value);
-    }
-
-    private static String uuidOperator(String value) {
-        try {
-            return UUID.fromString(value).toString().equalsIgnoreCase(value) ? null : String.format("\"%s\" UUID is invalid", value);
-        } catch (Exception e) {
-            return e.getMessage();
-        }
-    }
-
-    private static String uriTemplateOperator(String value) {
-        int level = 0;
-        for (int i = 0; i < value.length(); i++) {
-            char c = value.charAt(i);
-            if (c == '{') {
-                level++;
-            } else if (c == '}' && level > 0) {
-                level--;
+        private static void asciiOperator(String value) throws FormatException {
+            for (int i = 0; i < value.length(); i++) {
+                if (value.charAt(i) >= '\u0080') {
+                    throw new FormatException(String.format("\"%s\" contains non-ASCII characters", value));
+                }
             }
         }
-        return level == 0 ? null : String.format("\"%s\" is not a valid URI template", value);
-    }
-
-    private static String rjpOperator(String value) {
-        int firstSegmentEndIdx = value.length();
-        for (int i = 0; i < value.length(); i++) {
-            char c = value.charAt(i);
-            if (c == '#' || c == '/') {
-                firstSegmentEndIdx = i;
-                break;
-            }
-            if (c < '0' || c > '9') {
-                return invalidRjpMessage(value);
-            }
-        }
-        String firstSegment = value.substring(0, firstSegmentEndIdx);
-        String secondSegment = value.substring(firstSegmentEndIdx);
-        if (firstSegment.isEmpty() ||
-                firstSegment.length() > 1 && firstSegment.startsWith("0") || // no leading zeros
-                !"#".equals(secondSegment) && !validateJsonPointer(secondSegment)) {
-            return invalidRjpMessage(value);
-        }
-        return null;
-    }
-
-    private static String invalidRjpMessage(String value) {
-        return String.format("\"%s\" is not a valid relative-json-pointer", value);
-    }
-
-    private static String validateAscii(String value) {
-        for (int i = 0; i < value.length(); i++) {
-            if (value.charAt(i) >= '\u0080') {
-                return String.format("\"%s\" contains non-ASCII characters", value);
-            }
-        }
-        return null;
     }
 }
