@@ -115,6 +115,8 @@ class ErrorMessagesTest {
 
     private static Stream<Arguments> applicators() {
         return Stream.of(
+                Arguments.argumentSet("contains", """
+                        {"contains": {"type": "integer"}}""", "[true, null, 1.1]", "Array contains no matching items"),
                 Arguments.argumentSet("dependentSchemas", """
                         {"dependentSchemas": {"a": false}}""", "{\"a\": 1}", "Object does not match dependent schemas for some properties [a]"),
                 Arguments.argumentSet("if + then", """

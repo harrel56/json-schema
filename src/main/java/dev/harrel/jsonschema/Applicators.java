@@ -176,7 +176,7 @@ class ContainsEvaluator implements Evaluator {
                 indices.add(i);
             }
         }
-        return minContainsZero || !indices.isEmpty() ? Result.success(indices) : Result.failure("Array contains no matching items");
+        return minContainsZero || !indices.isEmpty() ? Result.success(indices) : Result.formattedFailure("contains");
     }
 }
 
