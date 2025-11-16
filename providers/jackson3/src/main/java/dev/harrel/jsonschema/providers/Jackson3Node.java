@@ -15,7 +15,7 @@ public final class Jackson3Node extends AbstractJsonNode<tools.jackson.databind.
         super(Objects.requireNonNull(node), jsonPointer);
     }
 
-    public Jackson3Node(tools.jackson.databind.JsonNode node) {
+    private Jackson3Node(tools.jackson.databind.JsonNode node) {
         this(node, "");
     }
 
