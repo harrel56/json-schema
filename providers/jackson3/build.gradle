@@ -13,14 +13,6 @@ dependencies {
     testImplementation testFixtures(project(':json-schema'))
 }
 
-jacocoTestReport {
-//    executionData fileTree(project.absolutePath).include("build/jacoco/*.exec")
-
-    reports.html.required = false
-    reports.csv.required = true
-    reports.xml.required = true
-}
-
 sonar {
     properties {
         property 'sonar.projectKey', 'harrel56_providers_jackson3'

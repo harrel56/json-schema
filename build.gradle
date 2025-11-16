@@ -31,6 +31,14 @@ subprojects {
         jvmArgs("-XX:+EnableDynamicAgentLoading")
     }
 
+    jacocoTestReport {
+        executionData fileTree(project.layout.buildDirectory).include("build/jacoco/*.exec")
+
+        reports.html.required = false
+        reports.csv.required = true
+        reports.xml.required = true
+    }
+
     publishing {
         repositories {
             maven {

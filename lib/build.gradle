@@ -2,8 +2,7 @@ plugins {
     id 'java-test-fixtures'
 }
 
-apply from: 'setup/reporting.gradle'
-apply from: 'setup/testing.gradle'
+apply from: 'testing.gradle'
 
 compileJava {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -83,5 +82,16 @@ publishing {
     publications.withType(MavenPublication).configureEach {
         pom.name = 'json-schema'
         pom.description = 'Library for JSON schema validation'
+    }
+}
+
+sonar {
+    properties {
+        property 'sonar.projectKey', 'harrel56_json-schema'
+        property 'sonar.organization', 'harrel56'
+        property 'sonar.host.url', 'https://sonarcloud.io'
+
+        property 'sonar.java.source', '8'
+        property 'sonar.java.target', '8'
     }
 }
