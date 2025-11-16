@@ -34,8 +34,11 @@ jobs:
         with:
           name: build-output
           path: |
-            build/libs
-            build/reports
+            lib/build/libs
+            lib/build/reports
+            providers/*/build/libs
+            providers/*/build/reports
+
 
       - name: Gradle publish to Sonatype
         env:
@@ -49,4 +52,9 @@ jobs:
       - name: stupid maven poking (what?)
         run: |
           curl -X POST "https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/dev.harrel" \
+           -H "Authorization: Bearer ${{ secrets.SONATYPE_TOKEN }}"
+
+      - name: stupid maven poking (what?) - providers
+        run: |
+          curl -X POST "https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/dev.harrel.json.providers" \
            -H "Authorization: Bearer ${{ secrets.SONATYPE_TOKEN }}"

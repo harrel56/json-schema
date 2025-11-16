@@ -85,7 +85,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.integration-task }}-tests-exec
-          path: build/jacoco
+          path: |
+            lib/build/jacoco
+            providers/*/build/jacoco
 
   report:
     needs: [generic-tests, integration-tasks-execution]
@@ -111,7 +113,7 @@ jobs:
           path: build/jacoco
 
       - name: Get exec data up one level
-        run: find build/jacoco -path 'build/jacoco/*/*' -execdir mv -t ../ {} +
+        run: find lib/build/jacoco -path 'lib/build/jacoco/*/*' -execdir mv -t ../ {} +
 
       - name: Gradle jacoco report
         run: ./gradlew jacocoTestReport --no-daemon
@@ -121,8 +123,13 @@ jobs:
         with:
           name: report-output
           path: |
-            build/classes
-            build/generated
-            build/jacoco
-            build/reports
-            build/test-results
+            lib/build/classes
+            lib/build/generated
+            lib/build/jacoco
+            lib/build/reports
+            lib/build/test-results
+            providers/*/build/classes
+            providers/*/build/generated
+            providers/*/build/jacoco
+            providers/*/build/reports
+            providers/*/build/test-results
