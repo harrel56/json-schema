@@ -81,10 +81,17 @@ jobs:
       - name: Gradle integration tests
         run: ./gradlew ${{ matrix.integration-task }} --no-daemon
 
+      - name: Sanitize name (replace colons)
+        id: sanitize
+        run: |
+          sanitizedName="${{ matrix.integration-task }}"
+          sanitizedName="${sanitizedName//:/_}"
+          echo "sanitizedName=$sanitizedName" >> "$GITHUB_OUTPUT"
+
       - name: Upload test execution data
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.integration-task }}-tests-exec
+          name: ${{ steps.sanitize.outputs.sanitizedName }}-tests-exec
           path: |
             lib/build/jacoco
             providers/*/build/jacoco
