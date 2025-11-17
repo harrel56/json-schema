@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ResourceMessageProviderTest {
+    private static Locale en_US = Locale.of("en", "US");
     private static Locale defaultLocale;
 
     @BeforeEach
@@ -25,7 +26,7 @@ class ResourceMessageProviderTest {
     @Test
     void shouldCascadeReadProperties() {
         Locale.setDefault(Locale.of("es", "ES", "variant1"));
-        MessageProvider provider = MessageProvider.fromResourceBundle(createDefaultBundle());
+        MessageProvider provider = MessageProvider.fromLocale(Locale.getDefault());
 
         assertThat(provider.getMessage("type")).isEqualTo("type (es-ES-variant1)");
         assertThat(provider.getMessage("const")).isEqualTo("const (es-ES)");
@@ -37,7 +38,7 @@ class ResourceMessageProviderTest {
     void shouldCascadeReadPropertiesWithExplicitLocale() {
         Locale locale = Locale.of("es", "ES", "variant1");
         String bundleName = createDefaultBundle().getBaseBundleName();
-        MessageProvider provider = MessageProvider.fromResourceBundle(ResourceBundle.getBundle(bundleName, locale));
+        MessageProvider provider = MessageProvider.fromResourceBundle(locale, ResourceBundle.getBundle(bundleName, locale));
 
         assertThat(provider.getMessage("type")).isEqualTo("type (es-ES-variant1)");
         assertThat(provider.getMessage("const")).isEqualTo("const (es-ES)");
@@ -48,7 +49,7 @@ class ResourceMessageProviderTest {
     @Test
     void shouldCascadeReadPropertiesWithScript() {
         Locale.setDefault(Locale.forLanguageTag("es-Latn-AR"));
-        MessageProvider provider = MessageProvider.fromResourceBundle(createDefaultBundle());
+        MessageProvider provider = MessageProvider.fromLocale(Locale.getDefault());
 
         assertThat(provider.getMessage("type")).isEqualTo("type (es-AR)");
         assertThat(provider.getMessage("enum")).isEqualTo("enum (es-AR)");
@@ -61,7 +62,7 @@ class ResourceMessageProviderTest {
     @Test
     void shouldCascadeReadJavaClassBundles() {
         Locale.setDefault(Locale.of("fr", "FR"));
-        MessageProvider provider = MessageProvider.fromResourceBundle(createDefaultBundle());
+        MessageProvider provider = MessageProvider.fromLocale(Locale.getDefault());
 
         assertThat(provider.getMessage("type")).isEqualTo("type (fr-FR)");
         assertThat(provider.getMessage("enum")).isEqualTo("enum (fr-FR)");
@@ -71,7 +72,7 @@ class ResourceMessageProviderTest {
 
     @Test
     void shouldFailForMissingKey() {
-        MessageProvider provider = MessageProvider.fromResourceBundle(createDefaultBundle());
+        MessageProvider provider = MessageProvider.fromLocale(Locale.getDefault());
         assertThatThrownBy(() -> provider.getMessage("missingKey", 1, 2))
                 .isInstanceOf(MissingResourceException.class)
                 .hasMessage("Can't find resource for bundle java.util.PropertyResourceBundle, key missingKey");
@@ -80,7 +81,7 @@ class ResourceMessageProviderTest {
     @Test
     void shouldSupportMapBasedBundle() {
         Locale.setDefault(Locale.of("es", "ES", "variant1"));
-        MessageProvider provider = MessageProvider.fromResourceBundle(new MapBundle(Map.of("type", "type (map)")));
+        MessageProvider provider = MessageProvider.fromResourceBundle(Locale.getDefault(), new MapBundle(Map.of("type", "type (map)")));
 
         assertThat(provider.getMessage("type")).isEqualTo("type (map)");
         assertThat(provider.getMessage("const")).isEqualTo("const (es-ES)");
@@ -90,7 +91,7 @@ class ResourceMessageProviderTest {
 
     @Test
     void shouldNotLosePrecisionOnNumberArguments() {
-        MessageProvider provider = MessageProvider.fromResourceBundle(new MapBundle(Map.of("test", "{0}")));
+        MessageProvider provider = MessageProvider.fromResourceBundle(en_US, new MapBundle(Map.of("test", "{0}")));
 
         assertThat(provider.getMessage("test", 0)).isEqualTo("0");
         assertThat(provider.getMessage("test", -1)).isEqualTo("-1");
@@ -105,7 +106,7 @@ class ResourceMessageProviderTest {
 
     @Test
     void explicitFormatShouldOverrideNumberFormatting() {
-        MessageProvider provider = MessageProvider.fromResourceBundle(new MapBundle(Map.of(
+        MessageProvider provider = MessageProvider.fromResourceBundle(en_US, new MapBundle(Map.of(
                 "number", "{0,number}",
                 "integer", "{0,number,integer}",
                 "percent", "{0,number,percent}",
@@ -124,8 +125,22 @@ class ResourceMessageProviderTest {
         assertThat(provider.getMessage("choice", 10)).isEqualTo("more yes");
     }
 
+    @Test
+    void shouldUseLocaleForFormatting() {
+        Locale locale = Locale.of("pl", "PL");
+        MessageProvider provider = MessageProvider.fromResourceBundle(locale, new MapBundle(Map.of(
+                "currency", "{0,number,currency}",
+                "float", "{0,number}",
+                "percent", "{0,number,percent}"
+        )));
+
+        assertThat(provider.getMessage("currency", 12.99)).isEqualTo("12,99 zł");
+        assertThat(provider.getMessage("float", 1299.99)).isEqualTo("1 299,99");
+        assertThat(provider.getMessage("percent", 0.123)).isEqualTo("12%");
+    }
+
     private static ResourceBundle createDefaultBundle() {
-        return ResourceBundle.getBundle("dev.harrel.jsonschema.messages");
+        return ResourceBundle.getBundle("dev.harrel.jsonschema.messages", Locale.of("en", "US"));
     }
 
     static class MapBundle extends ResourceBundle {

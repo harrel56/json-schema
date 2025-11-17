@@ -4,12 +4,17 @@ import java.text.FieldPosition;
 import java.text.Format;
 import java.text.MessageFormat;
 import java.text.ParsePosition;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.ResourceBundle;
 
 /**
  * {@code MessageProvider} interface provides a strategy for supplying error/validation messages.
- * For the majority of cases, the default implementation which comes with every {@link Validator} and {@link ValidatorFactory} is sufficient.
+ * Default implementation is provided by static factory methods and it uses:
+ * <ul>
+ *     <li>{@link ResourceBundle} for retrieving message templates,</li>
+ *     <li>{@link MessageFormat} for formatting messages.</li>
+ * </ul>
  * If you only want to:
  * <ul>
  *     <li>provide a message for a custom keyword,</li>
@@ -18,8 +23,7 @@ import java.util.ResourceBundle;
  * </ul>
  * you can put a translations file {@code messages_{lang}_{country}.properties} in a {@code dev.harrel.jsonschema} package,
  * and it will be picked up automatically.
- * If you want to use different location, you can achieve it by calling {@link MessageProvider#fromResourceBundle(ResourceBundle)}
- * with your customized {@link ResourceBundle}
+ * For more customization options see static factory methods.
  *
  * @implNote Please note that a default implementation will throw {@link java.util.MissingResourceException}
  * when there is no message for given key.
@@ -28,6 +32,7 @@ public interface MessageProvider {
     /**
      * Returns a final message which will be presented to the user.
      * It will be called only for failures registered via {@link Evaluator.Result#formattedFailure(String, Object...)}.
+     *
      * @param key key of the message template
      * @param args additional arguments for the message template
      * @return final internationalized message
@@ -35,19 +40,33 @@ public interface MessageProvider {
     String getMessage(String key, Object... args);
 
     /**
+     * Returns a {@code MessageProvider} implementation for a given locale.
+     *
+     * @param locale a locale to be used for formatting messages and retrieving message bundles
+     * @return {@code MessageProvider} implementation for a given locale
+     */
+    static MessageProvider fromLocale(Locale locale) {
+        return fromResourceBundle(locale, ResourceBundle.getBundle("dev.harrel.jsonschema.messages", locale));
+    }
+
+    /**
      * Returns a {@code MessageProvider} implementation based on a {@link ResourceBundle}.
+     *
+     * @param formatLocale a locale to be used for formatting messages
      * @param resourceBundle a resource bundle to use
      * @return {@code MessageProvider} implementation based on a {@link ResourceBundle}
      */
-    static MessageProvider fromResourceBundle(ResourceBundle resourceBundle) {
-        return new ResourceMessageProvider(resourceBundle);
+    static MessageProvider fromResourceBundle(Locale formatLocale, ResourceBundle resourceBundle) {
+        return new ResourceMessageProvider(formatLocale, resourceBundle);
     }
 }
 
 final class ResourceMessageProvider implements MessageProvider {
+    private final Locale formatLocale;
     private final ResourceBundle resourceBundle;
 
-    ResourceMessageProvider(ResourceBundle resourceBundle) {
+    ResourceMessageProvider(Locale formatLocale, ResourceBundle resourceBundle) {
+        this.formatLocale = Objects.requireNonNull(formatLocale);
         this.resourceBundle = Objects.requireNonNull(resourceBundle);
     }
 
@@ -57,7 +76,7 @@ final class ResourceMessageProvider implements MessageProvider {
         if (args.length == 0) {
             return template;
         }
-        MessageFormat messageFormat = new MessageFormat(template);
+        MessageFormat messageFormat = new MessageFormat(template, formatLocale);
         for (int i = 0; i < args.length; i++) {
             if (args[i] instanceof Number && messageFormat.getFormatsByArgumentIndex()[i] == null) {
                 messageFormat.setFormatByArgumentIndex(i, new StringFormat());
