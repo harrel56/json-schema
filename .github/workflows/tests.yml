@@ -119,6 +119,8 @@ jobs:
         with:
           path: .
 
+      - run: tree .
+
       - name: Get exec data up one level
         run: find lib/build/jacoco -path 'lib/build/jacoco/*/*' -execdir mv -t ../ {} +
 
