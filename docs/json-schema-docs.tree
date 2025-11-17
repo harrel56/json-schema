@@ -27,6 +27,7 @@
         <toc-element topic="Resolver-examples.md"/>
     </toc-element>
     <toc-element topic="Annotations.md"/>
+    <toc-element topic="Internationalization.md"/>
     <toc-element toc-title="Advanced configuration">
         <toc-element toc-title="Custom keywords">
             <toc-element topic="Evaluators.md"/>

@@ -67,7 +67,7 @@ class SelfValidatingSchemaTest {
                 "https://json-schema.org/draft/2020-12/meta/validation#/$defs/simpleTypes",
                 "/type",
                 "enum",
-                "Expected any of [[array, boolean, integer, null, number, object, string]]"
+                "Expected any of [array, boolean, integer, null, number, object, string]"
         );
     }
 
@@ -133,7 +133,7 @@ class SelfValidatingSchemaTest {
                 "https://json-schema.org/draft/2020-12/meta/validation#/$defs/simpleTypes",
                 "/properties/definitions/type",
                 "enum",
-                "Expected any of [[array, boolean, integer, null, number, object, string]]"
+                "Expected any of [array, boolean, integer, null, number, object, string]"
         );
         assertError(
                 errors.get(1),

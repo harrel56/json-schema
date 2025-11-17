@@ -77,7 +77,7 @@ class IdKeywordTest {
         assertThat(exception).hasMessage("Schema [urn:test] failed to validate against meta-schema [%s]".formatted(version.getId()));
         List<Error> errors = exception.getErrors();
         assertThat(errors).hasSize(2);
-        assertThat(errors.getFirst().getError()).isEqualTo("\"urn:test#/$defs/x\" does not match regular expression [^[^#]*#?$]");
+        assertThat(errors.getFirst().getError()).isEqualTo("\"urn:test#/$defs/x\" does not match regular expression ^[^#]*#?$");
     }
 
     @ParameterizedTest
@@ -123,7 +123,7 @@ class IdKeywordTest {
         assertThat(exception).hasMessage("Schema [urn:test] failed to validate against meta-schema [%s]".formatted(version.getId()));
         List<Error> errors = exception.getErrors();
         assertThat(errors).hasSize(2);
-        assertThat(errors.getFirst().getError()).isEqualTo("\"urn:test#anchor\" does not match regular expression [^[^#]*#?$]");
+        assertThat(errors.getFirst().getError()).isEqualTo("\"urn:test#anchor\" does not match regular expression ^[^#]*#?$");
     }
 
     @ParameterizedTest

@@ -20,6 +20,7 @@ public final class ValidatorFactory {
     private Supplier<JsonNodeFactory> schemaNodeFactory = JacksonNode.Factory::new;
     private Supplier<JsonNodeFactory> instanceNodeFactory = schemaNodeFactory;
     private SchemaResolver schemaResolver = new DefaultSchemaResolver();
+    private MessageProvider messageProvider = MessageProvider.fromLocale(Locale.getDefault());
     private boolean disabledSchemaValidation = false;
 
     /**
@@ -32,9 +33,9 @@ public final class ValidatorFactory {
         JsonNodeFactory schemaFactory = schemaNodeFactory.get();
         JsonNodeFactory instanceFactory = instanceNodeFactory.get();
         SchemaRegistry schemaRegistry = new SchemaRegistry();
-        MetaSchemaValidator metaSchemaValidator = new MetaSchemaValidator(schemaFactory, schemaRegistry, schemaResolver);
+        MetaSchemaValidator metaSchemaValidator = new MetaSchemaValidator(schemaFactory, schemaRegistry, schemaResolver, messageProvider);
         JsonParser jsonParser = new JsonParser(dialectsCopy, defaultDialect, evaluatorFactory, schemaRegistry, metaSchemaValidator, disabledSchemaValidation);
-        return new Validator(schemaFactory, instanceFactory, schemaResolver, schemaRegistry, jsonParser);
+        return new Validator(schemaFactory, instanceFactory, schemaResolver, messageProvider, schemaRegistry, jsonParser);
     }
 
     /**
@@ -130,6 +131,18 @@ public final class ValidatorFactory {
      */
     public ValidatorFactory withSchemaResolver(SchemaResolver schemaResolver) {
         this.schemaResolver = SchemaResolver.compose(Objects.requireNonNull(schemaResolver), new DefaultSchemaResolver());
+        return this;
+    }
+
+    /**
+     * Sets {@link MessageProvider} to be used for message resolution.
+     * Provided default implementation is an equivalent of {@code MessageProvider.fromLocale(Locale.getDefault())}.
+     *
+     * @param messageProvider {@code MessageProvider} to be used
+     * @return self
+     */
+    public ValidatorFactory withMessageProvider(MessageProvider messageProvider) {
+        this.messageProvider = Objects.requireNonNull(messageProvider);
         return this;
     }
 
