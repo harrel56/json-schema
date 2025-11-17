@@ -142,7 +142,8 @@ public final class FormatEvaluatorFactory implements EvaluatorFactory {
                 operator.validateFormat(value);
                 return Result.success(value);
             } catch (FormatException e) {
-                return Result.formattedFailure("format", value, format, e.getMessage());
+                String details = e.getMessage() == null ? "" : e.getMessage();
+                return Result.formattedFailure("format", value, format, details.length(), details);
             }
         }
 
@@ -226,7 +227,7 @@ public final class FormatEvaluatorFactory implements EvaluatorFactory {
         private static void iriOperator(String value) throws FormatException {
             try {
                 if (!URI.create(value).isAbsolute()) {
-                    throw new FormatException(String.format("\"%s\" is a relative URI", value));
+                    throw new FormatException(String.format("\"%s\" is relative", value));
                 }
             } catch (RuntimeException e) {
                 throw new FormatException(e.getMessage());
