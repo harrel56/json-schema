@@ -11,7 +11,7 @@
             <download-page>https://harrel.dev/json-schema</download-page>
             <download-title>Try online validator</download-title>
             <enable-contribution>true</enable-contribution>
-            <contribute-url>https://github.com/harrel56/json-schema/tree/master/Writerside</contribute-url>
+            <contribute-url>https://github.com/harrel56/json-schema/tree/master/docs</contribute-url>
             <product-web-url>https://github.com/harrel56/json-schema</product-web-url>
         </variables>
         <footer>
