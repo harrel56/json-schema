@@ -25,7 +25,7 @@ jobs:
           gradle-version: wrapper
 
       - name: Run generic tests
-        run: ./gradlew test --no-daemon
+        run: ./gradlew json-schema:test --no-daemon
 
       - name: Upload test execution data
         uses: actions/upload-artifact@v4
@@ -110,7 +110,7 @@ jobs:
       - name: Download test execution data
         uses: actions/download-artifact@v4
         with:
-          path: build/jacoco
+          path: lib/build/jacoco
 
       - name: Get exec data up one level
         run: find lib/build/jacoco -path 'lib/build/jacoco/*/*' -execdir mv -t ../ {} +

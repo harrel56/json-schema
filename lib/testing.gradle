@@ -76,9 +76,3 @@ ext.setupProviderTest = (Map data) -> {
         tasks.check.dependsOn additionalTaskName
     }
 }
-
-/* For GH actions */
-tasks.register('integrationTasksArray') {
-    def taskNames = tasks.findAll { it.group == 'integration' }.name
-    print groovy.json.JsonOutput.toJson(taskNames)
-}
