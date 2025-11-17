@@ -19,19 +19,27 @@ const=...
 Any missing translations will fall back to english ones.
 
 By default, JVM locale is picked (`Locale.getDefault()`). 
-To enable spanish translations you need to change the JVM default locale as follows:
+To enable spanish translations you can change the JVM default locale as follows:
 ```java
 /* Ensure it's called before instantiating ValidatorFactory */
 Locale.setDefault(Locale.of("es", "ES"));
 ```
 
-You can also change locale for each `ValidatorFactory` object:
+You can also change locale explicitly for each `ValidatorFactory` object:
 ```java
-ResourceBundle spanishBundle = ResourceBundle.getBundle("dev.harrel.jsonschema", Locale.of("es", "ES"));
-new ValidatorFactory().withMessageProvider(MessageProvider.fromResourceBundle(spanishBundle));
+MessageProvider messageProvider = MessageProvider.fromLocale(Locale.of("es", "ES"));
+new ValidatorFactory().withMessageProvider(messageProvider);
 ```
 
-> Changing location of resource bundle is also possible if required,
-> but be aware that doing so will lose the default english translations
+If you require more customization you can pass your own instance of `ResourceBundle`.
+This way you can change the location from which the bundles are loaded:
+```java
+ResourceBundle bundle = ResourceBundle.getBundle("your.package.bundles");
+MessageProvider messageProvider = MessageProvider.fromResourceBundle(Locale.getDefault(), bundle);
+new ValidatorFactory().withMessageProvider(messageProvider);
+```
+
+> Be aware that changing resource bundle location will cause the default english translations to not be loaded
 > and you will be required to provide a translation for every keyword
-> as for any missing translations a `MissingResourceException` will be thrown.
+> as for any missing translations a `MissingResourceException` will be thrown. 
+{style="warning"}
