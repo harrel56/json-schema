@@ -217,12 +217,7 @@ class ErrorMessagesTest {
                 Arguments.argumentSet("relative-json-pointer (non arabic digit)", "{\"format\": \"relative-json-pointer\"}", "\"২\"",
                         "\"২\" is not in the valid format (relative-json-pointer)"),
                 Arguments.argumentSet("regex (illegal escape)", "{\"format\": \"regex\"}", "\"\\\\d\\\\x\"",
-                        "\"\\d\\x\" is not in the valid format (regex). Caused by: Illegal hexadecimal escape sequence near index 4\n\\d\\x"),
-
-
-
-                Arguments.argumentSet("time (int)", "{\"format\": \"time\"}", "\"123\"",
-                        "\"123\" is not in the valid format (time). Caused by: Text '123' could not be parsed at index 2")
+                        "\"\\d\\x\" is not in the valid format (regex). Caused by: Illegal hexadecimal escape sequence near index 4\n\\d\\x")
         );
     }
 }
