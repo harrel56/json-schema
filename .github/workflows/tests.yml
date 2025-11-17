@@ -116,6 +116,8 @@ jobs:
 
       - name: Download test execution data
         uses: actions/download-artifact@v4
+        with:
+          path: .
 
       - name: Get exec data up one level
         run: find lib/build/jacoco -path 'lib/build/jacoco/*/*' -execdir mv -t ../ {} +
