@@ -31,7 +31,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: generic-tests-exec
-          path: build/jacoco
+          path: lib/build/jacoco
 
   integration-tasks-list:
     runs-on: ubuntu-latest
@@ -124,8 +124,6 @@ jobs:
 
       - name: Gradle jacoco report
         run: ./gradlew jacocoTestReport --no-daemon
-
-      - run: tree .
 
       - name: Upload report
         uses: actions/upload-artifact@v4
