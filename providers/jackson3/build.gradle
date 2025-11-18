@@ -15,7 +15,7 @@ dependencies {
 
 sonar {
     properties {
-        property 'sonar.coverage.jacoco.xmlReportPaths', "build/reports/jacoco/test/jacocoTestReport.xml"
+        property 'sonar.coverage.jacoco.xmlReportPaths', "providers/$project.name/build/reports/jacoco/test/jacocoTestReport.xml"
         property 'sonar.projectKey', 'harrel56_providers_jackson3'
         property 'sonar.organization', 'harrel56'
         property 'sonar.host.url', 'https://sonarcloud.io'
