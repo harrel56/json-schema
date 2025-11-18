@@ -87,7 +87,6 @@ publishing {
 
 sonar {
     properties {
-        property 'sonar.coverage.jacoco.xmlReportPaths', 'lib/build/reports/jacoco/test/jacocoTestReport.xml'
         property 'sonar.projectKey', 'harrel56_json-schema'
         property 'sonar.organization', 'harrel56'
         property 'sonar.host.url', 'https://sonarcloud.io'
