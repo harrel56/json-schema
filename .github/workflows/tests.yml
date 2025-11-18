@@ -122,10 +122,10 @@ jobs:
       - name: Get artifacts dirs up one level
         run: rsync -av artifacts/*/ .
 
-      - run: tree .
-
       - name: Gradle jacoco report
         run: ./gradlew jacocoTestReport --no-daemon
+
+      - run: tree .
 
       - name: Upload report
         uses: actions/upload-artifact@v4

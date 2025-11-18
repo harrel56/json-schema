@@ -32,7 +32,7 @@ subprojects {
     }
 
     jacocoTestReport {
-        executionData fileTree(project.layout.buildDirectory).include("build/jacoco/*.exec")
+        executionData fileTree(project.layout.buildDirectory).include("jacoco/*.exec")
 
         reports.html.required = false
         reports.csv.required = true
