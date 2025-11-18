@@ -120,7 +120,7 @@ jobs:
           path: artifacts
 
       - name: Get artifacts dirs up one level
-        run: mv artifacts/*/* .
+        run: rsync -av artifacts/*/ .
 
       - run: tree .
 
