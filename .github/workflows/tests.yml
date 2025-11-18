@@ -31,7 +31,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: generic-tests-exec
-          path: lib/build
+          path: |
+            lib/build/jacoco
+            providers/*/build/jacoco
 
   integration-tasks-list:
     runs-on: ubuntu-latest
