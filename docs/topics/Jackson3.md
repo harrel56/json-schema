@@ -1,15 +1,22 @@
-# Jackson
+# Jackson 3.x
 
-## Required dependency
+## Required dependencies
+
+> This adapter code is provided as a standalone artifact.
 
 <tabs group='build-tool'>
 <tab title="Maven" group-key='maven'>
 
 ```xml
 <dependency>
-    <groupId>com.fasterxml.jackson.core</groupId>
+    <groupId>dev.harrel.json.providers</groupId>
+    <artifactId>jackson3</artifactId>
+    <version>%latest_version%</version>
+</dependency>
+<dependency>
+    <groupId>tools.jackson.core</groupId>
     <artifactId>jackson-databind</artifactId>
-    <version>2.19.0</version>
+    <version>3.0.2</version>
 </dependency>
 ```
 
@@ -17,7 +24,8 @@
 <tab title="Gradle" group-key='gradle'>
 
 ```groovy
-implementation 'com.fasterxml.jackson.core:jackson-databind:2.19.0'
+implementation 'dev.harrel.json.providers:jackson3:%latest_version%'
+implementation 'tools.jackson.core:jackson-databind:3.0.2'
 ```
 
 </tab>
@@ -25,12 +33,12 @@ implementation 'com.fasterxml.jackson.core:jackson-databind:2.19.0'
 
 The newest version is always supported.
 
-> The oldest supported version is `2.2.0` (inclusive).
+> The oldest supported version is `3.0.0` (inclusive).
 {style="warning"}
 
 Adapter classes are:
- - [JacksonNode](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/JacksonNode.html),
- - [JacksonNode.Factory](https://javadoc.io/doc/dev.harrel/json-schema/latest/dev/harrel/jsonschema/providers/JacksonNode.Factory.html).
+ - [Jackson3Node](https://javadoc.io/doc/dev.harrel.json.providers/jackson3/latest/dev/harrel/json/providers/jackson3/Jackson3Node.html),
+ - [Jackson3Node.Factory](https://javadoc.io/doc/dev.harrel.json.providers/jackson3/latest/dev/harrel/json/providers/jackson3/Jackson3Node.Factory.html).
 
 ## Provider node
 
@@ -39,17 +47,15 @@ which is called a "provider node."
 It is possible to interact with the API using provider nodes directly,
 but there is no type information at compile time, so please ensure that you are using the correct class.
 
-> Jackson's provider node is `com.fasterxml.jackson.databind.JsonNode` class.
+> Jackson's (3.x) provider node is `tools.jackson.databind.JsonNode` class.
 {style="note"}
 
 ## Usage
 
 ### Creating Validator instance
 
-The default factory is `JacksonNode.Factory`, so setting it explicitly is not required.
-
 ```java
-JsonNodeFactory factory = new JacksonNode.Factory();
+JsonNodeFactory factory = new Jackson3Node.Factory();
 Validator validator = new ValidatorFactory()
         .withJsonNodeFactory(factory)
         .createValidator();
@@ -63,7 +69,7 @@ Validator validator = new ValidatorFactory()
 
 ```java
 ObjectMapper objectMapper = new ObjectMapper();
-JsonNodeFactory factory = new JacksonNode.Factory(objectMapper);
+JsonNodeFactory factory = new Jackson3Node.Factory(objectMapper);
 Validator validator = new ValidatorFactory()
         .withJsonNodeFactory(factory)
         .createValidator();
@@ -72,23 +78,23 @@ Validator validator = new ValidatorFactory()
 ### Converting String to JsonNode
 
 ```java
-JsonNodeFactory factory = new JacksonNode.Factory();
+JsonNodeFactory factory = new Jackson3Node.Factory();
 JsonNode jsonNode = factory.create("{}");
 ```
 
 ### Converting provider node to JsonNode
 
 ```java
-com.fasterxml.jackson.databind.JsonNode providerNode = new ObjectMapper().readTree("{}");
-JsonNodeFactory factory = new JacksonNode.Factory();
+tools.jackson.databind.JsonNode providerNode = new ObjectMapper().readTree("{}");
+JsonNodeFactory factory = new Jackson3Node.Factory();
 JsonNode jsonNode = factory.wrap(providerNode);
 ```
 ### Using Validator with provider nodes
 
 ```java
-com.fasterxml.jackson.databind.JsonNode providerSchemaNode = new ObjectMapper().readTree("{}");
+tools.jackson.databind.JsonNode providerSchemaNode = new ObjectMapper().readTree("{}");
 URI schemaUri = validator.registerSchema(providerSchemaNode);
 
-com.fasterxml.jackson.databind.JsonNode providerInstanceNode = new ObjectMapper().readTree("true");
+tools.jackson.databind.JsonNode providerInstanceNode = new ObjectMapper().readTree("true");
 Validator.Result result = validator.validate(schemaUri, providerInstanceNode);
 ```

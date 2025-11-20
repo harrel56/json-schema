@@ -21,7 +21,7 @@ Java library implementing [JSON schema specification](https://json-schema.org/sp
 - support for [custom keywords](https://harrel56.github.io/json-schema/evaluators.html),
 - support for annotation collection,
 - support for [format validation](https://harrel56.github.io/json-schema/format-validation.html) (for a price of one additional dependency 😉),
-- compatible with most of the JSON/YAML libraries ([supported libraries](https://harrel56.github.io/json-schema/json-yaml-providers.html)),
+- compatible with most of the JSON/YAML libraries ([supported libraries](https://harrel56.github.io/json-schema/json-yaml-providers.html) - Jackson 3.x available now too!),
 - and no additional dependencies on top of that.
 
 Check how it compares with other implementations:
