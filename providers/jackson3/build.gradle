@@ -15,6 +15,7 @@ dependencies {
 
 sonar {
     properties {
+        property 'sonar.projectName', "$project.name (JSON provider)"
         property 'sonar.projectKey', "harrel56_providers_$project.name"
         property 'sonar.organization', 'harrel56'
         property 'sonar.host.url', 'https://sonarcloud.io'
