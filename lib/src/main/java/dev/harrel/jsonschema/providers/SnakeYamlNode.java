@@ -41,7 +41,7 @@ public final class SnakeYamlNode extends AbstractJsonNode<Node> {
     @Override
     protected Map<String, JsonNode> createObject() {
         List<NodeTuple> objectNode = ((MappingNode) node).getValue();
-        Map<String, JsonNode> map = MapUtil.newHashMap(objectNode.size());
+        Map<String, JsonNode> map = newHashMap(objectNode.size());
         for (NodeTuple entry : objectNode) {
             String key = ((ScalarNode) entry.getKeyNode()).getValue();
             map.put(key, new SnakeYamlNode(entry.getValueNode(), jsonPointer + "/" + JsonNode.encodeJsonPointer(key)));

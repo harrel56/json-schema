@@ -1,7 +1,10 @@
-package dev.harrel.jsonschema;
+package dev.harrel.json.providers.jackson3;
 
+import dev.harrel.jsonschema.JsonNodeFactory;
+import dev.harrel.jsonschema.ProviderTestBundle;
+import dev.harrel.jsonschema.SimpleType;
+import dev.harrel.jsonschema.ValidatorFactory;
 import dev.harrel.jsonschema.providers.GsonNode;
-import dev.harrel.jsonschema.providers.Jackson3Node;
 import dev.harrel.jsonschema.util.JsonNodeMock;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Test;

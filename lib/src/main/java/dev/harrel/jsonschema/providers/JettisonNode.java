@@ -33,7 +33,7 @@ public final class JettisonNode extends SimpleJsonNode {
     @SuppressWarnings("unchecked")
     protected Map<String, JsonNode> createObject() {
         JSONObject jsonObject = (JSONObject) node;
-        Map<String, JsonNode> map = MapUtil.newHashMap(jsonObject.length());
+        Map<String, JsonNode> map = newHashMap(jsonObject.length());
         for (Object object : jsonObject.toMap().entrySet()) {
             Map.Entry<Object, Object> entry = (Map.Entry<Object, Object>) object;
             map.put(entry.getKey().toString(), new JettisonNode(entry.getValue(), jsonPointer + "/" + JsonNode.encodeJsonPointer(entry.getKey().toString())));

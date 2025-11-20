@@ -5,6 +5,7 @@ import dev.harrel.jsonschema.SimpleType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -126,5 +127,9 @@ public abstract class AbstractJsonNode<T> implements JsonNode {
 
     protected static boolean canConvertToInteger(BigDecimal bigDecimal) {
         return bigDecimal.scale() <= 0 || bigDecimal.stripTrailingZeros().scale() <= 0;
+    }
+
+    protected static <K, V> HashMap<K, V> newHashMap(int realCapacity) {
+        return new HashMap<>((int) Math.ceil(realCapacity / 0.75));
     }
 }

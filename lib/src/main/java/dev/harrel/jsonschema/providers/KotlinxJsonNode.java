@@ -31,7 +31,7 @@ public final class KotlinxJsonNode extends AbstractJsonNode<JsonElement> {
     @Override
     protected Map<String, JsonNode> createObject() {
         JsonObject object = (JsonObject) node;
-        Map<String, JsonNode> result = MapUtil.newHashMap(object.size());
+        Map<String, JsonNode> result = newHashMap(object.size());
         for (Map.Entry<String, JsonElement> entry : object.getEntries()) {
             result.put(entry.getKey(), new KotlinxJsonNode(entry.getValue(), this.jsonPointer + "/" + JsonNode.encodeJsonPointer(entry.getKey())));
         }

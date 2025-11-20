@@ -1,4 +1,4 @@
-package dev.harrel.jsonschema.providers;
+package dev.harrel.json.providers.jackson3;
 
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.JsonNodeFactory;
@@ -31,7 +31,7 @@ public final class Jackson3Node extends AbstractJsonNode<tools.jackson.databind.
 
     @Override
     protected Map<String, JsonNode> createObject() {
-        Map<String, JsonNode> map = MapUtil.newHashMap(node.size());
+        Map<String, JsonNode> map = newHashMap(node.size());
         for (Map.Entry<String, tools.jackson.databind.JsonNode> entry : node.properties()) {
             map.put(entry.getKey(), new Jackson3Node(entry.getValue(), jsonPointer + "/" + JsonNode.encodeJsonPointer(entry.getKey())));
         }

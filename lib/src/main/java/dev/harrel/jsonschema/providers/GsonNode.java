@@ -35,7 +35,7 @@ public final class GsonNode extends AbstractJsonNode<JsonElement> {
     @Override
     protected Map<String, JsonNode> createObject() {
         Set<Map.Entry<String, JsonElement>> objectMap = node.getAsJsonObject().entrySet();
-        Map<String, JsonNode> result = MapUtil.newHashMap(objectMap.size());
+        Map<String, JsonNode> result = newHashMap(objectMap.size());
         for (Map.Entry<String, JsonElement> entry : objectMap) {
             result.put(entry.getKey(), new GsonNode(entry.getValue(), this.jsonPointer + "/" + JsonNode.encodeJsonPointer(entry.getKey())));
         }
