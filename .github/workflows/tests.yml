@@ -25,13 +25,15 @@ jobs:
           gradle-version: wrapper
 
       - name: Run generic tests
-        run: ./gradlew test --no-daemon
+        run: ./gradlew json-schema:test --no-daemon
 
       - name: Upload test execution data
         uses: actions/upload-artifact@v4
         with:
           name: generic-tests-exec
-          path: build/jacoco
+          path: |
+            lib/build/jacoco
+            providers/*/build/jacoco
 
   integration-tasks-list:
     runs-on: ubuntu-latest
@@ -81,11 +83,20 @@ jobs:
       - name: Gradle integration tests
         run: ./gradlew ${{ matrix.integration-task }} --no-daemon
 
+      - name: Sanitize name (replace colons)
+        id: sanitize
+        run: |
+          sanitizedName="${{ matrix.integration-task }}"
+          sanitizedName="${sanitizedName//:/_}"
+          echo "sanitizedName=$sanitizedName" >> "$GITHUB_OUTPUT"
+
       - name: Upload test execution data
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.integration-task }}-tests-exec
-          path: build/jacoco
+          name: ${{ steps.sanitize.outputs.sanitizedName }}-tests-exec
+          path: |
+            lib/build/jacoco
+            providers/*/build/jacoco
 
   report:
     needs: [generic-tests, integration-tasks-execution]
@@ -108,10 +119,10 @@ jobs:
       - name: Download test execution data
         uses: actions/download-artifact@v4
         with:
-          path: build/jacoco
+          path: artifacts
 
-      - name: Get exec data up one level
-        run: find build/jacoco -path 'build/jacoco/*/*' -execdir mv -t ../ {} +
+      - name: Get artifacts dirs up one level
+        run: rsync -av artifacts/*/ .
 
       - name: Gradle jacoco report
         run: ./gradlew jacocoTestReport --no-daemon
@@ -121,8 +132,13 @@ jobs:
         with:
           name: report-output
           path: |
-            build/classes
-            build/generated
-            build/jacoco
-            build/reports
-            build/test-results
+            lib/build/classes
+            lib/build/generated
+            lib/build/jacoco
+            lib/build/reports
+            lib/build/test-results
+            providers/*/build/classes
+            providers/*/build/generated
+            providers/*/build/jacoco
+            providers/*/build/reports
+            providers/*/build/test-results

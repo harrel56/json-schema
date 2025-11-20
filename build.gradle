@@ -1,96 +1,120 @@
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
-    id 'java'
-    id 'maven-publish'
-    id 'signing'
-    id 'jacoco'
-    id 'org.sonarqube' version '7.0.1.6134'
+    id 'org.sonarqube' version '7.0.1.6134' apply false
 }
 
-apply from: 'setup/publishing.gradle'
-apply from: 'setup/reporting.gradle'
-apply from: 'setup/testing.gradle'
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
+    apply plugin: 'jacoco'
+    apply plugin: 'org.sonarqube'
 
-group 'dev.harrel'
-version '1.8.2'
+    group 'dev.harrel'
+    version '1.8.2'
 
-compileJava {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
-    options.compilerArgs.addAll(['--release', '8'])
-}
-
-java {
-    sourceCompatibility JavaVersion.VERSION_21
-    targetCompatibility JavaVersion.VERSION_21
-    withSourcesJar()
-    withJavadocJar()
-    javadoc.options.addStringOption('Xdoclint:none', '-quiet')
-
-    registerFeature('format') {
-        usingSourceSet(sourceSets.main)
+    repositories {
+        mavenCentral()
     }
-}
 
-repositories {
-    mavenCentral()
-}
-
-def jsonProviders = [
-        [id   : 'jackson', additionalVersions: ['2.2.0'],
-         group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.20.1'],
-        [id   : 'gson', additionalVersions: ['2.3'],
-         group: 'com.google.code.gson', name: 'gson', version: '2.13.2'],
-        [id   : 'orgJson', additionalVersions: ['20201115'],
-         group: 'org.json', name: 'json', version: '20250517'],
-        [id   : 'kotlinxJson', additionalVersions: ['1.0.0'],
-         group: 'org.jetbrains.kotlinx', name: 'kotlinx-serialization-json', version: '1.9.0'],
-        [id   : 'jakartaJson', additionalVersions: [],
-         group: 'jakarta.json', name: 'jakarta.json-api', version: '2.1.3'],
-        [id   : 'jettison', additionalVersions: ['1.5.0'],
-         group: 'org.codehaus.jettison', name: 'jettison', version: '1.5.4'],
-        [id   : 'jsonSmart', additionalVersions: ['1.1'],
-         group: 'net.minidev', name: 'json-smart', version: '2.6.0'],
-        [id   : 'snakeYaml', additionalVersions: ['1.26', '2.0'],
-         group: 'org.yaml', name: 'snakeyaml', version: '2.5'],
-]
-
-setupJava8Test(jsonProviders[0])
-jsonProviders.forEach {
-    java.registerFeature(it.id, {
-        usingSourceSet(sourceSets.main)
-    })
-    dependencies.add("${it.id}Implementation", [group: it.group, name: it.name, version: it.version])
-    setupProviderTest(it)
-}
-
-dependencies {
-    formatImplementation 'com.sanctionco.jmail:jmail:2.1.0'
-
-    jakartaJsonTestImplementation 'org.eclipse.parsson:parsson:1.1.7'
-    testImplementation 'org.junit.platform:junit-platform-launcher:1.14.1'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.14.1'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.14.1'
-    testImplementation 'org.assertj:assertj-core:3.27.6'
-    testImplementation 'org.mockito:mockito-core:5.20.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.14.1'
-    testRuntimeOnly 'org.eclipse.parsson:parsson:1.1.7'
-}
-
-test {
-    useJUnitPlatform()
-    jvmArgs("-XX:+EnableDynamicAgentLoading")
-}
-
-tasks.withType(Test).configureEach {
-    testLogging {
-        events TestLogEvent.SKIPPED, TestLogEvent.FAILED, TestLogEvent.STANDARD_OUT, TestLogEvent.STANDARD_ERROR
-        exceptionFormat 'full'
+    java {
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
+        withSourcesJar()
+        withJavadocJar()
+        javadoc.options.addStringOption('Xdoclint:none', '-quiet')
     }
-    afterSuite { desc, result ->
-        if (!desc.parent) {
-            println("${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)")
+
+    test {
+        useJUnitPlatform()
+        jvmArgs("-XX:+EnableDynamicAgentLoading")
+    }
+
+    jacocoTestReport {
+        executionData fileTree(project.layout.buildDirectory).include("jacoco/*.exec")
+
+        reports.html.required = false
+        reports.csv.required = true
+        reports.xml.required = true
+    }
+
+    publishing {
+        repositories {
+            maven {
+                name = 'reposilite'
+                url = findProperty('reposiliteSnapshots')
+                credentials {
+                    username = findProperty('reposiliteUsername')
+                    password = findProperty('reposilitePassword')
+                }
+            }
+            maven {
+                name = 'sonatype'
+                url = findProperty('sonatypeRepo')
+                credentials {
+                    username = findProperty('sonatypeUsername')
+                    password = findProperty('sonatypePassword')
+                }
+            }
+        }
+        publications {
+            sonatype(MavenPublication) {
+                from components.java
+                pom {
+                    url = 'https://github.com/harrel56/json-schema'
+                    licenses {
+                        license {
+                            name = 'MIT'
+                            url = 'https://github.com/harrel56/json-schema/blob/master/LICENSE'
+                            distribution = 'repo'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'harrel56'
+                            name = 'Harrel'
+                            url = 'https://harrel.dev'
+                        }
+                    }
+                    scm {
+                        url = 'https://github.com/harrel56/json-schema'
+                        connection = 'scm:git:git://github.com/harrel56/json-schema.git'
+                        developerConnection = 'scm:git:git://github.com/harrel56/json-schema.git'
+                    }
+                    issueManagement {
+                        system = 'GitHub'
+                        url = 'https://github.com/harrel56/json-schema/issues'
+                    }
+                }
+            }
         }
     }
+
+    signing {
+        if (findProperty('signingKey') != null) {
+            def decodedKey = new String(findProperty('signingKey').decodeBase64())
+            useInMemoryPgpKeys(decodedKey, findProperty('signingPassword'))
+        }
+        sign publishing.publications.sonatype
+    }
+
+    tasks.withType(Test).configureEach {
+        testLogging {
+            events TestLogEvent.SKIPPED, TestLogEvent.FAILED, TestLogEvent.STANDARD_OUT, TestLogEvent.STANDARD_ERROR
+            exceptionFormat 'full'
+        }
+        afterSuite { desc, result ->
+            if (!desc.parent) {
+                println("${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)")
+            }
+        }
+    }
+}
+
+/* For GH actions */
+tasks.register('integrationTasksArray') {
+    def taskNames = project('json-schema').tasks.findAll { it.group == 'integration' }.name
+    def submoduleTests = subprojects.findAll { it.name != 'json-schema' }.collect { "${it.name}:test" }
+    print groovy.json.JsonOutput.toJson(submoduleTests + taskNames)
 }

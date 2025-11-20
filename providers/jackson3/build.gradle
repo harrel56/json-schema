@@ -1,0 +1,32 @@
+group 'dev.harrel.json.providers'
+
+compileJava {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+    options.compilerArgs.addAll(['--release', '17'])
+}
+
+dependencies {
+    implementation project(':json-schema')
+    implementation 'tools.jackson.core:jackson-databind:3.0.2'
+
+    testImplementation testFixtures(project(':json-schema'))
+}
+
+sonar {
+    properties {
+        property 'sonar.projectKey', "harrel56_providers_$project.name"
+        property 'sonar.organization', 'harrel56'
+        property 'sonar.host.url', 'https://sonarcloud.io'
+
+        property 'sonar.java.source', '17'
+        property 'sonar.java.target', '17'
+    }
+}
+
+publishing {
+    publications.withType(MavenPublication).configureEach {
+        pom.name = 'Jackson 3.x JSON provider'
+        pom.description = 'A JSON provider for new Jackson versions (3.x)'
+    }
+}

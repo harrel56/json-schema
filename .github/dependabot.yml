@@ -1,7 +1,10 @@
 version: 2
 updates:
   - package-ecosystem: gradle
-    directory: /
+    directories:
+      - /
+      - lib
+      - providers/*
     schedule:
       interval: weekly
     ignore:

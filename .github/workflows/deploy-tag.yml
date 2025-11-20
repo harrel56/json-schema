@@ -34,8 +34,10 @@ jobs:
         with:
           name: build-output
           path: |
-            build/libs
-            build/reports
+            lib/build/libs
+            lib/build/reports
+            providers/*/build/libs
+            providers/*/build/reports
 
       - name: Gradle publish to Reposilite
         run: >
