@@ -3,6 +3,7 @@ package dev.harrel.jsonschema.providers;
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
+import dev.harrel.jsonschema.internal.AbstractJsonNode;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
@@ -28,7 +29,7 @@ public final class SnakeYamlNode extends AbstractJsonNode<Node> {
     }
 
     @Override
-    List<JsonNode> createArray() {
+    protected List<JsonNode> createArray() {
         List<Node> arrayNode = ((SequenceNode) node).getValue();
         List<JsonNode> elements = new ArrayList<>(arrayNode.size());
         for (int i = 0; i < arrayNode.size(); i++) {
@@ -38,7 +39,7 @@ public final class SnakeYamlNode extends AbstractJsonNode<Node> {
     }
 
     @Override
-    Map<String, JsonNode> createObject() {
+    protected Map<String, JsonNode> createObject() {
         List<NodeTuple> objectNode = ((MappingNode) node).getValue();
         Map<String, JsonNode> map = MapUtil.newHashMap(objectNode.size());
         for (NodeTuple entry : objectNode) {
@@ -49,7 +50,7 @@ public final class SnakeYamlNode extends AbstractJsonNode<Node> {
     }
 
     @Override
-    SimpleType computeNodeType(Node node) {
+    protected SimpleType computeNodeType(Node node) {
         if (node instanceof SequenceNode) {
             return SimpleType.ARRAY;
         } else if (node instanceof MappingNode) {

@@ -3,6 +3,7 @@ package dev.harrel.jsonschema.providers;
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
+import dev.harrel.jsonschema.internal.AbstractJsonNode;
 import jakarta.json.*;
 import jakarta.json.stream.JsonParser;
 import jakarta.json.stream.JsonParserFactory;
@@ -21,7 +22,7 @@ public final class JakartaJsonNode extends AbstractJsonNode<JsonValue> {
     }
 
     @Override
-    List<JsonNode> createArray() {
+    protected List<JsonNode> createArray() {
         JsonArray jsonArray = node.asJsonArray();
         List<JsonNode> result = new ArrayList<>(jsonArray.size());
         for (int i = 0; i < jsonArray.size(); i++) {
@@ -31,7 +32,7 @@ public final class JakartaJsonNode extends AbstractJsonNode<JsonValue> {
     }
 
     @Override
-    Map<String, JsonNode> createObject() {
+    protected Map<String, JsonNode> createObject() {
         Set<Map.Entry<String, JsonValue>> objectMap = node.asJsonObject().entrySet();
         Map<String, JsonNode> result = MapUtil.newHashMap(objectMap.size());
         for (Map.Entry<String, JsonValue> entry : objectMap) {
@@ -41,7 +42,7 @@ public final class JakartaJsonNode extends AbstractJsonNode<JsonValue> {
     }
 
     @Override
-    SimpleType computeNodeType(JsonValue node) {
+    protected SimpleType computeNodeType(JsonValue node) {
         switch (node.getValueType()) {
             case NULL:
                 return SimpleType.NULL;

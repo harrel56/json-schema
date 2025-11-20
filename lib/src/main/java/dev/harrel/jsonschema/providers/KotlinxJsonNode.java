@@ -3,6 +3,7 @@ package dev.harrel.jsonschema.providers;
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
+import dev.harrel.jsonschema.internal.AbstractJsonNode;
 import kotlinx.serialization.json.*;
 
 import java.math.BigDecimal;
@@ -18,7 +19,7 @@ public final class KotlinxJsonNode extends AbstractJsonNode<JsonElement> {
     }
 
     @Override
-    List<JsonNode> createArray() {
+    protected List<JsonNode> createArray() {
         JsonArray array = (JsonArray) node;
         List<JsonNode> result = new ArrayList<>(array.size());
         for (int i = 0; i < array.size(); i++) {
@@ -28,7 +29,7 @@ public final class KotlinxJsonNode extends AbstractJsonNode<JsonElement> {
     }
 
     @Override
-    Map<String, JsonNode> createObject() {
+    protected Map<String, JsonNode> createObject() {
         JsonObject object = (JsonObject) node;
         Map<String, JsonNode> result = MapUtil.newHashMap(object.size());
         for (Map.Entry<String, JsonElement> entry : object.getEntries()) {
@@ -38,7 +39,7 @@ public final class KotlinxJsonNode extends AbstractJsonNode<JsonElement> {
     }
 
     @Override
-    SimpleType computeNodeType(JsonElement node) {
+    protected SimpleType computeNodeType(JsonElement node) {
         if (node instanceof JsonNull) {
             return SimpleType.NULL;
         } else if (node instanceof JsonObject) {

@@ -1,6 +1,7 @@
 package dev.harrel.jsonschema.providers;
 
 import dev.harrel.jsonschema.SimpleType;
+import dev.harrel.jsonschema.internal.AbstractJsonNode;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -17,7 +18,7 @@ abstract class SimpleJsonNode extends AbstractJsonNode<Object> {
     abstract boolean isObject(Object node);
 
     @Override
-    SimpleType computeNodeType(Object node) {
+    protected SimpleType computeNodeType(Object node) {
         if (isNull(node)) {
             return SimpleType.NULL;
         } else if (isBoolean(node)) {

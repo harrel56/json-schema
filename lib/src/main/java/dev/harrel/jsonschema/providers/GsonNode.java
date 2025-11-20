@@ -7,6 +7,7 @@ import com.google.gson.JsonPrimitive;
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
+import dev.harrel.jsonschema.internal.AbstractJsonNode;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -21,7 +22,7 @@ public final class GsonNode extends AbstractJsonNode<JsonElement> {
     }
 
     @Override
-    List<JsonNode> createArray() {
+    protected List<JsonNode> createArray() {
         JsonArray array = node.getAsJsonArray();
         List<JsonNode> result = new ArrayList<>(array.size());
         int i = 0;
@@ -32,7 +33,7 @@ public final class GsonNode extends AbstractJsonNode<JsonElement> {
     }
 
     @Override
-    Map<String, JsonNode> createObject() {
+    protected Map<String, JsonNode> createObject() {
         Set<Map.Entry<String, JsonElement>> objectMap = node.getAsJsonObject().entrySet();
         Map<String, JsonNode> result = MapUtil.newHashMap(objectMap.size());
         for (Map.Entry<String, JsonElement> entry : objectMap) {
@@ -42,7 +43,7 @@ public final class GsonNode extends AbstractJsonNode<JsonElement> {
     }
 
     @Override
-    SimpleType computeNodeType(JsonElement node) {
+    protected SimpleType computeNodeType(JsonElement node) {
         if (node.isJsonNull()) {
             return SimpleType.NULL;
         } else if (node.isJsonArray()) {

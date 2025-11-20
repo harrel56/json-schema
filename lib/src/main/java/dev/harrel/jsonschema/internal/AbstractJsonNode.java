@@ -1,4 +1,4 @@
-package dev.harrel.jsonschema.providers;
+package dev.harrel.jsonschema.internal;
 
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.SimpleType;
@@ -11,14 +11,18 @@ import java.util.Objects;
 
 import static java.util.Collections.*;
 
-abstract class AbstractJsonNode<T> implements JsonNode {
+/**
+ * Internal base class for all JSON provider implementations.
+ * Not part of the contract and not intend for external use.
+ */
+public abstract class AbstractJsonNode<T> implements JsonNode {
     private final SimpleType nodeType;
-    final T node;
-    final String jsonPointer;
-    Object rawNode;
-    BigInteger rawBigInt;
+    protected final T node;
+    protected final String jsonPointer;
+    protected Object rawNode;
+    protected BigInteger rawBigInt;
 
-    AbstractJsonNode(T node, String jsonPointer) {
+    protected AbstractJsonNode(T node, String jsonPointer) {
         this.nodeType = computeNodeType(node);
         this.node = node;
         this.jsonPointer = Objects.requireNonNull(jsonPointer);
@@ -116,11 +120,11 @@ abstract class AbstractJsonNode<T> implements JsonNode {
         }
     }
 
-    abstract List<JsonNode> createArray();
-    abstract Map<String, JsonNode> createObject();
-    abstract SimpleType computeNodeType(T node);
+    protected abstract List<JsonNode> createArray();
+    protected abstract Map<String, JsonNode> createObject();
+    protected abstract SimpleType computeNodeType(T node);
 
-    static boolean canConvertToInteger(BigDecimal bigDecimal) {
+    protected static boolean canConvertToInteger(BigDecimal bigDecimal) {
         return bigDecimal.scale() <= 0 || bigDecimal.stripTrailingZeros().scale() <= 0;
     }
 }

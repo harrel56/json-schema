@@ -19,7 +19,7 @@ public final class OrgJsonNode extends SimpleJsonNode {
     }
 
     @Override
-    List<JsonNode> createArray() {
+    protected List<JsonNode> createArray() {
         JSONArray jsonArray = (JSONArray) node;
         List<JsonNode> elements = new ArrayList<>(jsonArray.length());
         for (Object o : jsonArray) {
@@ -29,7 +29,7 @@ public final class OrgJsonNode extends SimpleJsonNode {
     }
 
     @Override
-    Map<String, JsonNode> createObject() {
+    protected Map<String, JsonNode> createObject() {
         JSONObject jsonObject = (JSONObject) node;
         Map<String, JsonNode> map = MapUtil.newHashMap(jsonObject.length());
         for (String key : jsonObject.keySet()) {

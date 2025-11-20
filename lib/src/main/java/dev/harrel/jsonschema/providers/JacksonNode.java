@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
+import dev.harrel.jsonschema.internal.AbstractJsonNode;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -20,7 +21,7 @@ public final class JacksonNode extends AbstractJsonNode<com.fasterxml.jackson.da
     }
 
     @Override
-    List<JsonNode> createArray() {
+    protected List<JsonNode> createArray() {
         List<JsonNode> elements = new ArrayList<>(node.size());
         for (Iterator<com.fasterxml.jackson.databind.JsonNode> iterator = node.elements(); iterator.hasNext(); ) {
             elements.add(new JacksonNode(iterator.next(), jsonPointer + "/" + elements.size()));
@@ -29,7 +30,7 @@ public final class JacksonNode extends AbstractJsonNode<com.fasterxml.jackson.da
     }
 
     @Override
-    Map<String, JsonNode> createObject() {
+    protected Map<String, JsonNode> createObject() {
         Map<String, JsonNode> map = MapUtil.newHashMap(node.size());
         for (Iterator<Map.Entry<String, com.fasterxml.jackson.databind.JsonNode>> iterator = node.fields(); iterator.hasNext(); ) {
             Map.Entry<String, com.fasterxml.jackson.databind.JsonNode> entry = iterator.next();
@@ -39,7 +40,7 @@ public final class JacksonNode extends AbstractJsonNode<com.fasterxml.jackson.da
     }
 
     @Override
-    SimpleType computeNodeType(com.fasterxml.jackson.databind.JsonNode node) {
+    protected SimpleType computeNodeType(com.fasterxml.jackson.databind.JsonNode node) {
         switch (node.getNodeType()) {
             case NULL:
                 return SimpleType.NULL;

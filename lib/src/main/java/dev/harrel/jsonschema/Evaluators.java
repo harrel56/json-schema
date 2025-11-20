@@ -6,7 +6,7 @@ import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static dev.harrel.jsonschema.providers.InternalProviderUtil.canUseNativeEquals;
+import static dev.harrel.jsonschema.internal.InternalProviderUtil.canUseNativeEquals;
 import static java.util.Collections.*;
 
 class TypeEvaluator implements Evaluator {

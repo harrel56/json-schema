@@ -3,6 +3,7 @@ package dev.harrel.jsonschema.providers;
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
+import dev.harrel.jsonschema.internal.AbstractJsonNode;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
@@ -20,7 +21,7 @@ public final class Jackson3Node extends AbstractJsonNode<tools.jackson.databind.
     }
 
     @Override
-    List<JsonNode> createArray() {
+    protected List<JsonNode> createArray() {
         List<JsonNode> elements = new ArrayList<>(node.size());
         for (tools.jackson.databind.JsonNode jsonNode : node.values()) {
             elements.add(new Jackson3Node(jsonNode, jsonPointer + "/" + elements.size()));
@@ -29,7 +30,7 @@ public final class Jackson3Node extends AbstractJsonNode<tools.jackson.databind.
     }
 
     @Override
-    Map<String, JsonNode> createObject() {
+    protected Map<String, JsonNode> createObject() {
         Map<String, JsonNode> map = MapUtil.newHashMap(node.size());
         for (Map.Entry<String, tools.jackson.databind.JsonNode> entry : node.properties()) {
             map.put(entry.getKey(), new Jackson3Node(entry.getValue(), jsonPointer + "/" + JsonNode.encodeJsonPointer(entry.getKey())));
@@ -38,7 +39,7 @@ public final class Jackson3Node extends AbstractJsonNode<tools.jackson.databind.
     }
 
     @Override
-    SimpleType computeNodeType(tools.jackson.databind.JsonNode node) {
+    protected SimpleType computeNodeType(tools.jackson.databind.JsonNode node) {
         switch (node.getNodeType()) {
             case NULL:
                 return SimpleType.NULL;

@@ -20,7 +20,7 @@ public final class JettisonNode extends SimpleJsonNode {
     }
 
     @Override
-    List<JsonNode> createArray() {
+    protected List<JsonNode> createArray() {
         JSONArray arrayNode = (JSONArray) node;
         List<JsonNode> elements = new ArrayList<>(arrayNode.length());
         for (int i = 0; i < arrayNode.length(); ++i) {
@@ -31,7 +31,7 @@ public final class JettisonNode extends SimpleJsonNode {
 
     @Override
     @SuppressWarnings("unchecked")
-    Map<String, JsonNode> createObject() {
+    protected Map<String, JsonNode> createObject() {
         JSONObject jsonObject = (JSONObject) node;
         Map<String, JsonNode> map = MapUtil.newHashMap(jsonObject.length());
         for (Object object : jsonObject.toMap().entrySet()) {

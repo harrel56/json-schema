@@ -1,4 +1,4 @@
-package dev.harrel.jsonschema.providers;
+package dev.harrel.jsonschema.internal;
 
 import dev.harrel.jsonschema.JsonNode;
 
