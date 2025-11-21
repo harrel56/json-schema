@@ -19,7 +19,8 @@ Java library implementing [JSON schema specification](https://json-schema.org/sp
   - Draft 06 [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie.report%2Fbadges%2Fjava-dev.harrel.json-schema%2Fcompliance%2Fdraft6.json&color=brightgreen)](https://bowtie.report/#/dialects/draft6),
   - Draft 04 [![Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fbowtie.report%2Fbadges%2Fjava-dev.harrel.json-schema%2Fcompliance%2Fdraft4.json&color=brightgreen)](https://bowtie.report/#/dialects/draft4),
 - support for [custom keywords](https://harrel56.github.io/json-schema/evaluators.html),
-- support for annotation collection,
+- support for [internationalization](https://harrel56.github.io/json-schema/internationalization.html) of error messages,
+- support for [annotation collection](https://harrel56.github.io/json-schema/annotations.html),
 - support for [format validation](https://harrel56.github.io/json-schema/format-validation.html) (for a price of one additional dependency 😉),
 - compatible with most of the JSON/YAML libraries ([supported libraries](https://harrel56.github.io/json-schema/json-yaml-providers.html) - Jackson 3.x available now too!),
 - and no additional dependencies on top of that.
