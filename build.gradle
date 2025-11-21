@@ -5,7 +5,7 @@ plugins {
 }
 
 subprojects {
-    apply plugin: 'java'
+    apply plugin: 'java-library'
     apply plugin: 'maven-publish'
     apply plugin: 'signing'
     apply plugin: 'jacoco'
@@ -91,13 +91,13 @@ subprojects {
         }
     }
 
-    signing {
-        if (findProperty('signingKey') != null) {
-            def decodedKey = new String(findProperty('signingKey').decodeBase64())
-            useInMemoryPgpKeys(decodedKey, findProperty('signingPassword'))
-        }
-        sign publishing.publications.sonatype
-    }
+//    signing {
+//        if (findProperty('signingKey') != null) {
+//            def decodedKey = new String(findProperty('signingKey').decodeBase64())
+//            useInMemoryPgpKeys(decodedKey, findProperty('signingPassword'))
+//        }
+//        sign publishing.publications.sonatype
+//    }
 
     tasks.withType(Test).configureEach {
         testLogging {

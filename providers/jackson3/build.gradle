@@ -7,7 +7,7 @@ compileJava {
 }
 
 dependencies {
-    implementation project(':json-schema')
+    api project(':json-schema')
     implementation 'tools.jackson.core:jackson-databind:3.0.2'
 
     testImplementation testFixtures(project(':json-schema'))
