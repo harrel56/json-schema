@@ -74,3 +74,12 @@
     - description: single dot
       data: .
       valid: false
+    - description: leading dot
+      data: .example
+      valid: false
+    - description: trailing dot
+      data: example.
+      valid: false
+    - description: IDN label separator
+      data: example．com
+      valid: false
