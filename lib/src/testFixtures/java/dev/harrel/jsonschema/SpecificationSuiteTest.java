@@ -270,6 +270,36 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
                                 "an invalid IRI based on IPv6"
                         )
                 ),
+                "hostname", Map.of(
+                        "validation of host names", Set.of(
+                                "contains \"--\" in the 3rd and 4th position",
+                                "exceeds maximum overall length (256)"
+                        ),
+                        "validation of A-label (punycode) host names", Set.of(
+                                "invalid Punycode",
+                                "contains illegal char U+302E Hangul single dot tone mark",
+                                "Begins with a Spacing Combining Mark",
+                                "Begins with a Nonspacing Mark",
+                                "Begins with an Enclosing Mark",
+                                "Exceptions that are DISALLOWED, right-to-left chars",
+                                "Exceptions that are DISALLOWED, left-to-right chars",
+                                "MIDDLE DOT with no preceding 'l'",
+                                "MIDDLE DOT with nothing preceding",
+                                "MIDDLE DOT with no following 'l'",
+                                "MIDDLE DOT with nothing following",
+                                "Greek KERAIA not followed by Greek",
+                                "Greek KERAIA not followed by anything",
+                                "Hebrew GERESH not preceded by Hebrew",
+                                "Hebrew GERESH not preceded by anything",
+                                "Hebrew GERSHAYIM not preceded by Hebrew",
+                                "Hebrew GERSHAYIM not preceded by anything",
+                                "KATAKANA MIDDLE DOT with no Hiragana, Katakana, or Han",
+                                "KATAKANA MIDDLE DOT with no other characters",
+                                "Arabic-Indic digits mixed with Extended Arabic-Indic digits",
+                                "ZERO WIDTH JOINER not preceded by Virama",
+                                "ZERO WIDTH JOINER not preceded by anything"
+                        )
+                ),
                 "idn-hostname", Map.of(
                         "validation of internationalized host names", Set.of(
                                 "a valid host name (example.test in Hangul)",
@@ -293,7 +323,11 @@ public abstract class SpecificationSuiteTest implements ProviderTest {
                         "validation of separators in internationalized host names", Set.of(
                                 "ideographic full stop as label separator",
                                 "fullwidth full stop as label separator",
-                                "halfwidth ideographic full stop as label separator"
+                                "halfwidth ideographic full stop as label separator",
+                                "label too long if separator ignored (full stop)",
+                                "label too long if separator ignored (ideographic full stop)",
+                                "label too long if separator ignored (fullwidth full stop)",
+                                "label too long if separator ignored (halfwidth ideographic full stop)"
                         )
                 ),
                 "ipv4", Map.of(
