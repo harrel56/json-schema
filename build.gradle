@@ -1,7 +1,7 @@
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
-    id 'org.sonarqube' version '7.0.1.6134' apply false
+    id 'org.sonarqube' version '7.1.0.6387' apply false
 }
 
 subprojects {
