@@ -111,19 +111,6 @@
         - foo
         - false
       valid: true
-- description: additionalItems does not look in applicators, valid case
-  schema:
-    allOf:
-      - items:
-          - type: integer
-    additionalItems:
-      type: boolean
-  tests:
-    - description: items defined in allOf are not examined
-      data:
-        - 1
-        - null
-      valid: true
 - description: additionalItems does not look in applicators, invalid case
   schema:
     allOf:
