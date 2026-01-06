@@ -1,4 +1,4 @@
-$id: http://localhost:1234/real-id-ref-string.json
+$id: urn:uuid:feebdaed-ffff-0000-ff01-0000deadbeef
 $defs:
   bar:
     type: string
