@@ -18,7 +18,7 @@ java {
 
 def jsonProviders = [
         [id   : 'jackson', additionalVersions: ['2.2.0'],
-         group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.20.1'],
+         group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.21.0'],
         [id   : 'gson', additionalVersions: ['2.3'],
          group: 'com.google.code.gson', name: 'gson', version: '2.13.2'],
         [id   : 'orgJson', additionalVersions: ['20201115'],
