@@ -16,6 +16,12 @@ java {
     }
 }
 
+tasks.named('jar') {
+    manifest {
+        attributes('Automatic-Module-Name': 'dev.harrel.jsonschema')
+    }
+}
+
 def jsonProviders = [
         [id   : 'jackson', additionalVersions: ['2.2.0'],
          group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.21.0'],
