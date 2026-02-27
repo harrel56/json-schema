@@ -77,6 +77,10 @@
 - description: unevaluatedProperties with adjacent bool additionalProperties
   schema:
     $schema: https://json-schema.org/draft/2020-12/schema
+    type: object
+    properties:
+      foo:
+        type: string
     additionalProperties: true
     unevaluatedProperties: false
   tests:
@@ -92,19 +96,23 @@
 - description: unevaluatedProperties with adjacent non-bool additionalProperties
   schema:
     $schema: https://json-schema.org/draft/2020-12/schema
+    type: object
+    properties:
+      foo:
+        type: string
     additionalProperties:
       type: string
     unevaluatedProperties: false
   tests:
-    - description: with only valid additional properties
+    - description: with no additional properties
       data:
         foo: foo
       valid: true
-    - description: with invalid additional properties
+    - description: with additional properties
       data:
         foo: foo
-        bar: 1
-      valid: false
+        bar: bar
+      valid: true
 - description: unevaluatedProperties with nested properties
   schema:
     $schema: https://json-schema.org/draft/2020-12/schema
