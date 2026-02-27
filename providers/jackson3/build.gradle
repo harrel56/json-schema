@@ -15,7 +15,7 @@ dependencies {
 
 tasks.named('jar', Jar) {
     manifest {
-        attributes('Automatic-Module-Name': 'dev.harrel.jsonschema.providers.jackson3')
+        attributes('Automatic-Module-Name': 'dev.harrel.json.providers.jackson3')
     }
 }
 
