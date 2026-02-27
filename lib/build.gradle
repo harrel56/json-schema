@@ -16,7 +16,7 @@ java {
     }
 }
 
-tasks.named('jar') {
+tasks.named('jar', Jar) {
     manifest {
         attributes('Automatic-Module-Name': 'dev.harrel.jsonschema')
     }
