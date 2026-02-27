@@ -13,6 +13,12 @@ dependencies {
     testImplementation testFixtures(project(':json-schema'))
 }
 
+tasks.named('jar', Jar) {
+    manifest {
+        attributes('Automatic-Module-Name': 'dev.harrel.json.providers.jackson3')
+    }
+}
+
 sonar {
     properties {
         property 'sonar.projectName', "$project.name (JSON provider)"
