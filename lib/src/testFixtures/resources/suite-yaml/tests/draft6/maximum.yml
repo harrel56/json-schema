@@ -18,7 +18,7 @@
   schema:
     maximum: 300
   tests:
-    - description: below the maximum is invalid
+    - description: below the maximum is valid
       data: 299.97
       valid: true
     - description: boundary point integer is valid
