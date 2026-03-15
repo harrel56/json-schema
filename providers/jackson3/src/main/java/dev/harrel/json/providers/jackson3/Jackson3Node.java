@@ -4,6 +4,7 @@ import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
 import dev.harrel.jsonschema.internal.AbstractJsonNode;
+import dev.harrel.jsonschema.internal.GenericNode;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
@@ -81,11 +82,11 @@ public final class Jackson3Node extends AbstractJsonNode<tools.jackson.databind.
 
         @Override
         public JsonNode wrap(Object node) {
-            if (node instanceof GenericNode providerNode) {
-                if (providerNode.jsonPointer.isEmpty()) {
-                    return providerNode;
+            if (node instanceof GenericNode genericNode) {
+                if (genericNode.getJsonPointer().isEmpty()) {
+                    return genericNode;
                 } else {
-                    return providerNode.copy("");
+                    return genericNode.copy("");
                 }
             } else if (node instanceof tools.jackson.databind.JsonNode providerNode) {
                 return new Jackson3Node(providerNode);

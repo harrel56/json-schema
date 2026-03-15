@@ -89,7 +89,7 @@ public final class GenericNode implements JsonNode {
         return Objects.hash(type, value);
     }
 
-    GenericNode copy(String jsonPointer) {
+    public GenericNode copy(String jsonPointer) {
         if (isArray()) {
             List<GenericNode> li = (List<GenericNode>) value;
             List<GenericNode> copy = new ArrayList<>(li.size());
