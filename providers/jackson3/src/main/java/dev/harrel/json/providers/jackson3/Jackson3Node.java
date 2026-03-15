@@ -82,6 +82,7 @@ public final class Jackson3Node extends AbstractJsonNode<tools.jackson.databind.
 
         @Override
         public JsonNode wrap(Object node) {
+            // todo support for old nodes as well
             if (node instanceof GenericNode genericNode) {
                 if (genericNode.getJsonPointer().isEmpty()) {
                     return genericNode;

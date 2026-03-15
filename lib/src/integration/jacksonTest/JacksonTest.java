@@ -49,7 +49,7 @@ class JacksonTest extends ProviderTestBundle {
     @Test
     void shouldWrapForValidArgument() throws JsonProcessingException {
         JsonNode object = new ObjectMapper().readTree("{}");
-        JacksonNode wrap = new JacksonNode.Factory().wrap(object);
+        dev.harrel.jsonschema.JsonNode wrap = new JacksonNode.Factory().wrap(object);
         assertThat(wrap).isNotNull();
         assertThat(wrap.getNodeType()).isEqualTo(SimpleType.OBJECT);
     }

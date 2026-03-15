@@ -116,7 +116,7 @@ class JsonNodeFactoriesTest {
                 .withSchemaResolver(resolver)
                 .createValidator();
         URI uri = URI.create("urn:test");
-        JacksonNode jacksonNode = new JacksonNode.Factory().create("""
+        JsonNode jacksonNode = new JacksonNode.Factory().create("""
                 {
                   "$ref": "urn:x"
                 }""");
@@ -133,7 +133,7 @@ class JsonNodeFactoriesTest {
                 .withSchemaResolver(resolver)
                 .createValidator();
         URI uri = URI.create("urn:test");
-        JacksonNode jacksonNode = new JacksonNode.Factory().create("{}");
+        JsonNode jacksonNode = new JacksonNode.Factory().create("{}");
 
         Exception exception = catchException(() -> validator.registerSchema(uri, jacksonNode));
         assertThat(exception).isInstanceOf(MetaSchemaResolvingException.class);

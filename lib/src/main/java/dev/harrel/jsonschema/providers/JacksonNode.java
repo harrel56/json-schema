@@ -1,11 +1,18 @@
 package dev.harrel.jsonschema.providers;
 
+import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
 import dev.harrel.jsonschema.internal.AbstractJsonNode;
+import dev.harrel.jsonschema.internal.GenericNode;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -74,14 +81,23 @@ public final class JacksonNode extends AbstractJsonNode<com.fasterxml.jackson.da
         }
 
         public Factory(ObjectMapper mapper) {
-            this.mapper = mapper;
+            SimpleModule module = new SimpleModule();
+            module.addDeserializer(JsonNode.class, new JacksonDeserializer());
+            this.mapper = mapper.registerModule(module);
         }
 
         @Override
-        public JacksonNode wrap(Object node) {
+        public JsonNode wrap(Object node) {
             if (node instanceof JacksonNode) {
                 JacksonNode providerNode = (JacksonNode) node;
                 return providerNode.jsonPointer.isEmpty() ? providerNode : new JacksonNode((providerNode).node);
+            } else if (node instanceof GenericNode) {
+                GenericNode genericNode = (GenericNode) node;
+                if (genericNode.getJsonPointer().isEmpty()) {
+                    return genericNode;
+                } else {
+                    return genericNode.copy("");
+                }
             } else if (node instanceof com.fasterxml.jackson.databind.JsonNode) {
                 return new JacksonNode((com.fasterxml.jackson.databind.JsonNode) node);
             } else {
@@ -90,12 +106,79 @@ public final class JacksonNode extends AbstractJsonNode<com.fasterxml.jackson.da
         }
 
         @Override
-        public JacksonNode create(String rawJson) {
+        public JsonNode create(String rawJson) {
             try {
-                return new JacksonNode(mapper.readTree(rawJson));
+                return mapper.readValue(rawJson, JsonNode.class);
             } catch (IOException e) {
                 throw new IllegalArgumentException(e);
             }
         }
+    }
+}
+
+final class JacksonDeserializer extends JsonDeserializer<JsonNode> {
+    @Override
+    public JsonNode deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
+        return readNode(p, "");
+    }
+
+    @Override
+    public JsonNode getNullValue(DeserializationContext ctx) {
+        return new GenericNode("", SimpleType.NULL, null);
+    }
+
+    private JsonNode readNode(JsonParser p, String jsonPointer) throws IOException {
+        switch (p.currentToken()) {
+            case VALUE_NULL:
+                return new GenericNode(jsonPointer, SimpleType.NULL, null);
+            case VALUE_TRUE:
+            case VALUE_FALSE:
+                    return new GenericNode(jsonPointer, SimpleType.BOOLEAN, p.getBooleanValue());
+            case VALUE_STRING:
+                return new GenericNode(jsonPointer, SimpleType.STRING, p.getText());
+            case VALUE_NUMBER_INT:
+                return new GenericNode(jsonPointer, SimpleType.INTEGER, p.getBigIntegerValue());
+            case VALUE_NUMBER_FLOAT:
+                return readNumber(p, jsonPointer);
+            case START_ARRAY:
+                return readArray(p, jsonPointer);
+            case START_OBJECT:
+                return readObject(p, jsonPointer);
+            case NOT_AVAILABLE:
+            case END_OBJECT:
+            case END_ARRAY:
+            case FIELD_NAME:
+            case VALUE_EMBEDDED_OBJECT:
+            default:
+                throw new UnsupportedOperationException(p.currentToken().name()); // todo better msg
+        }
+    }
+
+    private JsonNode readNumber(JsonParser p, String jsonPointer) throws IOException {
+        BigDecimal val = p.getDecimalValue();
+        // todo reuse
+        if (val.scale() <= 0 || val.stripTrailingZeros().scale() <= 0) {
+            return new GenericNode(jsonPointer, SimpleType.INTEGER, val.toBigInteger());
+        } else {
+            return new GenericNode(jsonPointer, SimpleType.NUMBER, val);
+        }
+    }
+
+    private JsonNode readArray(JsonParser p, String jsonPointer) throws IOException {
+        List<JsonNode> arr = new ArrayList<>();
+        while (p.nextToken() != JsonToken.END_ARRAY) {
+            arr.add(readNode(p, jsonPointer + "/" + arr.size()));
+        }
+        return new GenericNode(jsonPointer, SimpleType.ARRAY, arr);
+    }
+
+    private JsonNode readObject(JsonParser p, String jsonPointer) throws IOException {
+        Map<String, JsonNode> obj = new LinkedHashMap<>();
+        while (p.nextToken() != JsonToken.END_OBJECT) {
+            String name = p.currentName();
+            p.nextToken();
+            obj.put(name, readNode(p, jsonPointer + "/" + JsonNode.encodeJsonPointer(name)));
+        }
+        return new GenericNode(jsonPointer, SimpleType.OBJECT, obj);
     }
 }
