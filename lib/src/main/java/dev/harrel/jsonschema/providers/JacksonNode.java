@@ -32,6 +32,7 @@ public final class JacksonNode extends AbstractJsonNode<com.fasterxml.jackson.da
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     protected Map<String, JsonNode> createObject() {
         Map<String, JsonNode> map = newHashMap(node.size());
         for (Iterator<Map.Entry<String, com.fasterxml.jackson.databind.JsonNode>> iterator = node.fields(); iterator.hasNext(); ) {
@@ -119,6 +120,7 @@ final class JacksonDeserializer extends JsonDeserializer<JsonNode> {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public JsonNode getNullValue() {
         return new GenericNode("", SimpleType.NULL, null);
     }
@@ -168,6 +170,7 @@ final class JacksonDeserializer extends JsonDeserializer<JsonNode> {
         return new GenericNode(jsonPointer, SimpleType.ARRAY, arr);
     }
 
+    @SuppressWarnings("deprecation")
     private JsonNode readObject(JsonParser p, String jsonPointer) throws IOException {
         Map<String, JsonNode> obj = new LinkedHashMap<>();
         while (p.nextToken() != JsonToken.END_OBJECT) {

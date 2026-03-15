@@ -18,8 +18,8 @@ public final class GenericNode implements JsonNode {
     private Object altNumber;
 
     public GenericNode(String jsonPointer, SimpleType type, Object value) {
-        this.jsonPointer = jsonPointer;
-        this.type = type;
+        this.jsonPointer = Objects.requireNonNull(jsonPointer);
+        this.type = Objects.requireNonNull(type);
         this.value = value;
     }
 
@@ -66,11 +66,13 @@ public final class GenericNode implements JsonNode {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public List<JsonNode> asArray() {
         return (List<JsonNode>) value;
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Map<String, JsonNode> asObject() {
         return (Map<String, JsonNode>) value;
     }
@@ -89,6 +91,7 @@ public final class GenericNode implements JsonNode {
         return Objects.hash(value);
     }
 
+    @SuppressWarnings("unchecked")
     public GenericNode copy(String jsonPointer) {
         if (isArray()) {
             List<GenericNode> li = (List<GenericNode>) value;
