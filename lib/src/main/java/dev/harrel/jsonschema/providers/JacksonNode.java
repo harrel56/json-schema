@@ -73,6 +73,7 @@ public final class JacksonNode extends AbstractJsonNode<com.fasterxml.jackson.da
         }
     }
 
+    // todo doc about simple module
     public static final class Factory extends SimpleModule implements JsonNodeFactory  {
         private final ObjectMapper mapper;
 
@@ -80,6 +81,7 @@ public final class JacksonNode extends AbstractJsonNode<com.fasterxml.jackson.da
             this(new ObjectMapper());
         }
 
+        @Deprecated // todo since and doc
         public Factory(ObjectMapper mapper) {
             super(Factory.class.getName(), Version.unknownVersion(),
                     Collections.singletonMap(JsonNode.class, new JacksonDeserializer()),
