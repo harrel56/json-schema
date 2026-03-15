@@ -7,6 +7,7 @@ import dev.harrel.jsonschema.internal.AbstractJsonNode;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -66,20 +67,26 @@ public final class Jackson3Node extends AbstractJsonNode<tools.jackson.databind.
     }
 
     public static final class Factory implements JsonNodeFactory {
-        private final ObjectMapper mapper;
+        private final JsonMapper mapper;
 
         public Factory() {
             this(JsonMapper.builder().enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS).build());
         }
 
         public Factory(ObjectMapper mapper) {
-            this.mapper = mapper;
+            SimpleModule module = new SimpleModule();
+            module.addDeserializer(JsonNode.class, new Deser());
+            this.mapper = JsonMapper.builder().addModule(module).build();
         }
 
         @Override
-        public Jackson3Node wrap(Object node) {
-            if (node instanceof Jackson3Node providerNode) {
-                return providerNode.jsonPointer.isEmpty() ? providerNode : new Jackson3Node(providerNode.node);
+        public JsonNode wrap(Object node) {
+            if (node instanceof GenericNode providerNode) {
+                if (providerNode.jsonPointer.isEmpty()) {
+                    return providerNode;
+                } else {
+                    return providerNode.copy("");
+                }
             } else if (node instanceof tools.jackson.databind.JsonNode providerNode) {
                 return new Jackson3Node(providerNode);
             } else {
@@ -88,8 +95,8 @@ public final class Jackson3Node extends AbstractJsonNode<tools.jackson.databind.
         }
 
         @Override
-        public Jackson3Node create(String rawJson) {
-            return new Jackson3Node(mapper.readTree(rawJson));
+        public JsonNode create(String rawJson) {
+            return mapper.readValue(rawJson, JsonNode.class);
         }
     }
 }
