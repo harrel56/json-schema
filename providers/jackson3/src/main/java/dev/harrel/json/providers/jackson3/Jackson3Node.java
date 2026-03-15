@@ -75,7 +75,7 @@ public final class Jackson3Node extends AbstractJsonNode<tools.jackson.databind.
 
         public Factory(ObjectMapper mapper) {
             SimpleModule module = new SimpleModule();
-            module.addDeserializer(JsonNode.class, new Deser());
+            module.addDeserializer(JsonNode.class, new Jackson3Deserializer());
             this.mapper = JsonMapper.builder().addModule(module).build();
         }
 

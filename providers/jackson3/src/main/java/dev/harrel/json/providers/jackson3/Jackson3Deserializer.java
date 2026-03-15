@@ -15,7 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public final class Deser extends ValueDeserializer<JsonNode> {
+public final class Jackson3Deserializer extends ValueDeserializer<JsonNode> {
     @Override
     public JsonNode deserialize(JsonParser p, DeserializationContext ctx) throws JacksonException {
         return readNode(p, "");
