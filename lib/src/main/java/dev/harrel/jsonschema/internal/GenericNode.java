@@ -81,12 +81,12 @@ public final class GenericNode implements JsonNode {
             return false;
         }
         GenericNode that = (GenericNode) o;
-        return type == that.type && Objects.equals(value, that.value);
+        return Objects.equals(value, that.value);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, value);
+        return Objects.hash(value);
     }
 
     public GenericNode copy(String jsonPointer) {

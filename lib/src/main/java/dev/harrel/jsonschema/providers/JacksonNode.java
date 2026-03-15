@@ -1,12 +1,7 @@
 package dev.harrel.jsonschema.providers;
 
-import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.JsonNodeFactory;
@@ -73,17 +68,18 @@ public final class JacksonNode extends AbstractJsonNode<com.fasterxml.jackson.da
         }
     }
 
-    public static final class Factory implements JsonNodeFactory {
+    public static final class Factory extends SimpleModule implements JsonNodeFactory  {
         private final ObjectMapper mapper;
 
         public Factory() {
-            this(new ObjectMapper().enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS));
+            this(new ObjectMapper());
         }
 
         public Factory(ObjectMapper mapper) {
-            SimpleModule module = new SimpleModule();
-            module.addDeserializer(JsonNode.class, new JacksonDeserializer());
-            this.mapper = mapper.registerModule(module);
+            super(Factory.class.getName(), Version.unknownVersion(),
+                    Collections.singletonMap(JsonNode.class, new JacksonDeserializer()),
+                    Collections.singletonList(new JacksonSerializer()));
+            this.mapper = mapper.copy().registerModule(this);
         }
 
         @Override
@@ -180,5 +176,53 @@ final class JacksonDeserializer extends JsonDeserializer<JsonNode> {
             obj.put(name, readNode(p, jsonPointer + "/" + JsonNode.encodeJsonPointer(name)));
         }
         return new GenericNode(jsonPointer, SimpleType.OBJECT, obj);
+    }
+}
+
+final class JacksonSerializer extends JsonSerializer<JsonNode> {
+    @Override
+    public void serialize(JsonNode value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+        writeNode(value, gen);
+    }
+
+    @Override
+    public Class<JsonNode> handledType() {
+        return JsonNode.class;
+    }
+
+    void writeNode(JsonNode value, JsonGenerator gen) throws IOException {
+        switch (value.getNodeType()) {
+            case NULL:
+                gen.writeNull();
+                return;
+            case BOOLEAN:
+                gen.writeBoolean(value.asBoolean());
+                return;
+            case STRING:
+                gen.writeString(value.asString());
+                return;
+            case INTEGER:
+                gen.writeNumber(value.asInteger());
+                return;
+            case NUMBER:
+                gen.writeNumber(value.asNumber());
+                return;
+            case ARRAY:
+                List<JsonNode> arr = value.asArray();
+                gen.writeStartArray(null, arr.size());
+                for (int i = 0; i < arr.size(); i++) {
+                    writeNode(arr.get(i), gen);
+                }
+                gen.writeEndArray();
+                return;
+            case OBJECT:
+                Map<String, JsonNode> map = value.asObject();
+                gen.writeStartObject(null, map.size());
+                for (Map.Entry<String, JsonNode> entry : map.entrySet()) {
+                    gen.writeFieldName(entry.getKey());
+                    writeNode(entry.getValue(), gen);
+                }
+                gen.writeEndObject();
+        }
     }
 }
