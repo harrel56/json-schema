@@ -119,12 +119,12 @@ final class JacksonDeserializer extends JsonDeserializer<JsonNode> {
     }
 
     @Override
-    public JsonNode getNullValue(DeserializationContext ctx) {
+    public JsonNode getNullValue() {
         return new GenericNode("", SimpleType.NULL, null);
     }
 
     private JsonNode readNode(JsonParser p, String jsonPointer) throws IOException {
-        switch (p.currentToken()) {
+        switch (p.getCurrentToken()) {
             case VALUE_NULL:
                 return new GenericNode(jsonPointer, SimpleType.NULL, null);
             case VALUE_TRUE:
@@ -171,7 +171,7 @@ final class JacksonDeserializer extends JsonDeserializer<JsonNode> {
     private JsonNode readObject(JsonParser p, String jsonPointer) throws IOException {
         Map<String, JsonNode> obj = new LinkedHashMap<>();
         while (p.nextToken() != JsonToken.END_OBJECT) {
-            String name = p.currentName();
+            String name = p.getCurrentName();
             p.nextToken();
             obj.put(name, readNode(p, jsonPointer + "/" + JsonNode.encodeJsonPointer(name)));
         }
