@@ -7,6 +7,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 
+import static dev.harrel.jsonschema.internal.InternalProviderUtil.newHashMap;
+
 /**
  * Internal base class for all JSON provider implementations.
  * Not part of the contract and not intend for external use.
@@ -110,10 +112,5 @@ public final class GenericNode implements JsonNode {
         } else {
             return new GenericNode(jsonPointer, type, value);
         }
-    }
-
-    // todo reuse
-    private static <K, V> HashMap<K, V> newHashMap(int realCapacity) {
-        return new HashMap<>((int) Math.ceil(realCapacity / 0.75));
     }
 }

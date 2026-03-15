@@ -8,6 +8,8 @@ import org.json.JSONTokener;
 
 import java.util.*;
 
+import static dev.harrel.jsonschema.internal.InternalProviderUtil.newHashMap;
+
 public final class OrgJsonNode extends SimpleJsonNode {
 
     private OrgJsonNode(Object node, String jsonPointer) {

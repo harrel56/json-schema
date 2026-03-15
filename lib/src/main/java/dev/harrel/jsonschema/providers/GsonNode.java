@@ -12,6 +12,9 @@ import dev.harrel.jsonschema.internal.AbstractJsonNode;
 import java.math.BigDecimal;
 import java.util.*;
 
+import static dev.harrel.jsonschema.internal.InternalProviderUtil.canConvertToInteger;
+import static dev.harrel.jsonschema.internal.InternalProviderUtil.newHashMap;
+
 public final class GsonNode extends AbstractJsonNode<JsonElement> {
     private GsonNode(JsonElement node, String jsonPointer) {
         super(Objects.requireNonNull(node), jsonPointer);

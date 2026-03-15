@@ -13,6 +13,9 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
 
+import static dev.harrel.jsonschema.internal.InternalProviderUtil.canConvertToInteger;
+import static dev.harrel.jsonschema.internal.InternalProviderUtil.newHashMap;
+
 public final class JacksonNode extends AbstractJsonNode<com.fasterxml.jackson.databind.JsonNode> {
     private JacksonNode(com.fasterxml.jackson.databind.JsonNode node, String jsonPointer) {
         super(Objects.requireNonNull(node), jsonPointer);
@@ -31,6 +34,7 @@ public final class JacksonNode extends AbstractJsonNode<com.fasterxml.jackson.da
         return elements;
     }
 
+    /* Using deprecated API to support older versions as well */
     @Override
     @SuppressWarnings("deprecation")
     protected Map<String, JsonNode> createObject() {
@@ -119,6 +123,7 @@ final class JacksonDeserializer extends JsonDeserializer<JsonNode> {
         return readNode(p, "");
     }
 
+    /* Using deprecated API to support older versions as well */
     @Override
     @SuppressWarnings("deprecation")
     public JsonNode getNullValue() {
@@ -154,8 +159,7 @@ final class JacksonDeserializer extends JsonDeserializer<JsonNode> {
 
     private JsonNode readNumber(JsonParser p, String jsonPointer) throws IOException {
         BigDecimal val = p.getDecimalValue();
-        // todo reuse
-        if (val.scale() <= 0 || val.stripTrailingZeros().scale() <= 0) {
+        if (canConvertToInteger(val)) {
             return new GenericNode(jsonPointer, SimpleType.INTEGER, val.toBigInteger());
         } else {
             return new GenericNode(jsonPointer, SimpleType.NUMBER, val);
@@ -170,6 +174,7 @@ final class JacksonDeserializer extends JsonDeserializer<JsonNode> {
         return new GenericNode(jsonPointer, SimpleType.ARRAY, arr);
     }
 
+    /* Using deprecated API to support older versions as well */
     @SuppressWarnings("deprecation")
     private JsonNode readObject(JsonParser p, String jsonPointer) throws IOException {
         Map<String, JsonNode> obj = new LinkedHashMap<>();

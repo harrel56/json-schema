@@ -14,6 +14,9 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 
+import static dev.harrel.jsonschema.internal.InternalProviderUtil.canConvertToInteger;
+import static dev.harrel.jsonschema.internal.InternalProviderUtil.newHashMap;
+
 public final class SnakeYamlNode extends AbstractJsonNode<Node> {
     private static final SafeConstructor CONSTR = new SafeConstructor(new LoaderOptions());
     private static final SafeConstructor.ConstructYamlBool BOOLEAN_CREATOR = CONSTR.new ConstructYamlBool();

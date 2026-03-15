@@ -124,12 +124,4 @@ public abstract class AbstractJsonNode<T> implements JsonNode {
     protected abstract List<JsonNode> createArray();
     protected abstract Map<String, JsonNode> createObject();
     protected abstract SimpleType computeNodeType(T node);
-
-    protected static boolean canConvertToInteger(BigDecimal bigDecimal) {
-        return bigDecimal.scale() <= 0 || bigDecimal.stripTrailingZeros().scale() <= 0;
-    }
-
-    protected static <K, V> HashMap<K, V> newHashMap(int realCapacity) {
-        return new HashMap<>((int) Math.ceil(realCapacity / 0.75));
-    }
 }

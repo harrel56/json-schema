@@ -13,6 +13,9 @@ import tools.jackson.databind.module.SimpleModule;
 import java.math.BigDecimal;
 import java.util.*;
 
+import static dev.harrel.jsonschema.internal.InternalProviderUtil.canConvertToInteger;
+import static dev.harrel.jsonschema.internal.InternalProviderUtil.newHashMap;
+
 public final class Jackson3Node extends AbstractJsonNode<tools.jackson.databind.JsonNode> {
     private Jackson3Node(tools.jackson.databind.JsonNode node, String jsonPointer) {
         super(Objects.requireNonNull(node), jsonPointer);
