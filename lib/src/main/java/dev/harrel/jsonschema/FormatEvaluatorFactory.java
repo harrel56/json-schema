@@ -4,6 +4,7 @@ import com.sanctionco.jmail.JMail;
 import com.sanctionco.jmail.net.InternetProtocolAddress;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Consumer;
@@ -225,10 +226,18 @@ public final class FormatEvaluatorFactory implements EvaluatorFactory {
 
         private static void iriOperator(String value) throws FormatException {
             try {
-                if (!URI.create(value).isAbsolute()) {
+                URI uri = URI.create(value);
+                if (!uri.isAbsolute()) {
                     throw new FormatException(String.format("\"%s\" is relative", value));
                 }
-            } catch (RuntimeException e) {
+                /*
+                * https://www.rfc-editor.org/rfc/rfc3986.html#appendix-A
+                * reg-name cannot contain unescaped ':', thus treating it as a server authority
+                */
+                if (uri.getRawSchemeSpecificPart().contains(":")) {
+                    uri.parseServerAuthority();
+                }
+            } catch (URISyntaxException | RuntimeException e) {
                 throw new FormatException(e.getMessage());
             }
         }
