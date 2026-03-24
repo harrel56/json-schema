@@ -1,0 +1,16 @@
+[
+  {
+    "description": "URI format",
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "format": "uri"
+    },
+    "tests": [
+      {
+        "description": "registry based authority can contain encoded ':'",
+        "data": "https://example.com%3Aabc",
+        "valid": true
+      }
+    ]
+  }
+]
