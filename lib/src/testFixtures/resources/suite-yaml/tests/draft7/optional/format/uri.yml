@@ -44,7 +44,7 @@
     - description: a valid URL for a simple text file
       data: http://www.ietf.org/rfc/rfc2396.txt
       valid: true
-    - description: 'a valid URL '
+    - description: a valid URL
       data: ldap://[2001:db8::7]/c=GB?objectClass?one
       valid: true
     - description: a valid mailto URI
