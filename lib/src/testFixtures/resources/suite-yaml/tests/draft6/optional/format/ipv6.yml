@@ -23,7 +23,7 @@
     - description: a valid IPv6 address
       data: ::1
       valid: true
-    - description: an IPv6 address with out-of-range values
+    - description: a group with 5 hex digits is invalid
       data: '12345::'
       valid: false
     - description: trailing 4 hex symbols is valid
