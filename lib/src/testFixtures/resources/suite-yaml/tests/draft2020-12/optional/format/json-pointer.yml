@@ -117,3 +117,9 @@
     - description: 'not a valid JSON-pointer (isn''t empty nor starts with /) #3'
       data: a/a
       valid: false
+    - description: valid JSON-pointer (Unicode characters allowed by RFC 6901)
+      data: "/foo/bar/\U0001F60E"
+      valid: true
+    - description: valid JSON-pointer (control characters allowed after JSON unescaping)
+      data: "/foo\0bar\n\tbaz"
+      valid: true
