@@ -30,7 +30,7 @@ def jsonProviders = [
         [id   : 'orgJson', additionalVersions: ['20201115'],
          group: 'org.json', name: 'json', version: '20251224'],
         [id   : 'kotlinxJson', additionalVersions: ['1.0.0'],
-         group: 'org.jetbrains.kotlinx', name: 'kotlinx-serialization-json', version: '1.10.0'],
+         group: 'org.jetbrains.kotlinx', name: 'kotlinx-serialization-json', version: '1.11.0'],
         [id   : 'jakartaJson', additionalVersions: [],
          group: 'jakarta.json', name: 'jakarta.json-api', version: '2.1.3'],
         [id   : 'jettison', additionalVersions: ['1.5.0'],
