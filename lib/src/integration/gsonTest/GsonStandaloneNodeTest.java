@@ -41,7 +41,7 @@ class GsonStandaloneNodeTest extends ProviderTestBundle {
 
     @Override
     public JsonNodeFactory getJsonNodeFactory() {
-        return new GsonNode.Factory();
+        return standaloneFactory;
     }
 
     @Test
