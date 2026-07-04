@@ -28,7 +28,7 @@ public final class JacksonModule extends SimpleModule {
                 Collections.singletonList(new Serializer()));
     }
 
-    static final class Deserializer extends JsonDeserializer<JsonNode> {
+    public static final class Deserializer extends JsonDeserializer<JsonNode> {
         @Override
         public JsonNode deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
             return readNode(p, "");
@@ -98,7 +98,7 @@ public final class JacksonModule extends SimpleModule {
         }
     }
 
-    static final class Serializer extends JsonSerializer<JsonNode> {
+    public static final class Serializer extends JsonSerializer<JsonNode> {
         @Override
         public void serialize(JsonNode value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
             writeNode(value, gen);
