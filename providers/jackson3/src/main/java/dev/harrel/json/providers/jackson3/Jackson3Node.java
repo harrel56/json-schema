@@ -71,27 +71,20 @@ public final class Jackson3Node extends AbstractJsonNode<tools.jackson.databind.
     }
 
     public static final class Factory implements JsonNodeFactory {
-        private final JsonMapper mapper;
+        private final ObjectMapper mapper;
 
         public Factory() {
             this(JsonMapper.builder().enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS).build());
         }
 
         public Factory(ObjectMapper mapper) {
-            SimpleModule module = new SimpleModule();
-            module.addDeserializer(JsonNode.class, new Jackson3Deserializer());
-            this.mapper = JsonMapper.builder().addModule(module).build();
+            this.mapper = mapper;
         }
 
         @Override
-        public JsonNode wrap(Object node) {
-            // todo support for old nodes as well
-            if (node instanceof StandaloneNode standaloneNode) {
-                if (standaloneNode.getJsonPointer().isEmpty()) {
-                    return standaloneNode;
-                } else {
-                    return standaloneNode.copy("");
-                }
+        public Jackson3Node wrap(Object node) {
+            if (node instanceof Jackson3Node providerNode) {
+                return providerNode.jsonPointer.isEmpty() ? providerNode : new Jackson3Node(providerNode.node);
             } else if (node instanceof tools.jackson.databind.JsonNode providerNode) {
                 return new Jackson3Node(providerNode);
             } else {
@@ -100,8 +93,8 @@ public final class Jackson3Node extends AbstractJsonNode<tools.jackson.databind.
         }
 
         @Override
-        public JsonNode create(String rawJson) {
-            return mapper.readValue(rawJson, JsonNode.class);
+        public Jackson3Node create(String rawJson) {
+            return new Jackson3Node(mapper.readTree(rawJson));
         }
     }
 }

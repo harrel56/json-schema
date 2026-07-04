@@ -75,7 +75,9 @@ public final class JacksonNode extends AbstractJsonNode<com.fasterxml.jackson.da
         private final ObjectMapper mapper;
 
         public Factory() {
-            this(new ObjectMapper());
+            this.mapper = new ObjectMapper()
+                    .enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
+                    .registerModule(new JacksonModule());
         }
 
         @Deprecated // todo since and doc, (should it be really deprecated?)
@@ -84,17 +86,14 @@ public final class JacksonNode extends AbstractJsonNode<com.fasterxml.jackson.da
         }
 
         @Override
-        public JsonNode wrap(Object node) {
+        public JacksonNode wrap(Object node) {
             if (node instanceof JacksonNode) {
                 JacksonNode providerNode = (JacksonNode) node;
                 return providerNode.jsonPointer.isEmpty() ? providerNode : new JacksonNode((providerNode).node);
             } else if (node instanceof StandaloneNode) {
                 StandaloneNode standaloneNode = (StandaloneNode) node;
-                if (standaloneNode.getJsonPointer().isEmpty()) {
-                    return standaloneNode;
-                } else {
-                    return standaloneNode.copy("");
-                }
+                return new JacksonNode(mapper.convertValue(standaloneNode,
+                        com.fasterxml.jackson.databind.JsonNode.class));
             } else if (node instanceof com.fasterxml.jackson.databind.JsonNode) {
                 return new JacksonNode((com.fasterxml.jackson.databind.JsonNode) node);
             } else {
@@ -103,9 +102,9 @@ public final class JacksonNode extends AbstractJsonNode<com.fasterxml.jackson.da
         }
 
         @Override
-        public JsonNode create(String rawJson) {
+        public JacksonNode create(String rawJson) {
             try {
-                return mapper.readValue(rawJson, JsonNode.class);
+                return new JacksonNode(mapper.readTree(rawJson));
             } catch (IOException e) {
                 throw new IllegalArgumentException(e);
             }
