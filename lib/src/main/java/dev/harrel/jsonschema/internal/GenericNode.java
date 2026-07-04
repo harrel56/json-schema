@@ -11,7 +11,7 @@ import static dev.harrel.jsonschema.internal.InternalProviderUtil.newHashMap;
 
 /**
  * Internal base class for all JSON provider implementations.
- * Not part of the contract and not intend for external use.
+ * Not part of the contract and not intended for external use.
  */
 public final class GenericNode implements JsonNode {
     private final String jsonPointer;
