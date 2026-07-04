@@ -2,7 +2,7 @@ package dev.harrel.json.providers.jackson3;
 
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.SimpleType;
-import dev.harrel.jsonschema.internal.GenericNode;
+import dev.harrel.jsonschema.internal.StandaloneNode;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
@@ -23,15 +23,15 @@ public final class Jackson3Deserializer extends ValueDeserializer<JsonNode> {
 
     @Override
     public JsonNode getNullValue(DeserializationContext ctx) {
-        return new GenericNode("", SimpleType.NULL, null);
+        return new StandaloneNode("", SimpleType.NULL, null);
     }
 
     private JsonNode readNode(JsonParser p, String jsonPointer) {
         return switch (p.currentToken()) {
-            case VALUE_NULL -> new GenericNode(jsonPointer, SimpleType.NULL, null);
-            case VALUE_TRUE, VALUE_FALSE -> new GenericNode(jsonPointer, SimpleType.BOOLEAN, p.getBooleanValue());
-            case VALUE_STRING -> new GenericNode(jsonPointer, SimpleType.STRING, p.getString());
-            case VALUE_NUMBER_INT -> new GenericNode(jsonPointer, SimpleType.INTEGER, p.getBigIntegerValue());
+            case VALUE_NULL -> new StandaloneNode(jsonPointer, SimpleType.NULL, null);
+            case VALUE_TRUE, VALUE_FALSE -> new StandaloneNode(jsonPointer, SimpleType.BOOLEAN, p.getBooleanValue());
+            case VALUE_STRING -> new StandaloneNode(jsonPointer, SimpleType.STRING, p.getString());
+            case VALUE_NUMBER_INT -> new StandaloneNode(jsonPointer, SimpleType.INTEGER, p.getBigIntegerValue());
             case VALUE_NUMBER_FLOAT -> readNumber(p, jsonPointer);
             case START_ARRAY -> readArray(p, jsonPointer);
             case START_OBJECT -> readObject(p, jsonPointer);
@@ -47,9 +47,9 @@ public final class Jackson3Deserializer extends ValueDeserializer<JsonNode> {
         BigDecimal val = p.getDecimalValue();
         // todo reuse
         if (val.scale() <= 0 || val.stripTrailingZeros().scale() <= 0) {
-            return new GenericNode(jsonPointer, SimpleType.INTEGER, val.toBigInteger());
+            return new StandaloneNode(jsonPointer, SimpleType.INTEGER, val.toBigInteger());
         } else {
-            return new GenericNode(jsonPointer, SimpleType.NUMBER, val);
+            return new StandaloneNode(jsonPointer, SimpleType.NUMBER, val);
         }
     }
 
@@ -58,7 +58,7 @@ public final class Jackson3Deserializer extends ValueDeserializer<JsonNode> {
         while (p.nextToken() != JsonToken.END_ARRAY) {
             arr.add(readNode(p, jsonPointer + "/" + arr.size()));
         }
-        return new GenericNode(jsonPointer, SimpleType.ARRAY, arr);
+        return new StandaloneNode(jsonPointer, SimpleType.ARRAY, arr);
     }
 
     private JsonNode readObject(JsonParser p, String jsonPointer) {
@@ -68,6 +68,6 @@ public final class Jackson3Deserializer extends ValueDeserializer<JsonNode> {
             p.nextToken();
             obj.put(name, readNode(p, jsonPointer + "/" + JsonNode.encodeJsonPointer(name)));
         }
-        return new GenericNode(jsonPointer, SimpleType.OBJECT, obj);
+        return new StandaloneNode(jsonPointer, SimpleType.OBJECT, obj);
     }
 }

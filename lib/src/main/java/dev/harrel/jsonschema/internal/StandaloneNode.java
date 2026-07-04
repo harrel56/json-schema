@@ -13,13 +13,13 @@ import static dev.harrel.jsonschema.internal.InternalProviderUtil.newHashMap;
  * Internal base class for all JSON provider implementations.
  * Not part of the contract and not intended for external use.
  */
-public final class GenericNode implements JsonNode {
+public final class StandaloneNode implements JsonNode {
     private final String jsonPointer;
     private final SimpleType type;
     private final Object value;
     private Object altNumber;
 
-    public GenericNode(String jsonPointer, SimpleType type, Object value) {
+    public StandaloneNode(String jsonPointer, SimpleType type, Object value) {
         this.jsonPointer = Objects.requireNonNull(jsonPointer);
         this.type = Objects.requireNonNull(type);
         this.value = value;
@@ -81,10 +81,10 @@ public final class GenericNode implements JsonNode {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof GenericNode)) {
+        if (!(o instanceof StandaloneNode)) {
             return false;
         }
-        GenericNode that = (GenericNode) o;
+        StandaloneNode that = (StandaloneNode) o;
         return Objects.equals(value, that.value);
     }
 
@@ -94,23 +94,23 @@ public final class GenericNode implements JsonNode {
     }
 
     @SuppressWarnings("unchecked")
-    public GenericNode copy(String jsonPointer) {
+    public StandaloneNode copy(String jsonPointer) {
         if (isArray()) {
-            List<GenericNode> li = (List<GenericNode>) value;
-            List<GenericNode> copy = new ArrayList<>(li.size());
+            List<StandaloneNode> li = (List<StandaloneNode>) value;
+            List<StandaloneNode> copy = new ArrayList<>(li.size());
             for (int i = 0; i < li.size(); i++) {
                 copy.add(li.get(i).copy(jsonPointer + "/" + i));
             }
-            return new GenericNode(jsonPointer, type, copy);
+            return new StandaloneNode(jsonPointer, type, copy);
         } else if (isObject()) {
-            Map<String, GenericNode> map = (Map<String, GenericNode>) value;
-            Map<String, GenericNode> copy = newHashMap(map.size());
-            for (Map.Entry<String, GenericNode> entry : map.entrySet()) {
+            Map<String, StandaloneNode> map = (Map<String, StandaloneNode>) value;
+            Map<String, StandaloneNode> copy = newHashMap(map.size());
+            for (Map.Entry<String, StandaloneNode> entry : map.entrySet()) {
                 copy.put(entry.getKey(), entry.getValue().copy(jsonPointer + "/" + JsonNode.encodeJsonPointer(entry.getKey())));
             }
-            return new GenericNode(jsonPointer, type, copy);
+            return new StandaloneNode(jsonPointer, type, copy);
         } else {
-            return new GenericNode(jsonPointer, type, value);
+            return new StandaloneNode(jsonPointer, type, value);
         }
     }
 }

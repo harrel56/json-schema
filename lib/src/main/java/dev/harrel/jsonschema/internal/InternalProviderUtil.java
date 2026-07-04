@@ -12,7 +12,7 @@ public final class InternalProviderUtil {
     private InternalProviderUtil() {}
 
     public static boolean canUseNativeEquals(JsonNode node) {
-        return node instanceof GenericNode || node instanceof AbstractJsonNode<?>;
+        return node instanceof StandaloneNode || node instanceof AbstractJsonNode<?>;
     }
 
     public static boolean canConvertToInteger(BigDecimal bigDecimal) {

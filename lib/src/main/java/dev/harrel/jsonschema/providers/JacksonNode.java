@@ -1,13 +1,11 @@
 package dev.harrel.jsonschema.providers;
 
-import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
 import dev.harrel.jsonschema.internal.AbstractJsonNode;
-import dev.harrel.jsonschema.internal.GenericNode;
+import dev.harrel.jsonschema.internal.StandaloneNode;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -90,12 +88,12 @@ public final class JacksonNode extends AbstractJsonNode<com.fasterxml.jackson.da
             if (node instanceof JacksonNode) {
                 JacksonNode providerNode = (JacksonNode) node;
                 return providerNode.jsonPointer.isEmpty() ? providerNode : new JacksonNode((providerNode).node);
-            } else if (node instanceof GenericNode) {
-                GenericNode genericNode = (GenericNode) node;
-                if (genericNode.getJsonPointer().isEmpty()) {
-                    return genericNode;
+            } else if (node instanceof StandaloneNode) {
+                StandaloneNode standaloneNode = (StandaloneNode) node;
+                if (standaloneNode.getJsonPointer().isEmpty()) {
+                    return standaloneNode;
                 } else {
-                    return genericNode.copy("");
+                    return standaloneNode.copy("");
                 }
             } else if (node instanceof com.fasterxml.jackson.databind.JsonNode) {
                 return new JacksonNode((com.fasterxml.jackson.databind.JsonNode) node);

@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.SimpleType;
-import dev.harrel.jsonschema.internal.GenericNode;
+import dev.harrel.jsonschema.internal.StandaloneNode;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -38,20 +38,20 @@ public final class JacksonModule extends SimpleModule {
         @Override
         @SuppressWarnings("deprecation")
         public JsonNode getNullValue() {
-            return new GenericNode("", SimpleType.NULL, null);
+            return new StandaloneNode("", SimpleType.NULL, null);
         }
 
         private JsonNode readNode(JsonParser p, String jsonPointer) throws IOException {
             switch (p.getCurrentToken()) {
                 case VALUE_NULL:
-                    return new GenericNode(jsonPointer, SimpleType.NULL, null);
+                    return new StandaloneNode(jsonPointer, SimpleType.NULL, null);
                 case VALUE_TRUE:
                 case VALUE_FALSE:
-                    return new GenericNode(jsonPointer, SimpleType.BOOLEAN, p.getBooleanValue());
+                    return new StandaloneNode(jsonPointer, SimpleType.BOOLEAN, p.getBooleanValue());
                 case VALUE_STRING:
-                    return new GenericNode(jsonPointer, SimpleType.STRING, p.getText());
+                    return new StandaloneNode(jsonPointer, SimpleType.STRING, p.getText());
                 case VALUE_NUMBER_INT:
-                    return new GenericNode(jsonPointer, SimpleType.INTEGER, p.getBigIntegerValue());
+                    return new StandaloneNode(jsonPointer, SimpleType.INTEGER, p.getBigIntegerValue());
                 case VALUE_NUMBER_FLOAT:
                     return readNumber(p, jsonPointer);
                 case START_ARRAY:
@@ -71,9 +71,9 @@ public final class JacksonModule extends SimpleModule {
         private JsonNode readNumber(JsonParser p, String jsonPointer) throws IOException {
             BigDecimal val = p.getDecimalValue();
             if (canConvertToInteger(val)) {
-                return new GenericNode(jsonPointer, SimpleType.INTEGER, val.toBigInteger());
+                return new StandaloneNode(jsonPointer, SimpleType.INTEGER, val.toBigInteger());
             } else {
-                return new GenericNode(jsonPointer, SimpleType.NUMBER, val);
+                return new StandaloneNode(jsonPointer, SimpleType.NUMBER, val);
             }
         }
 
@@ -82,7 +82,7 @@ public final class JacksonModule extends SimpleModule {
             while (p.nextToken() != JsonToken.END_ARRAY) {
                 arr.add(readNode(p, jsonPointer + "/" + arr.size()));
             }
-            return new GenericNode(jsonPointer, SimpleType.ARRAY, arr);
+            return new StandaloneNode(jsonPointer, SimpleType.ARRAY, arr);
         }
 
         /* Using deprecated API to support older versions as well */
@@ -94,7 +94,7 @@ public final class JacksonModule extends SimpleModule {
                 p.nextToken();
                 obj.put(name, readNode(p, jsonPointer + "/" + JsonNode.encodeJsonPointer(name)));
             }
-            return new GenericNode(jsonPointer, SimpleType.OBJECT, obj);
+            return new StandaloneNode(jsonPointer, SimpleType.OBJECT, obj);
         }
     }
 
