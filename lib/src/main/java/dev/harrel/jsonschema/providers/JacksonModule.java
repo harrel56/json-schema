@@ -28,76 +28,6 @@ public final class JacksonModule extends SimpleModule {
                 Collections.singletonList(new Serializer()));
     }
 
-    public static final class Deserializer extends JsonDeserializer<JsonNode> {
-        @Override
-        public JsonNode deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
-            return readNode(p, "");
-        }
-
-        /* Using deprecated API to support older versions as well */
-        @Override
-        @SuppressWarnings("deprecation")
-        public JsonNode getNullValue() {
-            return new StandaloneNode("", SimpleType.NULL, null);
-        }
-
-        private JsonNode readNode(JsonParser p, String jsonPointer) throws IOException {
-            switch (p.getCurrentToken()) {
-                case VALUE_NULL:
-                    return new StandaloneNode(jsonPointer, SimpleType.NULL, null);
-                case VALUE_TRUE:
-                case VALUE_FALSE:
-                    return new StandaloneNode(jsonPointer, SimpleType.BOOLEAN, p.getBooleanValue());
-                case VALUE_STRING:
-                    return new StandaloneNode(jsonPointer, SimpleType.STRING, p.getText());
-                case VALUE_NUMBER_INT:
-                    return new StandaloneNode(jsonPointer, SimpleType.INTEGER, p.getBigIntegerValue());
-                case VALUE_NUMBER_FLOAT:
-                    return readNumber(p, jsonPointer);
-                case START_ARRAY:
-                    return readArray(p, jsonPointer);
-                case START_OBJECT:
-                    return readObject(p, jsonPointer);
-                case NOT_AVAILABLE:
-                case END_OBJECT:
-                case END_ARRAY:
-                case FIELD_NAME:
-                case VALUE_EMBEDDED_OBJECT:
-                default:
-                    throw new UnsupportedOperationException(p.currentToken().name()); // todo better msg
-            }
-        }
-
-        private JsonNode readNumber(JsonParser p, String jsonPointer) throws IOException {
-            BigDecimal val = p.getDecimalValue();
-            if (canConvertToInteger(val)) {
-                return new StandaloneNode(jsonPointer, SimpleType.INTEGER, val.toBigInteger());
-            } else {
-                return new StandaloneNode(jsonPointer, SimpleType.NUMBER, val);
-            }
-        }
-
-        private JsonNode readArray(JsonParser p, String jsonPointer) throws IOException {
-            List<JsonNode> arr = new ArrayList<>();
-            while (p.nextToken() != JsonToken.END_ARRAY) {
-                arr.add(readNode(p, jsonPointer + "/" + arr.size()));
-            }
-            return new StandaloneNode(jsonPointer, SimpleType.ARRAY, arr);
-        }
-
-        /* Using deprecated API to support older versions as well */
-        @SuppressWarnings("deprecation")
-        private JsonNode readObject(JsonParser p, String jsonPointer) throws IOException {
-            Map<String, JsonNode> obj = new LinkedHashMap<>();
-            while (p.nextToken() != JsonToken.END_OBJECT) {
-                String name = p.getCurrentName();
-                p.nextToken();
-                obj.put(name, readNode(p, jsonPointer + "/" + JsonNode.encodeJsonPointer(name)));
-            }
-            return new StandaloneNode(jsonPointer, SimpleType.OBJECT, obj);
-        }
-    }
-
     public static final class Serializer extends JsonSerializer<JsonNode> {
         @Override
         public void serialize(JsonNode value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
@@ -109,7 +39,7 @@ public final class JacksonModule extends SimpleModule {
             return JsonNode.class;
         }
 
-        void writeNode(JsonNode value, JsonGenerator gen) throws IOException {
+        private void writeNode(JsonNode value, JsonGenerator gen) throws IOException {
             switch (value.getNodeType()) {
                 case NULL:
                     gen.writeNull();
@@ -143,6 +73,71 @@ public final class JacksonModule extends SimpleModule {
                     }
                     gen.writeEndObject();
             }
+        }
+    }
+
+    public static final class Deserializer extends JsonDeserializer<JsonNode> {
+        @Override
+        public JsonNode deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
+            return readNode(p, "");
+        }
+
+        /* Using deprecated API to support older versions as well */
+        @Override
+        @SuppressWarnings("deprecation")
+        public JsonNode getNullValue() {
+            return new StandaloneNode("", SimpleType.NULL, null);
+        }
+
+        private JsonNode readNode(JsonParser p, String jsonPointer) throws IOException {
+            switch (p.getCurrentToken()) {
+                case VALUE_NULL:
+                    return new StandaloneNode(jsonPointer, SimpleType.NULL, null);
+                case VALUE_TRUE:
+                case VALUE_FALSE:
+                    return new StandaloneNode(jsonPointer, SimpleType.BOOLEAN, p.getBooleanValue());
+                case VALUE_STRING:
+                    return new StandaloneNode(jsonPointer, SimpleType.STRING, p.getText());
+                case VALUE_NUMBER_INT:
+                    return new StandaloneNode(jsonPointer, SimpleType.INTEGER, p.getBigIntegerValue());
+                case VALUE_NUMBER_FLOAT:
+                    return readNumber(p, jsonPointer);
+                case START_ARRAY:
+                    return readArray(p, jsonPointer);
+                case START_OBJECT:
+                    return readObject(p, jsonPointer);
+                default:
+                    throw new IllegalArgumentException("Unexpected token: " + p.currentToken().name());
+            }
+        }
+
+        private JsonNode readNumber(JsonParser p, String jsonPointer) throws IOException {
+            BigDecimal val = p.getDecimalValue();
+            if (canConvertToInteger(val)) {
+                return new StandaloneNode(jsonPointer, SimpleType.INTEGER, val.toBigInteger(), val);
+            } else {
+                return new StandaloneNode(jsonPointer, SimpleType.NUMBER, val);
+            }
+        }
+
+        private JsonNode readArray(JsonParser p, String jsonPointer) throws IOException {
+            List<JsonNode> arr = new ArrayList<>();
+            while (p.nextToken() != JsonToken.END_ARRAY) {
+                arr.add(readNode(p, jsonPointer + "/" + arr.size()));
+            }
+            return new StandaloneNode(jsonPointer, SimpleType.ARRAY, arr);
+        }
+
+        /* Using deprecated API to support older versions as well */
+        @SuppressWarnings("deprecation")
+        private JsonNode readObject(JsonParser p, String jsonPointer) throws IOException {
+            Map<String, JsonNode> obj = new LinkedHashMap<>();
+            while (p.nextToken() != JsonToken.END_OBJECT) {
+                String name = p.getCurrentName();
+                p.nextToken();
+                obj.put(name, readNode(p, jsonPointer + "/" + JsonNode.encodeJsonPointer(name)));
+            }
+            return new StandaloneNode(jsonPointer, SimpleType.OBJECT, obj);
         }
     }
 }

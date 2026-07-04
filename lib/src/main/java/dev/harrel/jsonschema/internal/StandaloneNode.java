@@ -20,9 +20,14 @@ public final class StandaloneNode implements JsonNode {
     private Object altNumber;
 
     public StandaloneNode(String jsonPointer, SimpleType type, Object value) {
+        this(jsonPointer, type, value, null);
+    }
+
+    public StandaloneNode(String jsonPointer, SimpleType type, Object value, Object altNumber) {
         this.jsonPointer = Objects.requireNonNull(jsonPointer);
         this.type = Objects.requireNonNull(type);
         this.value = value;
+        this.altNumber = altNumber;
     }
 
     @Override
