@@ -17,7 +17,7 @@ public final class ValidatorFactory {
     private final Map<URI, Dialect> dialects = new HashMap<>(Dialects.OFFICIAL_DIALECTS);
     private Dialect defaultDialect = new Dialects.Draft2020Dialect();
     private EvaluatorFactory evaluatorFactory;
-    private Supplier<JsonNodeFactory> schemaNodeFactory = () -> new JacksonNode.Factory(); // cannot be a method reference due to eager class loading
+    private Supplier<JsonNodeFactory> schemaNodeFactory = JacksonNode.Factory::new;
     private Supplier<JsonNodeFactory> instanceNodeFactory = schemaNodeFactory;
     private SchemaResolver schemaResolver = new DefaultSchemaResolver();
     private MessageProvider messageProvider = MessageProvider.fromLocale(Locale.getDefault());
