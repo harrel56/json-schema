@@ -1,13 +1,14 @@
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import dev.harrel.jsonschema.*;
 import dev.harrel.jsonschema.internal.StandaloneNode;
 import dev.harrel.jsonschema.providers.GsonModule;
 import dev.harrel.jsonschema.providers.GsonNode;
 import dev.harrel.jsonschema.util.JsonNodeMock;
 import org.junit.jupiter.api.Test;
+
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -16,7 +17,7 @@ class GsonStandaloneNodeTest extends ProviderTestBundle {
     // factory to be promoted to prod code someday
     private final JsonNodeFactory standaloneFactory = new JsonNodeFactory() {
         private final Gson gson = new GsonBuilder()
-                .registerTypeAdapter(JsonNode.class, new GsonModule.TypeAdapter())
+                .registerTypeHierarchyAdapter(JsonNode.class, new GsonModule.TypeAdapter())
                 .create();
 
         @Override
@@ -24,8 +25,6 @@ class GsonStandaloneNodeTest extends ProviderTestBundle {
             return switch (node) {
                 case StandaloneNode sNode when sNode.getJsonPointer().isEmpty() -> sNode;
                 case StandaloneNode sNode -> sNode.copy("");
-
-                // todo - try using adapter directly to omit String serialization
                 case JsonNode otherNode -> gson.fromJson(gson.toJson(otherNode), JsonNode.class);
                 case JsonElement providerNode -> gson.fromJson(gson.toJson(providerNode), JsonNode.class);
                 default ->
@@ -64,17 +63,17 @@ class GsonStandaloneNodeTest extends ProviderTestBundle {
 
     @Test
     void shouldWrapForValidArgument() {
-        JsonElement object = new JsonParser().parse("{}");
+        JsonElement object = new Gson().toJsonTree(Map.of());
         JsonNode wrap = new GsonNode.Factory().wrap(object);
         assertThat(wrap).isNotNull();
         assertThat(wrap.getNodeType()).isEqualTo(SimpleType.OBJECT);
     }
 
     @Test
-    void shouldFailWrapForInvalidArgument() {
-        JsonNode node = new JsonNodeMock();
+    void shouldWrapRudimentaryJsonNodeImpl() {
         JsonNodeFactory factory = getJsonNodeFactory();
-        assertThatThrownBy(() -> factory.wrap(node))
-                .isInstanceOf(IllegalArgumentException.class);
+        JsonNode node = factory.wrap(new JsonNodeMock());
+        assertThat(node.isBoolean()).isTrue();
+        assertThat(node.asBoolean()).isFalse();
     }
 }
