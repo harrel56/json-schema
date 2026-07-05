@@ -1,3 +1,4 @@
+
 package dev.harrel.jsonschema.internal;
 
 import dev.harrel.jsonschema.JsonNode;
@@ -11,8 +12,9 @@ import java.util.HashMap;
 public final class InternalProviderUtil {
     private InternalProviderUtil() {}
 
-    public static boolean canUseNativeEquals(JsonNode node) {
-        return node instanceof StandaloneNode || node instanceof AbstractJsonNode<?>;
+    public static boolean canUseNativeEquals(JsonNode n1, JsonNode n2) {
+        return n1 instanceof StandaloneNode && n2 instanceof StandaloneNode ||
+                n1 instanceof AbstractJsonNode<?> && n2 instanceof AbstractJsonNode<?>;
     }
 
     public static boolean canConvertToInteger(BigDecimal bigDecimal) {

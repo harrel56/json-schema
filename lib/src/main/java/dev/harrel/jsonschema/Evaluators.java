@@ -48,26 +48,26 @@ class ConstEvaluator implements Evaluator {
 
     @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
-        boolean valid = canUseNativeEquals(constNode) && canUseNativeEquals(node) ? constNode.equals(node) : JsonNodeUtil.equals(constNode, node);
+        boolean valid = canUseNativeEquals(constNode, node) ? constNode.equals(node) : JsonNodeUtil.equals(constNode, node);
         return valid ? Result.success() : Result.formattedFailure("const", node.toPrintableString(), constNode.toPrintableString());
     }
 }
 
 class EnumEvaluator implements Evaluator {
+    private final JsonNode arrayNode;
     private final Set<JsonNode> enumNodes;
-    private final boolean canUseNativeEquals;
 
     EnumEvaluator(JsonNode node) {
         if (!node.isArray()) {
             throw new IllegalArgumentException();
         }
+        this.arrayNode = node;
         this.enumNodes = unmodifiableSet(new LinkedHashSet<>(node.asArray()));
-        this.canUseNativeEquals = canUseNativeEquals(node);
     }
 
     @Override
     public Result evaluate(EvaluationContext ctx, JsonNode node) {
-        if (canUseNativeEquals && canUseNativeEquals(node)) {
+        if (canUseNativeEquals(arrayNode, node)) {
             return enumNodes.contains(node) ? Result.success() : Result.formattedFailure("enum", createArgsSupplier(node));
         } else {
             for (JsonNode enumNode : enumNodes) {
@@ -387,7 +387,7 @@ class UniqueItemsEvaluator implements Evaluator {
         }
 
         List<JsonNode> jsonNodes = node.asArray();
-        if (canUseNativeEquals(node)) {
+        if (canUseNativeEquals(node, node)) {
             Set<JsonNode> parsed = new HashSet<>();
             for (int i = 0; i < jsonNodes.size(); i++) {
                 if (!parsed.add(jsonNodes.get(i))) {
