@@ -5,7 +5,6 @@ import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
 import dev.harrel.jsonschema.internal.AbstractJsonNode;
-import dev.harrel.jsonschema.internal.StandaloneNode;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -71,18 +70,15 @@ public final class JacksonNode extends AbstractJsonNode<com.fasterxml.jackson.da
         }
     }
 
-    public static final class Factory implements JsonNodeFactory  {
+    public static final class Factory implements JsonNodeFactory {
         private final ObjectMapper mapper;
 
         public Factory() {
-            this.mapper = new ObjectMapper()
-                    .enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
-                    .registerModule(new JacksonModule());
+            this(new ObjectMapper().enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS));
         }
 
-        @Deprecated // todo since and doc, (should it be really deprecated?)
         public Factory(ObjectMapper mapper) {
-            this.mapper = mapper.copy().registerModule(new JacksonModule());
+            this.mapper = mapper;
         }
 
         @Override
