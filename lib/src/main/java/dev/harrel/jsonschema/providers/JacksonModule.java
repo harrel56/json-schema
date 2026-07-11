@@ -1,6 +1,9 @@
 package dev.harrel.jsonschema.providers;
 
-import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
@@ -14,7 +17,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
 
-import static com.fasterxml.jackson.core.JsonTokenId.*;
 import static dev.harrel.jsonschema.internal.InternalProviderUtil.canConvertToInteger;
 
 // todo doc
@@ -88,22 +90,21 @@ public final class JacksonModule extends SimpleModule {
         }
 
         private JsonNode readNode(JsonParser p, String jsonPointer) throws IOException {
-            switch (p.currentTokenId()) {
-                case ID_NULL:
+            switch (p.getCurrentToken()) {
+                case VALUE_NULL:
                     return new StandaloneNode(jsonPointer, SimpleType.NULL, null);
-                case ID_TRUE:
-                    return new StandaloneNode(jsonPointer, SimpleType.BOOLEAN, Boolean.TRUE);
-                case ID_FALSE:
-                    return new StandaloneNode(jsonPointer, SimpleType.BOOLEAN, Boolean.FALSE);
-                case ID_STRING:
+                case VALUE_TRUE:
+                case VALUE_FALSE:
+                    return new StandaloneNode(jsonPointer, SimpleType.BOOLEAN, p.getBooleanValue());
+                case VALUE_STRING:
                     return new StandaloneNode(jsonPointer, SimpleType.STRING, p.getText());
-                case ID_NUMBER_INT:
+                case VALUE_NUMBER_INT:
                     return new StandaloneNode(jsonPointer, SimpleType.INTEGER, p.getBigIntegerValue());
-                case ID_NUMBER_FLOAT:
+                case VALUE_NUMBER_FLOAT:
                     return readNumber(p, jsonPointer);
-                case ID_START_ARRAY:
+                case START_ARRAY:
                     return readArray(p, jsonPointer);
-                case ID_START_OBJECT:
+                case START_OBJECT:
                     return readObject(p, jsonPointer);
                 default:
                     throw new IllegalArgumentException("Unexpected token: " + p.currentToken().name());
