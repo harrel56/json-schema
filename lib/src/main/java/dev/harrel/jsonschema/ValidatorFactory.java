@@ -116,8 +116,8 @@ public final class ValidatorFactory {
     public ValidatorFactory withJsonNodeFactories(JsonNodeFactory schemaNodeFactory, JsonNodeFactory instanceNodeFactory) {
         Objects.requireNonNull(schemaNodeFactory);
         Objects.requireNonNull(instanceNodeFactory);
-        this.schemaNodeFactory = () -> schemaNodeFactory;
-        this.instanceNodeFactory = () -> instanceNodeFactory;
+        this.schemaNodeFactory = () -> new JsonNodeFactoryWrapper(schemaNodeFactory);
+        this.instanceNodeFactory = () -> new JsonNodeFactoryWrapper(instanceNodeFactory);
         return this;
     }
 

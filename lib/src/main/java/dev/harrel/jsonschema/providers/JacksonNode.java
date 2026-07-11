@@ -90,10 +90,6 @@ public final class JacksonNode extends AbstractJsonNode<com.fasterxml.jackson.da
             if (node instanceof JacksonNode) {
                 JacksonNode providerNode = (JacksonNode) node;
                 return providerNode.jsonPointer.isEmpty() ? providerNode : new JacksonNode((providerNode).node);
-            } else if (node instanceof StandaloneNode) {
-                StandaloneNode standaloneNode = (StandaloneNode) node;
-                return new JacksonNode(mapper.convertValue(standaloneNode,
-                        com.fasterxml.jackson.databind.JsonNode.class));
             } else if (node instanceof com.fasterxml.jackson.databind.JsonNode) {
                 return new JacksonNode((com.fasterxml.jackson.databind.JsonNode) node);
             } else {
