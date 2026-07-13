@@ -24,7 +24,7 @@ tasks.named('jar', Jar) {
 
 def jsonProviders = [
         [id   : 'jackson', additionalVersions: ['2.2.0'],
-         group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.22.0'],
+         group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.22.1'],
         [id   : 'gson', additionalVersions: ['2.3'],
          group: 'com.google.code.gson', name: 'gson', version: '2.14.0'],
         [id   : 'orgJson', additionalVersions: ['20201115'],
