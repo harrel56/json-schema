@@ -30,3 +30,18 @@
     - description: a valid e-mail address
       data: joe.bloggs@example.com
       valid: true
+    - description: a non-ASCII local part with an ASCII domain is valid
+      data: δοκιμή@example.com
+      valid: true
+    - description: a non-ASCII quoted local part is valid
+      data: '"δοκιμή"@example.com'
+      valid: true
+    - description: a local part with a lone UTF-16 surrogate is invalid
+      data: �@example.com
+      valid: false
+    - description: a domain label that is not in Unicode NFC is valid
+      data: user@café.com
+      valid: true
+    - description: a local part that is not in Unicode NFC is valid
+      data: café@example.com
+      valid: true
