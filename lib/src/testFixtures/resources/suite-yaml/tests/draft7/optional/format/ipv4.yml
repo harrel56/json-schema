@@ -33,6 +33,12 @@
     - description: an IP address without 4 components
       data: "127.0"
       valid: false
+    - description: a 2-part address resolving to a routable IP (inet_aton shorthand)
+      data: "127.1"
+      valid: false
+    - description: a 3-part address resolving to a routable IP (inet_aton shorthand)
+      data: 127.0.1
+      valid: false
     - description: an IP address as an integer
       data: "0x7f000001"
       valid: false
@@ -41,6 +47,12 @@
       valid: false
     - description: invalid non-ASCII '২' (a Bengali 2)
       data: 1২7.0.0.1
+      valid: false
+    - description: invalid fullwidth digits (non-ASCII)
+      data: １９２.１６８.１.１
+      valid: false
+    - description: invalid mathematical bold digits (non-ASCII)
+      data: "\U0001D7CF\U0001D7D7\U0001D7D0.\U0001D7CF\U0001D7D4\U0001D7D6.\U0001D7CF.\U0001D7CF"
       valid: false
     - description: netmask is not a part of ipv4 address
       data: 192.168.1.0/24
@@ -96,6 +108,9 @@
       valid: false
     - description: tab character is invalid
       data: "192.168.0.1\t"
+      valid: false
+    - description: additional content after an embedded NUL byte
+      data: "192.168.0.1\0.evil.com"
       valid: false
     - description: with port number is invalid
       data: 192.168.0.1:80
