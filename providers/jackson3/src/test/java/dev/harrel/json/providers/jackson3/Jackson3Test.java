@@ -1,9 +1,6 @@
 package dev.harrel.json.providers.jackson3;
 
-import dev.harrel.jsonschema.JsonNodeFactory;
-import dev.harrel.jsonschema.ProviderTestBundle;
-import dev.harrel.jsonschema.SimpleType;
-import dev.harrel.jsonschema.ValidatorFactory;
+import dev.harrel.jsonschema.*;
 import dev.harrel.jsonschema.providers.GsonNode;
 import dev.harrel.jsonschema.util.JsonNodeMock;
 import org.assertj.core.api.AssertionsForClassTypes;
@@ -43,7 +40,7 @@ class Jackson3Test extends ProviderTestBundle {
     @Test
     void shouldWrapForValidArgument() {
         tools.jackson.databind.JsonNode object = new ObjectMapper().readTree("{}");
-        Jackson3Node wrap = new Jackson3Node.Factory().wrap(object);
+        JsonNode wrap = new Jackson3Node.Factory().wrap(object);
         assertThat(wrap).isNotNull();
         assertThat(wrap.getNodeType()).isEqualTo(SimpleType.OBJECT);
     }

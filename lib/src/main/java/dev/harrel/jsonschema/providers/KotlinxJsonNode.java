@@ -9,6 +9,9 @@ import kotlinx.serialization.json.*;
 import java.math.BigDecimal;
 import java.util.*;
 
+import static dev.harrel.jsonschema.internal.InternalProviderUtil.canConvertToInteger;
+import static dev.harrel.jsonschema.internal.InternalProviderUtil.newHashMap;
+
 public final class KotlinxJsonNode extends AbstractJsonNode<JsonElement> {
     private KotlinxJsonNode(JsonElement node, String jsonPointer) {
         super(Objects.requireNonNull(node), jsonPointer);

@@ -16,7 +16,7 @@ class SchemaRegistryTest {
         SchemaRegistry schemaRegistry = new SchemaRegistry();
         SchemaParsingContext ctx = new SchemaParsingContext(new MetaSchemaData(new Dialects.Draft2020Dialect()), URI.create("urn:test"), emptyMap());
         JacksonNode.Factory factory = new JacksonNode.Factory();
-        JacksonNode rootSchemaNode = factory.create("""
+        JsonNode rootSchemaNode = factory.create("""
                 {
                   "properties": {
                     "field": true

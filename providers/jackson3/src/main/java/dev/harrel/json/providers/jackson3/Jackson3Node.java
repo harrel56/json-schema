@@ -4,12 +4,17 @@ import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
 import dev.harrel.jsonschema.internal.AbstractJsonNode;
+import dev.harrel.jsonschema.internal.StandaloneNode;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
 
 import java.math.BigDecimal;
 import java.util.*;
+
+import static dev.harrel.jsonschema.internal.InternalProviderUtil.canConvertToInteger;
+import static dev.harrel.jsonschema.internal.InternalProviderUtil.newHashMap;
 
 public final class Jackson3Node extends AbstractJsonNode<tools.jackson.databind.JsonNode> {
     private Jackson3Node(tools.jackson.databind.JsonNode node, String jsonPointer) {

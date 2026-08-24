@@ -1,7 +1,6 @@
 package dev.harrel.jsonschema.providers;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.*;
 import dev.harrel.jsonschema.JsonNode;
 import dev.harrel.jsonschema.JsonNodeFactory;
 import dev.harrel.jsonschema.SimpleType;
@@ -10,6 +9,9 @@ import dev.harrel.jsonschema.internal.AbstractJsonNode;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
+
+import static dev.harrel.jsonschema.internal.InternalProviderUtil.canConvertToInteger;
+import static dev.harrel.jsonschema.internal.InternalProviderUtil.newHashMap;
 
 public final class JacksonNode extends AbstractJsonNode<com.fasterxml.jackson.databind.JsonNode> {
     private JacksonNode(com.fasterxml.jackson.databind.JsonNode node, String jsonPointer) {
@@ -29,7 +31,9 @@ public final class JacksonNode extends AbstractJsonNode<com.fasterxml.jackson.da
         return elements;
     }
 
+    /* Using deprecated API to support older versions as well */
     @Override
+    @SuppressWarnings("deprecation")
     protected Map<String, JsonNode> createObject() {
         Map<String, JsonNode> map = newHashMap(node.size());
         for (Iterator<Map.Entry<String, com.fasterxml.jackson.databind.JsonNode>> iterator = node.fields(); iterator.hasNext(); ) {

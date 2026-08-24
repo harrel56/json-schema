@@ -6,6 +6,8 @@ import dev.harrel.jsonschema.internal.AbstractJsonNode;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import static dev.harrel.jsonschema.internal.InternalProviderUtil.canConvertToInteger;
+
 abstract class SimpleJsonNode extends AbstractJsonNode<Object> {
     SimpleJsonNode(Object node, String jsonPointer) {
         super(node, jsonPointer);

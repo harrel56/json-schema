@@ -9,6 +9,8 @@ import org.codehaus.jettison.json.JSONTokener;
 
 import java.util.*;
 
+import static dev.harrel.jsonschema.internal.InternalProviderUtil.newHashMap;
+
 public final class JettisonNode extends SimpleJsonNode {
 
     private JettisonNode(Object node, String jsonPointer) {

@@ -1,5 +1,7 @@
 package dev.harrel.jsonschema;
 
+import dev.harrel.jsonschema.internal.StandaloneNode;
+
 import java.math.BigInteger;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -358,7 +360,7 @@ class PropertyNamesEvaluator implements Evaluator {
 
         boolean valid = true;
         for (String propName : node.asObject().keySet()) {
-            valid = ctx.resolveInternalRefAndValidate(schemaRef, new StringNode(propName, node.getJsonPointer())) && valid;
+            valid = ctx.resolveInternalRefAndValidate(schemaRef, new StandaloneNode(node.getJsonPointer(), SimpleType.STRING, propName)) && valid;
         }
         return valid ? Result.success() : Result.failure();
     }

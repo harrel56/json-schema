@@ -9,6 +9,7 @@ import net.minidev.json.parser.ParseException;
 
 import java.util.*;
 
+import static dev.harrel.jsonschema.internal.InternalProviderUtil.newHashMap;
 import static net.minidev.json.parser.JSONParser.MODE_JSON_SIMPLE;
 
 public final class JsonSmartNode extends SimpleJsonNode {

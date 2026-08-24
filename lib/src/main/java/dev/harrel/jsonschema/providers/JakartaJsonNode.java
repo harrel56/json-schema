@@ -12,6 +12,9 @@ import java.io.StringReader;
 import java.math.BigDecimal;
 import java.util.*;
 
+import static dev.harrel.jsonschema.internal.InternalProviderUtil.canConvertToInteger;
+import static dev.harrel.jsonschema.internal.InternalProviderUtil.newHashMap;
+
 public final class JakartaJsonNode extends AbstractJsonNode<JsonValue> {
     private JakartaJsonNode(JsonValue node, String jsonPointer) {
         super(Objects.requireNonNull(node), jsonPointer);
