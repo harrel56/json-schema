@@ -58,6 +58,16 @@
                 "valid": false
             },
             {
+                "description": "a 2-part address resolving to a routable IP (inet_aton shorthand)",
+                "data": "127.1",
+                "valid": false
+            },
+            {
+                "description": "a 3-part address resolving to a routable IP (inet_aton shorthand)",
+                "data": "127.0.1",
+                "valid": false
+            },
+            {
                 "description": "an IP address as an integer",
                 "data": "0x7f000001",
                 "valid": false
@@ -70,6 +80,16 @@
             {
                 "description": "invalid non-ASCII '২' (a Bengali 2)",
                 "data": "1২7.0.0.1",
+                "valid": false
+            },
+            {
+                "description": "invalid fullwidth digits (non-ASCII)",
+                "data": "１９２.１６８.１.１",
+                "valid": false
+            },
+            {
+                "description": "invalid mathematical bold digits (non-ASCII)",
+                "data": "𝟏𝟗𝟐.𝟏𝟔𝟖.𝟏.𝟏",
                 "valid": false
             },
             {
@@ -128,6 +148,16 @@
                 "valid": true
             },
             {
+                "description": "valid IPv4 with an octet in the 200 to 249 range",
+                "data": "200.0.0.0",
+                "valid": true
+            },
+            {
+                "description": "valid IPv4 with two-digit octets",
+                "data": "10.20.30.40",
+                "valid": true
+            },
+            {
                 "description": "empty string is invalid",
                 "data": "",
                 "valid": false
@@ -163,8 +193,18 @@
                 "valid": false
             },
             {
+                "description": "additional content after an embedded NUL byte",
+                "data": "192.168.0.1\u0000.evil.com",
+                "valid": false
+            },
+            {
                 "description": "with port number is invalid",
                 "data": "192.168.0.1:80",
+                "valid": false
+            },
+            {
+                "description": "an IPv4-mapped IPv6 address is invalid",
+                "data": "::ffff:192.168.0.1",
                 "valid": false
             },
             {
