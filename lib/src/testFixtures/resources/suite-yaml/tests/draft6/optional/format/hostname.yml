@@ -53,6 +53,9 @@
     - description: contains underscore
       data: host_name
       valid: false
+    - description: exceeds maximum overall length (256)
+      data: abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.com
+      valid: false
     - description: maximum label length
       data: abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.com
       valid: true
@@ -85,4 +88,11 @@
       valid: false
     - description: IDN label separator
       data: example．com
+      valid: false
+    - description: trailing newline is invalid
+      data: |
+        example.com
+      valid: false
+    - description: invalid non-ASCII KELVIN SIGN (U+212A)
+      data: Kelvin.example.com
       valid: false
