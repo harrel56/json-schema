@@ -116,7 +116,7 @@
       data: "\uFEFF"
       valid: true
     - description: line feed matches (line terminator)
-      data: |2+
+      data: |+
 
       valid: true
     - description: paragraph separator matches (line terminator)
@@ -155,7 +155,7 @@
       data: "\uFEFF"
       valid: false
     - description: line feed does not match (line terminator)
-      data: |2+
+      data: |+
 
       valid: false
     - description: paragraph separator does not match (line terminator)
