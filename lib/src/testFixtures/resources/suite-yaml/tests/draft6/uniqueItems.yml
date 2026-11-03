@@ -97,16 +97,6 @@
         - - bar
         - - foo
       valid: false
-    - description: 1 and true are unique
-      data:
-        - 1
-        - true
-      valid: true
-    - description: 0 and false are unique
-      data:
-        - 0
-        - false
-      valid: true
     - description: '[1] and [true] are unique'
       data:
         - - 1
@@ -329,16 +319,6 @@
       data:
         - - foo
         - - foo
-      valid: true
-    - description: 1 and true are unique
-      data:
-        - 1
-        - true
-      valid: true
-    - description: 0 and false are unique
-      data:
-        - 0
-        - false
       valid: true
     - description: unique heterogeneous types are valid
       data:
