@@ -42,3 +42,41 @@
     - description: an invalid IRI fragment
       data: '#ƒräg\mênt'
       valid: false
+    - description: an embedded IPv4 with a leading zero is invalid
+      data: //[::ffff:192.168.0.01]/p
+      valid: false
+    - description: a valid protocol-relative IRI Reference with a compressed IPv6 host
+      data: //[2001:db8::1]/p
+      valid: true
+    - description: a valid relative IRI Reference with a supplementary-plane character
+      data: "/âππ/\U00010300"
+      valid: true
+    - description: a query-only IRI Reference with a supplementary private-use char
+      data: "?q=\U000F0000"
+      valid: true
+    - description: a trailing newline after a valid IRI Reference is invalid
+      data: |
+        /âππ
+      valid: false
+    - description: invalid percent-encoding with non-hex digits
+      data: /%6G
+      valid: false
+    - description: incomplete percent-encoding triplet
+      data: /%A
+      valid: false
+    - description: lone percent sign is invalid
+      data: /%
+      valid: false
+    - description: a non-numeric port in a network-path reference is invalid
+      data: //ƒøø.ßår:abc/p
+      valid: false
+    - description: more than one at-sign in the authority is invalid
+      data: //â@b@ƒøø.ßår/
+      valid: false
+    - description: a colon in the first segment of a relative-path reference
+      comment: 'RFC 3987, Section 2.2: the first segment of ipath-noscheme excludes colons, and â cannot start a scheme.'
+      data: â:b
+      valid: false
+    - description: a colon in the first segment preceded by a dot-segment
+      data: ./â:b
+      valid: true
